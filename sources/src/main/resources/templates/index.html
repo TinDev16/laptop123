@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Store - Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+<body>
+<div class="container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <h1>💻 LaptopStore</h1>
+            <p>Admin Dashboard</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a class="nav-link active" onclick="showSection('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('products')">
+                    <span class="nav-icon">💻</span>
+                    Sản phẩm
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('orders')">
+                    <span class="nav-icon">📦</span>
+                    Đơn hàng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('customers')">
+                    <span class="nav-icon">👥</span>
+                    Khách hàng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('analytics')">
+                    <span class="nav-icon">📈</span>
+                    Thống kê
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('settings')">
+                    <span class="nav-icon">⚙️</span>
+                    Cài đặt
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="welcome">
+                <h2>Chào mừng trở lại! 👋</h2>
+                <p>Hôm nay là một ngày tuyệt vời để quản lý cửa hàng của bạn</p>
+            </div>
+            <div class="user-info">
+                <button class="notification">🔔</button>
+                <div class="user-avatar">A</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon sales">💰</div>
+                    </div>
+                    <div class="stat-value">125.5M</div>
+                    <div class="stat-label">Doanh thu tháng</div>
+                    <div class="stat-trend">↗️ +12.5%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon products">📦</div>
+                    </div>
+                    <div class="stat-value">486</div>
+                    <div class="stat-label">Sản phẩm</div>
+                    <div class="stat-trend">↗️ +5 mới</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon orders">🛒</div>
+                    </div>
+                    <div class="stat-value">1,247</div>
+                    <div class="stat-label">Đơn hàng</div>
+                    <div class="stat-trend">↗️ +23 hôm nay</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon customers">👥</div>
+                    </div>
+                    <div class="stat-value">2,841</div>
+                    <div class="stat-label">Khách hàng</div>
+                    <div class="stat-trend">↗️ +15 mới</div>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3 style="margin-bottom: 20px; color: #333;">Hoạt động gần đây</h3>
+                <div class="activity-item">
+                    <div class="activity-icon">📦</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Đơn hàng #1234 đã được giao thành công</div>
+                        <div class="activity-time">5 phút trước</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">💻</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Sản phẩm "MacBook Pro M3" đã được thêm</div>
+                        <div class="activity-time">15 phút trước</div>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-icon">👤</div>
+                    <div class="activity-content">
+                        <div class="activity-text">Khách hàng mới "Nguyễn Văn A" đã đăng ký</div>
+                        <div class="activity-time">30 phút trước</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="products" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Quản lý sản phẩm</h2>
+                <button class="add-btn" onclick="addProduct()">+ Thêm sản phẩm</button>
+            </div>
+            <div class="data-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Giá</th>
+                        <th>Tồn kho</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><div style="width:50px;height:50px;background:linear-gradient(45deg,#667eea,#764ba2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;">💻</div></td>
+                        <td>MacBook Pro M3 14"</td>
+                        <td>MacBook</td>
+                        <td>45.990.000₫</td>
+                        <td>25</td>
+                        <td><span class="status active">Đang bán</span></td>
+                        <td>
+                            <button class="action-btn">✏️</button>
+                            <button class="action-btn">🗑️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div style="width:50px;height:50px;background:linear-gradient(45deg,#667eea,#764ba2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;">💻</div></td>
+                        <td>Dell XPS 13</td>
+                        <td>Dell</td>
+                        <td>32.990.000₫</td>
+                        <td>15</td>
+                        <td><span class="status active">Đang bán</span></td>
+                        <td>
+                            <button class="action-btn">✏️</button>
+                            <button class="action-btn">🗑️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div style="width:50px;height:50px;background:linear-gradient(45deg,#667eea,#764ba2);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;">💻</div></td>
+                        <td>ASUS ROG Gaming</td>
+                        <td>ASUS</td>
+                        <td>28.500.000₫</td>
+                        <td>8</td>
+                        <td><span class="status inactive">Hết hàng</span></td>
+                        <td>
+                            <button class="action-btn">✏️</button>
+                            <button class="action-btn">🗑️</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div id="orders" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Quản lý đơn hàng</h2>
+                <button class="add-btn" onclick="exportOrders()">📊 Xuất báo cáo</button>
+            </div>
+            <div class="data-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Sản phẩm</th>
+                        <th>Tổng tiền</th>
+                        <th>Ngày đặt</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>#1234</td>
+                        <td>Nguyễn Văn A</td>
+                        <td>MacBook Pro M3</td>
+                        <td>45.990.000₫</td>
+                        <td>17/09/2025</td>
+                        <td><span class="status pending">Đang xử lý</span></td>
+                        <td>
+                            <button class="action-btn">👁️</button>
+                            <button class="action-btn">✏️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#1235</td>
+                        <td>Trần Thị B</td>
+                        <td>Dell XPS 13</td>
+                        <td>32.990.000₫</td>
+                        <td>16/09/2025</td>
+                        <td><span class="status completed">Hoàn thành</span></td>
+                        <td>
+                            <button class="action-btn">👁️</button>
+                            <button class="action-btn">✏️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#1236</td>
+                        <td>Lê Văn C</td>
+                        <td>ASUS ROG Gaming</td>
+                        <td>28.500.000₫</td>
+                        <td>15/09/2025</td>
+                        <td><span class="status cancelled">Đã hủy</span></td>
+                        <td>
+                            <button class="action-btn">👁️</button>
+                            <button class="action-btn">✏️</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Customers Section -->
+        <div id="customers" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Quản lý khách hàng</h2>
+                <button class="add-btn" onclick="addCustomer()">+ Thêm khách hàng</button>
+            </div>
+            <div class="data-table">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Tên khách hàng</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th>Tổng đơn</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Nguyễn Văn A</td>
+                        <td>nguyenvana@email.com</td>
+                        <td>0901234567</td>
+                        <td>Hà Nội</td>
+                        <td>3 đơn</td>
+                        <td>01/09/2025</td>
+                        <td>
+                            <button class="action-btn">👁️</button>
+                            <button class="action-btn">✏️</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Trần Thị B</td>
+                        <td>tranthib@email.com</td>
+                        <td>0907654321</td>
+                        <td>TP.HCM</td>
+                        <td>1 đơn</td>
+                        <td>15/08/2025</td>
+                        <td>
+                            <button class="action-btn">👁️</button>
+                            <button class="action-btn">✏️</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Thống kê & Báo cáo</h2>
+            </div>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3 style="margin-bottom: 15px; color: #333;">Doanh thu theo tháng</h3>
+                    <div style="height: 200px; background: linear-gradient(135deg, #667eea20, #764ba220); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #667eea; font-size: 18px;">
+                        📈 Biểu đồ doanh thu
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3 style="margin-bottom: 15px; color: #333;">Sản phẩm bán chạy</h3>
+                    <div style="height: 200px; background: linear-gradient(135deg, #667eea20, #764ba220); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #667eea; font-size: 18px;">
+                        🏆 Top sản phẩm
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Cài đặt hệ thống</h2>
+            </div>
+            <div class="data-table">
+                <div style="padding: 30px; text-align: center;">
+                    <h3 style="color: #333; margin-bottom: 15px;">🛠️ Cài đặt cửa hàng</h3>
+                    <p style="color: #666;">Tính năng cài đặt đang được phát triển...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

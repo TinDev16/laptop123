@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-left i {
+            font-size: 2rem;
+            color: #3b82f6;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .header-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            border-bottom: 1px solid #e5e5e5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 0.5rem;
+            border-bottom: 2px solid transparent;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            color: #374151;
+            border-bottom-color: #d1d5db;
+        }
+
+        .nav-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .nav-tab i {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        /* Main content */
+        .main {
+            padding: 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Search and filters */
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input input {
+            width: 100%;
+            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .search-input i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table th {
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        .table td {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .product-image {
+            width: 3rem;
+            height: 3rem;
+            object-fit: cover;
+            border-radius: 0.25rem;
+        }
+
+        .price {
+            font-weight: 600;
+        }
+
+        .price.buy {
+            color: #ef4444;
+        }
+
+        .price.sell {
+            color: #10b981;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal.large {
+            max-width: 800px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .modal-close:hover {
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 4rem;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        .required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        /* Detail view */
+        .detail-grid {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .detail-value {
+            color: #6b7280;
+        }
+
+        .product-detail-image {
+            width: 12rem;
+            height: 8rem;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin: 0 auto 1rem;
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-content {
+                overflow-x: auto;
+                gap: 1rem;
+            }
+
+            .nav-tab {
+                white-space: nowrap;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .page-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .search-filters {
+                flex-direction: column;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .modal {
+                width: 95%;
+                margin: 1rem;
+            }
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .text-red-600 {
+            color: #dc2626;
+        }
+
+        .text-green-600 {
+            color: #059669;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <i class="fas fa-laptop"></i>
+            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
+        </div>
+        <div class="header-date">
+            Hôm nay: <span id="current-date"></span>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-content">
+        <div class="nav-tab active" data-tab="products">
+            <i class="fas fa-box"></i>
+            <span>Sản phẩm</span>
+        </div>
+        <div class="nav-tab" data-tab="import-slips">
+            <i class="fas fa-arrow-down"></i>
+            <span>Phiếu nhập</span>
+        </div>
+        <div class="nav-tab" data-tab="export-slips">
+            <i class="fas fa-arrow-up"></i>
+            <span>Phiếu xuất</span>
+        </div>
+        <div class="nav-tab" data-tab="customers">
+            <i class="fas fa-users"></i>
+            <span>Khách hàng</span>
+        </div>
+        <div class="nav-tab" data-tab="suppliers">
+            <i class="fas fa-building"></i>
+            <span>Nhà cung cấp</span>
+        </div>
+        <div class="nav-tab" data-tab="employees">
+            <i class="fas fa-user-tie"></i>
+            <span>Nhân viên</span>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+    <!-- Products Tab -->
+    <div id="products" class="tab-content active">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý Sản phẩm</h2>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="openModal('product-add')">
+                    <i class="fas fa-plus"></i>
+                    Thêm sản phẩm
+                </button>
+                <button class="btn btn-success" onclick="exportExcel('products')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </button>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm..." onkeyup="filterProducts()">
+            </div>
+            <select id="brand-filter" class="filter-select" onchange="filterProducts()">
+                <option value="">Tất cả thương hiệu</option>
+            </select>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã SP</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Hình ảnh</th>
+                    <th>Thương hiệu</th>
+                    <th>Giá nhập</th>
+                    <th>Giá bán</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="products-table">
+                <!-- Products will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Import Slips Tab -->
+    <div id="import-slips" class="tab-content">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý Phiếu nhập</h2>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="openModal('import-add')">
+                    <i class="fas fa-plus"></i>
+                    Thêm phiếu nhập
+                </button>
+                <button class="btn btn-success" onclick="exportExcel('import-slips')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </button>
+                <button class="btn btn-danger" onclick="exportPDF('import-slips')">
+                    <i class="fas fa-file-pdf"></i>
+                    Xuất PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã phiếu</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Nhân viên</th>
+                    <th>Thời gian</th>
+                    <th>Tổng tiền</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="import-slips-table">
+                <!-- Import slips will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Export Slips Tab -->
+    <div id="export-slips" class="tab-content">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý Phiếu xuất</h2>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="openModal('export-add')">
+                    <i class="fas fa-plus"></i>
+                    Thêm phiếu xuất
+                </button>
+                <button class="btn btn-success" onclick="exportExcel('export-slips')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </button>
+                <button class="btn btn-danger" onclick="exportPDF('export-slips')">
+                    <i class="fas fa-file-pdf"></i>
+                    Xuất PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã phiếu</th>
+                    <th>Khách hàng</th>
+                    <th>Nhân viên</th>
+                    <th>Thời gian</th>
+                    <th>Tổng tiền</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="export-slips-table">
+                <!-- Export slips will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Customers Tab -->
+    <div id="customers" class="tab-content">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý Khách hàng</h2>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="openModal('customer-add')">
+                    <i class="fas fa-plus"></i>
+                    Thêm mới
+                </button>
+                <button class="btn btn-warning" onclick="importExcel('customers')">
+                    <i class="fas fa-upload"></i>
+                    Nhập Excel
+                </button>
+                <button class="btn btn-success" onclick="exportExcel('customers')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã KH</th>
+                    <th>Tên khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Ngày tham gia</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="customers-table">
+                <!-- Customers will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Suppliers Tab -->
+    <div id="suppliers" class="tab-content">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý Nhà cung cấp</h2>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="openModal('supplier-add')">
+                    <i class="fas fa-plus"></i>
+                    Thêm mới
+                </button>
+                <button class="btn btn-warning" onclick="importExcel('suppliers')">
+                    <i class="fas fa-upload"></i>
+                    Nhập Excel
+                </button>
+                <button class="btn btn-success" onclick="exportExcel('suppliers')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã NCC</th>
+                    <th>Tên nhà cung cấp</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="suppliers-table">
+                <!-- Suppliers will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Employees Tab -->
+    <div id="employees" class="tab-content">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý Nhân viên</h2>
+            <div class="page-actions">
+                <button class="btn btn-primary" onclick="openModal('employee-add')">
+                    <i class="fas fa-plus"></i>
+                    Thêm mới
+                </button>
+                <button class="btn btn-warning" onclick="importExcel('employees')">
+                    <i class="fas fa-upload"></i>
+                    Nhập Excel
+                </button>
+                <button class="btn btn-success" onclick="exportExcel('employees')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã NV</th>
+                    <th>Họ tên</th>
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày tham gia</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="employees-table">
+                <!-- Employees will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal -->
+<div id="modal-overlay" class="modal-overlay">
+    <div id="modal" class="modal">
+        <div class="modal-header">
+            <h3 id="modal-title" class="modal-title">Modal Title</h3>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- Modal content will be populated here -->
+        </div>
+        <div class="modal-footer" id="modal-footer">
+            <!-- Modal footer will be populated here -->
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Xác nhận xóa</h3>
+            <button class="modal-close" onclick="closeConfirmModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
+            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data storage
+    let data = {
+        products: [
+            {
+                id: 'SP001',
+                name: 'Dell Inspiron 15 3000',
+                image: 'https://via.placeholder.com/150x100',
+                origin: 'Mỹ',
+                processor: 'Intel Core i5-1135G7',
+                os: 'Windows 11',
+                screenSize: '15.6 inch',
+                brand: 'Dell',
+                sellPrice: 15990000,
+                buyPrice: 13500000,
+                supplier: 'Dell Vietnam'
+            },
+            {
+                id: 'SP002',
+                name: 'MacBook Air M2',
+                image: 'https://via.placeholder.com/150x100',
+                origin: 'Trung Quốc',
+                processor: 'Apple M2',
+                os: 'macOS Monterey',
+                screenSize: '13.6 inch',
+                brand: 'Apple',
+                sellPrice: 28990000,
+                buyPrice: 25000000,
+                supplier: 'Apple Vietnam'
+            }
+        ],
+        importSlips: [
+            {
+                id: 'PN001',
+                supplier: 'Dell Vietnam',
+                employee: 'Nguyễn Văn A',
+                date: '2024-01-15',
+                total: 27000000,
+                items: [
+                    { productId: 'SP001', productName: 'Dell Inspiron 15 3000', config: 'i5/8GB/256GB', buyPrice: 13500000, quantity: 2 }
+                ]
+            }
+        ],
+        exportSlips: [
+            {
+                id: 'PX001',
+                customer: 'Trần Thị B',
+                employee: 'Nguyễn Văn A',
+                date: '2024-01-16',
+                total: 31980000,
+                items: [
+                    { productId: 'SP001', productName: 'Dell Inspiron 15 3000', sellPrice: 15990000, quantity: 2 }
+                ]
+            }
+        ],
+        customers: [
+            {
+                id: 'KH001',
+                name: 'Trần Thị B',
+                address: '123 Nguyễn Văn Cừ, Q1, TP.HCM',
+                phone: '0901234567',
+                joinDate: '2024-01-10'
+            }
+        ],
+        suppliers: [
+            {
+                id: 'NCC001',
+                name: 'Dell Vietnam',
+                address: '456 Lê Lợi, Q1, TP.HCM',
+                phone: '0287654321'
+            },
+            {
+                id: 'NCC002',
+                name: 'Apple Vietnam',
+                address: '789 Điện Biên Phủ, Q3, TP.HCM',
+                phone: '0283456789'
+            }
+        ],
+        employees: [
+            {
+                id: 'NV001',
+                name: 'Nguyễn Văn A',
+                gender: 'Nam',
+                birthDate: '1990-05-15',
+                phone: '0909876543',
+                joinDate: '2023-01-01'
+            }
+        ]
+    };
+
+    let currentModal = null;
+    let editingItem = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('vi-VN');
+
+        // Setup navigation
+        setupNavigation();
+
+        // Render initial data
+        renderProducts();
+        renderImportSlips();
+        renderExportSlips();
+        renderCustomers();
+        renderSuppliers();
+        renderEmployees();
+
+        // Setup brand filter
+        setupBrandFilter();
+    });
+
+    // Navigation
+    function setupNavigation() {
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+
+                // Update active tab
+                navTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update active content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+    }
+
+    // Utility functions
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    }
+
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString('vi-VN');
+    }
+
+    function generateId(prefix, array) {
+        const maxId = array.reduce((max, item) => {
+            const num = parseInt(item.id.replace(prefix, ''));
+            return num > max ? num : max;
+        }, 0);
+        return `${prefix}${String(maxId + 1).padStart(3, '0')}`;
+    }
+
+    // Products functions
+    function renderProducts() {
+        const tbody = document.getElementById('products-table');
+        tbody.innerHTML = '';
+
+        data.products.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td class="font-semibold">${product.id}</td>
+                    <td>${product.name}</td>
+                    <td><img src="${product.image}" alt="${product.name}" class="product-image"></td>
+                    <td>${product.brand}</td>
+                    <td class="price buy">${formatCurrency(product.buyPrice)}</td>
+                    <td class="price sell">${formatCurrency(product.sellPrice)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewProduct('${product.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editProduct('${product.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteProduct('${product.id}')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function setupBrandFilter() {
+        const brandFilter = document.getElementById('brand-filter');
+        const brands = [...new Set(data.products.map(p => p.brand))].filter(Boolean);
+
+        brandFilter.innerHTML = '<option value="">Tất cả thương hiệu</option>';
+        brands.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandFilter.appendChild(option);
+        });
+    }
+
+    function filterProducts() {
+        const searchText = document.getElementById('product-search').value.toLowerCase();
+        const brandFilter = document.getElementById('brand-filter').value;
+
+        const filteredProducts = data.products.filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchText) ||
+                product.id.toLowerCase().includes(searchText);
+            const matchesBrand = !brandFilter || product.brand === brandFilter;
+            return matchesSearch && matchesBrand;
+        });
+
+        const tbody = document.getElementById('products-table');
+        tbody.innerHTML = '';
+
+        filteredProducts.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td class="font-semibold">${product.id}</td>
+                    <td>${product.name}</td>
+                    <td><img src="${product.image}" alt="${product.name}" class="product-image"></td>
+                    <td>${product.brand}</td>
+                    <td class="price buy">${formatCurrency(product.buyPrice)}</td>
+                    <td class="price sell">${formatCurrency(product.sellPrice)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewProduct('${product.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editProduct('${product.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteProduct('${product.id}')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function viewProduct(id) {
+        const product = data.products.find(p => p.id === id);
+        if (product) {
+            openModal('product-view', product);
+        }
+    }
+
+    function editProduct(id) {
+        const product = data.products.find(p => p.id === id);
+        if (product) {
+            openModal('product-edit', product);
+        }
+    }
+
+    function deleteProduct(id) {
+        const product = data.products.find(p => p.id === id);
+        if (product) {
+            openConfirmModal(`Bạn có chắc chắn muốn xóa sản phẩm "${product.name}" không?`, () => {
+                data.products = data.products.filter(p => p.id !== id);
+                renderProducts();
+                setupBrandFilter();
+            });
+        }
+    }
+
+    // Import Slips functions
+    function renderImportSlips() {
+        const tbody = document.getElementById('import-slips-table');
+        tbody.innerHTML = '';
+
+        data.importSlips.forEach((slip, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="font-semibold">${slip.id}</td>
+                    <td>${slip.supplier}</td>
+                    <td>${slip.employee}</td>
+                    <td>${formatDate(slip.date)}</td>
+                    <td class="price buy">${formatCurrency(slip.total)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewImportSlip('${slip.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editImportSlip('${slip.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteImportSlip('${slip.id}')" title="Hủy phiếu">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function viewImportSlip(id) {
+        const slip = data.importSlips.find(s => s.id === id);
+        if (slip) {
+            openModal('import-view', slip);
+        }
+    }
+
+    function editImportSlip(id) {
+        const slip = data.importSlips.find(s => s.id === id);
+        if (slip) {
+            openModal('import-edit', slip);
+        }
+    }
+
+    function deleteImportSlip(id) {
+        const slip = data.importSlips.find(s => s.id === id);
+        if (slip) {
+            openConfirmModal(`Bạn có chắc chắn muốn hủy phiếu nhập "${slip.id}" không?`, () => {
+                data.importSlips = data.importSlips.filter(s => s.id !== id);
+                renderImportSlips();
+            });
+        }
+    }
+
+    // Export Slips functions
+    function renderExportSlips() {
+        const tbody = document.getElementById('export-slips-table');
+        tbody.innerHTML = '';
+
+        data.exportSlips.forEach((slip, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="font-semibold">${slip.id}</td>
+                    <td>${slip.customer}</td>
+                    <td>${slip.employee}</td>
+                    <td>${formatDate(slip.date)}</td>
+                    <td class="price sell">${formatCurrency(slip.total)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewExportSlip('${slip.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editExportSlip('${slip.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteExportSlip('${slip.id}')" title="Hủy phiếu">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function viewExportSlip(id) {
+        const slip = data.exportSlips.find(s => s.id === id);
+        if (slip) {
+            openModal('export-view', slip);
+        }
+    }
+
+    function editExportSlip(id) {
+        const slip = data.exportSlips.find(s => s.id === id);
+        if (slip) {
+            openModal('export-edit', slip);
+        }
+    }
+
+    function deleteExportSlip(id) {
+        const slip = data.exportSlips.find(s => s.id === id);
+        if (slip) {
+            openConfirmModal(`Bạn có chắc chắn muốn hủy phiếu xuất "${slip.id}" không?`, () => {
+                data.exportSlips = data.exportSlips.filter(s => s.id !== id);
+                renderExportSlips();
+            });
+        }
+    }
+
+    // Customers functions
+    function renderCustomers() {
+        const tbody = document.getElementById('customers-table');
+        tbody.innerHTML = '';
+
+        data.customers.forEach(customer => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td class="font-semibold">${customer.id}</td>
+                    <td>${customer.name}</td>
+                    <td>${customer.phone}</td>
+                    <td>${customer.address}</td>
+                    <td>${formatDate(customer.joinDate)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewCustomer('${customer.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editCustomer('${customer.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteCustomer('${customer.id}')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function viewCustomer(id) {
+        const customer = data.customers.find(c => c.id === id);
+        if (customer) {
+            openModal('customer-view', customer);
+        }
+    }
+
+    function editCustomer(id) {
+        const customer = data.customers.find(c => c.id === id);
+        if (customer) {
+            openModal('customer-edit', customer);
+        }
+    }
+
+    function deleteCustomer(id) {
+        const customer = data.customers.find(c => c.id === id);
+        if (customer) {
+            openConfirmModal(`Bạn có chắc chắn muốn xóa khách hàng "${customer.name}" không?`, () => {
+                data.customers = data.customers.filter(c => c.id !== id);
+                renderCustomers();
+            });
+        }
+    }
+
+    // Suppliers functions
+    function renderSuppliers() {
+        const tbody = document.getElementById('suppliers-table');
+        tbody.innerHTML = '';
+
+        data.suppliers.forEach(supplier => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td class="font-semibold">${supplier.id}</td>
+                    <td>${supplier.name}</td>
+                    <td>${supplier.phone}</td>
+                    <td>${supplier.address}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewSupplier('${supplier.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editSupplier('${supplier.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteSupplier('${supplier.id}')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function viewSupplier(id) {
+        const supplier = data.suppliers.find(s => s.id === id);
+        if (supplier) {
+            openModal('supplier-view', supplier);
+        }
+    }
+
+    function editSupplier(id) {
+        const supplier = data.suppliers.find(s => s.id === id);
+        if (supplier) {
+            openModal('supplier-edit', supplier);
+        }
+    }
+
+    function deleteSupplier(id) {
+        const supplier = data.suppliers.find(s => s.id === id);
+        if (supplier) {
+            openConfirmModal(`Bạn có chắc chắn muốn xóa nhà cung cấp "${supplier.name}" không?`, () => {
+                data.suppliers = data.suppliers.filter(s => s.id !== id);
+                renderSuppliers();
+            });
+        }
+    }
+
+    // Employees functions
+    function renderEmployees() {
+        const tbody = document.getElementById('employees-table');
+        tbody.innerHTML = '';
+
+        data.employees.forEach(employee => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td class="font-semibold">${employee.id}</td>
+                    <td>${employee.name}</td>
+                    <td>${employee.gender}</td>
+                    <td>${employee.birthDate ? formatDate(employee.birthDate) : ''}</td>
+                    <td>${employee.phone}</td>
+                    <td>${formatDate(employee.joinDate)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-icon btn-outline" onclick="viewEmployee('${employee.id}')" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline" onclick="editEmployee('${employee.id}')" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-icon btn-outline text-red-600" onclick="deleteEmployee('${employee.id}')" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function viewEmployee(id) {
+        const employee = data.employees.find(e => e.id === id);
+        if (employee) {
+            openModal('employee-view', employee);
+        }
+    }
+
+    function editEmployee(id) {
+        const employee = data.employees.find(e => e.id === id);
+        if (employee) {
+            openModal('employee-edit', employee);
+        }
+    }
+
+    function deleteEmployee(id) {
+        const employee = data.employees.find(e => e.id === id);
+        if (employee) {
+            openConfirmModal(`Bạn có chắc chắn muốn xóa nhân viên "${employee.name}" không?`, () => {
+                data.employees = data.employees.filter(e => e.id !== id);
+                renderEmployees();
+            });
+        }
+    }
+
+    // Modal functions
+    function openModal(type, item = null) {
+        currentModal = type;
+        editingItem = item;
+
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalFooter = document.getElementById('modal-footer');
+
+        // Set modal size
+        if (type.includes('product')) {
+            modal.classList.add('large');
+        } else {
+            modal.classList.remove('large');
+        }
+
+        // Set title and content based on type
+        if (type === 'product-add') {
+            modalTitle.textContent = 'Thêm sản phẩm';
+            modalBody.innerHTML = getProductForm();
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'product-edit') {
+            modalTitle.textContent = 'Sửa sản phẩm';
+            modalBody.innerHTML = getProductForm(item);
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'product-view') {
+            modalTitle.textContent = 'Chi tiết sản phẩm';
+            modalBody.innerHTML = getProductDetail(item);
+            modalFooter.innerHTML = '';
+        } else if (type === 'customer-add') {
+            modalTitle.textContent = 'Thêm khách hàng';
+            modalBody.innerHTML = getCustomerForm();
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'customer-edit') {
+            modalTitle.textContent = 'Sửa khách hàng';
+            modalBody.innerHTML = getCustomerForm(item);
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'customer-view') {
+            modalTitle.textContent = 'Chi tiết khách hàng';
+            modalBody.innerHTML = getCustomerDetail(item);
+            modalFooter.innerHTML = '';
+        } else if (type === 'supplier-add') {
+            modalTitle.textContent = 'Thêm nhà cung cấp';
+            modalBody.innerHTML = getSupplierForm();
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'supplier-edit') {
+            modalTitle.textContent = 'Sửa nhà cung cấp';
+            modalBody.innerHTML = getSupplierForm(item);
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'supplier-view') {
+            modalTitle.textContent = 'Chi tiết nhà cung cấp';
+            modalBody.innerHTML = getSupplierDetail(item);
+            modalFooter.innerHTML = '';
+        } else if (type === 'employee-add') {
+            modalTitle.textContent = 'Thêm nhân viên';
+            modalBody.innerHTML = getEmployeeForm();
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'employee-edit') {
+            modalTitle.textContent = 'Sửa nhân viên';
+            modalBody.innerHTML = getEmployeeForm(item);
+            modalFooter.innerHTML = getSaveFooter();
+        } else if (type === 'employee-view') {
+            modalTitle.textContent = 'Chi tiết nhân viên';
+            modalBody.innerHTML = getEmployeeDetail(item);
+            modalFooter.innerHTML = '';
+        }
+
+        document.getElementById('modal-overlay').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('show');
+        currentModal = null;
+        editingItem = null;
+    }
+
+    function saveModal() {
+        if (currentModal === 'product-add' || currentModal === 'product-edit') {
+            saveProduct();
+        } else if (currentModal === 'customer-add' || currentModal === 'customer-edit') {
+            saveCustomer();
+        } else if (currentModal === 'supplier-add' || currentModal === 'supplier-edit') {
+            saveSupplier();
+        } else if (currentModal === 'employee-add' || currentModal === 'employee-edit') {
+            saveEmployee();
+        }
+    }
+
+    function getSaveFooter() {
+        return `
+                <button class="btn btn-outline" onclick="closeModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="saveModal()">Lưu</button>
+            `;
+    }
+
+    // Product forms and details
+    function getProductForm(product = null) {
+        const supplierOptions = data.suppliers.map(s =>
+            `<option value="${s.name}" ${product && product.supplier === s.name ? 'selected' : ''}>${s.name}</option>`
+        ).join('');
+
+        return `
+                <form id="product-form" class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label required">Mã sản phẩm</label>
+                        <input type="text" id="product-id" class="form-input" value="${product ? product.id : ''}" ${product ? 'readonly' : ''} required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Tên sản phẩm</label>
+                        <input type="text" id="product-name" class="form-input" value="${product ? product.name : ''}" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Hình ảnh (URL)</label>
+                        <input type="url" id="product-image" class="form-input" value="${product ? product.image : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Xuất xứ</label>
+                        <input type="text" id="product-origin" class="form-input" value="${product ? product.origin : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Chip xử lý</label>
+                        <input type="text" id="product-processor" class="form-input" value="${product ? product.processor : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hệ điều hành</label>
+                        <input type="text" id="product-os" class="form-input" value="${product ? product.os : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kích thước màn hình</label>
+                        <input type="text" id="product-screen-size" class="form-input" value="${product ? product.screenSize : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Thương hiệu</label>
+                        <select id="product-brand" class="form-select">
+                            <option value="">Chọn thương hiệu</option>
+                            <option value="Dell" ${product && product.brand === 'Dell' ? 'selected' : ''}>Dell</option>
+                            <option value="Apple" ${product && product.brand === 'Apple' ? 'selected' : ''}>Apple</option>
+                            <option value="HP" ${product && product.brand === 'HP' ? 'selected' : ''}>HP</option>
+                            <option value="Lenovo" ${product && product.brand === 'Lenovo' ? 'selected' : ''}>Lenovo</option>
+                            <option value="Asus" ${product && product.brand === 'Asus' ? 'selected' : ''}>Asus</option>
+                            <option value="Acer" ${product && product.brand === 'Acer' ? 'selected' : ''}>Acer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nhà cung cấp</label>
+                        <select id="product-supplier" class="form-select">
+                            <option value="">Chọn nhà cung cấp</option>
+                            ${supplierOptions}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giá nhập (VNĐ)</label>
+                        <input type="number" id="product-buy-price" class="form-input" value="${product ? product.buyPrice : ''}" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giá bán (VNĐ)</label>
+                        <input type="number" id="product-sell-price" class="form-input" value="${product ? product.sellPrice : ''}" min="0">
+                    </div>
+                </form>
+            `;
+    }
+
+    function getProductDetail(product) {
+        return `
+                ${product.image ? `<img src="${product.image}" alt="${product.name}" class="product-detail-image">` : ''}
+                <div class="detail-grid">
+                    <div class="detail-row">
+                        <span class="detail-label">Mã sản phẩm:</span>
+                        <span class="detail-value">${product.id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tên sản phẩm:</span>
+                        <span class="detail-value">${product.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Xuất xứ:</span>
+                        <span class="detail-value">${product.origin || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Chip xử lý:</span>
+                        <span class="detail-value">${product.processor || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Hệ điều hành:</span>
+                        <span class="detail-value">${product.os || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Kích thước màn hình:</span>
+                        <span class="detail-value">${product.screenSize || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Thương hiệu:</span>
+                        <span class="detail-value">${product.brand || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Nhà cung cấp:</span>
+                        <span class="detail-value">${product.supplier || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Giá nhập:</span>
+                        <span class="detail-value text-red-600">${formatCurrency(product.buyPrice)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Giá bán:</span>
+                        <span class="detail-value text-green-600">${formatCurrency(product.sellPrice)}</span>
+                    </div>
+                </div>
+            `;
+    }
+
+    function saveProduct() {
+        const form = {
+            id: document.getElementById('product-id').value,
+            name: document.getElementById('product-name').value,
+            image: document.getElementById('product-image').value,
+            origin: document.getElementById('product-origin').value,
+            processor: document.getElementById('product-processor').value,
+            os: document.getElementById('product-os').value,
+            screenSize: document.getElementById('product-screen-size').value,
+            brand: document.getElementById('product-brand').value,
+            supplier: document.getElementById('product-supplier').value,
+            buyPrice: parseInt(document.getElementById('product-buy-price').value) || 0,
+            sellPrice: parseInt(document.getElementById('product-sell-price').value) || 0
+        };
+
+        if (!form.name) {
+            alert('Vui lòng nhập tên sản phẩm');
+            return;
+        }
+
+        if (currentModal === 'product-add') {
+            if (!form.id) {
+                form.id = generateId('SP', data.products);
+            }
+            data.products.push(form);
+        } else if (currentModal === 'product-edit') {
+            const index = data.products.findIndex(p => p.id === editingItem.id);
+            if (index !== -1) {
+                data.products[index] = { ...form, id: editingItem.id };
+            }
+        }
+
+        renderProducts();
+        setupBrandFilter();
+        closeModal();
+    }
+
+    // Customer forms and details
+    function getCustomerForm(customer = null) {
+        return `
+                <form id="customer-form">
+                    <div class="form-group">
+                        <label class="form-label required">Tên khách hàng</label>
+                        <input type="text" id="customer-name" class="form-input" value="${customer ? customer.name : ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Số điện thoại</label>
+                        <input type="tel" id="customer-phone" class="form-input" value="${customer ? customer.phone : ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Địa chỉ</label>
+                        <textarea id="customer-address" class="form-textarea" rows="3">${customer ? customer.address : ''}</textarea>
+                    </div>
+                </form>
+            `;
+    }
+
+    function getCustomerDetail(customer) {
+        return `
+                <div class="detail-grid">
+                    <div class="detail-row">
+                        <span class="detail-label">Mã khách hàng:</span>
+                        <span class="detail-value">${customer.id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tên khách hàng:</span>
+                        <span class="detail-value">${customer.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Số điện thoại:</span>
+                        <span class="detail-value">${customer.phone}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Địa chỉ:</span>
+                        <span class="detail-value">${customer.address || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Ngày tham gia:</span>
+                        <span class="detail-value">${formatDate(customer.joinDate)}</span>
+                    </div>
+                </div>
+            `;
+    }
+
+    function saveCustomer() {
+        const form = {
+            name: document.getElementById('customer-name').value,
+            phone: document.getElementById('customer-phone').value,
+            address: document.getElementById('customer-address').value,
+            joinDate: editingItem ? editingItem.joinDate : new Date().toISOString().split('T')[0]
+        };
+
+        if (!form.name || !form.phone) {
+            alert('Vui lòng nhập đầy đủ thông tin bắt buộc');
+            return;
+        }
+
+        if (currentModal === 'customer-add') {
+            form.id = generateId('KH', data.customers);
+            data.customers.push(form);
+        } else if (currentModal === 'customer-edit') {
+            const index = data.customers.findIndex(c => c.id === editingItem.id);
+            if (index !== -1) {
+                data.customers[index] = { ...form, id: editingItem.id };
+            }
+        }
+
+        renderCustomers();
+        closeModal();
+    }
+
+    // Supplier forms and details
+    function getSupplierForm(supplier = null) {
+        return `
+                <form id="supplier-form">
+                    <div class="form-group">
+                        <label class="form-label required">Tên nhà cung cấp</label>
+                        <input type="text" id="supplier-name" class="form-input" value="${supplier ? supplier.name : ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Số điện thoại</label>
+                        <input type="tel" id="supplier-phone" class="form-input" value="${supplier ? supplier.phone : ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Địa chỉ</label>
+                        <textarea id="supplier-address" class="form-textarea" rows="3">${supplier ? supplier.address : ''}</textarea>
+                    </div>
+                </form>
+            `;
+    }
+
+    function getSupplierDetail(supplier) {
+        return `
+                <div class="detail-grid">
+                    <div class="detail-row">
+                        <span class="detail-label">Mã nhà cung cấp:</span>
+                        <span class="detail-value">${supplier.id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tên nhà cung cấp:</span>
+                        <span class="detail-value">${supplier.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Số điện thoại:</span>
+                        <span class="detail-value">${supplier.phone}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Địa chỉ:</span>
+                        <span class="detail-value">${supplier.address || 'Chưa cập nhật'}</span>
+                    </div>
+                </div>
+            `;
+    }
+
+    function saveSupplier() {
+        const form = {
+            name: document.getElementById('supplier-name').value,
+            phone: document.getElementById('supplier-phone').value,
+            address: document.getElementById('supplier-address').value
+        };
+
+        if (!form.name || !form.phone) {
+            alert('Vui lòng nhập đầy đủ thông tin bắt buộc');
+            return;
+        }
+
+        if (currentModal === 'supplier-add') {
+            form.id = generateId('NCC', data.suppliers);
+            data.suppliers.push(form);
+        } else if (currentModal === 'supplier-edit') {
+            const index = data.suppliers.findIndex(s => s.id === editingItem.id);
+            if (index !== -1) {
+                data.suppliers[index] = { ...form, id: editingItem.id };
+            }
+        }
+
+        renderSuppliers();
+        closeModal();
+    }
+
+    // Employee forms and details
+    function getEmployeeForm(employee = null) {
+        return `
+                <form id="employee-form">
+                    <div class="form-group">
+                        <label class="form-label required">Họ tên</label>
+                        <input type="text" id="employee-name" class="form-input" value="${employee ? employee.name : ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giới tính</label>
+                        <select id="employee-gender" class="form-select">
+                            <option value="">Chọn giới tính</option>
+                            <option value="Nam" ${employee && employee.gender === 'Nam' ? 'selected' : ''}>Nam</option>
+                            <option value="Nữ" ${employee && employee.gender === 'Nữ' ? 'selected' : ''}>Nữ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày sinh</label>
+                        <input type="date" id="employee-birth-date" class="form-input" value="${employee ? employee.birthDate : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Số điện thoại</label>
+                        <input type="tel" id="employee-phone" class="form-input" value="${employee ? employee.phone : ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày tham gia</label>
+                        <input type="date" id="employee-join-date" class="form-input" value="${employee ? employee.joinDate : new Date().toISOString().split('T')[0]}">
+                    </div>
+                </form>
+            `;
+    }
+
+    function getEmployeeDetail(employee) {
+        return `
+                <div class="detail-grid">
+                    <div class="detail-row">
+                        <span class="detail-label">Mã nhân viên:</span>
+                        <span class="detail-value">${employee.id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Họ tên:</span>
+                        <span class="detail-value">${employee.name}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Giới tính:</span>
+                        <span class="detail-value">${employee.gender || 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Ngày sinh:</span>
+                        <span class="detail-value">${employee.birthDate ? formatDate(employee.birthDate) : 'Chưa cập nhật'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Số điện thoại:</span>
+                        <span class="detail-value">${employee.phone}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Ngày tham gia:</span>
+                        <span class="detail-value">${formatDate(employee.joinDate)}</span>
+                    </div>
+                </div>
+            `;
+    }
+
+    function saveEmployee() {
+        const form = {
+            name: document.getElementById('employee-name').value,
+            gender: document.getElementById('employee-gender').value,
+            birthDate: document.getElementById('employee-birth-date').value,
+            phone: document.getElementById('employee-phone').value,
+            joinDate: document.getElementById('employee-join-date').value
+        };
+
+        if (!form.name || !form.phone) {
+            alert('Vui lòng nhập đầy đủ thông tin bắt buộc');
+            return;
+        }
+
+        if (currentModal === 'employee-add') {
+            form.id = generateId('NV', data.employees);
+            data.employees.push(form);
+        } else if (currentModal === 'employee-edit') {
+            const index = data.employees.findIndex(e => e.id === editingItem.id);
+            if (index !== -1) {
+                data.employees[index] = { ...form, id: editingItem.id };
+            }
+        }
+
+        renderEmployees();
+        closeModal();
+    }
+
+    // Confirm delete modal
+    function openConfirmModal(message, onConfirm) {
+        document.getElementById('confirm-message').textContent = message;
+        document.getElementById('confirm-delete-btn').onclick = () => {
+            onConfirm();
+            closeConfirmModal();
+        };
+        document.getElementById('confirm-modal').classList.add('show');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirm-modal').classList.remove('show');
+    }
+
+    // Import/Export functions
+    function importExcel(type) {
+        alert(`Tính năng nhập Excel cho ${type} đang được phát triển`);
+    }
+
+    function exportExcel(type) {
+        alert(`Tính năng xuất Excel cho ${type} đang được phát triển`);
+    }
+
+    function exportPDF(type) {
+        alert(`Tính năng xuất PDF cho ${type} đang được phát triển`);
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    document.getElementById('confirm-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeConfirmModal();
+        }
+    });
+
+    // Handle keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (document.getElementById('modal-overlay').classList.contains('show')) {
+                closeModal();
+            }
+            if (document.getElementById('confirm-modal').classList.contains('show')) {
+                closeConfirmModal();
+            }
+        }
+    });
+</script>
+</body>
+</html>

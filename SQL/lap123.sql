@@ -66,6 +66,30 @@ LOCK TABLES `ct_phieuxuat` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `hedieuhanh`
+--
+
+DROP TABLE IF EXISTS `hedieuhanh`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `hedieuhanh` (
+  `MAHDH` varchar(10) NOT NULL,
+  `TENHDH` varchar(45) DEFAULT NULL,
+  `TRANGTHAI` int DEFAULT NULL,
+  PRIMARY KEY (`MAHDH`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `hedieuhanh`
+--
+
+LOCK TABLES `hedieuhanh` WRITE;
+/*!40000 ALTER TABLE `hedieuhanh` DISABLE KEYS */;
+/*!40000 ALTER TABLE `hedieuhanh` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `khachhang`
 --
 
@@ -212,18 +236,18 @@ DROP TABLE IF EXISTS `sanpham`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sanpham` (
-  `MASP` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `masp` bigint NOT NULL AUTO_INCREMENT,
   `MANCC` varchar(10) DEFAULT NULL,
   `TENSP` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `HINHANHSP` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `XUATXU` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `CHIP` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `HEDIEUHANH` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `KICHTHUOCMAN` varchar(50) DEFAULT NULL,
-  `THUONGHIEU` varchar(100) DEFAULT NULL,
+  `xuatxu` varchar(255) DEFAULT NULL,
+  `chip` varchar(255) DEFAULT NULL,
+  `hedieuhanh` varchar(255) DEFAULT NULL,
+  `kichthuocman` varchar(255) DEFAULT NULL,
+  `thuonghieu` varchar(255) DEFAULT NULL,
   `TRANGTHAI` int DEFAULT NULL,
-  PRIMARY KEY (`MASP`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`masp`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -232,7 +256,32 @@ CREATE TABLE `sanpham` (
 
 LOCK TABLES `sanpham` WRITE;
 /*!40000 ALTER TABLE `sanpham` DISABLE KEYS */;
+INSERT INTO `sanpham` VALUES (1,NULL,'Laptop Lenovo i12','images','China','i12 26th','Window','21','Lenovo',1),(2,NULL,'Mac i5','images','American','i5','Macbook','21','Apple',1),(3,NULL,'Mac pro','images','USA','i7','Macbook','21','Apple',1);
 /*!40000 ALTER TABLE `sanpham` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `thuonghieu`
+--
+
+DROP TABLE IF EXISTS `thuonghieu`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `thuonghieu` (
+  `MATHUONGHIEU` varchar(10) NOT NULL,
+  `TENTHUONGHIEU` varchar(45) DEFAULT NULL,
+  `TRANGTHAI` int DEFAULT NULL,
+  PRIMARY KEY (`MATHUONGHIEU`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `thuonghieu`
+--
+
+LOCK TABLES `thuonghieu` WRITE;
+/*!40000 ALTER TABLE `thuonghieu` DISABLE KEYS */;
+/*!40000 ALTER TABLE `thuonghieu` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -244,4 +293,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-21 15:56:17
+-- Dump completed on 2025-09-24 13:06:34

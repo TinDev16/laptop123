@@ -5,12 +5,6 @@ import com.example.demo.Service.SanphamService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Controller
 public class SanphamController {
@@ -22,43 +16,68 @@ public class SanphamController {
         this.sanphamService = sanphamService;
     }
 
-    @GetMapping("/sanpham")
-    public String listSanpham(Model model) {
-        model.addAttribute("sanpham", sanphamService.getAllSanpham());
+    @GetMapping("/")
+    public String home() {
         return "index";
     }
 
+    @GetMapping("/sanpham_add")
+    public String sanpham_edit() {
+        return "sanpham/add";
+    }
+
+    @GetMapping("/sanpham")
+    public String sanpham(Model model) {
+        model.addAttribute("sanpham", sanphamService.getAllSanpham());
+        return "sanpham/index";
+    }
+
+    @PostMapping("/register")
+    public String list(Model model) {
+         return "sanpham/add";
+    }
+
+
+
     @GetMapping("/sanpham/create")
-    public String newSanpham(Model model) {
+    public String createSanpham(Model model) {
         Sanpham sanpham = new Sanpham();
-        model.addAttribute("sanpham", sanpham);
+//        model.addAttribute("sanpham", sanpham);
         return "create_Sanpham";
     }
 
-    @PostMapping("/sanpham")
-    public String createSanpham(@ModelAttribute("sanpham") Sanpham sanpham,
-                                @RequestParam("HINHANHSP") MultipartFile file) throws IOException {
-        if (!file.isEmpty()) {
-            String fileName = file.getOriginalFilename();
+//    @PostMapping("/sanpham")
+//    public String saveSanpham(@ModelAttribute("sanpham") Sanpham sanpham,
+//                              @RequestParam("file") MultipartFile file) {
+//        try {
+//            if (!file.isEmpty()) {
+//                // Tạo thư mục lưu file
+//                String uploadDir = "uploads/";
+//
+//                // Lấy tên file gốc
+//                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+//
+//                // Tạo path lưu
+//                Path path = Paths.get(uploadDir + fileName);
+//
+//                // Nếu thư mục chưa có thì tạo
+//                Files.createDirectories(path.getParent());
+//
+//                // Lưu file
+//                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+//
+//                // Lưu đường dẫn vào entity
+//                sanpham.setHINHANHSP(fileName);
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        sanphamService.saveSanpham(sanpham);
+//        return "redirect:/sanpham";
+//    }
+//
 
-            // Thư mục static/images
-            Path uploadDir = Paths.get("src/main/resources/static/images");
-
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            // Ghi file vào static/images
-            Path filePath = uploadDir.resolve(fileName);
-            Files.write(filePath, file.getBytes());
-
-            // Lưu tên file vào DB
-            sanpham.setHINHANHSP(fileName);
-        }
-
-        sanphamService.createSanpham(sanpham);
-        return "redirect:/sanpham";
-    }
 
 
 

@@ -35,326 +35,68 @@
 
 <!-- Navigation -->
 <nav class="nav">
-    <div class="nav-content">
-        <div class="nav-tab active" data-tab="products">
-            <i class="fas fa-box"></i>
-            <span>Sản phẩm</span>
+        <div class="nav-content">
+            <a class="nav-tab active" data-tab="products" href="/">
+                <i class="fas fa-home"></i>
+                <span>Trang chủ</span>
+            </a>
+
+            <a class="nav-tab" data-tab="products" href="/sanpham">
+                <i class="fas fa-box"></i>
+                <span>Sản phẩm</span>
+            </a>
+
+            <a class="nav-tab" data-tab="import-slips">
+                <i class="fas fa-arrow-down"></i>
+                <span>Phiếu nhập</span>
+            </a>
+
+            <a class="nav-tab" data-tab="export-slips">
+                <i class="fas fa-arrow-up"></i>
+                <span>Phiếu xuất</span>
+            </a>
+
+            <a class="nav-tab" data-tab="customers">
+                <i class="fas fa-users"></i>
+                <span>Khách hàng</span>
+            </a>
+
+            <a class="nav-tab" data-tab="suppliers">
+                <i class="fas fa-building"></i>
+                <span>Nhà cung cấp</span>
+            </a>
+
+            <a class="nav-tab" data-tab="employees">
+                <i class="fas fa-user-tie"></i>
+                <span>Nhân viên</span>
+            </a>
+
+            <a class="nav-tab" data-tab="inventory">
+                <i class="fas fa-warehouse"></i>
+                <span>Tồn kho</span>
+            </a>
+
+            <a class="nav-tab" data-tab="os">
+                <i class="fas fa-desktop"></i>
+                <span>Hệ điều hành</span>
+            </a>
+
+            <a class="nav-tab" data-tab="brands">
+                <i class="fas fa-tags"></i>
+                <span>Thương hiệu</span>
+            </a>
         </div>
-        <div class="nav-tab" data-tab="import-slips">
-            <i class="fas fa-arrow-down"></i>
-            <span>Phiếu nhập</span>
-        </div>
-        <div class="nav-tab" data-tab="export-slips">
-            <i class="fas fa-arrow-up"></i>
-            <span>Phiếu xuất</span>
-        </div>
-        <div class="nav-tab" data-tab="customers">
-            <i class="fas fa-users"></i>
-            <span>Khách hàng</span>
-        </div>
-        <div class="nav-tab" data-tab="suppliers">
-            <i class="fas fa-building"></i>
-            <span>Nhà cung cấp</span>
-        </div>
-        <div class="nav-tab" data-tab="employees">
-            <i class="fas fa-user-tie"></i>
-            <span>Nhân viên</span>
-        </div>
-        <div class="nav-tab" data-tab="inventory">
-            <i class="fas fa-warehouse"></i>
-            <span>Tồn kho</span>
-        </div>
-    </div>
 </nav>
 
 <!-- Main Content -->
 <main class="main">
-    <!-- Products Tab -->
-    <div id="products" class="tab-content active">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Sản phẩm</h2>
-            <div class="page-actions">
-                <a th:href="@{/sanpham/create}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Thêm sản phẩm
-                </a>
-                <a href="#" class="btn btn-success" onclick="exportExcel('products')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
-            </div>
-        </div>
-
-        <div class="search-filters">
-            <div class="search-input">
-                <i class="fas fa-search"></i>
-                <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm..." onkeyup="filterProducts()">
-            </div>
-            <select id="brand-filter" class="filter-select" onchange="filterProducts()">
-                <option value="">Tất cả thương hiệu</option>
-            </select>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã SP</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Hệ điều hành</th>
-                    <th>Thương hiệu</th>
-                    <th>Trang thái</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="products-table">
-                    <tr th:each="sp : ${sanpham}">
-                        <td class="font-semibold" th:text="${sp.MASP}"></td>
-                        <td th:text="${sp.TENSP}"></td>
-                        <td th:text="${sp.HEDIEUHANH}"></td>
-                        <td th:text="${sp.THUONGHIEU}"></td>
-                        <td th:text="${sp.TRANGTHAI == 1 ? 'Mở bán' : 'Đóng'}"></td>
-                        <td>
-                            <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/sanpham/view/{id}(id=${sp.MASP})}"  title="Xem chi tiết">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a class="btn btn-icon btn-outline" title="Sửa">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-
-            </table>
+    <!-- Home Tab -->
+    <div id="home" class="tab-content active">
+        <div class="welcome-section">
+            <h1 style="text-align: center">Chào mừng đến với Hệ thống Quản lý Cửa hàng Laptop</h1>
+            <p style="text-align: center">Hệ thống giúp bạn quản lý sản phẩm, khách hàng, nhà cung cấp, nhân viên và các hoạt động kinh doanh một cách hiệu quả.</p>
         </div>
     </div>
-
-    <!-- Import Slips Tab -->
-    <div id="import-slips" class="tab-content">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Phiếu nhập</h2>
-            <div class="page-actions">
-                <button class="btn btn-primary" onclick="openModal('import-add')">
-                    <i class="fas fa-plus"></i>
-                    Thêm phiếu nhập
-                </button>
-                <button class="btn btn-success" onclick="exportExcel('import-slips')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </button>
-                <button class="btn btn-danger" onclick="exportPDF('import-slips')">
-                    <i class="fas fa-file-pdf"></i>
-                    Xuất PDF
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Mã phiếu</th>
-                    <th>Nhà cung cấp</th>
-                    <th>Nhân viên</th>
-                    <th>Thời gian</th>
-                    <th>Tổng tiền</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="import-slips-table">
-                <!-- Import slips will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Export Slips Tab -->
-    <div id="export-slips" class="tab-content">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Phiếu xuất</h2>
-            <div class="page-actions">
-                <button class="btn btn-primary" onclick="openModal('export-add')">
-                    <i class="fas fa-plus"></i>
-                    Thêm phiếu xuất
-                </button>
-                <button class="btn btn-success" onclick="exportExcel('export-slips')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </button>
-                <button class="btn btn-danger" onclick="exportPDF('export-slips')">
-                    <i class="fas fa-file-pdf"></i>
-                    Xuất PDF
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Mã phiếu</th>
-                    <th>Khách hàng</th>
-                    <th>Nhân viên</th>
-                    <th>Thời gian</th>
-                    <th>Tổng tiền</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="export-slips-table">
-                <!-- Export slips will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Customers Tab -->
-    <div id="customers" class="tab-content">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Khách hàng</h2>
-            <div class="page-actions">
-                <button class="btn btn-primary" onclick="openModal('customer-add')">
-                    <i class="fas fa-plus"></i>
-                    Thêm mới
-                </button>
-                <button class="btn btn-warning" onclick="importExcel('customers')">
-                    <i class="fas fa-upload"></i>
-                    Nhập Excel
-                </button>
-                <button class="btn btn-success" onclick="exportExcel('customers')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã KH</th>
-                    <th>Tên khách hàng</th>
-                    <th>Số điện thoại</th>
-                    <th>Địa chỉ</th>
-                    <th>Ngày tham gia</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="customers-table">
-                <!-- Customers will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Suppliers Tab -->
-    <div id="suppliers" class="tab-content">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Nhà cung cấp</h2>
-            <div class="page-actions">
-                <button class="btn btn-primary" onclick="openModal('supplier-add')">
-                    <i class="fas fa-plus"></i>
-                    Thêm mới
-                </button>
-                <button class="btn btn-warning" onclick="importExcel('suppliers')">
-                    <i class="fas fa-upload"></i>
-                    Nhập Excel
-                </button>
-                <button class="btn btn-success" onclick="exportExcel('suppliers')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã NCC</th>
-                    <th>Tên nhà cung cấp</th>
-                    <th>Số điện thoại</th>
-                    <th>Địa chỉ</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="suppliers-table">
-                <!-- Suppliers will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Employees Tab -->
-    <div id="employees" class="tab-content">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Nhân viên</h2>
-            <div class="page-actions">
-                <button class="btn btn-primary" onclick="openModal('employee-add')">
-                    <i class="fas fa-plus"></i>
-                    Thêm mới
-                </button>
-                <button class="btn btn-warning" onclick="importExcel('employees')">
-                    <i class="fas fa-upload"></i>
-                    Nhập Excel
-                </button>
-                <button class="btn btn-success" onclick="exportExcel('employees')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã NV</th>
-                    <th>Họ tên</th>
-                    <th>Giới tính</th>
-                    <th>Ngày sinh</th>
-                    <th>Số điện thoại</th>
-                    <th>Ngày tham gia</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="employees-table">
-                <!-- Employees will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Inventory Tab -->
-    <div id="inventory" class="tab-content">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Tồn kho</h2>
-        </div>
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã SP</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Thương hiệu</th>
-                    <th>Tồn kho</th>
-                    <th>Giá nhập</th>
-                    <th>Giá bán</th>
-                </tr>
-                </thead>
-                <tbody id="inventory-table">
-                <!-- Inventory will be populated here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</main>
 
 <!-- Modal -->
 <div id="modal-overlay" class="modal-overlay">
@@ -420,6 +162,6 @@
         </div>
     </div>
 </div>
-<script src="script.js" type="text/javascript"></script>
+<!--<script src="script.js" type="text/javascript"></script>-->
 </body>
 </html>

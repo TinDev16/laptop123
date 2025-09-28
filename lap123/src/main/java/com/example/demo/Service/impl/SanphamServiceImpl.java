@@ -23,7 +23,7 @@ public class SanphamServiceImpl implements SanphamService {
     }
 
     @Override
-    public Sanpham createSanpham(Sanpham sanpham) {
+    public Sanpham saveSanpham(Sanpham sanpham) {
         return sanphamRepository.save(sanpham);
     }
 

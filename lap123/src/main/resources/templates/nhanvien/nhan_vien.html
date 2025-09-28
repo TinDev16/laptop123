@@ -35,7 +35,7 @@
 <!-- Navigation -->
 <nav class="nav">
     <div class="nav-content">
-        <div class="nav-tab active" data-tab="products" window.location.href='sanpham.html'>
+        <div class="nav-tab" data-tab="products">
             <i class="fas fa-box"></i>
             <span>Sản phẩm</span>
         </div>
@@ -55,7 +55,7 @@
             <i class="fas fa-building"></i>
             <span>Nhà cung cấp</span>
         </div>
-        <div class="nav-tab" data-tab="employees" onclick="window.location.href='nhanvien.html'">
+        <div class="nav-tab" data-tab="employees">
             <i class="fas fa-user-tie"></i>
             <span>Nhân viên</span>
         </div>
@@ -292,7 +292,7 @@
     </div>
 
     <!-- Employees Tab -->
-    <div id="employees" class="tab-content" th:if="${activeTab == 'nhanvien'}">
+    <div id="employees" class="tab-content">
         <div class="page-header">
             <h2 class="page-title">Quản lý Nhân viên</h2>
             <div class="page-actions">

@@ -7,6 +7,6 @@ import java.util.List;
 public interface SanphamService {
     List<Sanpham> getAllSanpham();
 
-    Sanpham createSanpham(Sanpham sanpham);
+    Sanpham saveSanpham(Sanpham sanpham);
 
 }

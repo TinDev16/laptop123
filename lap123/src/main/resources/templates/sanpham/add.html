@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Thêm sản phẩm mới</title>
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="canonical" th:href="@{/sanpham/create}" />
-    <link rel="stylesheet" th:href="@{/style.css}">
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -100,22 +98,13 @@
 <body>
 <div class="form-container">
     <h1>Thêm sản phẩm mới</h1>
-    <form th:action="@{/sanpham}" th:object="${sanpham}" method="POST" enctype="multipart/form-data" autocomplete="off">
-<!--        <div class="form-group">-->
-<!--            <label for="MASP">Mã sản phẩm <span class="required">*</span></label>-->
-<!--            <input-->
-<!--                    type="text"-->
-<!--                    id="MASP"-->
-<!--                    th:field="*{MASP}"-->
-<!--                    placeholder="Nhập mã sản phẩm" required-->
-<!--            >-->
-<!--        </div>-->
+    <form th:action="@{/register}" method="POST" enctype="multipart/form-data" autocomplete="off">
         <div class="form-group">
             <label for="TENSP">Tên sản phẩm <span class="required">*</span></label>
             <input type="text"
                    id="TENSP"
                    th:field="*{TENSP}"
-                   placeholder="Nhập tên sản phẩm" required
+                    placeholder="Nhập tên sản phẩm" required
             >
         </div>
         <div class="form-group">
@@ -124,6 +113,7 @@
                    name="file"
                    accept="image/*"
                    onchange="previewImage(event)"
+                   required
             >
             <div class="image-preview" id="imagePreview"></div>
         </div>
@@ -176,7 +166,7 @@
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
-            <a th:href="@{/sanpham}" class="btn btn-secondary">Hủy</a>
+            <a th:href="@{/templates/sanpham}" class="btn btn-secondary">Hủy</a>
         </div>
     </form>
 </div>

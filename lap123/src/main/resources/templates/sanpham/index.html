@@ -139,13 +139,13 @@
                         <td th:text="${sp.TRANGTHAI == 1 ? 'Mở bán' : 'Đóng'}"></td>
                         <td>
                             <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/sanpham/view/{id}(id=${sp.MASP})}"  title="Xem chi tiết">
+                                <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${sp.MASP})}" title="Xem chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a class="btn btn-icon btn-outline" title="Sửa">
+                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit/{id}(id=${sp.MASP})}">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa">
+                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete/{id}(id=${sp.MASP})}">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </div>

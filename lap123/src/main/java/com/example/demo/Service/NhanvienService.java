@@ -9,5 +9,4 @@ public interface NhanvienService {
 
     List<Nhanvien> getAllNhanvien();
 
-
 }

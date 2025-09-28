@@ -98,7 +98,7 @@
 <body>
 <div class="form-container">
     <h1>Thêm sản phẩm mới</h1>
-    <form th:action="@{/register}" method="POST" enctype="multipart/form-data" autocomplete="off">
+    <form th:action="@{/sanpham}" th:object="${sanpham}" method="POST" enctype="multipart/form-data" autocomplete="off">
         <div class="form-group">
             <label for="TENSP">Tên sản phẩm <span class="required">*</span></label>
             <input type="text"
@@ -159,14 +159,14 @@
         </div>
         <div class="form-group">
             <label for="TRANGTHAI">Trạng thái</label>
-            <select id="TRANGTHAI">
+            <select id="TRANGTHAI" name="trangThai" th:field="*{TRANGTHAI}">
                 <option value="1">Mở bán</option>
                 <option value="0">Đóng</option>
             </select>
-        </div>
+        </div>        
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
-            <a th:href="@{/templates/sanpham}" class="btn btn-secondary">Hủy</a>
+            <a th:href="@{/sanpham}" class="btn btn-secondary">Hủy</a>
         </div>
     </form>
 </div>

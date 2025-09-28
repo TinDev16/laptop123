@@ -10,9 +10,9 @@ public class Sanpham {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long MASP;
+    private int MASP;
 
-    @Column(name = "TENSP", nullable = false)
+    @Column(name = "TENSP")
     private String TENSP;
 
     @Column(name = "HINHANHSP")
@@ -52,11 +52,11 @@ public class Sanpham {
         this.TRANGTHAI = TRANGTHAI;
     }
 
-    public Long getMASP() {
+    public int getMASP() {
         return MASP;
     }
 
-    public void setMASP(Long MASP) {
+    public void setMASP(int MASP) {
         this.MASP = MASP;
     }
 

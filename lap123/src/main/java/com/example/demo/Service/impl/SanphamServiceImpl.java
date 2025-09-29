@@ -1,5 +1,6 @@
 package com.example.demo.Service.impl;
 
+import com.example.demo.Entity.Nhanvien;
 import com.example.demo.Entity.Sanpham;
 import com.example.demo.Repository.SanphamRepository;
 import com.example.demo.Service.SanphamService;
@@ -68,8 +69,6 @@ public class SanphamServiceImpl implements SanphamService {
     public void deleteSanpham(int id) {
         sanphamRepository.deleteById(id);
     }
-
-
 
 
 }

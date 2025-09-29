@@ -41,54 +41,52 @@
             <span>Trang chủ</span>
         </a>
 
-        <a class="nav-tab active" data-tab="products" href="sanpham">
+        <a class="nav-tab active" data-tab="products" href="/sanpham">
             <i class="fas fa-box"></i>
             <span>Sản phẩm</span>
         </a>
 
-        <a class="nav-tab" data-tab="import-slips">
+        <a class="nav-tab" data-tab="import-slips" href="/phieunhap">
             <i class="fas fa-arrow-down"></i>
             <span>Phiếu nhập</span>
         </a>
 
-        <a class="nav-tab" data-tab="export-slips">
+        <a class="nav-tab" data-tab="export-slips" href="/phieuxuat">
             <i class="fas fa-arrow-up"></i>
             <span>Phiếu xuất</span>
         </a>
 
-        <a class="nav-tab" data-tab="customers">
+        <a class="nav-tab" data-tab="customers" href="/khachhang">
             <i class="fas fa-users"></i>
             <span>Khách hàng</span>
         </a>
 
-        <a class="nav-tab" data-tab="suppliers">
+        <a class="nav-tab" data-tab="suppliers" href="/nhacungcap">
             <i class="fas fa-building"></i>
             <span>Nhà cung cấp</span>
         </a>
 
-        <a class="nav-tab" data-tab="employees" href="nhanvien">
+        <a class="nav-tab" data-tab="employees" href="/nhanvien">
             <i class="fas fa-user-tie"></i>
             <span>Nhân viên</span>
         </a>
 
-        <a class="nav-tab" data-tab="inventory">
-            <i class="fas fa-warehouse"></i>
-            <span>Tồn kho</span>
+        <a class="nav-tab" data-tab="inventory" href="/tonkho">
+                <i class="fas fa-warehouse"></i>
+        <span>Tồn kho</span>
         </a>
 
-        <a class="nav-tab" data-tab="os">
+        <a class="nav-tab" data-tab="os" href="/hedieuhanh">
             <i class="fas fa-desktop"></i>
             <span>Hệ điều hành</span>
         </a>
 
-        <a class="nav-tab" data-tab="brands">
+        <a class="nav-tab" data-tab="brands" href="/thuonghieu">
             <i class="fas fa-tags"></i>
             <span>Thương hiệu</span>
         </a>
     </div>
-
 </nav>
-
 <!-- Main Content -->
 <main class="main">
     <!-- Products Tab -->
@@ -142,10 +140,10 @@
                                 <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${sp.MASP})}" title="Xem chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit/{id}(id=${sp.MASP})}">
+                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete/{id}(id=${sp.MASP})}">
+                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-sanpham/{id}(id=${sp.MASP})}">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </div>

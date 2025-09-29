@@ -36,6 +36,7 @@ public class SanphamController {
         return "sanpham/index";
     }
 
+//    TẠO SP MỚI
     @GetMapping("/sanpham/create")
     public String newSanpham(Model model) {
         Sanpham sanpham = new Sanpham();
@@ -75,13 +76,16 @@ public class SanphamController {
         return "redirect:/sanpham";
     }
 
-    @GetMapping("/edit/{id}")
+//
+
+//  SỬA SP
+    @GetMapping("/edit-sanpham/{id}")
     public String editSanpham(@PathVariable("id") int id, Model model) {
         model.addAttribute("sanpham", sanphamService.getSanphamById(id));
         return "sanpham/edit";
     }
 
-    @PostMapping("/update")
+    @PostMapping("/update-sanpham")
     public String updateSanpham(@ModelAttribute Sanpham sanpham) {
         sanphamService.updateSanpham(sanpham);
         return "redirect:/sanpham";
@@ -92,8 +96,10 @@ public class SanphamController {
         model.addAttribute("sanpham", sanphamService.getSanphamById(id));
         return "sanpham/detail";
     }
+//
 
-    @GetMapping("/delete/{id}")
+//    XÓA SP
+    @GetMapping("/delete-sanpham/{id}")
     public String deleteSanpham(@PathVariable("id") int id) {
         sanphamService.deleteSanpham(id);
         return "redirect:/sanpham";

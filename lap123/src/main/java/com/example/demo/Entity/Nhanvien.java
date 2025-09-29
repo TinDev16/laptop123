@@ -1,8 +1,10 @@
 package com.example.demo.Entity;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.lang.model.element.Name;
+import java.util.Date;
 
 @Entity
 @Table(name = "nhanvien")
@@ -10,7 +12,7 @@ public class Nhanvien {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long MANV;
+    private int MANV;
 
     @Column(name = "HOTEN")
     private String HOTEN;
@@ -19,13 +21,15 @@ public class Nhanvien {
     private String GIOITINH;
 
     @Column(name = "NGAYSINH")
-    private String NGAYSINH;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date NGAYSINH;
 
     @Column(name = "SDT")
     private String SDT;
 
     @Column(name = "NGAYTHAMGIA")
-    private String NGAYTHAMGIA;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date NGAYTHAMGIA;
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
@@ -34,7 +38,7 @@ public class Nhanvien {
 
     }
 
-    public Nhanvien(String HOTEN, String GIOITINH, String NGAYSINH, String SDT, String NGAYTHAMGIA, int TRANGTHAI) {
+    public Nhanvien(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI) {
         this.HOTEN = HOTEN;
         this.GIOITINH = GIOITINH;
         this.NGAYSINH = NGAYSINH;
@@ -43,11 +47,11 @@ public class Nhanvien {
         this.TRANGTHAI = TRANGTHAI;
     }
 
-    public Long getMANV() {
+    public int getMANV() {
         return MANV;
     }
 
-    public void setMANV(Long MANV) {
+    public void setMANV(int MANV) {
         this.MANV = MANV;
     }
 
@@ -67,11 +71,11 @@ public class Nhanvien {
         this.GIOITINH = GIOITINH;
     }
 
-    public String getNGAYSINH() {
+    public Date getNGAYSINH() {
         return NGAYSINH;
     }
 
-    public void setNGAYSINH(String NGAYSINH) {
+    public void setNGAYSINH(Date NGAYSINH) {
         this.NGAYSINH = NGAYSINH;
     }
 
@@ -83,11 +87,11 @@ public class Nhanvien {
         this.SDT = SDT;
     }
 
-    public String getNGAYTHAMGIA() {
+    public Date getNGAYTHAMGIA() {
         return NGAYTHAMGIA;
     }
 
-    public void setNGAYTHAMGIA(String NGAYTHAMGIA) {
+    public void setNGAYTHAMGIA(Date NGAYTHAMGIA) {
         this.NGAYTHAMGIA = NGAYTHAMGIA;
     }
 

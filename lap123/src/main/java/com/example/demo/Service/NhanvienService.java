@@ -9,4 +9,14 @@ public interface NhanvienService {
 
     List<Nhanvien> getAllNhanvien();
 
+    Nhanvien createNhanvien(Nhanvien nhanvien);
+
+    Nhanvien saveNhanvien(Nhanvien nhanvien);
+
+    void deleteNhanvien(int id);
+
+    Nhanvien getNhanvienById(int id);
+
+    Nhanvien updateNhanvien(Nhanvien nhanvien);
+
 }

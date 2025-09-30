@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Controller
 public class SanphamController {
@@ -22,43 +23,126 @@ public class SanphamController {
         this.sanphamService = sanphamService;
     }
 
-    @GetMapping("/sanpham")
-    public String listSanpham(Model model) {
-        model.addAttribute("sanpham", sanphamService.getAllSanpham());
+//    index
+    @GetMapping("/")
+    public String home() {
         return "index";
     }
 
+//    trang chủ sanpham
+    @GetMapping("/sanpham")
+    public String sanpham(Model model) {
+        model.addAttribute("sanpham", sanphamService.getAllSanpham());
+        return "sanpham/index";
+    }
+
+//    TẠO SP MỚI
     @GetMapping("/sanpham/create")
     public String newSanpham(Model model) {
         Sanpham sanpham = new Sanpham();
         model.addAttribute("sanpham", sanpham);
-        return "create_Sanpham";
+        return "sanpham/add";
     }
+
 
     @PostMapping("/sanpham")
-    public String createSanpham(@ModelAttribute("sanpham") Sanpham sanpham,
-                                @RequestParam("HINHANHSP") MultipartFile file) throws IOException {
-        if (!file.isEmpty()) {
-            String fileName = file.getOriginalFilename();
+    public String saveSanpham(@ModelAttribute("sanpham") Sanpham sanpham,
+                              @RequestParam("file") MultipartFile file) {
+        try {
+            if (!file.isEmpty()) {
+                // Tạo thư mục lưu file
+                String uploadDir = "uploads/";
 
-            // Thư mục static/images
-            Path uploadDir = Paths.get("src/main/resources/static/images");
+                // Lấy tên file gốc
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
+                // Tạo path lưu
+                Path path = Paths.get(uploadDir + fileName);
+
+                // Nếu thư mục chưa có thì tạo
+                Files.createDirectories(path.getParent());
+
+                // Lưu file
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+                // Lưu đường dẫn vào entity
+                sanpham.setHINHANHSP(fileName);
             }
-
-            // Ghi file vào static/images
-            Path filePath = uploadDir.resolve(fileName);
-            Files.write(filePath, file.getBytes());
-
-            // Lưu tên file vào DB
-            sanpham.setHINHANHSP(fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        sanphamService.createSanpham(sanpham);
+        sanphamService.saveSanpham(sanpham);
         return "redirect:/sanpham";
     }
+
+//
+
+//  SỬA SP
+    @GetMapping("/edit-sanpham/{id}")
+    public String editSanpham(@PathVariable("id") int id, Model model) {
+        model.addAttribute("sanpham", sanphamService.getSanphamById(id));
+        return "sanpham/edit";
+    }
+
+    @PostMapping("/update-sanpham")
+    public String updateSanpham(@ModelAttribute Sanpham sanpham) {
+        sanphamService.updateSanpham(sanpham);
+        return "redirect:/sanpham";
+    }
+
+    @GetMapping("/view/{id}")
+    public String viewSanpham(@PathVariable("id") int id, Model model) {
+        model.addAttribute("sanpham", sanphamService.getSanphamById(id));
+        return "sanpham/detail";
+    }
+//
+
+//    XÓA SP
+    @GetMapping("/delete-sanpham/{id}")
+    public String deleteSanpham(@PathVariable("id") int id) {
+        sanphamService.deleteSanpham(id);
+        return "redirect:/sanpham";
+    }
+
+//    @PostMapping("/update/{id}")
+//    public String updateSanpham(@PathVariable("id") int id,
+//                                @ModelAttribute("sanpham") Sanpham sanpham,
+//                                @RequestParam("file") MultipartFile file) {
+//        try {
+//            // Lấy sản phẩm cũ từ DB
+//            Sanpham existing = sanphamService.getSanphamById(id);
+//
+//            // Cập nhật các field
+//            existing.setTENSP(sanpham.getTENSP());
+//            existing.setXUATXU(sanpham.getXUATXU());
+//            existing.setCHIP(sanpham.getCHIP());
+//            existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
+//            existing.setKICHTHUOCMAN(sanpham.getKICHTHUOCMAN());
+//            existing.setTHUONGHIEU(sanpham.getTHUONGHIEU());
+//            existing.setTRANGTHAI(sanpham.getTRANGTHAI());
+//
+//            // Nếu có file ảnh mới thì lưu, ngược lại giữ ảnh cũ
+//            if (!file.isEmpty()) {
+//                String uploadDir = "uploads/";
+//                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+//                Path path = Paths.get(uploadDir + fileName);
+//
+//                Files.createDirectories(path.getParent());
+//                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+//
+//                existing.setHINHANHSP(fileName);
+//            }
+//
+//            // Lưu lại vào DB
+//            sanphamService.updateSanpham(existing);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return "redirect:/sanpham";
+//    }
 
 
 

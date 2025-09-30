@@ -2,10 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thêm sản phẩm mới</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="canonical" th:href="@{/sanpham/create}" />
-    <link rel="stylesheet" th:href="@{/style.css}">
+    <title>Sửa sản phẩm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -99,39 +97,44 @@
 </head>
 <body>
 <div class="form-container">
-    <h1>Thêm sản phẩm mới</h1>
-    <form th:action="@{/sanpham}" th:object="${sanpham}" method="POST" enctype="multipart/form-data" autocomplete="off">
-<!--        <div class="form-group">-->
-<!--            <label for="MASP">Mã sản phẩm <span class="required">*</span></label>-->
-<!--            <input-->
-<!--                    type="text"-->
-<!--                    id="MASP"-->
-<!--                    th:field="*{MASP}"-->
-<!--                    placeholder="Nhập mã sản phẩm" required-->
-<!--            >-->
-<!--        </div>-->
+    <h1>Sửa sản phẩm</h1>
+    <form th:action="@{/update-sanpham}" method="POST" enctype="multipart/form-data" autocomplete="off">
+
+        <input type="hidden" th:value="${sanpham.MASP}" NAME="MASP">
+
         <div class="form-group">
             <label for="TENSP">Tên sản phẩm <span class="required">*</span></label>
             <input type="text"
                    id="TENSP"
-                   th:field="*{TENSP}"
+                   th:value="${sanpham.TENSP}"
                    placeholder="Nhập tên sản phẩm" required
             >
         </div>
+
         <div class="form-group">
             <label>Hình ảnh sản phẩm</label>
+
+            <!-- Ảnh hiện tại -->
+            <div class="image-preview">
+                <img th:if="${sanpham.HINHANHSP != null}"
+                     th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}"
+                     alt="Ảnh sản phẩm hiện tại">
+            </div>
+
+            <!-- Input chọn file mới -->
             <input type="file"
                    name="file"
                    accept="image/*"
-                   onchange="previewImage(event)"
-            >
+                   onchange="previewImage(event)">
+            <!-- Xem trước ảnh mới -->
             <div class="image-preview" id="imagePreview"></div>
         </div>
+
         <div class="form-group">
             <label for="XUATXU">Xuất xứ</label>
             <input type="text"
                    id="XUATXU"
-                   th:field="*{XUATXU}"
+                   th:value="${sanpham.XUATXU}"
                    placeholder="Xuất xứ sản phẩm"
             >
         </div>
@@ -139,7 +142,7 @@
             <label for="CHIP">Chip xử lý</label>
             <input type="text"
                    id="CHIP"
-                   th:field="*{CHIP}"
+                   th:value="${sanpham.CHIP}"
                    placeholder="Loại chip"
             >
         </div>
@@ -154,7 +157,7 @@
         </div>
         <div class="form-group">
             <label for="KICHTHUOCMAN">Kích thước màn hình</label>
-            <input type="text" id="KICHTHUOCMAN" th:field="*{KICHTHUOCMAN}" placeholder="Kích thước màn hình">
+            <input type="text" id="KICHTHUOCMAN" th:value="${sanpham.KICHTHUOCMAN}" placeholder="Kích thước màn hình">
         </div>
         <div class="form-group">
             <label for="THUONGHIEU">Thương hiệu</label>
@@ -169,13 +172,13 @@
         </div>
         <div class="form-group">
             <label for="TRANGTHAI">Trạng thái</label>
-            <select id="TRANGTHAI">
+            <select id="TRANGTHAI" name="trangThai" th:value="${sanpham.TRANGTHAI}">
                 <option value="1">Mở bán</option>
                 <option value="0">Đóng</option>
             </select>
         </div>
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
+            <button type="submit" class="btn btn-primary">Cập nhật</button>
             <a th:href="@{/sanpham}" class="btn btn-secondary">Hủy</a>
         </div>
     </form>

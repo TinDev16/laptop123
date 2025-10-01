@@ -60,7 +60,7 @@
             <span>Khách hàng</span>
         </a>
 
-        <a class="nav-tab" data-tab="suppliers" href="/nhacungcap">
+        <a class="nav-tab" data-tab="suppliers" href="/ncc">
             <i class="fas fa-building"></i>
             <span>Nhà cung cấp</span>
         </a>
@@ -120,6 +120,7 @@
                     <th>Số điện thoại</th>
                     <th>Ngày tham gia</th>
                     <th>Trạng thái</th>
+                    <th>Thao tác</th>
                 </tr>
                 </thead>
                 <tbody id="employees-table">
@@ -130,7 +131,7 @@
                     <td th:text="${kh.NGAYSINH != null ? #dates.format(kh.NGAYSINH, 'dd/MM/yyyy') : ''}"></td>
                     <td th:text="${kh.SDT}"></td>
                     <td th:text="${kh.NGAYTHAMGIA != null ? #dates.format(kh.NGAYTHAMGIA, 'dd/MM/yyyy') : ''}"></td>
-                    <td th:text="${kh.TRANGTHAI == 0 ? 'Hoạt động' : 'Nghỉ việc'}"></td>
+                    <td th:text="${kh.TRANGTHAI == 0 ? 'Hoạt động' : 'Bị khóa'}"></td>
                     <td>
                         <div class="table-actions">
                             <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}">

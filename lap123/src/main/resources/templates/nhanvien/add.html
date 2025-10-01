@@ -49,17 +49,6 @@
             border-color: #4f46e5;
             outline: none;
         }
-        .form-group .image-preview {
-            margin-top: 8px;
-            display: flex;
-            justify-content: center;
-        }
-        .form-group .image-preview img {
-            max-width: 180px;
-            max-height: 120px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-        }
         .form-actions {
             margin-top: 28px;
             text-align: center;
@@ -98,17 +87,18 @@
 <body>
 <div class="form-container">
     <h1>Thêm Nhân viên</h1>
-    <form th:action="@{/nhanvien}" th:object="${nhanvien}" method="POST" enctype="multipart/form-data" autocomplete="off">
+    <form th:action="@{/nhanvien}" th:object="${nhanvien}" method="POST" autocomplete="off">
+        
         <div class="form-group">
-            <label>Tên nhân viên <span class="required">*</span></label>
+            <label for="HOTEN">Tên nhân viên <span class="required">*</span></label>
             <input type="text"
                    id="HOTEN"
                    th:field="*{HOTEN}"
-                   placeholder="Nhập tên nhân viên" required
-            >
+                   placeholder="Nhập tên nhân viên" required>
         </div>
+
         <div class="form-group">
-            <label>Giới tính</label>
+            <label for="GIOITINH">Giới tính</label>
             <select id="GIOITINH" th:field="*{GIOITINH}" class="form-control">
                 <option value="" disabled selected>-- Chọn giới tính --</option>
                 <option value="Nam">Nam</option>
@@ -118,32 +108,34 @@
         </div>
 
         <div class="form-group">
-        <label for="NGAYSINH">Ngày sinh</label>
+            <label for="NGAYSINH">Ngày sinh</label>
             <input type="date"
                    id="NGAYSINH"
-                   name="NGAYSINH"
-                   th:value="${nhanvien.NGAYSINH != null ? #dates.format(nhanvien.NGAYSINH, 'yyyy-MM-dd') : ''}"
-            >
+                   th:field="*{NGAYSINH}">
         </div>
 
         <div class="form-group">
-            <label>Số điện thoại</label>
+            <label for="SDT">Số điện thoại</label>
             <input type="text"
                    id="SDT"
                    th:field="*{SDT}"
-                   placeholder="Nhập số điện thoại"
-            >
-            </div>
-        <div class="form-group">
-            <label>Ngày tham gia</label>
-            <input type="date"
-                   id="NGAYTHAMGIA"
-                   name="NGAYTHAMGIA"
-                   th:value="${nhanvien.NGAYTHAMGIA != null ? #dates.format(nhanvien.NGAYTHAMGIA, 'yyyy-MM-dd') : ''}"
-            >
+                   placeholder="Nhập số điện thoại">
         </div>
 
+        <div class="form-group">
+            <label for="NGAYTHAMGIA">Ngày tham gia</label>
+            <input type="date"
+                   id="NGAYTHAMGIA"
+                   th:field="*{NGAYTHAMGIA}">
+        </div>
 
+        <div class="form-group">
+            <label for="TRANGTHAI">Trạng thái</label>
+            <select id="TRANGTHAI" name="trangThai" th:field="*{TRANGTHAI}">
+                <option value="0">Hoạt động</option>
+                <option value="1">Nghỉ việc</option>
+            </select>
+        </div>
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Thêm nhân viên</button>
@@ -151,22 +143,5 @@
         </div>
     </form>
 </div>
-<script>
-    function previewImage(event) {
-        const input = event.target;
-        const preview = document.getElementById('imagePreview');
-        preview.innerHTML = '';
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = "Xem trước hình ảnh";
-                preview.appendChild(img);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-</script>
 </body>
 </html>

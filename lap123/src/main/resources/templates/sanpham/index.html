@@ -61,7 +61,7 @@
             <span>Khách hàng</span>
         </a>
 
-        <a class="nav-tab" data-tab="suppliers" href="/nhacungcap">
+        <a class="nav-tab" data-tab="suppliers" href="/ncc">
             <i class="fas fa-building"></i>
             <span>Nhà cung cấp</span>
         </a>
@@ -129,7 +129,7 @@
                         <td th:text="${sp.TENSP}"></td>
                         <td th:text="${sp.HEDIEUHANH}"></td>
                         <td th:text="${sp.THUONGHIEU}"></td>
-                        <td th:text="${sp.TRANGTHAI == 1 ? 'Mở bán' : 'Đóng'}"></td>
+                        <td th:text="${sp.TRANGTHAI == 0 ? 'Mở bán' : 'Đóng'}"></td>
                         <td>
                             <div class="table-actions">
                                 <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${sp.MASP})}" title="Xem chi tiết">

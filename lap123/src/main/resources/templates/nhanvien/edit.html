@@ -98,59 +98,65 @@
 <body>
 <div class="form-container">
     <h1>Sửa nhân viên</h1>
-    <form th:action="@{/update-nhanvien}" method="POST" enctype="multipart/form-data" autocomplete="off">
+    <form th:action="@{/update-nhanvien}" th:object="${nhanvien}" method="POST" enctype="multipart/form-data" autocomplete="off">
 
-        <input type="hidden" th:value="${nhanvien.MANV}" NAME="MASP">
-
+        <!-- Hidden field -->
+        <input type="hidden" th:field="*{MANV}">
+    
         <div class="form-group">
-            <label for="TENSP">Tên nhân viên <span class="required">*</span></label>
+            <label for="HOTEN">Tên nhân viên <span class="required">*</span></label>
             <input type="text"
-                   id="TENSP"
-                   th:value="${nhanvien.HOTEN}"
-                   placeholder="Nhập tên nhân viên" required
-            >
+                   id="HOTEN"
+                   th:field="*{HOTEN}"
+                   placeholder="Nhập tên nhân viên" required>
         </div>
-
+    
         <div class="form-group">
             <label>Giới tính</label>
-            <select id="GIOITINH" th:field="*{nhanvien.GIOITINH}" class="form-control">
+            <select id="GIOITINH" th:field="*{GIOITINH}" class="form-control">
                 <option value="" disabled>-- Chọn giới tính --</option>
                 <option value="Nam">Nam</option>
                 <option value="Nữ">Nữ</option>
                 <option value="Khác">Khác</option>
             </select>
         </div>
-
+    
         <div class="form-group">
             <label for="NGAYSINH">Ngày sinh</label>
             <input type="date"
                    id="NGAYSINH"
-                   name="NGAYSINH"
-                   th:value="${nhanvien.NGAYSINH != null ? #dates.format(nhanvien.NGAYSINH, 'yyyy-MM-dd') : ''}"
-            >
+                   th:field="*{NGAYSINH}">
         </div>
-
+    
         <div class="form-group">
-            <label>Số điện thoại</label>
+            <label for="SDT">Số điện thoại</label>
             <input type="text"
                    id="SDT"
-                   th:value="${nhanvien.SDT}"
-                   placeholder="Nhập số điện thoại"
-            >
+                   th:field="*{SDT}"
+                   placeholder="Nhập số điện thoại">
         </div>
+    
         <div class="form-group">
-            <label>Ngày tham gia</label>
+            <label for="NGAYTHAMGIA">Ngày tham gia</label>
             <input type="date"
                    id="NGAYTHAMGIA"
-                   name="NGAYTHAMGIA"
-                   th:value="${nhanvien.NGAYTHAMGIA != null ? #dates.format(nhanvien.NGAYTHAMGIA, 'yyyy-MM-dd') : ''}"
-            >
+                   th:field="*{NGAYTHAMGIA}">
         </div>
+    
+        <div class="form-group">
+            <label for="TRANGTHAI">Trạng thái</label>
+            <select id="TRANGTHAI" th:field="*{TRANGTHAI}">
+                <option value="0">Hoạt động</option>
+                <option value="1">Nghỉ việc</option>
+            </select>
+        </div>
+    
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Cập nhật</button>
             <a th:href="@{/nhanvien}" class="btn btn-secondary">Hủy</a>
         </div>
     </form>
+    
 </div>
 <script>
     function previewImage(event) {

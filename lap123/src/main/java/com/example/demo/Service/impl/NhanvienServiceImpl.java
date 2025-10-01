@@ -14,6 +14,7 @@ public class NhanvienServiceImpl implements NhanvienService {
     private final NhanvienRepository nhanvienRepository;
 
     public NhanvienServiceImpl(NhanvienRepository nhanvienRepository) {
+        super();
         this.nhanvienRepository = nhanvienRepository;
     }
 
@@ -23,8 +24,8 @@ public class NhanvienServiceImpl implements NhanvienService {
     }
 
     @Override
-    public Nhanvien createNhanvien(Nhanvien nhanvien) {
-        return nhanvienRepository.save(nhanvien);
+    public Nhanvien createNhanvien(Nhanvien Nhanvien) {
+        return nhanvienRepository.save(Nhanvien);
     }
 
     @Override

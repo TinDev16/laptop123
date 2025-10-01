@@ -1,0 +1,43 @@
+package com.example.demo.Service.impl;
+
+import com.example.demo.Entity.Thuonghieu;
+import com.example.demo.Repository.ThuonghieuRepository;
+import com.example.demo.Service.ThuonghieuService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class ThuonghieuServiceImpl implements ThuonghieuService {
+
+    @Autowired
+    ThuonghieuRepository thuonghieuRepository;
+
+    public ThuonghieuServiceImpl(ThuonghieuRepository thuonghieuRepository) {
+        super();
+        this.thuonghieuRepository = thuonghieuRepository;
+    }
+
+    @Override
+    public List<Thuonghieu> getAllThuonghieu() {
+        return thuonghieuRepository.findAll();
+    }
+
+    @Override
+    public Thuonghieu create(Thuonghieu thuonghieu) {
+        return thuonghieuRepository.save(thuonghieu);
+    }
+
+    @Override
+    public Thuonghieu save(Thuonghieu thuonghieu) {
+        return thuonghieuRepository.save(thuonghieu);
+    }
+
+    @Override
+    public void deleteThuonghieu(int id) {
+        thuonghieuRepository.deleteById(id);
+    }
+
+
+}

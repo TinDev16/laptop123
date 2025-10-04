@@ -30,8 +30,9 @@ public class Sanpham {
     @Column(name = "KICHTHUOCMAN")
     private String KICHTHUOCMAN;
 
-    @Column(name = "THUONGHIEU")
-    private String THUONGHIEU;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "MATHUONGHIEU")
+    private Thuonghieu thuonghieu;
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
@@ -40,7 +41,7 @@ public class Sanpham {
     public Sanpham() {
 
     }
-    public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, String THUONGHIEU, int TRANGTHAI) {
+    public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, Thuonghieu thuonghieu, int TRANGTHAI) {
         super();
         this.TENSP = TENSP;
         this.HINHANHSP = HINHANHSP;
@@ -48,7 +49,7 @@ public class Sanpham {
         this.CHIP = CHIP;
         this.HEDIEUHANH = HEDIEUHANH;
         this.KICHTHUOCMAN = KICHTHUOCMAN;
-        this.THUONGHIEU = THUONGHIEU;
+        this.thuonghieu = thuonghieu;
         this.TRANGTHAI = TRANGTHAI;
     }
 
@@ -108,12 +109,12 @@ public class Sanpham {
         this.KICHTHUOCMAN = KICHTHUOCMAN;
     }
 
-    public String getTHUONGHIEU() {
-        return THUONGHIEU;
+    public Thuonghieu getThuonghieu() {
+        return thuonghieu;
     }
 
-    public void setTHUONGHIEU(String THUONGHIEU) {
-        this.THUONGHIEU = THUONGHIEU;
+    public void setThuonghieu(Thuonghieu thuonghieu) {
+        this.thuonghieu = thuonghieu;
     }
 
     public int getTRANGTHAI() {

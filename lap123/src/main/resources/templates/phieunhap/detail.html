@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Giao diện xem chi tiết phiếu nhập hàng với thông tin sản phẩm, nhà cung cấp, tổng tiền và thời gian. Tối ưu hóa SEO cho quản lý kho hàng.">
+    <title>Xem Chi Tiết Phiếu Nhập Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .delete-btn { background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; transition: background 0.2s; }
+        .delete-btn:hover { background: #b91c1c; }
+        .cancel-btn { background: #6b7280; color: white; padding: 6px 12px; border-radius: 6px; transition: background 0.2s; }
+        .cancel-btn:hover { background: #4b5563; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6 max-w-4xl">
+        <h1 class="text-3xl font-bold text-center mb-6">Xem Chi Tiết Phiếu Nhập Hàng</h1>
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Người tạo phiếu:</label>
+                <p class="mt-1 block w-full p-2 border border-gray-300 rounded-lg bg-gray-50">Admin</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Nhà cung cấp:</label>
+                <p class="mt-1 block w-full p-2 border border-gray-300 rounded-lg bg-gray-50">Nhà cung cấp A</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Thời gian tạo:</label>
+                <p class="mt-1 block w-full p-2 border border-gray-300 rounded-lg bg-gray-50">2023-10-15 14:30:00</p>
+            </div>
+
+            <h2 class="text-xl font-semibold mb-4">Sản phẩm đã nhập</h2>
+            <table class="w-full border-collapse mb-4">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border p-3 text-left">STT</th>
+                        <th class="border p-3 text-left">Tên sản phẩm</th>
+                        <th class="border p-3 text-left">Số lượng</th>
+                        <th class="border p-3 text-left">Giá nhập</th>
+                        <th class="border p-3 text-left">Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody id="selected-products"></tbody>
+            </table>
+
+            <div id="total-amount" class="text-lg font-bold mb-4">Tổng tiền: 0 VND</div>
+
+            <div class="flex gap-4">
+                <button type="button" class="flex-1 cancel-btn" onclick="window.history.back()">Trở về</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu mẫu cho chi tiết phiếu nhập
+        const selectedProducts = [
+            { itemStt: 1, name: 'Sản phẩm 1', importQuantity: 10, importPrice: 100000, id: 1 },
+            { itemStt: 2, name: 'Sản phẩm 2', importQuantity: 5, importPrice: 200000, id: 2 },
+            { itemStt: 3, name: 'Sản phẩm 3', importQuantity: 20, importPrice: 50000, id: 3 }
+        ];
+
+        // Hiển thị danh sách sản phẩm đã chọn
+        function renderSelectedProducts() {
+            const tbody = document.getElementById('selected-products');
+            tbody.innerHTML = '';
+            let total = 0;
+            selectedProducts.forEach(p => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="border p-3">${p.itemStt}</td>
+                    <td class="border p-3">${p.name}</td>
+                    <td class="border p-3">${p.importQuantity}</td>
+                    <td class="border p-3">${p.importPrice.toLocaleString()} VND</td>
+                    <td class="border p-3">${(p.importQuantity * p.importPrice).toLocaleString()} VND</td>
+                `;
+                tbody.appendChild(row);
+                total += p.importQuantity * p.importPrice;
+            });
+            document.getElementById('total-amount').innerText = `Tổng tiền: ${total.toLocaleString()} VND`;
+        }
+
+        // Khởi tạo
+        renderSelectedProducts();
+    </script>
+</body>
+</html>

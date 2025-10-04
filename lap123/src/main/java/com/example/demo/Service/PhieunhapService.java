@@ -8,5 +8,7 @@ public interface PhieunhapService {
 
     List<Phieunhap> getAllPhieunhap();
 
+    Phieunhap getPhieunhapById(int MAPHIEUNHAP);
+
     void deletePhieunhap(int id);
 }

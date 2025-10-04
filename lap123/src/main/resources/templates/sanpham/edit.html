@@ -163,11 +163,9 @@
             <label for="THUONGHIEU">Thương hiệu</label>
             <select id="THUONGHIEU">
                 <option value="">-- Chọn thương hiệu --</option>
-                <option>Dell</option>
-                <option>HP</option>
-                <option>Apple</option>
-                <option>Asus</option>
-                <option>Acer</option>
+                <option value="Windows" th:selected="${sp.HEDIEUHANH == 'Windows'}">Windows</option>
+                <option value="Linux" th:selected="${sp.HEDIEUHANH == 'Linux'}">Linux</option>
+                <option value="macOS" th:selected="${sp.HEDIEUHANH == 'macOS'}">macOS</option>
             </select>
         </div>
         <div class="form-group">

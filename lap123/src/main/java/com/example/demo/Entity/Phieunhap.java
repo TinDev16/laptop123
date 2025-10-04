@@ -12,11 +12,14 @@ public class Phieunhap {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int MAPHIEUNHAP;
 
-    @Column(name = "MANCC")
-    private int MANCC;
 
-    @Column(name = "MANV")
-    private int MANV;
+    @ManyToOne
+    @JoinColumn(name = "MANCC")
+    private NCC MANCC;
+
+    @ManyToOne
+    @JoinColumn(name = "MANV")
+    private Nhanvien MANV;
 
     @Column(name = "THOIGIAN")
     private Date THOIGIAN;
@@ -28,7 +31,6 @@ public class Phieunhap {
     private int TRANGTHAI;
 
 
-
     public int getMAPHIEUNHAP() {
         return MAPHIEUNHAP;
     }
@@ -37,19 +39,19 @@ public class Phieunhap {
         this.MAPHIEUNHAP = MAPHIEUNHAP;
     }
 
-    public int getMANCC() {
+    public NCC getMANCC() {
         return MANCC;
     }
 
-    public void setMANCC(int MANCC) {
+    public void setMANCC(NCC MANCC) {
         this.MANCC = MANCC;
     }
 
-    public int getMANV() {
+    public Nhanvien getMANV() {
         return MANV;
     }
 
-    public void setMANV(int MANV) {
+    public void setMANV(Nhanvien MANV) {
         this.MANV = MANV;
     }
 
@@ -68,7 +70,6 @@ public class Phieunhap {
     public void setTONGTIEN(float TONGTIEN) {
         this.TONGTIEN = TONGTIEN;
     }
-
 
     public int getTRANGTHAI() {
         return TRANGTHAI;

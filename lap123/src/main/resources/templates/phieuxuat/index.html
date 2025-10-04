@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <i class="fas fa-laptop"></i>
+            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
+        </div>
+        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
+        <div class="header-right">
+            <div id="admin-auth">
+                <button id="login-btn" class="btn btn-secondary" onclick="adminLogin()">
+                    <i class="fas fa-user"></i> Đăng nhập
+                </button>
+                <button id="logout-btn" class="btn btn-danger hidden" onclick="adminLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </div>
+            <div class="header-date">
+                Hôm nay: <span id="current-date"></span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-content">
+        <a class="nav-tab" data-tab="products" href="/">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <a class="nav-tab" data-tab="products" href="/sanpham">
+            <i class="fas fa-box"></i>
+            <span>Sản phẩm</span>
+        </a>
+
+        <a class="nav-tab" data-tab="import-slips" href="/phieunhap">
+            <i class="fas fa-arrow-down"></i>
+            <span>Phiếu nhập</span>
+        </a>
+
+        <a class="nav-tab active" data-tab="export-slips" href="/phieuxuat">
+            <i class="fas fa-arrow-up"></i>
+            <span>Phiếu xuất</span>
+        </a>
+
+        <a class="nav-tab" data-tab="customers" href="/khachhang">
+            <i class="fas fa-users"></i>
+            <span>Khách hàng</span>
+        </a>
+
+        <a class="nav-tab" data-tab="suppliers" href="/ncc">
+            <i class="fas fa-building"></i>
+            <span>Nhà cung cấp</span>
+        </a>
+
+        <a class="nav-tab" data-tab="employees" href="/nhanvien">
+            <i class="fas fa-user-tie"></i>
+            <span>Nhân viên</span>
+        </a>
+
+        <a class="nav-tab" data-tab="inventory" href="/tonkho">
+                <i class="fas fa-warehouse"></i>
+        <span>Tồn kho</span>
+        </a>
+
+        <a class="nav-tab" data-tab="brands" href="/thuonghieu">
+            <i class="fas fa-tags"></i>
+            <span>Thương hiệu</span>
+        </a>
+    </div>
+</nav>
+<!-- Main Content -->
+<main class="main">
+    <!-- Products Tab -->
+    <div id="products" class="tab-content active">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý phiếu xuất</h2>
+            <div class="page-actions">
+                <a th:href="@{/phieuxuat/create}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Thêm phiếu xuất
+                </a>
+                <a href="#" class="btn btn-success" onclick="exportExcel('products')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </a>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="product-search" placeholder="Tìm kiếm phiếu xuất..." onkeyup="filterProducts()">
+            </div>
+            <label for="brand-filter" class="sr-only">Lọc theo thương hiệu</label>
+            <select id="brand-filter" class="filter-select" onchange="filterProducts()">
+                <option value="">Tất cả thương hiệu</option>
+            </select>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu xuất</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Nhân viên xuất</th>
+                    <th>Thời gian</th>
+                    <th>Tổng tiền</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="products-table">
+                    <tr th:each="px : ${phieuxuat}">
+                        <td class="font-semibold" th:text="${px.MAPHIEUXUAT}"></td>
+                        <td>Nhà cung cấp</td>
+                        <td>Nhân viên xuất</td>
+                        <td th:text="${px.THOIGIAN != null ? #dates.format(px.THOIGIAN, 'dd/MM/yyyy') : ''}"></td>
+                        <td th:text="${px.TONGTIEN}"></td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${px.MAPHIEUXUAT})}" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-phieuxuat/{id}(id=${px.MAPHIEUXUAT})}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-phieuxuat/{id}(id=${px.MAPHIEUXUAT})}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+
+<!-- Modal -->
+<div id="modal-overlay" class="modal-overlay">
+    <div id="modal" class="modal">
+        <div class="modal-header">
+            <h3 id="modal-title" class="modal-title">Modal Title</h3>
+            <button class="modal-close" onclick="closeModal()" title="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- Modal content will be populated here -->
+        </div>
+        <div class="modal-footer" id="modal-footer">
+            <!-- Modal footer will be populated here -->
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal modal-small">
+        <div class="modal-header">
+            <h3 class="modal-title">Xác nhận xóa</h3>
+            <button class="modal-close" onclick="closeConfirmModal()" title="Close confirmation modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
+            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm modal đăng nhập vào cuối body -->
+<div id="login-modal" class="modal-overlay">
+    <div class="modal modal-small-width">
+        <div class="modal-header">
+            <h3 class="modal-title">Đăng nhập Admin</h3>
+            <button class="modal-close" onclick="closeLoginModal()" title="Close login modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
+                <div class="form-group">
+                    <label class="form-label required">Tên đăng nhập</label>
+                    <input type="text" id="admin-username" class="form-input" required title="Nhập tên đăng nhập" placeholder="Tên đăng nhập">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">Mật khẩu</label>
+                    <input type="password" id="admin-password" class="form-input" required title="Nhập mật khẩu" placeholder="Mật khẩu">
+                </div>
+                <div class="margin-top-1rem">
+                    <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                    <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--<script src="script.js" type="text/javascript"></script>-->
+</body>
+</html>

@@ -29,8 +29,13 @@
         <h1 class="text-3xl font-bold text-center mb-6">Thêm Phiếu Nhập Hàng</h1>
         <form id="import-form" class="bg-white shadow-md rounded-lg p-6">
             <div class="mb-4">
-                <label for="creator" class="block text-sm font-medium text-gray-700">Người tạo phiếu:</label>
-                <input type="text" id="creator" name="creator" required class="mt-1 block w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <select id="creator" name="creator" th:field="*{nhanvien.MANV}" title="Chọn nhân viên"
+                class="mt-1 block w-full p-2 border border-gray-300 rounded-lg">
+            <option value="">-- Chọn nhân viên --</option>
+            <option th:each="nv : ${nhanvien}" 
+                    th:value="${nv.MANV}" 
+                    th:text="${nv.TENNV}"></option>
+        </select>
             </div>
 
             <div class="mb-4">

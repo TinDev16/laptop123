@@ -125,9 +125,13 @@
 <main>
 <div class="card">
     <!-- Ảnh sản phẩm -->
-    <div>
-        <img th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}" th:alt="'Ảnh sản phẩm ' + ${sanpham.TENSP}" alt="Ảnh sản phẩm">
-    </div>
+<!-- Ảnh sản phẩm -->
+<div>
+    <img th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}"
+         th:alt="'Ảnh sản phẩm ' + ${sanpham.TENSP}"
+         style="max-width: 200px; height: auto;">
+</div>
+
     <!-- Nội dung chi tiết -->
     <div class="card-content">
         <h1 class="card-title" th:text="${sanpham.TENSP}">Tên sản phẩm</h1>
@@ -136,11 +140,11 @@
         <div class="card-info"><strong>Chip:</strong> <span th:text="${sanpham.CHIP}"></span></div>
         <div class="card-info"><strong>Hệ điều hành:</strong> <span th:text="${sanpham.HEDIEUHANH}"></span></div>
         <div class="card-info"><strong>Kích thước màn:</strong> <span th:text="${sanpham.KICHTHUOCMAN}"></span></div>
-        <div class="card-info"><strong>Thương hiệu:</strong> <span th:text="${sanpham.THUONGHIEU}"></span></div>
+        <div class="card-info"><strong>Thương hiệu:</strong> <span th:text="${sanpham.thuonghieu != null ? sanpham.thuonghieu.TENTHUONGHIEU : 'Không có'}"></span></div>
         <div class="card-info">
             <strong>Trạng thái:</strong>
-            <span th:if="${sanpham.TRANGTHAI == 1}" class="badge badge-open">Mở bán</span>
-            <span th:if="${sanpham.TRANGTHAI == 0}" class="badge badge-closed">Ngừng bán</span>
+            <span th:if="${sanpham.TRANGTHAI == 0}" class="badge badge-open">Mở bán</span>
+            <span th:if="${sanpham.TRANGTHAI == 1}" class="badge badge-closed">Ngừng bán</span>
         </div>
         <div class="actions">
             <a th:href="@{/sanpham}" class="btn btn-outline">

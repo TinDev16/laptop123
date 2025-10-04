@@ -1,7 +1,9 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Entity.Sanpham;
+import com.example.demo.Entity.Thuonghieu;
 import com.example.demo.Service.SanphamService;
+import com.example.demo.Service.ThuonghieuService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +19,12 @@ import java.nio.file.StandardCopyOption;
 public class SanphamController {
 
     private SanphamService sanphamService;
+    private ThuonghieuService thuonghieuservice;
 
-    public SanphamController(SanphamService sanphamService) {
+    public SanphamController(SanphamService sanphamService, ThuonghieuService thuonghieuservice) {
         super();
         this.sanphamService = sanphamService;
+        this.thuonghieuservice = thuonghieuservice;
     }
 
 //    index
@@ -41,22 +45,22 @@ public class SanphamController {
     public String newSanpham(Model model) {
         Sanpham sanpham = new Sanpham();
         model.addAttribute("sanpham", sanpham);
+        model.addAttribute("thuonghieuList", thuonghieuservice.getAllThuonghieu());
         return "sanpham/add";
     }
-
 
     @PostMapping("/sanpham")
     public String saveSanpham(@ModelAttribute("sanpham") Sanpham sanpham,
                               @RequestParam("file") MultipartFile file) {
         try {
             if (!file.isEmpty()) {
-                // Tạo thư mục lưu file
-                String uploadDir = "uploads/";
+                // Thư mục trong static
+                String uploadDir = "src/main/resources/static/uploads/";
 
-                // Lấy tên file gốc
+                // Lấy tên file gốc + gắn timestamp tránh trùng
                 String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-                // Tạo path lưu
+                // Tạo path đầy đủ
                 Path path = Paths.get(uploadDir + fileName);
 
                 // Nếu thư mục chưa có thì tạo
@@ -65,7 +69,7 @@ public class SanphamController {
                 // Lưu file
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
-                // Lưu đường dẫn vào entity
+                // Lưu tên file (không cần cả path) vào DB
                 sanpham.setHINHANHSP(fileName);
             }
         } catch (IOException e) {
@@ -75,13 +79,17 @@ public class SanphamController {
         sanphamService.saveSanpham(sanpham);
         return "redirect:/sanpham";
     }
-
 //
 
 //  SỬA SP
     @GetMapping("/edit-sanpham/{id}")
     public String editSanpham(@PathVariable("id") int id, Model model) {
         model.addAttribute("sanpham", sanphamService.getSanphamById(id));
+        model.addAttribute("thuonghieuList", thuonghieuservice.getAllThuonghieu());
+        Sanpham sp = sanphamService.getSanphamById(id);
+        System.out.println("Sản phẩm load được: " + sp);
+        model.addAttribute("sanpham", sp);
+
         return "sanpham/edit";
     }
 
@@ -105,44 +113,6 @@ public class SanphamController {
         return "redirect:/sanpham";
     }
 
-//    @PostMapping("/update/{id}")
-//    public String updateSanpham(@PathVariable("id") int id,
-//                                @ModelAttribute("sanpham") Sanpham sanpham,
-//                                @RequestParam("file") MultipartFile file) {
-//        try {
-//            // Lấy sản phẩm cũ từ DB
-//            Sanpham existing = sanphamService.getSanphamById(id);
-//
-//            // Cập nhật các field
-//            existing.setTENSP(sanpham.getTENSP());
-//            existing.setXUATXU(sanpham.getXUATXU());
-//            existing.setCHIP(sanpham.getCHIP());
-//            existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
-//            existing.setKICHTHUOCMAN(sanpham.getKICHTHUOCMAN());
-//            existing.setTHUONGHIEU(sanpham.getTHUONGHIEU());
-//            existing.setTRANGTHAI(sanpham.getTRANGTHAI());
-//
-//            // Nếu có file ảnh mới thì lưu, ngược lại giữ ảnh cũ
-//            if (!file.isEmpty()) {
-//                String uploadDir = "uploads/";
-//                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-//                Path path = Paths.get(uploadDir + fileName);
-//
-//                Files.createDirectories(path.getParent());
-//                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-//
-//                existing.setHINHANHSP(fileName);
-//            }
-//
-//            // Lưu lại vào DB
-//            sanphamService.updateSanpham(existing);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return "redirect:/sanpham";
-//    }
 
 
 

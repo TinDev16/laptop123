@@ -111,7 +111,7 @@
             <label>Hình ảnh sản phẩm</label>
             <input type="file"
                    name="file"
-                   accept="image/*"
+                   accept="uploads/*"
                    onchange="previewImage(event)"
                    required
             >
@@ -133,30 +133,31 @@
                    placeholder="Loại chip"
             >
         </div>
-        <div class="form-group">
-            <label for="HEDIEUHANH">Hệ điều hành</label>
-            <select id="HEDIEUHANH" >
-                <option value="">-- Chọn hệ điều hành --</option>
-                <option>Windows</option>
-                <option>Linux</option>
-                <option>MacOS</option>
+        <!-- <div class="form-group">
+            <label>Hệ điều hành</label>
+            <select th:field="*{HEDIEUHANH}" class="form-input" required>
+                <option value="" disabled>-- Chọn hệ điều hành --</option>
+                <option value="Windows">Windows</option>
+                <option value="Linux">Linux</option>
+                <option value="macOS">macOS</option>
             </select>
-        </div>
+        </div> -->
         <div class="form-group">
             <label for="KICHTHUOCMAN">Kích thước màn hình</label>
             <input type="text" id="KICHTHUOCMAN" th:field="*{KICHTHUOCMAN}" placeholder="Kích thước màn hình">
         </div>
         <div class="form-group">
-            <label for="THUONGHIEU">Thương hiệu</label>
-            <select id="THUONGHIEU">
-                <option value="">-- Chọn thương hiệu --</option>
-                <option>Dell</option>
-                <option>HP</option>
-                <option>Apple</option>
-                <option>Asus</option>
-                <option>Acer</option>
+            <label>Thương hiệu</label>
+            <select th:field="*{thuonghieu}" class="form-control" required>
+                <option value="" disabled selected>-- Chọn thương hiệu --</option>
+                <option th:each="th : ${thuonghieuList}"
+                        th:value="${th.MATHUONGHIEU}"
+                        th:text="${th.TENTHUONGHIEU}">
+                </option>
             </select>
         </div>
+
+
         <div class="form-group">
             <label for="TRANGTHAI">Trạng thái</label>
             <select id="TRANGTHAI" name="trangThai" th:field="*{TRANGTHAI}">

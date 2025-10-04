@@ -56,7 +56,8 @@ public class SanphamServiceImpl implements SanphamService {
         existing.setCHIP(sanpham.getCHIP());
         existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
         existing.setKICHTHUOCMAN(sanpham.getKICHTHUOCMAN());
-        existing.setTHUONGHIEU(sanpham.getTHUONGHIEU());
+        existing.setThuonghieu(sanpham.getThuonghieu());
+        existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
         existing.setTRANGTHAI(sanpham.getTRANGTHAI());
 
         // Nếu trong form có upload ảnh mới, thì xử lý update ảnh ở đây

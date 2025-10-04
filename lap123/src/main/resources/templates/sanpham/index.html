@@ -6,8 +6,6 @@
     <title>Hệ thống Quản lý Cửa hàng Laptop</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
-    <!-- Thêm thư viện SheetJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -218,6 +216,9 @@
     </div>
 </div>
 
+<!-- Thêm thư viện SheetJS để xuất Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script>
 // filepath: e:\OOAD\lap123\src\main\resources\templates\sanpham\index.html
 function filterProducts() {
@@ -227,13 +228,25 @@ function filterProducts() {
     let visibleCount = 0;
 
     rows.forEach(row => {
+        // Lấy dữ liệu các trường
+        const maSp = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
         const tenSp = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+        const heDieuHanh = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
         const thuongHieu = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+        const trangThai = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
         let show = true;
 
-        if (searchInput && !tenSp.includes(searchInput)) {
+        // Tìm kiếm theo tất cả trường
+        if (searchInput && !(
+            maSp.includes(searchInput) ||
+            tenSp.includes(searchInput) ||
+            heDieuHanh.includes(searchInput) ||
+            thuongHieu.includes(searchInput) ||
+            trangThai.includes(searchInput)
+        )) {
             show = false;
         }
+        // Lọc theo thương hiệu nếu chọn
         if (brandFilter && thuongHieu !== brandFilter) {
             show = false;
         }
@@ -251,9 +264,10 @@ function filterProducts() {
     noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
 }
 
-function exportExcel(tableId) {
+// Xuất Excel toàn bộ bảng sản phẩm
+function exportExcel() {
     const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "Sản phẩm"});
+    const wb = XLSX.utils.table_to_book(table, {sheet: "SanPham"});
     XLSX.writeFile(wb, 'sanpham.xlsx');
 }
 </script>

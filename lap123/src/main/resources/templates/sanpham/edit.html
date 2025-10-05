@@ -98,88 +98,69 @@
 <body>
 <div class="form-container">
     <h1>Sửa sản phẩm</h1>
-    <form th:action="@{/update-sanpham}" method="POST" enctype="multipart/form-data" autocomplete="off">
-
-        <input type="hidden" th:value="${sanpham.MASP}" NAME="MASP">
-
+    <form th:action="@{/update-sanpham}" th:object="${sanpham}" method="POST" enctype="multipart/form-data" autocomplete="off">
+        <input type="hidden" th:field="*{MASP}">
+    
         <div class="form-group">
-            <label for="TENSP">Tên sản phẩm <span class="required">*</span></label>
-            <input type="text"
-                   id="TENSP"
-                   th:value="${sanpham.TENSP}"
-                   placeholder="Nhập tên sản phẩm" required
-            >
+            <label for="TENSP">Tên sản phẩm</label>
+            <input type="text" id="TENSP" th:field="*{TENSP}" placeholder="Nhập tên sản phẩm" required>
         </div>
-
+    
         <div class="form-group">
             <label>Hình ảnh sản phẩm</label>
-
-            <!-- Ảnh hiện tại -->
-            <div class="image-preview">
-                <img th:if="${sanpham.HINHANHSP != null}"
-                     th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}"
-                     alt="Ảnh sản phẩm hiện tại">
-            </div>
-
-            <!-- Input chọn file mới -->
-            <input type="file"
-                   name="file"
-                   accept="image/*"
-                   onchange="previewImage(event)">
-            <!-- Xem trước ảnh mới -->
-            <div class="image-preview" id="imagePreview"></div>
+            <img th:if="${sanpham.HINHANHSP != null}" th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}" alt="Ảnh hiện tại">
+            <input type="file" name="file" accept="image/*">
         </div>
-
+    
         <div class="form-group">
             <label for="XUATXU">Xuất xứ</label>
-            <input type="text"
-                   id="XUATXU"
-                   th:value="${sanpham.XUATXU}"
-                   placeholder="Xuất xứ sản phẩm"
-            >
+            <input type="text" id="XUATXU" th:field="*{XUATXU}" placeholder="Xuất xứ sản phẩm">
         </div>
+    
         <div class="form-group">
             <label for="CHIP">Chip xử lý</label>
-            <input type="text"
-                   id="CHIP"
-                   th:value="${sanpham.CHIP}"
-                   placeholder="Loại chip"
-            >
+            <input type="text" id="CHIP" th:field="*{CHIP}" placeholder="Loại chip">
         </div>
+    
         <div class="form-group">
             <label for="HEDIEUHANH">Hệ điều hành</label>
-            <select id="HEDIEUHANH" >
-                <option value="">-- Chọn hệ điều hành --</option>
-                <option>Windows</option>
-                <option>Linux</option>
-                <option>MacOS</option>
+            <select id="HEDIEUHANH" th:field="*{HEDIEUHANH}">
+                <option value="Windows">Windows</option>
+                <option value="Linux">Linux</option>
+                <option value="macOS">macOS</option>
             </select>
         </div>
+    
         <div class="form-group">
             <label for="KICHTHUOCMAN">Kích thước màn hình</label>
-            <input type="text" id="KICHTHUOCMAN" th:value="${sanpham.KICHTHUOCMAN}" placeholder="Kích thước màn hình">
+            <input type="text" id="KICHTHUOCMAN" th:field="*{KICHTHUOCMAN}" placeholder="Kích thước màn hình">
         </div>
+    
         <div class="form-group">
-            <label for="THUONGHIEU">Thương hiệu</label>
-            <select id="THUONGHIEU">
-                <option value="">-- Chọn thương hiệu --</option>
-                <option value="Windows" th:selected="${sp.HEDIEUHANH == 'Windows'}">Windows</option>
-                <option value="Linux" th:selected="${sp.HEDIEUHANH == 'Linux'}">Linux</option>
-                <option value="macOS" th:selected="${sp.HEDIEUHANH == 'macOS'}">macOS</option>
+            <label>Thương hiệu</label>
+            <select th:field="*{thuonghieu}" class="form-control" required>
+                <option value="" disabled>-- Chọn thương hiệu --</option>
+                <option th:each="th : ${thuonghieuList}"
+                        th:value="${th.MATHUONGHIEU}"
+                        th:text="${th.TENTHUONGHIEU}">
+                </option>
             </select>
         </div>
+        
+        
+    
         <div class="form-group">
             <label for="TRANGTHAI">Trạng thái</label>
-            <select id="TRANGTHAI" name="trangThai" th:value="${sanpham.TRANGTHAI}">
+            <select id="TRANGTHAI" th:field="*{TRANGTHAI}">
                 <option value="1">Mở bán</option>
                 <option value="0">Đóng</option>
             </select>
         </div>
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Cập nhật</button>
-            <a th:href="@{/sanpham}" class="btn btn-secondary">Hủy</a>
-        </div>
+    
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+        <a th:href="@{/sanpham}" class="btn btn-secondary">Hủy</a>
     </form>
+    
 </div>
 <script>
     function previewImage(event) {

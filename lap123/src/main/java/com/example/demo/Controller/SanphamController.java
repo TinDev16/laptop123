@@ -86,9 +86,10 @@ public class SanphamController {
     public String editSanpham(@PathVariable("id") int id, Model model) {
         model.addAttribute("sanpham", sanphamService.getSanphamById(id));
         model.addAttribute("thuonghieuList", thuonghieuservice.getAllThuonghieu());
-        Sanpham sp = sanphamService.getSanphamById(id);
-        System.out.println("Sản phẩm load được: " + sp);
-        model.addAttribute("sanpham", sp);
+        Sanpham sanpham = sanphamService.getSanphamById(id);
+        if (sanpham.getThuonghieu() == null) {
+            sanpham.setThuonghieu(new Thuonghieu());
+        }
 
         return "sanpham/edit";
     }

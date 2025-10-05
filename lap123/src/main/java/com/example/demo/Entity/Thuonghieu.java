@@ -18,6 +18,7 @@ public class Thuonghieu {
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
 
+
     public Thuonghieu() {
 
     }
@@ -49,5 +50,18 @@ public class Thuonghieu {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Thuonghieu)) return false;
+        Thuonghieu that = (Thuonghieu) o;
+        return MATHUONGHIEU == that.MATHUONGHIEU;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(MATHUONGHIEU);
     }
 }

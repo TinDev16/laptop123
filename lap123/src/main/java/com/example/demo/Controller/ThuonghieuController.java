@@ -39,6 +39,18 @@ public class ThuonghieuController {
         return "redirect:/thuonghieu";
     }
 
+    @GetMapping("/edit-thuonghieu/{id}")
+    public String editThuonghieu(@PathVariable int id, Model model) {
+        model.addAttribute("thuonghieu",thuonghieuService.getThuonghieuById(id));
+        return "thuonghieu/edit";
+    }
+
+    @PostMapping("/update-thuonghieu")
+    public String updateThuonghieu(@ModelAttribute Thuonghieu thuonghieu) {
+        thuonghieuService.save(thuonghieu);
+        return "redirect:/thuonghieu";
+    }
+
     @GetMapping("/delete-thuonghieu/{id}")
     public String deleteThuonghieu(@PathVariable int id) {
         thuonghieuService.deleteThuonghieu(id);

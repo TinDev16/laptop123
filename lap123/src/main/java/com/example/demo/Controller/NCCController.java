@@ -37,6 +37,18 @@ public class NCCController {
         return "redirect:/ncc";
     }
 
+    @GetMapping("/edit-ncc/{id}")
+    public String editNhacungcap(Model model, @PathVariable int id) {
+        model.addAttribute("ncc",nccService.getNCCById(id));
+        return "ncc/edit";
+    }
+
+    @PostMapping("/update-ncc")
+    public String updateNhacungcap(@ModelAttribute("ncc") NCC ncc) {
+        nccService.updateNCC(ncc);
+        return "redirect:/ncc";
+    }
+
     @GetMapping("/delete-ncc/{id}")
     public String deleteNhacungcap(@PathVariable("id") int id) {
         nccService.deleteNCC(id);

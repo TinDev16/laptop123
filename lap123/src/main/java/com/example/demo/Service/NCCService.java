@@ -13,5 +13,9 @@ public interface NCCService {
 
     NCC saveNCC(NCC ncc);
 
+    NCC getNCCById(int id);
+
+    NCC updateNCC(NCC ncc);
+
     void deleteNCC(int id);
 }

@@ -1,5 +1,6 @@
 package com.example.demo.Service.impl;
 
+import com.example.demo.Entity.Khachhang;
 import com.example.demo.Entity.Thuonghieu;
 import com.example.demo.Repository.ThuonghieuRepository;
 import com.example.demo.Service.ThuonghieuService;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ThuonghieuServiceImpl implements ThuonghieuService {
@@ -31,6 +33,21 @@ public class ThuonghieuServiceImpl implements ThuonghieuService {
 
     @Override
     public Thuonghieu save(Thuonghieu thuonghieu) {
+        return thuonghieuRepository.save(thuonghieu);
+    }
+
+    @Override
+    public Thuonghieu getThuonghieuById(int MATHUONGHIEU) {
+        Optional<Thuonghieu> thuonghieu = thuonghieuRepository.findById(MATHUONGHIEU);
+        if (thuonghieu.isPresent()) {
+            return thuonghieu.get();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Thuonghieu updateThuonghieu(Thuonghieu thuonghieu) {
         return thuonghieuRepository.save(thuonghieu);
     }
 

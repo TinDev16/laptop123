@@ -13,7 +13,9 @@ public interface ThuonghieuService {
 
     Thuonghieu save(Thuonghieu thuonghieu);
 
-//    Thuonghieu getThuonghieuById(int id);
+    Thuonghieu getThuonghieuById(int id);
+
+    Thuonghieu updateThuonghieu(Thuonghieu thuonghieu);
 
     void deleteThuonghieu(int id);
 }

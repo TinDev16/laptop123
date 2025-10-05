@@ -40,7 +40,7 @@ public class KhachhangController {
     }
 
     @GetMapping("/edit-khachhang/{id}")
-    public String editKhachhang(@PathVariable int id, Model model) {
+    public String editKhachhang(@PathVariable("id") int id, Model model) {
         model.addAttribute("khachhang", khachhangService.getKhachhangById(id));
         return "khachhang/edit";
     }

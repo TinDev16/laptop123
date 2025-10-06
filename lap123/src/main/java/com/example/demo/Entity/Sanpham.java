@@ -37,11 +37,14 @@ public class Sanpham {
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
 
+    @Column(name = "GHICHU")
+    private String GHICHU;
+
 
     public Sanpham() {
 
     }
-    public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, Thuonghieu thuonghieu, int TRANGTHAI) {
+    public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, Thuonghieu thuonghieu, int TRANGTHAI, String GHICHU) {
         super();
         this.TENSP = TENSP;
         this.HINHANHSP = HINHANHSP;
@@ -51,6 +54,7 @@ public class Sanpham {
         this.KICHTHUOCMAN = KICHTHUOCMAN;
         this.thuonghieu = thuonghieu;
         this.TRANGTHAI = TRANGTHAI;
+        this.GHICHU = GHICHU;
     }
 
     public int getMASP() {
@@ -126,7 +130,11 @@ public class Sanpham {
     }
 
 
+    public String getGHICHU() {
+        return GHICHU;
+    }
 
-
-
+    public void setGHICHU(String GHICHU) {
+        this.GHICHU = GHICHU;
+    }
 }

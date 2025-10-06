@@ -51,8 +51,13 @@ public class KhachhangServiceImpl implements KhachhangService {
     }
 
     @Override
-    public void deleteKhachhangById(int id) {
-        khachhangRepository.deleteById(id);
+    public void deleteKhachhang(int id, String GHICHU) {
+        Khachhang kh = khachhangRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng với id=" + id));
+
+        kh.setTRANGTHAI(1);
+        kh.setGHICHU(GHICHU);
+        khachhangRepository.save(kh);
     }
 
 }

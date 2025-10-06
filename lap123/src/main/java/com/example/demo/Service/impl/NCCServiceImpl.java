@@ -50,7 +50,12 @@ public class NCCServiceImpl implements NCCService {
     }
 
     @Override
-    public void deleteNCC(int id) {
-        nccRepository.deleteById(id);
+    public void deleteNCC(int id, String GHICHU) {
+        NCC ncc = nccRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Không có nhà cung cấp" + id));
+        ncc.setTRANGTHAI(1);
+        ncc.setGHICHU(GHICHU);
+        nccRepository.save(ncc);
     }
+
 }

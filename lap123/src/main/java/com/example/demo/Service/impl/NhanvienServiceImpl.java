@@ -33,10 +33,7 @@ public class NhanvienServiceImpl implements NhanvienService {
         return nhanvienRepository.save(nhanvien);
     }
 
-    @Override
-    public void deleteNhanvien(int id) {
-        nhanvienRepository.deleteById(id);
-    }
+
 
     @Override
     public Nhanvien getNhanvienById(int MANV) {
@@ -47,5 +44,16 @@ public class NhanvienServiceImpl implements NhanvienService {
     @Override
     public Nhanvien updateNhanvien(Nhanvien nhanvien) {
         return nhanvienRepository.save(nhanvien);
+    }
+
+    @Override
+    public void deleteNhanvien(int id, String GHICHU) {
+
+        Nhanvien nhanvien = nhanvienRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên với id=" + id));
+
+        nhanvien.setTRANGTHAI(1);
+        nhanvien.setGHICHU(GHICHU);
+        nhanvienRepository.save(nhanvien);
     }
 }

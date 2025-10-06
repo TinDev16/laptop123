@@ -5,10 +5,7 @@ import com.example.demo.Service.KhachhangService;
 import com.example.demo.Service.impl.KhachhangServiceImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class KhachhangController {
@@ -52,8 +49,17 @@ public class KhachhangController {
     }
 
     @GetMapping("/delete-khachhang/{id}")
-    public String deleteKhachhang(@PathVariable("id") int id) {
-        khachhangService.deleteKhachhangById(id);
+    public String deleteKhachhang(@PathVariable("id") int id, Model model) {
+        Khachhang khachhang = khachhangService.getKhachhangById(id);
+        model.addAttribute("khachhang", khachhang);
+        return "redirect:/delete";
+    }
+
+    @PostMapping("/delete-khachhang")
+    public String deleteKhachhang(@RequestParam("id") int id,
+                                  @RequestParam("GHICHU") String GHICHU) {
+        khachhangService.deleteKhachhang(id, GHICHU);
         return "redirect:/khachhang";
     }
+
 }

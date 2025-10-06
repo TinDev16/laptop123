@@ -107,12 +107,24 @@ public class SanphamController {
     }
 //
 
-//    XÓA SP
+    // GET - Hiển thị form xác nhận xóa (nếu bạn có form nhập lý do xóa)
     @GetMapping("/delete-sanpham/{id}")
-    public String deleteSanpham(@PathVariable("id") int id) {
-        sanphamService.deleteSanpham(id);
+    public String showDeleteForm(@PathVariable int id, Model model) {
+        Sanpham sanpham = sanphamService.getSanphamById(id);
+        model.addAttribute("sanpham", sanpham);
+        return "sanpham/delete"; // Trang confirm xóa có ô nhập ghi chú
+    }
+
+    // POST - Xử lý khi người dùng xác nhận xóa
+    @PostMapping("/delete-sanpham")
+    public String deleteSanpham(@RequestParam("id") int id,
+                                @RequestParam("GHICHU") String GHICHU) {
+        sanphamService.deleteSanpham(id, GHICHU);
         return "redirect:/sanpham";
     }
+
+
+
 
 
 

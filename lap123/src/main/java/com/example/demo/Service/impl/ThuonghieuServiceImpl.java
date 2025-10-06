@@ -52,8 +52,14 @@ public class ThuonghieuServiceImpl implements ThuonghieuService {
     }
 
     @Override
-    public void deleteThuonghieu(int id) {
-        thuonghieuRepository.deleteById(id);
+    public void deleteThuonghieu(int id, String GHICHU) {
+
+        Thuonghieu thuonghieu = thuonghieuRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu với id=" + id));
+
+        thuonghieu.setTRANGTHAI(1); // chuyển sang ngừng
+        thuonghieu.setGHICHU(GHICHU);
+        thuonghieuRepository.save(thuonghieu);
     }
 
 

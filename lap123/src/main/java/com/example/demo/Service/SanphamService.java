@@ -1,6 +1,5 @@
 package com.example.demo.Service;
 
-import com.example.demo.Entity.Nhanvien;
 import com.example.demo.Entity.Sanpham;
 
 import java.util.List;
@@ -16,5 +15,5 @@ public interface SanphamService {
 
     Sanpham updateSanpham(Sanpham sanpham);
 
-    void deleteSanpham(int id);
+    void deleteSanpham(int id, String GHICHU);
 }

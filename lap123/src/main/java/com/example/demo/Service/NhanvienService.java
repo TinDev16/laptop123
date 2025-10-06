@@ -13,10 +13,12 @@ public interface NhanvienService {
 
     Nhanvien saveNhanvien(Nhanvien nhanvien);
 
-    void deleteNhanvien(int id);
+
 
     Nhanvien getNhanvienById(int id);
 
     Nhanvien updateNhanvien(Nhanvien nhanvien);
+
+    void deleteNhanvien(int id, String GHICHU);
 
 }

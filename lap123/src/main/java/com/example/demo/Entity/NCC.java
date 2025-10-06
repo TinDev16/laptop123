@@ -22,15 +22,19 @@ public class NCC {
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
 
+    @Column(name = "GHICHU")
+    private String GHICHU;
+
     public NCC() {
 
     }
 
-    public NCC(String TENNCC, String DIACHI, String SDT, int TRANGTHAI) {
+    public NCC(String TENNCC, String DIACHI, String SDT, int TRANGTHAI, String GHICHU) {
         this.TENNCC = TENNCC;
         this.DIACHI = DIACHI;
         this.SDT = SDT;
         this.TRANGTHAI = TRANGTHAI;
+        this.GHICHU = GHICHU;
     }
 
     public int getMANCC() {
@@ -71,5 +75,13 @@ public class NCC {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+    }
+
+    public String getGHICHU() {
+        return GHICHU;
+    }
+
+    public void setGHICHU(String GHICHU) {
+        this.GHICHU = GHICHU;
     }
 }

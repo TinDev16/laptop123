@@ -33,17 +33,21 @@ public class Khachhang {
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
 
+    @Column(name = "GHICHU")
+    private String GHICHU;
+
     public Khachhang() {
 
     }
 
-    public Khachhang(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI) {
+    public Khachhang(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI, String GHICHU) {
         this.HOTEN = HOTEN;
         this.GIOITINH = GIOITINH;
         this.NGAYSINH = NGAYSINH;
         this.SDT = SDT;
         this.NGAYTHAMGIA = NGAYTHAMGIA;
         this.TRANGTHAI = TRANGTHAI;
+        this.GHICHU = GHICHU;
     }
 
     public int getMAKH() {
@@ -100,5 +104,13 @@ public class Khachhang {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+    }
+
+    public String getGHICHU() {
+        return GHICHU;
+    }
+
+    public void setGHICHU(String GHICHU) {
+        this.GHICHU = GHICHU;
     }
 }

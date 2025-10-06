@@ -5,10 +5,7 @@ import com.example.demo.Service.ThuonghieuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class ThuonghieuController {
@@ -52,8 +49,17 @@ public class ThuonghieuController {
     }
 
     @GetMapping("/delete-thuonghieu/{id}")
-    public String deleteThuonghieu(@PathVariable int id) {
-        thuonghieuService.deleteThuonghieu(id);
+    public String deleteThuonghieu(@PathVariable int id, Model model) {
+
+        Thuonghieu thuonghieu = thuonghieuService.getThuonghieuById(id);
+        model.addAttribute("thuonghieu",thuonghieu);
+        return "redirect:/delete";
+    }
+
+    @PostMapping("/delete-thuonghieu")
+    public String deleteSanpham(@RequestParam("id") int id,
+                                @RequestParam("GHICHU") String GHICHU) {
+        thuonghieuService.deleteThuonghieu(id, GHICHU);
         return "redirect:/thuonghieu";
     }
 }

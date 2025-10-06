@@ -7,7 +7,21 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
-
+<style>
+    .bg-red-100 {
+    background-color: #ffe5e5;
+}
+.modal {
+    position: fixed; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background: white; padding: 20px; border-radius: 10px;
+    width: 400px;
+}
+.hidden { display: none; }
+</style>
 <body>
 <!-- Header -->
 <header class="header">
@@ -19,16 +33,9 @@
         <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
         <div class="header-right">
             <div id="admin-auth">
-                <button id="login-btn" class="btn btn-secondary" onclick="adminLogin()">
-                    <i class="fas fa-user"></i> Đăng nhập
-                </button>
-                <button id="logout-btn" class="btn btn-danger hidden" onclick="adminLogout()">
+                <button id="logout-btn" class="btn btn-danger">
                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
                 </button>
-            </div>
-            <div class="header-date">
-                Hôm nay: <span id="current-date"></span>
-            </div>
         </div>
     </div>
 </header>
@@ -116,16 +123,19 @@
                     <th>Hệ điều hành</th>
                     <th>Thương hiệu</th>
                     <th>Trạng thái</th>
+                    <th>Ghi chú</th>
                     <th>Thao tác</th>
                 </tr>
                 </thead>
                 <tbody id="products-table">
-                    <tr th:each="sp : ${sanpham}">
-                        <td class="font-semibold" th:text="${sp.MASP}"></td>
+                    <tr th:each="sp : ${sanpham}"
+                        th:classappend="${sp.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
+                        <td th:text="${sp.MASP}"></td>
                         <td th:text="${sp.TENSP}"></td>
                         <td th:text="${sp.HEDIEUHANH}"></td>
                         <td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
-                        <td th:text="${sp.TRANGTHAI == 0 ? 'Mở bán' : 'Đóng'}"></td>
+                        <td th:text="${sp.TRANGTHAI == 0 ? 'Mở bán' : 'Ngừng bán'}"></td>
+                        <td th:text="${sp.GHICHU != null ? sp.GHICHU : ''}"></td>
                         <td>
                             <div class="table-actions">
                                 <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${sp.MASP})}" title="Xem chi tiết">
@@ -134,9 +144,17 @@
                                 <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-sanpham/{id}(id=${sp.MASP})}">
+                                <!-- <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-sanpham/{id}(id=${sp.MASP})}">
                                     <i class="fas fa-trash"></i>
-                                </a>
+                                </a> -->
+
+                                <button
+                                        type="button"
+                                        class="btn btn-danger"
+                                        th:attr="data-id=${sp.MASP}, data-ten=${sp.TENSP}"
+                                        onclick="showDeleteModal(this)">
+                                    Xóa
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -146,71 +164,40 @@
         </div>
     </div>
 
-
-<!-- Modal -->
-<div id="modal-overlay" class="modal-overlay">
-    <div id="modal" class="modal">
-        <div class="modal-header">
-            <h3 id="modal-title" class="modal-title">Modal Title</h3>
-            <button class="modal-close" onclick="closeModal()" title="Close modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <!-- Modal content will be populated here -->
-        </div>
-        <div class="modal-footer" id="modal-footer">
-            <!-- Modal footer will be populated here -->
-        </div>
+<!-- Modal xác nhận xóa -->
+<div id="deleteModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Xóa sản phẩm</h3>
+        <p id="deleteMessage"></p>
+        <form th:action="@{/delete-sanpham}" method="POST">
+            <input type="hidden" id="deleteId" name="id">
+            <textarea name="GHICHU" placeholder="Nhập lý do xóa..." required></textarea>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-danger">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- Confirm Delete Modal -->
-<div id="confirm-modal" class="modal-overlay">
-    <div class="modal modal-small">
-        <div class="modal-header">
-            <h3 class="modal-title">Xác nhận xóa</h3>
-            <button class="modal-close" onclick="closeConfirmModal()" title="Close confirmation modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
-            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
-        </div>
-    </div>
-</div>
+<script>
+function showDeleteModal(button) {
+    const id = button.getAttribute('data-id');
+    const ten = button.getAttribute('data-ten');
 
-<!-- Thêm modal đăng nhập vào cuối body -->
-<div id="login-modal" class="modal-overlay">
-    <div class="modal modal-small-width">
-        <div class="modal-header">
-            <h3 class="modal-title">Đăng nhập Admin</h3>
-            <button class="modal-close" onclick="closeLoginModal()" title="Close login modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
-                <div class="form-group">
-                    <label class="form-label required">Tên đăng nhập</label>
-                    <input type="text" id="admin-username" class="form-input" required title="Nhập tên đăng nhập" placeholder="Tên đăng nhập">
-                </div>
-                <div class="form-group">
-                    <label class="form-label required">Mật khẩu</label>
-                    <input type="password" id="admin-password" class="form-input" required title="Nhập mật khẩu" placeholder="Mật khẩu">
-                </div>
-                <div class="margin-top-1rem">
-                    <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                    <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+    // Gán giá trị vào modal
+    document.getElementById("deleteId").value = id;
+    document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa sản phẩm "${ten}" không?`;
+
+    // Hiện modal
+    document.getElementById("deleteModal").classList.remove("hidden");
+}
+
+
+function closeModal() {
+    document.getElementById("deleteModal").classList.add("hidden");
+}
+</script>
 
 <!-- Thêm thư viện SheetJS để xuất Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -219,12 +206,10 @@
 // filepath: e:\OOAD\lap123\src\main\resources\templates\sanpham\index.html
 function filterProducts() {
     const searchInput = document.getElementById('product-search').value.toLowerCase();
-    const brandFilter = document.getElementById('brand-filter').value.toLowerCase();
     const rows = document.querySelectorAll('#products-table tr');
     let visibleCount = 0;
 
     rows.forEach(row => {
-        // Lấy dữ liệu các trường
         const maSp = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
         const tenSp = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
         const heDieuHanh = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
@@ -242,10 +227,6 @@ function filterProducts() {
         )) {
             show = false;
         }
-        // Lọc theo thương hiệu nếu chọn
-        if (brandFilter && thuongHieu !== brandFilter) {
-            show = false;
-        }
         row.style.display = show ? '' : 'none';
         if (show) visibleCount++;
     });
@@ -254,7 +235,7 @@ function filterProducts() {
     if (!noResultRow) {
         noResultRow = document.createElement('tr');
         noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="6" style="text-align:center;color:#dc3545;font-weight:500;">Không có sản phẩm phù hợp</td>`;
+        noResultRow.innerHTML = `<td colspan="7" style="text-align:center;color:#dc3545;font-weight:500;">Không có sản phẩm phù hợp</td>`;
         document.getElementById('products-table').appendChild(noResultRow);
     }
     noResultRow.style.display = (visibleCount === 0) ? '' : 'none';

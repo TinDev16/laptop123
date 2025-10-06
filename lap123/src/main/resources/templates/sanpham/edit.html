@@ -147,14 +147,18 @@
             </select>
         </div>
         
-        
     
         <div class="form-group">
             <label for="TRANGTHAI">Trạng thái</label>
             <select id="TRANGTHAI" th:field="*{TRANGTHAI}">
-                <option value="1">Mở bán</option>
-                <option value="0">Đóng</option>
+                <option value="0">Mở bán</option>
+                <option value="1">Ngừng bán</option>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label for="GHICHU">Ghi chú</label>
+            <input type="text" id="GHICHU" th:field="*{GHICHU}">
         </div>
     
         <button type="submit" class="btn btn-primary">Cập nhật</button>

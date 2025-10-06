@@ -6,6 +6,52 @@
     <title>Hệ thống Quản lý Cửa hàng Laptop</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .table {
+            min-width: 1200px; /* Đảm bảo đủ cho tất cả cột */
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.98rem;
+            white-space: nowrap; /* Không xuống dòng */
+        }
+        @media (max-width: 900px) {
+            .table th, .table td {
+                padding: 8px 4px;
+                font-size: 0.92rem;
+            }
+            .table {
+                min-width: 900px;
+            }
+        }
+        @media (max-width: 700px) {
+            .table {
+                min-width: 700px;
+            }
+        }
+
+    .bg-red-100 {
+        background-color: #ffe5e5;
+    }
+    .modal {
+        position: fixed; inset: 0; display: flex;
+        align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+        background: white; padding: 20px; border-radius: 10px;
+        width: 400px;
+    }
+    .hidden { display: none; }
+</style>
 </head>
 
 <body>
@@ -19,16 +65,9 @@
         <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
         <div class="header-right">
             <div id="admin-auth">
-                <button id="login-btn" class="btn btn-secondary" onclick="adminLogin()">
-                    <i class="fas fa-user"></i> Đăng nhập
-                </button>
-                <button id="logout-btn" class="btn btn-danger hidden" onclick="adminLogout()">
+                <button id="logout-btn" class="btn btn-danger">
                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
                 </button>
-            </div>
-            <div class="header-date">
-                Hôm nay: <span id="current-date"></span>
-            </div>
         </div>
     </div>
 </header>
@@ -108,8 +147,8 @@
                 <thead>
                 <tr>
                     <th>Mã SP</th>
-                    <th>Nhà cung cấp</th>
                     <th>Tên sản phẩm</th>
+                    <th>Nhà cung cấp</th>
                     <th>Hình ảnh</th>
                     <th>Xuất xứ</th>
                     <th>Chip</th>
@@ -123,22 +162,23 @@
                 </tr>
                 </thead>
                 <tbody id="products-table">
-                    <tr th:each="tk : ${tonkho}">
+                    <tr th:each="tk : ${tonkho}"
+                        th:classappend="${tk.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
                         <td class="font-semibold" th:text="${tk.MASP}"></td>
-                        <td> th:text="${tk.NHACUNGCAP}"</td>
                         <td th:text="${tk.TENSP}"></td>
+                        <td> th:text="${tk.NHACUNGCAP}"</td>
                         <td>
                             <img th:src="@{'/uploads/' + ${tk.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
                         </td>
                         <td th:text="${tk.XUATXU}"></td>
                         <td th:text="${tk.CHIP}"></td>
                         <td th:text="${tk.HEDIEUHANH}"></td>
-                        <td th:text="${tk.THUONGHIEU}"></td>
+                        <td th:text="${tk.thuonghieu != null ? tk.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
                         <td> th:text="${tk.SOLUONGTON}"</td>
                         <td >th:text="${#numbers.formatDecimal(tk.GIANHAP, 0, 'COMMA', 0, 'POINT') + ' ₫'}"</td>
                         <td >th:text="${#numbers.formatDecimal(tk.GIABAN, 0, 'COMMA', 0, 'POINT') + ' ₫'}"</td>
                         <td >th:text="${#dates.format(tk.NGAYNHAP, 'dd/MM/yyyy')}"</td>
-                        <td th:text="${tk.TRANGTHAI == 1 ? 'Mở bán' : 'Đóng'}"></td>
+                        <td th:text="${tk.TRANGTHAI == 0 ? 'Mở bán' : 'Đóng'}"></td>
                     </tr>
                 </tbody>
 

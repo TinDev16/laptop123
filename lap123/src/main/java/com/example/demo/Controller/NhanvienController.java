@@ -4,10 +4,7 @@ import com.example.demo.Entity.Sanpham;
 import com.example.demo.Service.NhanvienService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class NhanvienController {
@@ -50,10 +47,18 @@ public class NhanvienController {
     }
 
     @GetMapping("/delete-nhanvien/{id}")
-    public String deleteNhanvien(@PathVariable("id") int id) {
-        nhanvienService.deleteNhanvien(id);
-        return "redirect:/nhanvien";
+    public String deleteNhanvien(@PathVariable("id") int id, Model model) {
+
+        Nhanvien nhanvien = nhanvienService.getNhanvienById(id);
+        model.addAttribute("nhanvien",nhanvien);
+        return "redirect:/delete";
     }
 
+    @PostMapping("/delete-nhanvien")
+    public String deleteSanpham(@RequestParam("id") int id,
+                                @RequestParam("GHICHU") String GHICHU) {
+        nhanvienService.deleteNhanvien(id, GHICHU);
+        return "redirect:/nhanvien";
+    }
 
 }

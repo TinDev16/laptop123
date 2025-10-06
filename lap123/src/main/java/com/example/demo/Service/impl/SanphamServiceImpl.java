@@ -1,6 +1,5 @@
 package com.example.demo.Service.impl;
 
-import com.example.demo.Entity.Nhanvien;
 import com.example.demo.Entity.Sanpham;
 import com.example.demo.Repository.SanphamRepository;
 import com.example.demo.Service.SanphamService;
@@ -59,6 +58,7 @@ public class SanphamServiceImpl implements SanphamService {
         existing.setThuonghieu(sanpham.getThuonghieu());
         existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
         existing.setTRANGTHAI(sanpham.getTRANGTHAI());
+        existing.setGHICHU(sanpham.getGHICHU());
 
         // Nếu trong form có upload ảnh mới, thì xử lý update ảnh ở đây
         // còn nếu không có, giữ nguyên existing.getHINHANHSP()
@@ -67,8 +67,13 @@ public class SanphamServiceImpl implements SanphamService {
     }
 
     @Override
-    public void deleteSanpham(int id) {
-        sanphamRepository.deleteById(id);
+    public void deleteSanpham(int id, String GHICHU) {
+        Sanpham sp = sanphamRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với id=" + id));
+
+        sp.setTRANGTHAI(1); // chuyển sang ngừng
+        sp.setGHICHU(GHICHU);
+        sanphamRepository.save(sp);
     }
 
 

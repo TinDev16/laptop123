@@ -115,8 +115,13 @@
             <label for="TRANGTHAI">Trạng thái</label>
             <select id="TRANGTHAI" th:field="*{TRANGTHAI}">
                 <option value="0">Hoạt động</option>
-                <option value="1">Nghỉ việc</option>
+                <option value="1">Đóng</option>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label for="GHICHU">Ghi chú</label>
+            <input type="text" id="GHICHU" th:field="*{GHICHU}">
         </div>
     
         <div class="form-actions">

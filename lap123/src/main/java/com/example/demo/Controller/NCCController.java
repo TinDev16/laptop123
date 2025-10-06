@@ -4,10 +4,7 @@ import com.example.demo.Entity.NCC;
 import com.example.demo.Service.NCCService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class NCCController {
@@ -50,11 +47,17 @@ public class NCCController {
     }
 
     @GetMapping("/delete-ncc/{id}")
-    public String deleteNhacungcap(@PathVariable("id") int id) {
-        nccService.deleteNCC(id);
+    public String deleteNhacungcap(@PathVariable("id") int id, Model model) {
+        NCC ncc = nccService.getNCCById(id);
+        model.addAttribute("ncc", ncc);
         return "redirect:/ncc";
     }
 
-
+    @PostMapping("/delete-ncc")
+    public String deleteNhacungcap(@RequestParam("id") int id,
+                                   @RequestParam("GHICHU") String GHICHU) {
+        nccService.deleteNCC(id, GHICHU);
+        return "redirect:/ncc";
+    }
 
 }

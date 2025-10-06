@@ -34,17 +34,21 @@ public class Nhanvien {
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
 
+    @Column(name = "GHICHU")
+    private String GHICHU;
+
     public Nhanvien() {
 
     }
 
-    public Nhanvien(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI) {
+    public Nhanvien(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI, String GHICHU) {
         this.HOTEN = HOTEN;
         this.GIOITINH = GIOITINH;
         this.NGAYSINH = NGAYSINH;
         this.SDT = SDT;
         this.NGAYTHAMGIA = NGAYTHAMGIA;
         this.TRANGTHAI = TRANGTHAI;
+        this.GHICHU = GHICHU;
     }
 
     public int getMANV() {
@@ -101,5 +105,14 @@ public class Nhanvien {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+
     }
+        public String getGHICHU() {
+        return GHICHU;
+    }
+
+    public void setGHICHU(String GHICHU) {
+        this.GHICHU = GHICHU;
+    }
+
 }

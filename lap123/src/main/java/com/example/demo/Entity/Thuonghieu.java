@@ -18,14 +18,17 @@ public class Thuonghieu {
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
 
+    @Column(name = "GHICHU")
+    private String GHICHU;
 
     public Thuonghieu() {
 
     }
 
-    public Thuonghieu(String TENTHUONGHIEU, int TRANGTHAI) {
+    public Thuonghieu(String TENTHUONGHIEU, int TRANGTHAI, String GHICHU) {
         this.TENTHUONGHIEU = TENTHUONGHIEU;
         this.TRANGTHAI = TRANGTHAI;
+        this.GHICHU = GHICHU;
     }
 
     public int getMATHUONGHIEU() {
@@ -50,6 +53,14 @@ public class Thuonghieu {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+    }
+
+    public String getGHICHU() {
+        return GHICHU;
+    }
+
+    public void setGHICHU(String GHICHU) {
+        this.GHICHU = GHICHU;
     }
 
     @Override

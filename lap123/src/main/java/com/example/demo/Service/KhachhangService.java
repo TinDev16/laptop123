@@ -16,5 +16,5 @@ public interface KhachhangService {
 
     Khachhang updateKhachhang(Khachhang khachhang);
 
-    void deleteKhachhangById(int id);
+    void deleteKhachhang(int id, String GHICHU);
 }

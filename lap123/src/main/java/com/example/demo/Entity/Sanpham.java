@@ -40,11 +40,13 @@ public class Sanpham {
     @Column(name = "GHICHU")
     private String GHICHU;
 
+    @Column(name = "SOLUONGTON")
+    private Integer SOLUONGTON;
 
     public Sanpham() {
 
     }
-    public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, Thuonghieu thuonghieu, int TRANGTHAI, String GHICHU) {
+    public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, Thuonghieu thuonghieu, int TRANGTHAI, String GHICHU, Integer SOLUONGTON) {
         super();
         this.TENSP = TENSP;
         this.HINHANHSP = HINHANHSP;
@@ -55,6 +57,7 @@ public class Sanpham {
         this.thuonghieu = thuonghieu;
         this.TRANGTHAI = TRANGTHAI;
         this.GHICHU = GHICHU;
+        this.SOLUONGTON = SOLUONGTON;
     }
 
     public int getMASP() {
@@ -136,5 +139,26 @@ public class Sanpham {
 
     public void setGHICHU(String GHICHU) {
         this.GHICHU = GHICHU;
+    }
+
+    public Integer getSOLUONGTON() {
+        return SOLUONGTON;
+    }
+
+    public void setSOLUONGTON(Integer SOLUONGTON) {
+        this.SOLUONGTON = SOLUONGTON;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Sanpham)) return false;
+        Sanpham that = (Sanpham) o;
+        return MASP == that.MASP;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(MASP);
     }
 }

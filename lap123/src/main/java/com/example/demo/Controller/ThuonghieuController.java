@@ -42,6 +42,7 @@ public class ThuonghieuController {
         return "thuonghieu/edit";
     }
 
+
     @PostMapping("/update-thuonghieu")
     public String updateThuonghieu(@ModelAttribute Thuonghieu thuonghieu) {
         thuonghieuService.save(thuonghieu);

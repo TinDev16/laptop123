@@ -107,9 +107,14 @@
         </div>
     
         <div class="form-group">
-            <label>Hình ảnh sản phẩm</label>
-            <img th:if="${sanpham.HINHANHSP != null}" th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}" alt="Ảnh hiện tại">
-            <input type="file" name="file" accept="image/*">
+            <label>Hình ảnh sản phẩm</label><br>
+            <img th:if="${sanpham.HINHANHSP != null}"
+                 th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}"
+                 alt="Ảnh hiện tại" style="max-width: 200px; height: auto;">
+    
+            <div id="imagePreview" style="margin-top:10px;"></div>
+    
+            <input type="file" name="file" accept="image/*" onchange="previewImage(event)">
         </div>
     
         <div class="form-group">
@@ -177,6 +182,8 @@
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.alt = "Xem trước hình ảnh";
+                img.style.maxWidth = "200px";
+                img.style.height = "auto";
                 preview.appendChild(img);
             };
             reader.readAsDataURL(input.files[0]);

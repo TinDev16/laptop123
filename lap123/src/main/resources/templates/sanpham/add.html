@@ -136,7 +136,7 @@
         <div class="form-group">
             <label>Hệ điều hành</label>
             <select th:field="*{HEDIEUHANH}" class="form-input" required>
-                <option value="" disabled>-- Chọn hệ điều hành --</option>
+                <option value="">-- Chọn hệ điều hành --</option>
                 <option value="Windows">Windows</option>
                 <option value="Linux">Linux</option>
                 <option value="macOS">macOS</option>
@@ -149,7 +149,7 @@
         <div class="form-group">
             <label>Thương hiệu</label>
             <select th:field="*{thuonghieu}" class="form-control" required>
-                <option value="" disabled selected>-- Chọn thương hiệu --</option>
+                <option value="">-- Chọn thương hiệu --</option>
                 <option th:each="th : ${thuonghieuList}"
                         th:value="${th.MATHUONGHIEU}"
                         th:text="${th.TENTHUONGHIEU}">
@@ -157,14 +157,6 @@
             </select>
         </div>
 
-
-        <div class="form-group">
-            <label for="TRANGTHAI">Trạng thái</label>
-            <select id="TRANGTHAI" name="trangThai" th:field="*{TRANGTHAI}">
-                <option value="0" selected>Mở bán</option>
-                <option value="1">Đóng</option>
-            </select>
-        </div>        
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
             <a th:href="@{/sanpham}" class="btn btn-secondary">Hủy</a>

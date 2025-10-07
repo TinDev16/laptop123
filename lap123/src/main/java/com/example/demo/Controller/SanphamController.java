@@ -95,8 +95,40 @@ public class SanphamController {
     }
 
     @PostMapping("/update-sanpham")
-    public String updateSanpham(@ModelAttribute Sanpham sanpham) {
-        sanphamService.updateSanpham(sanpham);
+    public String updateSanpham(@ModelAttribute Sanpham sanpham,
+                                @RequestParam(value = "file", required = false) MultipartFile file) {
+
+        // Lấy sản phẩm cũ
+        Sanpham existing = sanphamService.getSanphamById(sanpham.getMASP());
+
+        // Nếu có upload ảnh mới
+        if (file != null && !file.isEmpty()) {
+            try {
+                String uploadDir = "src/main/resources/static/uploads/";
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+                Path path = Paths.get(uploadDir + fileName);
+                Files.createDirectories(path.getParent());
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+                existing.setHINHANHSP(fileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        // Cập nhật các trường khác
+        existing.setTENSP(sanpham.getTENSP());
+        existing.setXUATXU(sanpham.getXUATXU());
+        existing.setCHIP(sanpham.getCHIP());
+        existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
+        existing.setKICHTHUOCMAN(sanpham.getKICHTHUOCMAN());
+        existing.setThuonghieu(sanpham.getThuonghieu());
+        existing.setTRANGTHAI(sanpham.getTRANGTHAI());
+        existing.setGHICHU(sanpham.getGHICHU());
+
+        sanphamService.updateSanpham(existing);
         return "redirect:/sanpham";
     }
 

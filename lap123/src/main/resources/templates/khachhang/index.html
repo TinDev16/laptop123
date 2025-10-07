@@ -22,6 +22,15 @@
     width: 400px;
 }
 .hidden { display: none; }
+
+    .bg-red-100 {
+        background-color: #ffe5e5;
+    }
+
+    .table-container h3 {
+        color: #333;
+        font-weight: 600;
+    }
 </style>
 <body>
 <!-- Header -->
@@ -132,7 +141,7 @@
                 </thead>
                 <tbody id="employees-table">
                 <tr th:each="kh : ${khachhang}"
-                th:classappend="${kh.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
+                    th:if="${kh.TRANGTHAI == 0}">
                     <td class="font-semibold" th:text="${kh.MAKH}"></td>
                     <td th:text="${kh.HOTEN}"></td>
                     <td th:text="${kh.GIOITINH}"></td>
@@ -146,9 +155,6 @@
                             <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <!-- <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-khachhang/{id}(id=${kh.MAKH})}">
-                                <i class="fas fa-trash"></i>
-                            </a> -->
                             <button
                                 type="button"
                                 class="btn btn-danger"
@@ -156,6 +162,44 @@
                                 onclick="showDeleteModal(this)">
                                 Xóa
                             </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <br><br><br>
+            <h1 style="margin: 20px 0 10px;">🚫Khách hàng ngừng hoạt động</h1>
+            <table class="table bg-red-100">
+                <thead>
+                <tr>
+                    <th>Mã KH</th>
+                    <th>Họ tên</th>
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày tham gia</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="employees-table">
+                <tr th:each="kh : ${khachhang}"
+                    th:if="${kh.TRANGTHAI == 1}">
+                    <td class="font-semibold" th:text="${kh.MAKH}"></td>
+                    <td th:text="${kh.HOTEN}"></td>
+                    <td th:text="${kh.GIOITINH}"></td>
+                    <td th:text="${kh.NGAYSINH != null ? #dates.format(kh.NGAYSINH, 'dd/MM/yyyy') : ''}"></td>
+                    <td th:text="${kh.SDT}"></td>
+                    <td th:text="${kh.NGAYTHAMGIA != null ? #dates.format(kh.NGAYTHAMGIA, 'dd/MM/yyyy') : ''}"></td>
+                    <td th:text="${kh.TRANGTHAI == 0 ? 'Hoạt động' : 'Ngừng hoạt động'}"></td>
+                    <td th:text="${kh.GHICHU != null ? kh.GHICHU : ''}"></td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}">
+                                <i class="fas fa-edit"></i>
+                            </a>
                         </div>
                     </td>
                 </tr>

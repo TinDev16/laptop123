@@ -30,6 +30,9 @@ public class SanphamServiceImpl implements SanphamService {
 
     @Override
     public Sanpham saveSanpham(Sanpham sanpham) {
+        if (sanpham.getSOLUONGTON() == null) {
+            sanpham.setSOLUONGTON(0);
+        }
         return sanphamRepository.save(sanpham);
     }
 

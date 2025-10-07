@@ -21,6 +21,15 @@
     width: 400px;
 }
 .hidden { display: none; }
+
+    .bg-red-100 {
+        background-color: #ffe5e5;
+    }
+
+    .table-container h3 {
+        color: #333;
+        font-weight: 600;
+    }
 </style>
 <body>
 <!-- Header -->
@@ -130,7 +139,7 @@
                 </thead>
                 <tbody id="products-table">
                     <tr th:each="ncc : ${ncc}"
-                    th:classappend="${ncc.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
+                        th:if="${ncc.TRANGTHAI} == 0">
                         <td class="font-semibold" th:text="${ncc.MANCC}"></td>
                         <td th:text="${ncc.TENNCC}"></td>
                         <td th:text="${ncc.DIACHI}"></td>
@@ -142,10 +151,6 @@
                                 <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-ncc/{id}(id=${ncc.MANCC})}">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <!-- <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-ncc/{id}(id=${ncc.MANCC})}">
-                                    <i class="fas fa-trash"></i>
-                                </a> -->
-
                                 <button
                                     type="button"
                                     class="btn btn-danger"
@@ -156,6 +161,40 @@
                             </div>
                         </td>
                     </tr>
+                </tbody>
+            </table>
+
+            <h1 style="margin: 20px 0 10px;">🚫Nhà cung cấp ngưng hợp tác</h1>
+            <table class="table bg-red-100">
+            <table class="table bg-red-100">
+                <thead>
+                <tr>
+                    <th>Mã Nhà cung cấp</th>
+                    <th>Tên nhà cung cấp</th>
+                    <th>Địa chỉ</th>
+                    <th>Số điện thoại</th>
+                    <th>Trang thái</th>
+                    <th>Ghi chú</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="products-table">
+                <tr th:each="ncc : ${ncc}"
+                    th:if="${ncc.TRANGTHAI} == 1">
+                    <td class="font-semibold" th:text="${ncc.MANCC}"></td>
+                    <td th:text="${ncc.TENNCC}"></td>
+                    <td th:text="${ncc.DIACHI}"></td>
+                    <td th:text="${ncc.SDT}"></td>
+                    <td th:text="${ncc.TRANGTHAI == 0 ? 'Mở nhập' : 'Ngừng nhập'}"></td>
+                    <td th:text="${ncc.GHICHU != null ? ncc.GHICHU : ''}"></td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-ncc/{id}(id=${ncc.MANCC})}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
                 </tbody>
 
             </table>

@@ -10,8 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Controller
 public class PhieunhapController {
@@ -39,13 +37,12 @@ public class PhieunhapController {
 
     @GetMapping("/phieunhap/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("nhanviens", nhanvienRepository.findAll());
-        model.addAttribute("nccs", NCCRepository.findAll());
-        model.addAttribute("sanphams", sanphamRepository.findAll());
+        model.addAttribute("nhanvien", nhanvienRepository.findAll());
+        model.addAttribute("nccList", NCCRepository.findAll());
+        model.addAttribute("sanpham", sanphamRepository.findAll());
         model.addAttribute("phieunhap", new Phieunhap());
         return "phieunhap/add";
     }
-
 
 //    @PostMapping("/create")
 //    public String createPhieuNhap(@ModelAttribute Phieunhap phieunhap,

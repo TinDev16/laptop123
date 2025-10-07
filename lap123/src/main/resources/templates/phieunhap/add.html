@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Giao diện thêm phiếu nhập hàng với tính năng chọn sản phẩm, nhà cung cấp, và tính toán tổng tiền. Tối ưu hóa SEO cho quản lý kho hàng.">
     <title>Thêm Phiếu Nhập Hàng</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
@@ -25,185 +24,178 @@
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="container mx-auto p-6 max-w-4xl">
-        <h1 class="text-3xl font-bold text-center mb-6">Thêm Phiếu Nhập Hàng</h1>
-        <form id="import-form" class="bg-white shadow-md rounded-lg p-6">
-            <div class="mb-4">
-                <select id="creator" name="creator" th:field="*{nhanvien.MANV}" title="Chọn nhân viên"
-                class="mt-1 block w-full p-2 border border-gray-300 rounded-lg">
-            <option value="">-- Chọn nhân viên --</option>
-            <option th:each="nv : ${nhanvien}" 
-                    th:value="${nv.MANV}" 
-                    th:text="${nv.TENNV}"></option>
-        </select>
-            </div>
+<div class="container mx-auto p-6 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-6">Thêm Phiếu Nhập Hàng</h1>
 
-            <div class="mb-4">
-                <label for="supplier" class="block text-sm font-medium text-gray-700">Nhà cung cấp:</label>
-                <select id="supplier" name="supplier" required class="mt-1 block w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">Chọn nhà cung cấp</option>
-                    <option value="ncc1">Nhà cung cấp A</option>
-                    <option value="ncc2">Nhà cung cấp B</option>
-                </select>
-            </div>
+    <form th:action="@{/phieunhap/save}" th:object="${phieunhap}" method="post" class="bg-white shadow-md rounded-lg p-6">
 
-            <h2 class="text-xl font-semibold mb-4">Chọn sản phẩm để nhập</h2>
-            <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm..." class="mb-4 w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-            <div id="product-list-container" class="mb-4">
-                <table class="product-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Số lượng tồn</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-list"></tbody>
-                </table>
-            </div>
+        <!-- Nhân viên -->
+        <div class="mb-4">
+            <select id="creator" name="creator" th:field="*{nhanvien}" title="Chọn nhân viên" class="mt-1 block w-full p-2 border border-gray-300 rounded-lg"> 
+                <option value="">-- Chọn nhân viên --</option> 
+                <option th:each="nv : ${nhanvien}" 
+                        th:value="${nv.MANV}" 
+                        th:text="${nv.HOTEN}"> 
+                </option> 
+            </select>
+        </div>
 
-            <h2 class="text-xl font-semibold mb-4">Sản phẩm đã chọn</h2>
-            <table class="w-full border-collapse mb-4">
+        <!-- Nhà cung cấp -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Nhà cung cấp:</label>
+            <select th:field="*{ncc}" class="mt-1 block w-full p-2 border border-gray-300 rounded-lg">
+                <option value="">-- Chọn nhà cung cấp --</option>
+                <option th:each="ncc : ${nccList}"
+                        th:value="${ncc.MANCC}"
+                        th:text="${ncc.TENNCC}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <h2 class="text-xl font-semibold mb-4">Chọn sản phẩm để nhập</h2>
+        <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm..."
+               class="mb-4 w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+
+        <div id="product-list-container" class="mb-4">
+            <table class="product-table">
                 <thead>
-                    <tr class="bg-gray-200">
-                        <th class="border p-3 text-left">STT</th>
-                        <th class="border p-3 text-left">Tên sản phẩm</th>
-                        <th class="border p-3 text-left">Số lượng</th>
-                        <th class="border p-3 text-left">Giá nhập</th>
-                        <th class="border p-3 text-left">Tổng tiền</th>
-                        <th class="border p-3 text-left">Hành động</th>
-                    </tr>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng tồn</th>
+                </tr>
                 </thead>
-                <tbody id="selected-products"></tbody>
+                <tbody id="product-list">
+                <tr th:each="sp, idx : ${sanpham}"
+                    th:if="${sp.TRANGTHAI == 0}">
+                    <td th:text="${idx.index + 1}"></td>
+                    <td th:text="${sp.TENSP}"></td>
+                    <td th:text="${sp.SOLUONGTON}"></td>
+                </tr>
+                </tbody>
             </table>
+        </div>
 
-            <div id="total-amount" class="text-lg font-bold mb-4">Tổng tiền: 0 VND</div>
+        <!-- Sản phẩm đã chọn -->
+        <h2 class="text-xl font-semibold mb-4">Sản phẩm đã chọn</h2>
+        <table class="w-full border-collapse mb-4">
+            <thead>
+            <tr class="bg-gray-200">
+                <th class="border p-3 text-left">STT</th>
+                <th class="border p-3 text-left">Tên sản phẩm</th>
+                <th class="border p-3 text-left">Số lượng nhập</th>
+                <th class="border p-3 text-left">Giá nhập</th>
+                <th class="border p-3 text-left">Tổng tiền</th>
+                <th class="border p-3 text-left">Hành động</th>
+            </tr>
+            </thead>
+            <tbody id="selected-products">
+            <!-- sẽ được thêm bằng JS -->
+            </tbody>
+        </table>
 
-            <div class="flex gap-4">
-                <button type="submit" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">Tạo phiếu nhập</button>
-                <button type="button" class="flex-1 cancel-btn" onclick="window.history.back()">Hủy</button>
-            </div>
-        </form>
-    </div>
+        <div id="total-amount" class="text-lg font-bold mb-4">
+            Tổng tiền: <span id="tongTien">0</span> VND
+        </div>
 
-    <script>
-        // Dữ liệu sản phẩm mẫu
-        const products = [
-            { id: 1, name: 'Sản phẩm 1', quantity: 100 },
-            { id: 2, name: 'Sản phẩm 2', quantity: 50 },
-            { id: 3, name: 'Sản phẩm 3', quantity: 200 },
-        ];
+        <div class="flex gap-4">
+            <button type="submit" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">Tạo phiếu nhập</button>
+            <button type="button" class="flex-1 cancel-btn" onclick="window.history.back()">Hủy</button>
+        </div>
+    </form>
+</div>
 
-        const selectedProducts = [];
-        let stt = 1;
+<script>
+    const selectedProducts = [];
+    let stt = 1;
 
-        // Hiển thị danh sách sản phẩm
-        function renderProductList(filter = '') {
-            const list = document.getElementById('product-list');
-            list.innerHTML = '';
-            products.filter(p => p.name.toLowerCase().includes(filter.toLowerCase())).forEach(product => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.id}</td>
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                `;
-                row.classList.add('cursor-pointer');
-                row.onclick = () => addProduct(product);
-                list.appendChild(row);
-            });
+    // Khi nhấn vào 1 dòng sản phẩm
+    document.addEventListener('click', function (e) {
+        const row = e.target.closest('#product-list tr');
+        if (row) {
+            const tds = row.querySelectorAll('td');
+            const id = tds[0].innerText;
+            const name = tds[1].innerText;
+            const quantity = tds[2].innerText;
+            addProduct({id, name, quantity});
         }
+    });
 
-        // Thêm sản phẩm vào danh sách đã chọn
-        function addProduct(product) {
-            const existing = selectedProducts.find(p => p.id === product.id);
-            if (!existing) {
-                selectedProducts.push({ ...product, importQuantity: 1, importPrice: 0, itemStt: stt++ });
-                renderSelectedProducts();
-            }
+    function addProduct(product) {
+        if (!selectedProducts.find(p => p.id === product.id)) {
+            selectedProducts.push({...product, importQuantity: 1, importPrice: 0, itemStt: stt++});
+            renderSelectedProducts();
         }
+    }
 
-        // Hiển thị danh sách sản phẩm đã chọn
-        function renderSelectedProducts() {
-            const tbody = document.getElementById('selected-products');
-            tbody.innerHTML = '';
-            let total = 0;
-            selectedProducts.forEach((p, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border p-3">${p.itemStt}</td>
-                    <td class="border p-3">${p.name}</td>
-                    <td class="border p-3">
-                        <div class="input-group">
-                            <input type="number" value="${p.importQuantity}" min="1" class="w-full p-2 border border-gray-300 rounded-lg" onchange="updateQuantity(${index}, this.value)">
-                            <div class="btn-group">
-                                <button onclick="incrementQuantity(${index})">+</button>
-                                <button onclick="decrementQuantity(${index})">-</button>
-                            </div>
+    function renderSelectedProducts() {
+        const tbody = document.getElementById('selected-products');
+        tbody.innerHTML = '';
+        let total = 0;
+        selectedProducts.forEach((p, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="border p-3">${p.itemStt}</td>
+                <td class="border p-3">${p.name}</td>
+                <td class="border p-3">
+                    <div class="input-group">
+                        <input type="number" value="${p.importQuantity}" min="1"
+                               class="w-full p-2 border border-gray-300 rounded-lg"
+                               onchange="updateQuantity(${index}, this.value)">
+                        <div class="btn-group">
+                            <button type="button" onclick="incrementQuantity(${index})">+</button>
+                            <button type="button" onclick="decrementQuantity(${index})">-</button>
                         </div>
-                    </td>
-                    <td class="border p-3">
-                        <input type="number" value="${p.importPrice}" min="0" step="1000" class="w-full p-2 border border-gray-300 rounded-lg" onchange="updatePrice(${index}, this.value)">
-                    </td>
-                    <td class="border p-3">${(p.importQuantity * p.importPrice).toLocaleString()} VND</td>
-                    <td class="border p-3"><button class="delete-btn" onclick="removeProduct(${index})">Xóa</button></td>
-                `;
-                tbody.appendChild(row);
-                total += p.importQuantity * p.importPrice;
-            });
-            document.getElementById('total-amount').innerText = `Tổng tiền: ${total.toLocaleString()} VND`;
-        }
-
-        // Cập nhật số lượng
-        function updateQuantity(index, value) {
-            selectedProducts[index].importQuantity = parseInt(value) || 1;
-            renderSelectedProducts();
-        }
-
-        // Tăng số lượng
-        function incrementQuantity(index) {
-            selectedProducts[index].importQuantity++;
-            renderSelectedProducts();
-        }
-
-        // Giảm số lượng
-        function decrementQuantity(index) {
-            if (selectedProducts[index].importQuantity > 1) {
-                selectedProducts[index].importQuantity--;
-                renderSelectedProducts();
-            }
-        }
-
-        // Cập nhật giá nhập
-        function updatePrice(index, value) {
-            selectedProducts[index].importPrice = parseFloat(value) || 0;
-            renderSelectedProducts();
-        }
-
-        // Xóa sản phẩm
-        function removeProduct(index) {
-            selectedProducts.splice(index, 1);
-            selectedProducts.forEach((p, i) => p.itemStt = i + 1);
-            stt = selectedProducts.length + 1;
-            renderSelectedProducts();
-        }
-
-        // Tìm kiếm sản phẩm
-        document.getElementById('product-search').addEventListener('input', (e) => renderProductList(e.target.value));
-
-        // Khởi tạo
-        renderProductList();
-
-        // Xử lý submit form
-        document.getElementById('import-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            console.log('Dữ liệu phiếu nhập:', {
-                creator: document.getElementById('creator').value,
-                supplier: document.getElementById('supplier').value,
-                products: selectedProducts
-            });
-            alert('Phiếu nhập đã được tạo!');
+                    </div>
+                </td>
+                <td class="border p-3">
+                    <input type="text"
+                        value="${p.importPrice.toLocaleString('vi-VN')}"
+                        onblur="formatPriceInput(this, ${index})"
+                        onchange="updatePrice(${index}, this.value.replace(/\D/g, ''))">
+                </td>
+                <td class="border p-3">${(p.importQuantity * p.importPrice).toLocaleString()} VND</td>
+                <td class="border p-3"><button type="button" class="delete-btn" onclick="removeProduct(${index})">Xóa</button></td>
+            `;
+            tbody.appendChild(row);
+            total += p.importQuantity * p.importPrice;
         });
-    </script>
+        document.getElementById('tongTien').innerText = total.toLocaleString();
+    }
+
+    function updateQuantity(index, value) {
+        selectedProducts[index].importQuantity = parseInt(value) || 1;
+        renderSelectedProducts();
+    }
+    function incrementQuantity(index) { selectedProducts[index].importQuantity++; renderSelectedProducts(); }
+    function decrementQuantity(index) {
+        if (selectedProducts[index].importQuantity > 1) {
+            selectedProducts[index].importQuantity--;
+            renderSelectedProducts();
+        }
+    }
+    function updatePrice(index, value) {
+        selectedProducts[index].importPrice = parseFloat(value) || 0;
+        renderSelectedProducts();
+    }
+    function removeProduct(index) {
+        selectedProducts.splice(index, 1);
+        selectedProducts.forEach((p, i) => p.itemStt = i + 1);
+        stt = selectedProducts.length + 1;
+        renderSelectedProducts();
+    }
+
+    document.getElementById('product-search').addEventListener('input', function(e) {
+        const filter = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#product-list tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+    
+    
+</script>
 </body>
 </html>

@@ -15,11 +15,11 @@ public class Phieunhap {
 
     @ManyToOne
     @JoinColumn(name = "MANCC")
-    private NCC MANCC;
+    private NCC ncc;
 
     @ManyToOne
     @JoinColumn(name = "MANV")
-    private Nhanvien MANV;
+    private Nhanvien nhanvien;
 
     @Column(name = "THOIGIAN")
     private Date THOIGIAN;
@@ -39,20 +39,20 @@ public class Phieunhap {
         this.MAPHIEUNHAP = MAPHIEUNHAP;
     }
 
-    public NCC getMANCC() {
-        return MANCC;
+    public NCC getNcc() {
+        return ncc;
     }
 
-    public void setMANCC(NCC MANCC) {
-        this.MANCC = MANCC;
+    public void setNcc(NCC ncc) {
+        this.ncc = ncc;
     }
 
-    public Nhanvien getMANV() {
-        return MANV;
+    public Nhanvien getNhanvien() {
+        return nhanvien;
     }
 
-    public void setMANV(Nhanvien MANV) {
-        this.MANV = MANV;
+    public void setNhanvien(Nhanvien nhanvien) {
+        this.nhanvien = nhanvien;
     }
 
     public Date getTHOIGIAN() {

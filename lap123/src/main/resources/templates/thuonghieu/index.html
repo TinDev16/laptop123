@@ -22,6 +22,15 @@
     width: 400px;
 }
 .hidden { display: none; }
+
+    .bg-red-100 {
+        background-color: #ffe5e5;
+    }
+
+    .table-container h3 {
+        color: #333;
+        font-weight: 600;
+    }
 </style>
 <body>
 <!-- Header -->
@@ -128,7 +137,7 @@
                 </thead>
                 <tbody id="products-table">
                 <tr th:each="th : ${thuonghieu}"
-                th:classappend="${th.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
+                    th:if="${th.TRANGTHAI} == 0">
                     <td class="font-semibold" th:text="${th.MATHUONGHIEU}"></td>
                     <td th:text="${th.TENTHUONGHIEU}"></td>
                     <td th:text="${th.TRANGTHAI == 0 ? 'Hoạt động' : 'Đóng'}"></td>
@@ -149,6 +158,36 @@
                                 onclick="showDeleteModal(this)">
                                     Xóa
                             </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+
+            </table>
+
+            <h1 style="margin: 20px 0 10px;">🚫Thương hiệu ngưng nhận</h1>
+            <table class="table bg-red-100">
+                <thead>
+                <tr>
+                    <th>Mã thương hiệu</th>
+                    <th>Tên thương hiệu</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="products-table">
+                <tr th:each="th : ${thuonghieu}"
+                    th:if="${th.TRANGTHAI} == 1">
+                    <td class="font-semibold" th:text="${th.MATHUONGHIEU}"></td>
+                    <td th:text="${th.TENTHUONGHIEU}"></td>
+                    <td th:text="${th.TRANGTHAI == 0 ? 'Hoạt động' : 'Đóng'}"></td>
+                    <td th:text="${th.GHICHU != null ? th.GHICHU : ''}"></td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-thuonghieu/{id}(id=${th.MATHUONGHIEU})}">
+                                <i class="fas fa-edit"></i>
+                            </a>
                         </div>
                     </td>
                 </tr>

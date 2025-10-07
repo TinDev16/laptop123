@@ -115,4 +115,16 @@ public class Nhanvien {
         this.GHICHU = GHICHU;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Nhanvien)) return false;
+        Nhanvien that = (Nhanvien) o;
+        return MANV == that.MANV;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(MANV);
+    }
 }

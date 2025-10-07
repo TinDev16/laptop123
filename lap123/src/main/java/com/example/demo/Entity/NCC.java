@@ -84,4 +84,17 @@ public class NCC {
     public void setGHICHU(String GHICHU) {
         this.GHICHU = GHICHU;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NCC)) return false;
+        NCC that = (NCC) o;
+        return MANCC == that.MANCC;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(MANCC);
+    }
 }

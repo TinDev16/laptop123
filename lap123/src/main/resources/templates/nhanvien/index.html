@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,14 +39,12 @@
             <i class="fas fa-laptop"></i>
             <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
         </div>
-        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Nếu user đã login -->
-            <div sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </form>
+        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
+        <div class="header-right">
+            <div id="admin-auth">
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
             </div>
         </div>
     </div>

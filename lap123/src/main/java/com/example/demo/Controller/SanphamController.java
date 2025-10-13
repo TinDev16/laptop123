@@ -27,6 +27,11 @@ public class SanphamController {
         this.thuonghieuservice = thuonghieuservice;
     }
 
+//    index
+    @GetMapping("/")
+    public String home() {
+        return "index";
+    }
 
 //    trang chủ sanpham
     @GetMapping("/sanpham")

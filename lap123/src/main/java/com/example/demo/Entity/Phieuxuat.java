@@ -76,4 +76,17 @@ public class Phieuxuat {
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Phieuxuat)) return false;
+        Phieuxuat that = (Phieuxuat) o;
+        return MAPHIEUXUAT == that.MAPHIEUXUAT;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(MAPHIEUXUAT);
+    }
 }

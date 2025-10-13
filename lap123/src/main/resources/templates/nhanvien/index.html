@@ -136,7 +136,7 @@
                     <th>Số điện thoại</th>
                     <th>Ngày tham gia</th>
                     <th>Trạng thái</th>
-                    <th>Ghi chú</th>
+                    <!-- <th>Ghi chú</th> -->
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -150,7 +150,7 @@
                     <td th:text="${nv.SDT}"></td>
                     <td th:text="${nv.NGAYTHAMGIA != null ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy') : ''}"></td>
                     <td th:text="${nv.TRANGTHAI == 0 ? 'Hoạt động' : 'Nghỉ việc'}"></td>
-                    <td th:text="${nv.GHICHU != null ? nv.GHICHU : ''}"></td>
+                    <!-- <td th:text="${nv.GHICHU != null ? nv.GHICHU : ''}"></td> -->
                     <td>
                         <div class="table-actions">
                             <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-nhanvien/{id}(id=${nv.MANV})}">

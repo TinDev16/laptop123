@@ -129,7 +129,7 @@
         </div>
 
         <div class="table-container">
-            <h1 style="margin-bottom: 10px;">Sản phẩm đang mở bán</h1>
+
             <table class="table">
                 <thead>
                 <tr>
@@ -138,7 +138,7 @@
                     <th>Hệ điều hành</th>
                     <th>Thương hiệu</th>
                     <th>Trạng thái</th>
-                    <th>Ghi chú</th>
+                    <!-- <th>Ghi chú</th> -->
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -151,10 +151,10 @@
                         <td th:text="${sp.HEDIEUHANH}"></td>
                         <td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
                         <td th:text="'Mở bán'"></td>
-                        <td th:text="${sp.GHICHU != null ? sp.GHICHU : ''}"></td>
+                        <!-- <td th:text="${sp.GHICHU != null ? sp.GHICHU : ''}"></td> -->
                         <td>
                             <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${sp.MASP})}" title="Xem chi tiết">
+                                <a class="btn btn-icon btn-outline" th:href="@{/view-sanpham/{id}(id=${sp.MASP})}" title="Xem chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">

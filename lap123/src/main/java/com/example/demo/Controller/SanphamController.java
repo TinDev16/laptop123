@@ -127,7 +127,7 @@ public class SanphamController {
         return "redirect:/sanpham";
     }
 
-    @GetMapping("/view/{id}")
+    @GetMapping("/view-sanpham/{id}")
     public String viewSanpham(@PathVariable("id") int id, Model model) {
         model.addAttribute("sanpham", sanphamService.getSanphamById(id));
         return "sanpham/detail";

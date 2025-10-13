@@ -1,18 +1,26 @@
 package com.example.demo.Controller;
+import com.example.demo.Entity.CT_Phieunhap;
 import com.example.demo.Entity.Phieunhap;
 import com.example.demo.Entity.Sanpham;
-import com.example.demo.Repository.NCCRepository;
-import com.example.demo.Repository.NhanvienRepository;
-import com.example.demo.Repository.PhieunhapRepository;
-import com.example.demo.Repository.SanphamRepository;
+import com.example.demo.Repository.*;
 import com.example.demo.Service.PhieunhapService;
+import com.example.demo.dto.PhieunhapRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 
 @Controller
 public class PhieunhapController {
+
+    @Autowired
+    private CT_PhieunhapRepository ctPhieunhapRepository;
+
 
     private final PhieunhapRepository phieunhapRepository;
     private NhanvienRepository nhanvienRepository;
@@ -31,47 +39,38 @@ public class PhieunhapController {
 
     @GetMapping("/phieunhap")
     public String phieunhap(Model model) {
-        model.addAttribute("phieunhap", new Phieunhap());
+        model.addAttribute("phieunhap", phieunhapService.getAllPhieunhap());
         return "phieunhap/index";
     }
 
     @GetMapping("/phieunhap/create")
-    public String showCreateForm(Model model) {
-        model.addAttribute("nhanvien", nhanvienRepository.findAll());
-        model.addAttribute("nccList", NCCRepository.findAll());
-        model.addAttribute("sanpham", sanphamRepository.findAll());
+    public String phieunhapCreate(Model model) {
         model.addAttribute("phieunhap", new Phieunhap());
+        model.addAttribute("nccList", NCCRepository.findAll());
+        model.addAttribute("nhanvien", nhanvienRepository.findAll());
+        model.addAttribute("sanpham", sanphamRepository.findAll());
         return "phieunhap/add";
     }
 
-//    @PostMapping("/create")
-//    public String createPhieuNhap(@ModelAttribute Phieunhap phieunhap,
-//                                  @RequestParam("MASP") List<Integer> maspList,
-//                                  @RequestParam("soluong") List<Integer> soluongList,
-//                                  @RequestParam("gianhap") List<Double> gianhapList) {
-//        double tongTien = 0;
-//        for (int i = 0; i < maspList.size(); i++) {
-//            CT_Phieunhap ct = new CT_Phieunhap();
-//            ct.setPhieunhap(phieunhap);
-//            ct.setSanpham(new Sanpham(maspList.get(i))); // giả sử có constructor
-//            ct.setSOLUONG(soluongList.get(i));
-//            ct.setGIANHAP(gianhapList.get(i));
-//            ct.setTRANGTHAI("OK");
-//            tongTien += soluongList.get(i) * gianhapList.get(i);
-//            phieunhap.getChitiets().add(ct);
-//        }
-//        phieunhap.setTHOIGIAN(LocalDateTime.now());
-//        phieunhap.setTONGTIEN(tongTien);
-//        phieunhapRepository.save(phieunhap);
-//        return "redirect:/phieunhap";
-//    }
-
-
-    @GetMapping("/delete-phieunhap/{id}")
-    public String deletePhieunhap(@PathVariable("id") int id) {
-        phieunhapService.deletePhieunhap(id);
-        return "redirect:/phieunhap";
+    @PostMapping("/phieunhap")
+    @Transactional
+    public String savePhieuNhap(
+            @ModelAttribute Phieunhap phieunhap,
+            @RequestParam("chiTietList") String chiTietListJson,
+            @RequestParam("tongTien") float tongTien
+    ) {
+        try {
+            phieunhapService.savePhieuNhap(phieunhap, chiTietListJson, tongTien);
+            return "redirect:/phieunhap";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
     }
 
 
+
+
+
 }
+

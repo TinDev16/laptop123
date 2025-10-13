@@ -131,7 +131,7 @@
                     <th>Mã thương hiệu</th>
                     <th>Tên thương hiệu</th>
                     <th>Trạng thái</th>
-                    <th>Ghi chú</th>
+                    <!-- <th>Ghi chú</th> -->
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -141,7 +141,7 @@
                     <td class="font-semibold" th:text="${th.MATHUONGHIEU}"></td>
                     <td th:text="${th.TENTHUONGHIEU}"></td>
                     <td th:text="${th.TRANGTHAI == 0 ? 'Hoạt động' : 'Đóng'}"></td>
-                    <td th:text="${th.GHICHU != null ? th.GHICHU : ''}"></td>
+                    <!-- <td th:text="${th.GHICHU != null ? th.GHICHU : ''}"></td> -->
                     <td>
                         <div class="table-actions">
                             <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-thuonghieu/{id}(id=${th.MATHUONGHIEU})}">

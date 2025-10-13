@@ -133,7 +133,7 @@
                     <th>Địa chỉ</th>
                     <th>Số điện thoại</th>
                     <th>Trang thái</th>
-                    <th>Ghi chú</th>
+                    <!-- <th>Ghi chú</th> -->
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -145,7 +145,7 @@
                         <td th:text="${ncc.DIACHI}"></td>
                         <td th:text="${ncc.SDT}"></td>
                         <td th:text="${ncc.TRANGTHAI == 0 ? 'Mở nhập' : 'Ngừng nhập'}"></td>
-                        <td th:text="${ncc.GHICHU != null ? ncc.GHICHU : ''}"></td>
+                        <!-- <td th:text="${ncc.GHICHU != null ? ncc.GHICHU : ''}"></td> -->
                         <td>
                             <div class="table-actions">
                                 <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-ncc/{id}(id=${ncc.MANCC})}">

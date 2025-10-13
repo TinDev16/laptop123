@@ -3,6 +3,7 @@ package com.example.demo.Entity;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "phieunhap")
@@ -12,12 +13,14 @@ public class Phieunhap {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int MAPHIEUNHAP;
 
+    @OneToMany(mappedBy = "phieunhap", cascade = CascadeType.ALL)
+    private List<CT_Phieunhap> chiTietPhieuNhap;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MANCC")
     private NCC ncc;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MANV")
     private Nhanvien nhanvien;
 
@@ -29,6 +32,7 @@ public class Phieunhap {
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
+
 
 
     public int getMAPHIEUNHAP() {
@@ -77,5 +81,18 @@ public class Phieunhap {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Phieunhap)) return false;
+        Phieunhap that = (Phieunhap) o;
+        return MAPHIEUNHAP == that.MAPHIEUNHAP;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(MAPHIEUNHAP);
     }
 }

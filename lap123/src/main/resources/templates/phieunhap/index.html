@@ -115,13 +115,13 @@
                 <tbody id="products-table">
                     <tr th:each="pn : ${phieunhap}">
                         <td class="font-semibold" th:text="${pn.MAPHIEUNHAP}"></td>
-                        <td>Nhà cung cấp</td>
-                        <td>Nhân viên nhập</td>
+                        <td th:text="${pn.ncc != null ? pn.ncc.TENNCC : 'Không xác định'}"></td>
+                        <td th:text="${pn.nhanvien != null ? pn.nhanvien.HOTEN : 'Không xác định'}"></td>
                         <td th:text="${pn.THOIGIAN != null ? #dates.format(pn.THOIGIAN, 'dd/MM/yyyy') : ''}"></td>
-                        <td th:text="${pn.TONGTIEN}"></td>
+                        <td th:text="${#numbers.formatDecimal(pn.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
                         <td>
                             <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${pn.MAPHIEUNHAP})}" title="Xem chi tiết">
+                                <a class="btn btn-icon btn-outline" th:href="@{/view-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xem chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}">
@@ -134,76 +134,11 @@
                         </td>
                     </tr>
                 </tbody>
-
             </table>
         </div>
     </div>
 
 
-<!-- Modal -->
-<div id="modal-overlay" class="modal-overlay">
-    <div id="modal" class="modal">
-        <div class="modal-header">
-            <h3 id="modal-title" class="modal-title">Modal Title</h3>
-            <button class="modal-close" onclick="closeModal()" title="Close modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <!-- Modal content will be populated here -->
-        </div>
-        <div class="modal-footer" id="modal-footer">
-            <!-- Modal footer will be populated here -->
-        </div>
-    </div>
-</div>
-
-<!-- Confirm Delete Modal -->
-<div id="confirm-modal" class="modal-overlay">
-    <div class="modal modal-small">
-        <div class="modal-header">
-            <h3 class="modal-title">Xác nhận xóa</h3>
-            <button class="modal-close" onclick="closeConfirmModal()" title="Close confirmation modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
-            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
-        </div>
-    </div>
-</div>
-
-<!-- Thêm modal đăng nhập vào cuối body -->
-<div id="login-modal" class="modal-overlay">
-    <div class="modal modal-small-width">
-        <div class="modal-header">
-            <h3 class="modal-title">Đăng nhập Admin</h3>
-            <button class="modal-close" onclick="closeLoginModal()" title="Close login modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
-                <div class="form-group">
-                    <label class="form-label required">Tên đăng nhập</label>
-                    <input type="text" id="admin-username" class="form-input" required title="Nhập tên đăng nhập" placeholder="Tên đăng nhập">
-                </div>
-                <div class="form-group">
-                    <label class="form-label required">Mật khẩu</label>
-                    <input type="password" id="admin-password" class="form-input" required title="Nhập mật khẩu" placeholder="Mật khẩu">
-                </div>
-                <div class="margin-top-1rem">
-                    <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                    <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <!-- Thêm thư viện SheetJS để xuất Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

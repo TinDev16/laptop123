@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa thương hiệu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 32px;
+        }
+        .form-container {
+            max-width: 540px;
+            margin: auto;
+            background: #fff;
+            padding: 32px 36px 24px 36px;
+            border-radius: 14px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .form-container h1 {
+            margin-bottom: 18px;
+            text-align: center;
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 6px;
+            color: #374151;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #f9fafb;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #4f46e5;
+            outline: none;
+        }
+        .form-group .image-preview {
+            margin-top: 8px;
+            display: flex;
+            justify-content: center;
+        }
+        .form-group .image-preview img {
+            max-width: 180px;
+            max-height: 120px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .form-actions {
+            margin-top: 28px;
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 8px;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background: #4f46e5;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 18px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h1>Sửa thương hiệu</h1>
+    <form th:action="@{/update-thuonghieu}" th:object="${thuonghieu}" method="POST" enctype="multipart/form-data" autocomplete="off">
+
+        <!-- Hidden field -->
+        <input type="hidden" th:field="*{MATHUONGHIEU}">
+    
+        <div class="form-group">
+            <label for="TENTHUONGHIEU">Tên thương hiệu <span class="required">*</span></label>
+            <input type="text"
+                   id="TENTHUONGHIEU"
+                   th:field="*{TENTHUONGHIEU}"
+                   placeholder="Nhập tên thương hiệu" required>
+        </div>
+    
+        <div class="form-group">
+            <label for="TRANGTHAI">Trạng thái</label>
+            <select id="TRANGTHAI" th:field="*{TRANGTHAI}">
+                <option value="0">Hoạt động</option>
+                <option value="1">Đóng</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="GHICHU">Ghi chú</label>
+            <input type="text" id="GHICHU" th:field="*{GHICHU}">
+        </div>
+    
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Cập nhật</button>
+            <a th:href="@{/thuonghieu}" class="btn btn-secondary">Hủy</a>
+        </div>
+    </form>
+    
+</div>
+<script>
+    function previewImage(event) {
+        const input = event.target;
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = "Xem trước hình ảnh";
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <i class="fas fa-laptop"></i>
+            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
+        </div>
+        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
+        <div class="header-right">
+            <div id="admin-auth">
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-content">
+        <a class="nav-tab" data-tab="products" href="/">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <a class="nav-tab" data-tab="products" href="/sanpham">
+            <i class="fas fa-box"></i>
+            <span>Sản phẩm</span>
+        </a>
+
+        <a class="nav-tab active" data-tab="import-slips" href="/phieunhap">
+            <i class="fas fa-arrow-down"></i>
+            <span>Phiếu nhập</span>
+        </a>
+
+        <a class="nav-tab" data-tab="export-slips" href="/phieuxuat">
+            <i class="fas fa-arrow-up"></i>
+            <span>Phiếu xuất</span>
+        </a>
+
+        <a class="nav-tab" data-tab="customers" href="/khachhang">
+            <i class="fas fa-users"></i>
+            <span>Khách hàng</span>
+        </a>
+
+        <a class="nav-tab" data-tab="suppliers" href="/ncc">
+            <i class="fas fa-building"></i>
+            <span>Nhà cung cấp</span>
+        </a>
+
+        <a class="nav-tab" data-tab="employees" href="/nhanvien">
+            <i class="fas fa-user-tie"></i>
+            <span>Nhân viên</span>
+        </a>
+
+        <a class="nav-tab" data-tab="inventory" href="/tonkho">
+                <i class="fas fa-warehouse"></i>
+        <span>Tồn kho</span>
+        </a>
+
+        <a class="nav-tab" data-tab="brands" href="/thuonghieu">
+            <i class="fas fa-tags"></i>
+            <span>Thương hiệu</span>
+        </a>
+    </div>
+</nav>
+<!-- Main Content -->
+<main class="main">
+    <!-- Products Tab -->
+    <div id="products" class="tab-content active">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý phiếu nhập</h2>
+            <div class="page-actions">
+                <a th:href="@{/phieunhap/create}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Thêm phiếu nhập
+                </a>
+                <a href="#" class="btn btn-success" onclick="exportExcel('products')">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </a>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="product-search" placeholder="Tìm kiếm phiếu nhập..." onkeyup="filterProducts()">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã phiếu nhập</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Nhân viên nhập</th>
+                    <th>Thời gian</th>
+                    <th>Tổng tiền</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="products-table">
+                    <tr th:each="pn : ${phieunhap}">
+                        <td class="font-semibold" th:text="${pn.MAPHIEUNHAP}"></td>
+                        <td th:text="${pn.ncc != null ? pn.ncc.TENNCC : 'Không xác định'}"></td>
+                        <td th:text="${pn.nhanvien != null ? pn.nhanvien.HOTEN : 'Không xác định'}"></td>
+                        <td th:text="${pn.THOIGIAN != null ? #dates.format(pn.THOIGIAN, 'dd/MM/yyyy') : ''}"></td>
+                        <td th:text="${#numbers.formatDecimal(pn.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
+                        <td>
+                            <div class="table-actions">
+                                <a class="btn btn-icon btn-outline" th:href="@{/view-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+<!-- Thêm thư viện SheetJS để xuất Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+// Tìm kiếm mạnh mẽ phiếu nhập
+function filterProducts() {
+    const searchInput = document.getElementById('product-search').value.toLowerCase();
+    const brandFilter = document.getElementById('brand-filter').value.toLowerCase();
+    const rows = document.querySelectorAll('#products-table tr');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        // Lấy dữ liệu các trường
+        const maPhieu = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
+        const nhaCungCap = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+        const nhanVien = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+        const thoiGian = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+        const tongTien = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+        let show = true;
+
+        // Tìm kiếm theo tất cả trường
+        if (searchInput && !(
+            maPhieu.includes(searchInput) ||
+            nhaCungCap.includes(searchInput) ||
+            nhanVien.includes(searchInput) ||
+            thoiGian.includes(searchInput) ||
+            tongTien.includes(searchInput)
+        )) {
+            show = false;
+        }
+        // Nếu có lọc thương hiệu (brandFilter), bạn có thể lọc theo nhà cung cấp
+        if (brandFilter && nhaCungCap !== brandFilter) {
+            show = false;
+        }
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+
+    let noResultRow = document.getElementById('no-result-row');
+    if (!noResultRow) {
+        noResultRow = document.createElement('tr');
+        noResultRow.id = 'no-result-row';
+        noResultRow.innerHTML = `<td colspan="6" style="text-align:center;color:#dc3545;font-weight:500;">Không có phiếu nhập phù hợp</td>`;
+        document.getElementById('products-table').appendChild(noResultRow);
+    }
+    noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
+}
+
+// Xuất Excel bảng phiếu nhập
+function exportExcel() {
+    const table = document.querySelector('.table');
+    const wb = XLSX.utils.table_to_book(table, {sheet: "PhieuNhap"});
+    XLSX.writeFile(wb, 'phieunhap.xlsx');
+}
+</script>
+</body>
+</html>

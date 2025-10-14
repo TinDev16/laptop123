@@ -48,48 +48,44 @@ public class PhieunhapServiceImpl implements PhieunhapService {
         return phieunhapRepository.findById(id).orElse(null);
     }
 
-//    @Override
-//    public Phieunhap savePhieunhap(Phieunhap phieunhap) {
-//        return phieunhapRepository.save(phieunhap);
-//    }
-
     @Transactional
-    public void savePhieuNhap(Phieunhap phieunhap, String chiTietListJson, float tongTien) throws Exception {
+    public void savePhieuNhap(Phieunhap phieunhap, String chiTietListJson, BigDecimal tongTien) throws Exception {
         // 1️⃣ Gán thông tin cho phiếu nhập
         phieunhap.setTHOIGIAN(new Date());
         phieunhap.setTONGTIEN(tongTien);
-        phieunhap.setTRANGTHAI(0);
+        phieunhap.setTRANGTHAI(0); // 0 = đang xử lý, 1 = hoàn tất
 
         // 2️⃣ Lưu phiếu nhập chính
         Phieunhap savedPhieuNhap = phieunhapRepository.save(phieunhap);
 
-        // 3️⃣ Chuyển JSON thành list chi tiết
+        // 3️⃣ Parse danh sách chi tiết
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> chiTietList =
                 mapper.readValue(chiTietListJson, new TypeReference<>() {});
 
-        // 4️⃣ Lưu từng chi tiết phiếu nhập
+        // 4️⃣ Lưu chi tiết phiếu nhập (chưa cộng tồn kho)
         for (Map<String, Object> item : chiTietList) {
             int masp = (int) item.get("MASP");
             int soluong = (int) item.get("SOLUONG");
             double gianhap = Double.parseDouble(item.get("GIANHAP").toString());
 
-            // Tạo chi tiết phiếu nhập
             CT_Phieunhap ct = new CT_Phieunhap();
             ct.setPhieunhap(savedPhieuNhap);
             ct.setSanpham(sanphamRepository.findById(masp).orElse(null));
             ct.setSoluong(soluong);
             ct.setGianhap(BigDecimal.valueOf(gianhap));
-            ct.setTrangthai(0);
+            ct.setTrangthai(0); // đang chờ nhập hàng
             ctPhieunhapRepository.save(ct);
-
-            // 5️⃣ Cập nhật tồn kho sản phẩm
-            Sanpham sp = sanphamRepository.findById(masp).orElse(null);
-            if (sp != null) {
-                sp.setSOLUONGTON(sp.getSOLUONGTON() + soluong);
-                sanphamRepository.save(sp);
-            }
         }
+    }
+
+
+    public void update(Phieunhap pn) {
+        phieunhapRepository.save(pn);// Hibernate sẽ tự update
+    }
+
+    public void deletePhieunhap(int id) {
+        phieunhapRepository.deleteById(id);
     }
 
 }

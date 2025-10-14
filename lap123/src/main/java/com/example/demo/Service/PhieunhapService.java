@@ -12,6 +12,10 @@ public interface PhieunhapService {
 
     Phieunhap getPhieunhapById(int MAPHIEUNHAP);
 
-    void savePhieuNhap(Phieunhap phieunhap, String chiTietListJson, float tongTien) throws Exception;
+    void savePhieuNhap(Phieunhap phieunhap, String chiTietListJson, BigDecimal tongTien) throws Exception;
+
+    void update(Phieunhap pn);
+
+    void deletePhieunhap(int id);
 
 }

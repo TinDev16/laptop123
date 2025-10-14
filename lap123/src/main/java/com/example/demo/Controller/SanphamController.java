@@ -4,6 +4,7 @@ import com.example.demo.Entity.Sanpham;
 import com.example.demo.Entity.Thuonghieu;
 import com.example.demo.Service.SanphamService;
 import com.example.demo.Service.ThuonghieuService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +19,11 @@ import java.nio.file.StandardCopyOption;
 @Controller
 public class SanphamController {
 
+    @Autowired
     private SanphamService sanphamService;
-    private ThuonghieuService thuonghieuservice;
 
-    public SanphamController(SanphamService sanphamService, ThuonghieuService thuonghieuservice) {
-        super();
-        this.sanphamService = sanphamService;
-        this.thuonghieuservice = thuonghieuservice;
-    }
+    @Autowired
+    private ThuonghieuService thuonghieuservice;
 
 //    index
     @GetMapping("/")

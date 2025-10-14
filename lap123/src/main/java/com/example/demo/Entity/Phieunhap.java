@@ -1,7 +1,9 @@
 package com.example.demo.Entity;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -24,11 +26,13 @@ public class Phieunhap {
     @JoinColumn(name = "MANV")
     private Nhanvien nhanvien;
 
+    @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "THOIGIAN")
     private Date THOIGIAN;
 
     @Column(name = "TONGTIEN")
-    private float TONGTIEN;
+    private BigDecimal TONGTIEN;
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
@@ -67,11 +71,11 @@ public class Phieunhap {
         this.THOIGIAN = THOIGIAN;
     }
 
-    public float getTONGTIEN() {
+    public BigDecimal getTONGTIEN() {
         return TONGTIEN;
     }
 
-    public void setTONGTIEN(float TONGTIEN) {
+    public void setTONGTIEN(BigDecimal TONGTIEN) {
         this.TONGTIEN = TONGTIEN;
     }
 
@@ -81,6 +85,14 @@ public class Phieunhap {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
+    }
+
+    public List<CT_Phieunhap> getChiTietPhieuNhap() {
+        return chiTietPhieuNhap;
+    }
+
+    public void setChiTietPhieuNhap(List<CT_Phieunhap> chiTietPhieuNhap) {
+        this.chiTietPhieuNhap = chiTietPhieuNhap;
     }
 
     @Override

@@ -8,11 +8,14 @@ import java.util.List;
 public interface CT_PhieunhapService {
 
 
-
-    BigDecimal findGiaNhapGanNhatByMasp(int MASP);
-
-    List<CT_Phieunhap> getByPhieunhapId(int phieunhapId);
-    List<CT_Phieunhap> getCTPhieunhapByPhieunhapId(int MAPHIEUNHAP);
+//    BigDecimal findGiaNhapGanNhatByMasp(int MASP);
+//
+//    List<CT_Phieunhap> getByPhieunhapId(int phieunhapId);
+//
+//    List<CT_Phieunhap> getCTPhieunhapByPhieunhapId(int MAPHIEUNHAP);
 
     void save(CT_Phieunhap ct);
+
+    CT_Phieunhap getById(int id);
+
 }

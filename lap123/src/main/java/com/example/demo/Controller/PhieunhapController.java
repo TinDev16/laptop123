@@ -1,7 +1,5 @@
 package com.example.demo.Controller;
-import com.example.demo.Entity.CT_Phieunhap;
-import com.example.demo.Entity.Phieunhap;
-import com.example.demo.Entity.Sanpham;
+import com.example.demo.Entity.*;
 import com.example.demo.Repository.*;
 import com.example.demo.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -92,38 +91,50 @@ public class PhieunhapController {
     }
 
     @PostMapping("/update-phieunhap")
+    @Transactional
     public String updatePhieunhap(@ModelAttribute Phieunhap phieunhap,
                                   @RequestParam("ct_id") List<Integer> ctIds,
                                   @RequestParam("soluong") List<Integer> soLuongs,
-                                  @RequestParam("gianhap") List<BigDecimal> giaNhaps) {
+                                  @RequestParam("gianhap") List<String> giaNhapsStr) {
 
         Phieunhap existing = phieunhapService.getPhieunhapById(phieunhap.getMAPHIEUNHAP());
         if (existing == null) {
             return "redirect:/phieunhap";
         }
 
+        // Cập nhật thông tin cơ bản
         existing.setNcc(phieunhap.getNcc());
         existing.setNhanvien(phieunhap.getNhanvien());
         existing.setTHOIGIAN(phieunhap.getTHOIGIAN());
-        existing.setTRANGTHAI(phieunhap.getTRANGTHAI());
+
+        // Khi nhấn lưu thì luôn chuyển trạng thái thành 1 (hoàn tất)
+        existing.setTRANGTHAI(1);
 
         BigDecimal tongTien = BigDecimal.ZERO;
 
-        // Cập nhật chi tiết sản phẩm
         for (int i = 0; i < ctIds.size(); i++) {
             int ctId = ctIds.get(i);
             int soLuongMoi = soLuongs.get(i);
-            BigDecimal giaMoi = giaNhaps.get(i);
+
+            // Xử lý giá nhập (loại bỏ dấu '.')
+            String giaStr = giaNhapsStr.get(i);
+            if (giaStr == null) giaStr = "0";
+            giaStr = giaStr.replace(".", "").trim();
+
+            BigDecimal giaMoi;
+            try {
+                giaMoi = new BigDecimal(giaStr);
+            } catch (NumberFormatException e) {
+                giaMoi = BigDecimal.ZERO;
+            }
 
             CT_Phieunhap ct = ctPhieunhapService.getById(ctId);
             if (ct != null) {
                 Sanpham sp = ct.getSanpham();
 
-                // cập nhật tồn kho
-                int chenhLech = soLuongMoi - ct.getSoluong();
-                sp.setSOLUONGTON(sp.getSOLUONGTON() + chenhLech);
+                // Cộng vào kho vì phiếu này được xác nhận
+                sp.setSOLUONGTON(sp.getSOLUONGTON() + soLuongMoi);
 
-                // cập nhật giá & số lượng
                 ct.setSoluong(soLuongMoi);
                 ct.setGianhap(giaMoi);
 
@@ -137,28 +148,9 @@ public class PhieunhapController {
         existing.setTONGTIEN(tongTien);
         phieunhapService.update(existing);
 
-        return "redirect:/phieunhap/detail/" + phieunhap.getMAPHIEUNHAP();
+        return "redirect:/phieunhap";
     }
 
-    @PostMapping("/confirm/{id}")
-    public String confirmPhieunhap(@PathVariable int id) {
-        Phieunhap phieunhap = phieunhapService.getPhieunhapById(id);
-        if (phieunhap == null) {
-            return "redirect:/phieunhap";
-        }
-
-        // Cập nhật tồn kho khi xác nhận
-        for (CT_Phieunhap ct : phieunhap.getChiTietPhieuNhap()) {
-            Sanpham sp = ct.getSanpham();
-            sp.setSOLUONGTON(sp.getSOLUONGTON() + ct.getSoluong());
-            sanphamService.saveSanpham(sp);
-        }
-
-        phieunhap.setTRANGTHAI(1);
-        phieunhapService.update(phieunhap);
-
-        return "redirect:/phieunhap/detail/" + id;
-    }
 
     @GetMapping("/delete-phieunhap/{id}")
     public String deletePhieunhap(@PathVariable("id") int id) {

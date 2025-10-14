@@ -13,20 +13,6 @@
         border: 1px solid #007bff;
         padding: 8px;
     }
-
-    /* Nút xác nhận nhập */
-    .btn-confirm {
-        background-color: #28a745;
-        color: white;
-        font-weight: 500;
-        border-radius: 8px;
-        transition: 0.3s;
-    }
-
-    .btn-confirm:hover {
-        background-color: #218838;
-    }
-
     /* Format giá nhập khi nhập */
     input.price-input {
         text-align: right;
@@ -47,7 +33,8 @@
                     <label class="form-label fw-bold">Nhà cung cấp</label>
                     <select class="form-select" th:field="*{ncc.MANCC}">
                         <option th:each="n : ${nccList}" 
-                                th:value="${n.MANCC}" 
+                                th:if="${n.TRANGTHAI == 0}" 
+                                th:value="${n.MANCC}"
                                 th:text="${n.TENNCC}">
                         </option>
                     </select>
@@ -57,6 +44,7 @@
                     <label class="form-label fw-bold">Nhân viên nhập</label>
                     <select class="form-select" th:field="*{nhanvien}">
                         <option th:each="nv : ${nhanvienList}"
+                                th:if="${nv.TRANGTHAI == 0}"
                                 th:value="${nv.MANV}"
                                 th:text="${nv.HOTEN}"
                                 th:selected="${nv.MANV == phieunhap.nhanvien.MANV}">
@@ -67,13 +55,6 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Thời gian</label>
                     <input type="date" class="form-control" th:field="*{THOIGIAN}" />
-                </div>
-
-                <!-- Loại bỏ select trạng thái, thay bằng nút -->
-                <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-confirm" id="btnXacNhan">
-                        <i class="fas fa-check-circle"></i> Xác nhận nhập
-                    </button>
                 </div>
             </div>
         </div>
@@ -100,9 +81,19 @@
                                th:value="${ct.soluong}" min="1" />
                     </td>
                     <td>
-                        <input type="number" class="form-control" name="gianhap" th:value="${ct.gianhap}" min="0" step="1000" />
+                        <!-- input hiển thị để người dùng thấy có dấu chấm -->
+                        <input type="text" class="form-control price-input"
+                               th:value="${#numbers.formatDecimal(ct.gianhap, 0, 'POINT', 0, 'COMMA')}"
+                               oninput="formatPrice(this)" />
+                    
+                        <!-- input ẩn để lưu giá trị thực (số nguyên, không có dấu .) -->
+                        <input type="hidden" name="gianhap" th:value="${ct.gianhap}" />
                     </td>
-                    <td th:text="${#numbers.formatDecimal(ct.soluong * ct.gianhap, 0, 'POINT', 0, 'COMMA')}"></td>
+                    <td>
+                        <span class="thanh-tien" 
+                              th:text="${#numbers.formatDecimal(ct.soluong * ct.gianhap, 0, 'POINT', 0, 'COMMA')}"></span>
+                    </td>
+                    
                 </tr>
             </tbody>
         </table>
@@ -119,7 +110,41 @@
 
     <!-- FontAwesome + JS xử lý -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    
+    <script>
+        function formatPrice(input) {
+            // Loại bỏ mọi ký tự không phải số
+            let rawValue = input.value.replace(/[^\d]/g, '');
+        
+            // Cập nhật lại input hiển thị có dấu chấm ngăn cách
+            input.value = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+            // Ghi giá trị thực vào input hidden liền kề
+            const hiddenInput = input.parentElement.querySelector('input[type="hidden"][name="gianhap"]');
+            if (hiddenInput) hiddenInput.value = rawValue;
+        
+            // Cập nhật lại thành tiền trong dòng
+            const row = input.closest('tr');
+            const soLuongInput = row.querySelector('input[name="soluong"]');
+            const thanhTienCell = row.querySelector('.thanh-tien');
+        
+            if (soLuongInput && thanhTienCell) {
+                const soLuong = parseInt(soLuongInput.value) || 0;
+                const giaNhap = parseInt(rawValue) || 0;
+                const thanhTien = soLuong * giaNhap;
+                thanhTienCell.textContent = thanhTien.toLocaleString('vi-VN');
+            }
+        }
+
+        document.querySelectorAll('input[name="soluong"]').forEach(input => {
+            input.addEventListener('input', () => {
+                const row = input.closest('tr');
+                const giaNhapInput = row.querySelector('.price-input');
+                if (giaNhapInput) formatPrice(giaNhapInput);
+            });
+        });
+
+        </script>
+        
     <script>
 
         // Khi nhấn nút xác nhận -> set trạng thái = 1 và submit form

@@ -16,6 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `chucnang`
+--
+
+DROP TABLE IF EXISTS `chucnang`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chucnang` (
+  `chucnang_id` int NOT NULL AUTO_INCREMENT,
+  `ten` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`chucnang_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chucnang`
+--
+
+LOCK TABLES `chucnang` WRITE;
+/*!40000 ALTER TABLE `chucnang` DISABLE KEYS */;
+/*!40000 ALTER TABLE `chucnang` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `ct_phieunhap`
 --
 
@@ -23,16 +46,18 @@ DROP TABLE IF EXISTS `ct_phieunhap`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ct_phieunhap` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `MAPHIEUNHAP` int DEFAULT NULL,
   `MASP` int DEFAULT NULL,
   `SOLUONG` int DEFAULT NULL,
-  `GIANHAP` float DEFAULT NULL,
+  `gianhap` decimal(38,2) DEFAULT NULL,
   `TRANGTHAI` int DEFAULT NULL,
-  `mancc` int DEFAULT NULL,
-  `manv` int DEFAULT NULL,
-  `thoigian` datetime(6) DEFAULT NULL,
-  `tongtien` float DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `FK4xe4kbd6vohet84patmiu76g2` (`MAPHIEUNHAP`),
+  KEY `FKnbjcscb15621phrb7t05lkea` (`MASP`),
+  CONSTRAINT `FK4xe4kbd6vohet84patmiu76g2` FOREIGN KEY (`MAPHIEUNHAP`) REFERENCES `phieunhap` (`MAPHIEUNHAP`),
+  CONSTRAINT `FKnbjcscb15621phrb7t05lkea` FOREIGN KEY (`MASP`) REFERENCES `sanpham` (`masp`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,6 +66,7 @@ CREATE TABLE `ct_phieunhap` (
 
 LOCK TABLES `ct_phieunhap` WRITE;
 /*!40000 ALTER TABLE `ct_phieunhap` DISABLE KEYS */;
+INSERT INTO `ct_phieunhap` VALUES (16,43,18,10,32000000.00,0),(17,43,27,14,35000000.00,0),(22,47,27,2,20000000.00,0),(24,49,27,2,25000000.00,0),(26,51,27,5,10000000.00,0),(27,52,18,2,50000000.00,0),(28,53,25,9,2000000000.00,0),(29,53,20,9,5000000000.00,0),(30,54,27,7,7000000000.00,0);
 /*!40000 ALTER TABLE `ct_phieunhap` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -52,12 +78,13 @@ DROP TABLE IF EXISTS `ct_phieuxuat`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ct_phieuxuat` (
+  `id` int NOT NULL AUTO_INCREMENT,
   `MAPHIEUXUAT` int DEFAULT NULL,
   `MASP` int DEFAULT NULL,
   `SOLUONG` int DEFAULT NULL,
   `GIAXUAT` float DEFAULT NULL,
   `TRANGTHAI` int DEFAULT NULL,
-  `id` int NOT NULL,
+  PRIMARY KEY (`id`),
   KEY `FKdf4l71f62xx9a5ogj8eo23jw7` (`MASP`),
   KEY `FKcp0wv1qq6bpwt40cg2u4ctjb9` (`MAPHIEUXUAT`),
   CONSTRAINT `FKcp0wv1qq6bpwt40cg2u4ctjb9` FOREIGN KEY (`MAPHIEUXUAT`) REFERENCES `phieuxuat` (`MAPHIEUXUAT`),
@@ -128,31 +155,6 @@ INSERT INTO `khachhang` VALUES (1,'Lê Văn a','Nam','1970-01-01 00:00:00.000000
 UNLOCK TABLES;
 
 --
--- Table structure for table `login`
---
-
-DROP TABLE IF EXISTS `login`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `login` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `ten` varchar(45) DEFAULT NULL,
-  `email` varchar(45) DEFAULT NULL,
-  `matkhau` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `login`
---
-
-LOCK TABLES `login` WRITE;
-/*!40000 ALTER TABLE `login` DISABLE KEYS */;
-/*!40000 ALTER TABLE `login` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `ncc`
 --
 
@@ -167,7 +169,7 @@ CREATE TABLE `ncc` (
   `TRANGTHAI` int DEFAULT NULL,
   `ghichu` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`mancc`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -176,7 +178,7 @@ CREATE TABLE `ncc` (
 
 LOCK TABLES `ncc` WRITE;
 /*!40000 ALTER TABLE `ncc` DISABLE KEYS */;
-INSERT INTO `ncc` VALUES (1,'Thế giới di động','HN','03123456789',1,'Ngừng hợp tác'),(2,'Điện máy xanh','HCM','091223321',0,NULL);
+INSERT INTO `ncc` VALUES (1,'Thế giới di động','HN','03123456789',0,''),(2,'Điện máy xanh','HCM','091223321',0,NULL),(4,'test','','',1,'Ngừng hợp tác');
 /*!40000 ALTER TABLE `ncc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -196,6 +198,9 @@ CREATE TABLE `nhanvien` (
   `ngaythamgia` datetime(6) DEFAULT NULL,
   `TRANGTHAI` int DEFAULT NULL,
   `ghichu` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `vaitro_id` int DEFAULT NULL,
+  `taikhoan_id` int DEFAULT NULL,
   PRIMARY KEY (`manv`)
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -206,8 +211,30 @@ CREATE TABLE `nhanvien` (
 
 LOCK TABLES `nhanvien` WRITE;
 /*!40000 ALTER TABLE `nhanvien` DISABLE KEYS */;
-INSERT INTO `nhanvien` VALUES (4,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434','2321-12-11 17:00:00.000000',0,NULL),(6,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212','2032-12-11 17:00:00.000000',0,NULL),(7,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313','2002-12-10 17:00:00.000000',0,NULL),(15,'Nguyễn Thanh Tri','Khác','2023-12-11 17:00:00.000000','121321','2034-12-11 17:00:00.000000',0,NULL),(24,'Dương Thị Anh Thi','Nữ','2005-02-04 17:00:00.000000','01234567','2025-10-04 17:00:00.000000',0,NULL),(25,'test','Nam',NULL,'',NULL,1,'');
+INSERT INTO `nhanvien` VALUES (4,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434','2321-12-11 17:00:00.000000',0,NULL,NULL,NULL,NULL),(6,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212','2032-12-11 17:00:00.000000',0,NULL,NULL,NULL,NULL),(7,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313','2002-12-10 17:00:00.000000',0,NULL,NULL,NULL,NULL),(15,'Nguyễn Thanh Tri','Khác','2023-12-11 17:00:00.000000','121321','2034-12-11 17:00:00.000000',0,NULL,NULL,NULL,NULL),(24,'Dương Thị Anh Thi','Nữ','2005-02-04 17:00:00.000000','01234567','2025-10-04 17:00:00.000000',0,NULL,NULL,NULL,NULL),(25,'test','Nam',NULL,'',NULL,1,'nghỉ việc',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `nhanvien` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `phanquyen`
+--
+
+DROP TABLE IF EXISTS `phanquyen`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `phanquyen` (
+  `vaitro_id` int DEFAULT NULL,
+  `chucnang_id` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `phanquyen`
+--
+
+LOCK TABLES `phanquyen` WRITE;
+/*!40000 ALTER TABLE `phanquyen` DISABLE KEYS */;
+/*!40000 ALTER TABLE `phanquyen` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -221,14 +248,14 @@ CREATE TABLE `phieunhap` (
   `MAPHIEUNHAP` int NOT NULL AUTO_INCREMENT,
   `MANCC` int DEFAULT NULL,
   `MANV` int DEFAULT NULL,
-  `THOIGIAN` datetime DEFAULT NULL,
-  `TONGTIEN` float DEFAULT NULL,
+  `thoigian` date DEFAULT NULL,
+  `tongtien` decimal(38,2) DEFAULT NULL,
   `TRANGTHAI` int DEFAULT NULL,
   `GHICHU` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`MAPHIEUNHAP`),
   KEY `FKqk7uxuhmox5x8hh2mpt9t3wnf` (`MANCC`),
   CONSTRAINT `FKqk7uxuhmox5x8hh2mpt9t3wnf` FOREIGN KEY (`MANCC`) REFERENCES `ncc` (`mancc`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -237,7 +264,7 @@ CREATE TABLE `phieunhap` (
 
 LOCK TABLES `phieunhap` WRITE;
 /*!40000 ALTER TABLE `phieunhap` DISABLE KEYS */;
-INSERT INTO `phieunhap` VALUES (1,1,1,NULL,121122000,NULL,NULL);
+INSERT INTO `phieunhap` VALUES (43,1,4,'2025-10-13',810000000.00,1,NULL),(47,2,24,'2025-10-14',40000000.00,1,NULL),(49,1,15,'2025-10-14',50000000.00,1,NULL),(51,1,24,'2025-10-15',50000000.00,1,NULL),(52,2,24,'2025-10-16',100000000.00,1,NULL),(53,2,6,'2025-10-15',63000000000.00,1,NULL),(54,2,4,'2025-10-15',49000000000.00,1,NULL);
 /*!40000 ALTER TABLE `phieunhap` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -281,7 +308,6 @@ DROP TABLE IF EXISTS `sanpham`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sanpham` (
   `masp` int NOT NULL AUTO_INCREMENT,
-  `MANCC` int DEFAULT NULL,
   `TENSP` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `HINHANHSP` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `xuatxu` varchar(255) DEFAULT NULL,
@@ -290,12 +316,12 @@ CREATE TABLE `sanpham` (
   `kichthuocman` varchar(255) DEFAULT NULL,
   `TRANGTHAI` int DEFAULT NULL,
   `MATHUONGHIEU` int DEFAULT NULL,
-  `thuonghieu` varchar(255) DEFAULT NULL,
   `ghichu` varchar(255) DEFAULT NULL,
+  `soluongton` int DEFAULT NULL,
   PRIMARY KEY (`masp`),
   KEY `FKja468m75y1j0w9j0pmncoqpo6` (`MATHUONGHIEU`),
   CONSTRAINT `FKja468m75y1j0w9j0pmncoqpo6` FOREIGN KEY (`MATHUONGHIEU`) REFERENCES `thuonghieu` (`mathuonghieu`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,8 +330,33 @@ CREATE TABLE `sanpham` (
 
 LOCK TABLES `sanpham` WRITE;
 /*!40000 ALTER TABLE `sanpham` DISABLE KEYS */;
-INSERT INTO `sanpham` VALUES (18,NULL,'Macbook air','1759592778283_440426110_404991259118437_5169100339175499606_n.jpg','China','i7 17th','macOS','21 inch',0,2,NULL,NULL),(20,NULL,'Apple MacBook Air M2 2024 Chính hãng Apple Việt Nam','1759650784448_vn_mac_1_2.webp','USA','8 nhân GPU, 16 nhân Neural Engine','macOS','21 inch',0,2,NULL,NULL),(21,NULL,'test','1759651379395_image_1425_2.webp','qư','ưq','Windows','ưq',1,3,NULL,'Nhập sai dữ liệu\r\n'),(22,NULL,'Lenovo Legion 5 Ryzen Series 5/ RTX 3050/ ','1759673597449_vn_mac_1_2.webp','China','i7 17th','Windows','15.6 inch',0,2,NULL,NULL),(23,NULL,'ấ','1759722753890_vn_mac_1_2.webp','dsa','dsa','Windows','21',1,7,NULL,'');
+INSERT INTO `sanpham` VALUES (18,'Macbook air','1759592778283_440426110_404991259118437_5169100339175499606_n.jpg','China','i7 17th','macOS','21 inch',0,2,NULL,230),(20,'Apple MacBook Air M2 2024 Chính hãng Apple Việt Nam','1759650784448_vn_mac_1_2.webp','USA','8 nhân GPU, 16 nhân Neural Engine','macOS','21 inch',0,2,NULL,230),(21,'test','1759651379395_image_1425_2.webp','qư','ưq','Windows','ưq',1,3,'Nhập sai dữ liệu\r\n',NULL),(22,'Lenovo Legion 5 Ryzen Series 5/ RTX 3050/ ','1759854075546_anh-chup-man-hinh-2025-08-20-183546.webp','China','i7 17th','Windows','15.6 inch',0,2,'',20),(23,'ấ','1759722753890_vn_mac_1_2.webp','dsa','dsa','Windows','21',1,7,'nhập sai dữ liệu',NULL),(24,'sd','1759810598888_image_1425_2.webp','sa','SA','Linux','WWQED',1,1,'nhập sai dữ liệu',NULL),(25,'Lenovo Lecoo Fighter 7000 2025','1759833083130_anh-chup-man-hinh-2025-08-20-183546.webp','China','Core i7-14650HX','Windows','21 inch',0,3,NULL,30),(26,'ưq','1759833116605_anh-chup-man-hinh-2025-08-20-183546.webp','','','Windows','',1,2,'nhập sai dữ liệu',0),(27,'Laptop Gaming Lenovo Legion 5 R7000 AHP9 NK','1760281476855__new_-anh-sp-web_2f3716d0b1ad4d84930fba0c644ceebb_compact.png','China','AMD Ryzen 7-8745H (8 nhân 16 luồng, 3.8GHz - 4.9GHz, bộ nhớ đệm 8MB L2 / 16MB L3, 4nm, TDP 35-54W)','Windows','21 inch',0,3,NULL,40);
 /*!40000 ALTER TABLE `sanpham` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `taikhoan`
+--
+
+DROP TABLE IF EXISTS `taikhoan`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `taikhoan` (
+  `taikhoan_id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(45) DEFAULT NULL,
+  `matkhau` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`taikhoan_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `taikhoan`
+--
+
+LOCK TABLES `taikhoan` WRITE;
+/*!40000 ALTER TABLE `taikhoan` DISABLE KEYS */;
+INSERT INTO `taikhoan` VALUES (1,'admin@mail.com','123123'),(2,'chien@gmail.com','1234'),(3,'df@gmial.com','123123');
+/*!40000 ALTER TABLE `taikhoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -321,7 +372,7 @@ CREATE TABLE `thuonghieu` (
   `TRANGTHAI` int DEFAULT NULL,
   `ghichu` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`mathuonghieu`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -330,8 +381,58 @@ CREATE TABLE `thuonghieu` (
 
 LOCK TABLES `thuonghieu` WRITE;
 /*!40000 ALTER TABLE `thuonghieu` DISABLE KEYS */;
-INSERT INTO `thuonghieu` VALUES (1,'Samsung',0,NULL),(2,'Apple',0,NULL),(3,'Lenovo',0,NULL),(4,'Dell',0,NULL),(5,'Gigabyte',0,NULL),(6,'Asus',0,NULL),(7,'test',1,'Ngưng nhận\r\n'),(9,'test',0,'test');
+INSERT INTO `thuonghieu` VALUES (1,'Samsung',0,NULL),(2,'Apple',0,NULL),(3,'Lenovo',0,NULL),(4,'Dell',0,NULL),(5,'Gigabyte',0,NULL),(6,'Asus',0,NULL),(7,'test',1,'Ngưng nhận\r\n'),(9,'test',1,'test'),(10,'d',1,'gf');
 /*!40000 ALTER TABLE `thuonghieu` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tonkho`
+--
+
+DROP TABLE IF EXISTS `tonkho`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tonkho` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `MASP` int DEFAULT NULL,
+  `SOLUONGTON` int DEFAULT NULL,
+  `GIANHAP` int DEFAULT NULL,
+  `GIABAN` int DEFAULT NULL,
+  `NGAYCAPNHAT` date DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tonkho`
+--
+
+LOCK TABLES `tonkho` WRITE;
+/*!40000 ALTER TABLE `tonkho` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tonkho` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `vaitro`
+--
+
+DROP TABLE IF EXISTS `vaitro`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vaitro` (
+  `vaitro_id` int NOT NULL AUTO_INCREMENT,
+  `ten` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`vaitro_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vaitro`
+--
+
+LOCK TABLES `vaitro` WRITE;
+/*!40000 ALTER TABLE `vaitro` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vaitro` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -343,4 +444,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-06 15:35:57
+-- Dump completed on 2025-10-15 10:28:57

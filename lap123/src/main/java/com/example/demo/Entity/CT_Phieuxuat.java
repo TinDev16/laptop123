@@ -2,27 +2,29 @@ package com.example.demo.Entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "ct_phieuxuat")
 public class CT_Phieuxuat {
 
-    @ManyToOne
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MAPHIEUXUAT")
     private Phieuxuat phieuxuat;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MASP")
-    private Sanpham MASP;
+    private Sanpham sanpham;
 
     @Column(name = "SOLUONG")
-    private int SOLUONG;
+    private int soluong;
 
     @Column(name = "GIAXUAT")
-    private Float GIAXUAT;
+    private BigDecimal giaxuat;
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
@@ -43,28 +45,28 @@ public class CT_Phieuxuat {
         this.id = id;
     }
 
-    public Sanpham getMASP() {
-        return MASP;
+    public Sanpham getSanpham() {
+        return sanpham;
     }
 
-    public void setMASP(Sanpham MASP) {
-        this.MASP = MASP;
+    public void setSanpham(Sanpham sanpham) {
+        this.sanpham = sanpham;
     }
 
-    public int getSOLUONG() {
-        return SOLUONG;
+    public int getSoluong() {
+        return soluong;
     }
 
-    public void setSOLUONG(int SOLUONG) {
-        this.SOLUONG = SOLUONG;
+    public void setSoluong(int soluong) {
+        this.soluong = soluong;
     }
 
-    public Float getGIAXUAT() {
-        return GIAXUAT;
+    public BigDecimal getGiaxuat() {
+        return giaxuat;
     }
 
-    public void setGIAXUAT(Float GIAXUAT) {
-        this.GIAXUAT = GIAXUAT;
+    public void setGiaxuat(BigDecimal giaxuat) {
+        this.giaxuat = giaxuat;
     }
 
     public int getTRANGTHAI() {
@@ -74,4 +76,6 @@ public class CT_Phieuxuat {
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
     }
+
+
 }

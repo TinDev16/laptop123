@@ -1,8 +1,11 @@
 package com.example.demo.Entity;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "phieuxuat")
@@ -12,19 +15,24 @@ public class Phieuxuat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int MAPHIEUXUAT;
 
-    @ManyToOne
+    @OneToMany(mappedBy = "phieuxuat", cascade = CascadeType.ALL)
+    private List<CT_Phieuxuat> chitietPhieuxuat;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MAKH")
-    private Khachhang MAKH;
+    private Khachhang khachhang;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MANV")
-    private Nhanvien MANV;
+    private Nhanvien nhanvien;
 
+    @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "THOIGIAN")
     private Date THOIGIAN;
 
     @Column(name = "TONGTIEN")
-    private Float TONGTIEN;
+    private BigDecimal TONGTIEN;
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
@@ -37,20 +45,20 @@ public class Phieuxuat {
         this.MAPHIEUXUAT = MAPHIEUXUAT;
     }
 
-    public Khachhang getMAKH() {
-        return MAKH;
+    public Khachhang getKhachhang() {
+        return khachhang;
     }
 
-    public void setMAKH(Khachhang MAKH) {
-        this.MAKH = MAKH;
+    public void setKhachhang(Khachhang khachhang) {
+        this.khachhang = khachhang;
     }
 
-    public Nhanvien getMANV() {
-        return MANV;
+    public Nhanvien getNhanvien() {
+        return nhanvien;
     }
 
-    public void setMANV(Nhanvien MANV) {
-        this.MANV = MANV;
+    public void setNhanvien(Nhanvien nhanvien) {
+        this.nhanvien = nhanvien;
     }
 
     public Date getTHOIGIAN() {
@@ -61,11 +69,19 @@ public class Phieuxuat {
         this.THOIGIAN = THOIGIAN;
     }
 
-    public Float getTONGTIEN() {
+    public List<CT_Phieuxuat> getChitietPhieuxuat() {
+        return chitietPhieuxuat;
+    }
+
+    public void setChitietPhieuxuat(List<CT_Phieuxuat> chitietPhieuxuat) {
+        this.chitietPhieuxuat = chitietPhieuxuat;
+    }
+
+    public BigDecimal getTONGTIEN() {
         return TONGTIEN;
     }
 
-    public void setTONGTIEN(Float TONGTIEN) {
+    public void setTONGTIEN(BigDecimal TONGTIEN) {
         this.TONGTIEN = TONGTIEN;
     }
 

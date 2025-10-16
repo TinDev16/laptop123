@@ -66,6 +66,7 @@
                 <tr>
                     <th>Mã SP</th>
                     <th>Tên sản phẩm</th>
+                    <th>Hình ảnh</th>
                     <th>Số lượng</th>
                     <th>Giá nhập</th>
                     <th>Thành tiền</th>
@@ -76,6 +77,9 @@
                     <input type="hidden" name="ct_id" th:value="${ct.id}" />
                     <td th:text="${ct.sanpham.MASP}"></td>
                     <td th:text="${ct.sanpham.TENSP}"></td>
+                    <td>
+                        <img th:src="@{'/uploads/' + ${ct.sanpham.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                    </td>
                     <td>
                         <input type="number" class="form-control text-center" name="soluong"
                                th:value="${ct.soluong}" min="1" />
@@ -103,9 +107,13 @@
                 ← Quay lại
             </a>
             <button type="submit" class="btn btn-success">
-                Lưu thay đổi
+                Nhập hàng
             </button>
         </div>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
     </form>
 
     <!-- FontAwesome + JS xử lý -->

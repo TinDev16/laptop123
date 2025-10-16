@@ -1,6 +1,5 @@
 package com.example.demo.Controller;
 import com.example.demo.Entity.Nhanvien;
-import com.example.demo.Entity.Sanpham;
 import com.example.demo.Service.NhanvienService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

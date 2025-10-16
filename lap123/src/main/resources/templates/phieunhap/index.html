@@ -140,7 +140,7 @@
                                     <a class="btn btn-icon btn-outline" th:href="@{/edit-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a class="btn btn-icon btn-outline text-red-600" th:href="@{/delete-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Ẩn phiếu nhập">
+                                    <a class="btn btn-icon btn-outline text-red-600" th:href="@{/delete-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xóa phiếu nhập">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
@@ -193,77 +193,91 @@
     </div>
 </main>
 
-
-<!-- Thêm thư viện SheetJS để xuất Excel -->
+<!-- Thêm thư viện SheetJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-// Tìm kiếm mạnh mẽ phiếu nhập
+/* ======================= 🔍 TÌM KIẾM CẢ 2 BẢNG ======================= */
 function filterProducts() {
     const searchInput = document.getElementById('product-search').value.toLowerCase();
-    const brandFilter = document.getElementById('brand-filter').value.toLowerCase();
-    const rows = document.querySelectorAll('#products-table tr');
+
+    // Lấy tất cả hàng trong cả 2 bảng
+    const rows = document.querySelectorAll('.table tbody tr');
     let visibleCount = 0;
 
     rows.forEach(row => {
-        // Lấy dữ liệu các trường
         const maPhieu = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
         const nhaCungCap = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
         const nhanVien = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
         const thoiGian = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
         const tongTien = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
-        let show = true;
 
-        // Tìm kiếm theo tất cả trường
-        if (searchInput && !(
+        const match = (
             maPhieu.includes(searchInput) ||
             nhaCungCap.includes(searchInput) ||
             nhanVien.includes(searchInput) ||
             thoiGian.includes(searchInput) ||
             tongTien.includes(searchInput)
-        )) {
-            show = false;
-        }
-        // Nếu có lọc thương hiệu (brandFilter), bạn có thể lọc theo nhà cung cấp
-        if (brandFilter && nhaCungCap !== brandFilter) {
-            show = false;
-        }
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
+        );
+
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
     });
 
+    // Nếu không tìm thấy kết quả trong cả 2 bảng
+    const tables = document.querySelectorAll('.table tbody');
     let noResultRow = document.getElementById('no-result-row');
     if (!noResultRow) {
         noResultRow = document.createElement('tr');
         noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="6" style="text-align:center;color:#dc3545;font-weight:500;">Không có phiếu nhập phù hợp</td>`;
-        document.getElementById('products-table').appendChild(noResultRow);
+        noResultRow.innerHTML = `
+            <td colspan="6" style="text-align:center;color:#dc3545;font-weight:500;">
+                Không có phiếu nhập phù hợp
+            </td>`;
+        // thêm dòng này vào cuối bảng đầu tiên
+        tables[0].appendChild(noResultRow);
     }
     noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
 }
 
-// Xuất Excel bảng phiếu nhập
-function exportExcel() {
-    const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "PhieuNhap"});
-    XLSX.writeFile(wb, 'phieunhap.xlsx');
+/* ======================= 📤 XUẤT EXCEL CẢ 2 BẢNG ======================= */
+function exportExcel(tab) {
+    if (tab === 'products') {
+        const tables = document.querySelectorAll('.table');
+        if (tables.length === 0) {
+            alert("Không tìm thấy bảng phiếu nhập!");
+            return;
+        }
+
+        // Tạo workbook mới
+        const wb = XLSX.utils.book_new();
+
+        // Chuyển từng bảng thành sheet
+        tables.forEach((table, index) => {
+            const sheetName = index === 0 ? "PhieuNhap_DangXuLy" : "PhieuNhap_HoanTat";
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+
+        // Xuất file Excel
+        XLSX.writeFile(wb, 'phieunhap.xlsx');
+    }
 }
 
-// Lọc trạng thái phiếu nhập
+/* ======================= ⚙️ LỌC TRẠNG THÁI ======================= */
 function filterStatus() {
     const filter = document.getElementById("statusFilter").value;
-    const rows = document.querySelectorAll("#products-table tr");
+    const rows = document.querySelectorAll(".table tbody tr");
 
     rows.forEach(row => {
         const status = row.querySelector(".badge")?.textContent.trim();
         if (filter === "all") row.style.display = "";
         else if (filter === "0" && status === "Đang xử lý") row.style.display = "";
         else if (filter === "1" && status === "Hoàn tất") row.style.display = "";
-        else if (filter === "2" && status === "Đã ẩn") row.style.display = "";
         else row.style.display = "none";
     });
 }
-
 </script>
+
 </body>
 </html>

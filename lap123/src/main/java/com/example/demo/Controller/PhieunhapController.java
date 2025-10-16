@@ -7,11 +7,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
-
 
 @Controller
 public class PhieunhapController {
@@ -95,19 +94,32 @@ public class PhieunhapController {
     public String updatePhieunhap(@ModelAttribute Phieunhap phieunhap,
                                   @RequestParam("ct_id") List<Integer> ctIds,
                                   @RequestParam("soluong") List<Integer> soLuongs,
-                                  @RequestParam("gianhap") List<String> giaNhapsStr) {
+                                  @RequestParam("gianhap") List<String> giaNhapsStr,
+                                  RedirectAttributes redirectAttrs) {
 
         Phieunhap existing = phieunhapService.getPhieunhapById(phieunhap.getMAPHIEUNHAP());
         if (existing == null) {
+            redirectAttrs.addFlashAttribute("error", "Phiếu nhập không tồn tại!");
             return "redirect:/phieunhap";
         }
 
-        // Cập nhật thông tin cơ bản
+        // 🧠 Kiểm tra nếu phiếu nhập chứa sản phẩm bị xóa (trạng thái = 0)
+        for (int i = 0; i < ctIds.size(); i++) {
+            CT_Phieunhap ct = ctPhieunhapService.getById(ctIds.get(i));
+            if (ct != null && ct.getSanpham().getTRANGTHAI() == 1) {
+                redirectAttrs.addFlashAttribute("error",
+                        "Không thể xác nhận phiếu nhập vì có sản phẩm đã bị xóa hoặc ngừng kinh doanh: "
+                                + ct.getSanpham().getTENSP());
+                return "redirect:/phieunhap/detail/" + phieunhap.getMAPHIEUNHAP();
+            }
+        }
+
+        // ✅ Cập nhật thông tin cơ bản
         existing.setNcc(phieunhap.getNcc());
         existing.setNhanvien(phieunhap.getNhanvien());
         existing.setTHOIGIAN(phieunhap.getTHOIGIAN());
 
-        // Khi nhấn lưu thì luôn chuyển trạng thái thành 1 (hoàn tất)
+        // ✅ Khi nhấn lưu thì luôn chuyển trạng thái thành 1 (hoàn tất)
         existing.setTRANGTHAI(1);
 
         BigDecimal tongTien = BigDecimal.ZERO;
@@ -116,7 +128,7 @@ public class PhieunhapController {
             int ctId = ctIds.get(i);
             int soLuongMoi = soLuongs.get(i);
 
-            // Xử lý giá nhập (loại bỏ dấu '.')
+            // 🧩 Xử lý giá nhập
             String giaStr = giaNhapsStr.get(i);
             if (giaStr == null) giaStr = "0";
             giaStr = giaStr.replace(".", "").trim();
@@ -132,7 +144,7 @@ public class PhieunhapController {
             if (ct != null) {
                 Sanpham sp = ct.getSanpham();
 
-                // Cộng vào kho vì phiếu này được xác nhận
+                // 🧾 Cập nhật số lượng tồn
                 sp.setSOLUONGTON(sp.getSOLUONGTON() + soLuongMoi);
 
                 ct.setSoluong(soLuongMoi);
@@ -148,17 +160,15 @@ public class PhieunhapController {
         existing.setTONGTIEN(tongTien);
         phieunhapService.update(existing);
 
+        redirectAttrs.addFlashAttribute("success", "Xác nhận phiếu nhập thành công!");
         return "redirect:/phieunhap";
     }
-
 
     @GetMapping("/delete-phieunhap/{id}")
     public String deletePhieunhap(@PathVariable("id") int id) {
         phieunhapService.deletePhieunhap(id);
         return "redirect:/phieunhap";
     }
-
-
 
 }
 

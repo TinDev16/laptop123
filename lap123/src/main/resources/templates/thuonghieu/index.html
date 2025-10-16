@@ -213,60 +213,54 @@
         </form>
     </div>
 </div>
-
-<script>
-function showDeleteModal(button) {
-    const id = button.getAttribute('data-id');
-    const ten = button.getAttribute('data-ten');
-
-    // Gán giá trị vào modal
-    document.getElementById("deleteId").value = id;
-    document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa thương hiệu "${ten}" không?`;
-
-    // Hiện modal
-    document.getElementById("deleteModal").classList.remove("hidden");
-}
-
-
-function closeModal() {
-    document.getElementById("deleteModal").classList.add("hidden");
-}
-</script>
-
-    <script>
-function filterProducts() {
-    const searchInput = document.getElementById('product-search').value.toLowerCase();
-    const rows = document.querySelectorAll('#products-table tr');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-        const tenThuongHieu = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-        let show = true;
-
-        if (searchInput && !tenThuongHieu.includes(searchInput)) {
-            show = false;
-        }
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-    });
-
-    let noResultRow = document.getElementById('no-result-row');
-    if (!noResultRow) {
-        noResultRow = document.createElement('tr');
-        noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="4" style="text-align:center;color:#dc3545;font-weight:500;">Không có thương hiệu phù hợp</td>`;
-        document.getElementById('products-table').appendChild(noResultRow);
-    }
-    noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
-}
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-function exportExcel() {
-    const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "ThuongHieu"});
-    XLSX.writeFile(wb, 'thuonghieu.xlsx');
-}
-</script>
+    // --- Tìm kiếm cả 2 bảng ---
+    function filterProducts() {
+        const searchInput = document.getElementById('product-search').value.toLowerCase();
+        const tables = document.querySelectorAll('.table'); // Lấy cả 2 bảng
+        let visibleCount = 0;
+    
+        tables.forEach(table => {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const tenThuongHieu = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                const match = !searchInput || tenThuongHieu.includes(searchInput);
+                row.style.display = match ? '' : 'none';
+                if (match) visibleCount++;
+            });
+        });
+    
+        // Hiện thông báo nếu không có kết quả nào
+        let noResultRow = document.getElementById('no-result-row');
+        if (!noResultRow) {
+            noResultRow = document.createElement('tr');
+            noResultRow.id = 'no-result-row';
+            noResultRow.innerHTML = `<td colspan="4" style="text-align:center;color:#dc3545;font-weight:500;">Không có thương hiệu phù hợp</td>`;
+            tables[0].querySelector('tbody').appendChild(noResultRow);
+        }
+        noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
+    }
+    
+    // --- Xuất Excel cả 2 bảng ---
+    function exportExcel() {
+        const tables = document.querySelectorAll('.table');
+        if (tables.length === 0) {
+            alert("Không tìm thấy bảng thương hiệu!");
+            return;
+        }
+    
+        const wb = XLSX.utils.book_new();
+    
+        tables.forEach((table, index) => {
+            const sheetName = index === 0 ? "ThuongHieu_HoatDong" : "ThuongHieu_NgungNhan";
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+    
+        XLSX.writeFile(wb, 'thuonghieu.xlsx');
+    }
+    </script>
+    
 </body>
 </html>

@@ -2,7 +2,6 @@ package com.example.demo.Service.impl;
 
 import com.example.demo.Entity.CT_Phieunhap;
 import com.example.demo.Entity.Phieunhap;
-import com.example.demo.Entity.Sanpham;
 import com.example.demo.Repository.CT_PhieunhapRepository;
 import com.example.demo.Repository.PhieunhapRepository;
 import com.example.demo.Repository.SanphamRepository;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -29,15 +27,6 @@ public class PhieunhapServiceImpl implements PhieunhapService {
     @Autowired
     private SanphamRepository sanphamRepository;
 
-    @Autowired
-    private SanphamService sanphamService;
-
-    @Autowired
-    private NCCService nccService;
-
-    @Autowired
-    private NhanvienService nhanvienService;
-
     @Override
     public List<Phieunhap> getAllPhieunhap() {
         return phieunhapRepository.findAll();
@@ -53,7 +42,7 @@ public class PhieunhapServiceImpl implements PhieunhapService {
         // 1️⃣ Gán thông tin cho phiếu nhập
         phieunhap.setTHOIGIAN(new Date());
         phieunhap.setTONGTIEN(tongTien);
-        phieunhap.setTRANGTHAI(0); // 0 = đang xử lý, 1 = hoàn tất
+        phieunhap.setTRANGTHAI(0);
 
         // 2️⃣ Lưu phiếu nhập chính
         Phieunhap savedPhieuNhap = phieunhapRepository.save(phieunhap);
@@ -79,11 +68,12 @@ public class PhieunhapServiceImpl implements PhieunhapService {
         }
     }
 
-
+    @Override
     public void update(Phieunhap pn) {
-        phieunhapRepository.save(pn);// Hibernate sẽ tự update
+        phieunhapRepository.save(pn);
     }
 
+    @Override
     public void deletePhieunhap(int id) {
         phieunhapRepository.deleteById(id);
     }

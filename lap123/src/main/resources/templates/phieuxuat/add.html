@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Phiếu Xuất Hàng</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        #product-list-container { max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .product-table { width: 100%; border-collapse: collapse; }
+        .product-table th, .product-table td { padding: 12px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+        .product-table th { background: #f9fafb; font-weight: 600; }
+        .product-table tr:hover { background: #f1f5f9; cursor: pointer; }
+        .input-group { position: relative; display: flex; align-items: center; }
+        .input-group input { padding-right: 80px; }
+        .input-group .btn-group { position: absolute; right: 8px; display: flex; gap: 4px; }
+        .input-group button { padding: 4px 8px; font-size: 14px; background: #e5e7eb; color: #374151; border: none; border-radius: 4px; cursor: pointer; }
+        .input-group button:hover { background: #d1d5db; }
+        .delete-btn { background: #dc2626; color: white; padding: 6px 12px; border-radius: 6px; transition: background 0.2s; }
+        .delete-btn:hover { background: #b91c1c; }
+        .cancel-btn { background: #6b7280; color: white; padding: 6px 12px; border-radius: 6px; transition: background 0.2s; }
+        .cancel-btn:hover { background: #4b5563; }
+    </style>
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto p-6 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-6">Thêm Phiếu Xuất Hàng</h1>
+
+    <form th:action="@{/phieuxuat}" th:object="${phieuxuat}" method="post" enctype="multipart/form-data"
+          class="bg-white shadow-md rounded-lg p-6">
+
+        <!-- Nhân viên -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Nhân viên xuất:</label>
+            <select th:field="*{nhanvien}" required class="mt-1 block w-full p-2 border border-gray-300 rounded-lg">
+                <option value="">-- Chọn nhân viên --</option>
+                <option th:each="nv : ${nhanvien}"
+                        th:if="${nv.TRANGTHAI == 0}"
+                        th:value="${nv.MANV}"
+                        th:text="${nv.HOTEN}">
+                </option>
+            </select>
+        </div>
+
+        <!-- khách hàng -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Khách hàng:</label>
+            <select th:field="*{khachhang}" required class="mt-1 block w-full p-2 border border-gray-300 rounded-lg">
+                <option value="">-- Chọn khách hàng --</option>
+                <option th:each="kh : ${khachhang}"
+                        th:if="${kh.TRANGTHAI == 0}"
+                        th:value="${kh.MAKH}"
+                        th:text="${kh.HOTEN}">
+                </option>
+            </select>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <h2 class="text-xl font-semibold mb-4">Chọn sản phẩm để xuất</h2>
+        <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm..."
+               class="mb-4 w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+
+        <div id="product-list-container" class="mb-4">
+            <table class="product-table">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã SP</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng tồn</th>
+                </tr>
+                </thead>
+                <tbody id="product-list">
+                <tr th:each="sp, idx : ${sanpham}"
+                    th:if="${sp.TRANGTHAI == 0}"
+                    th:attr="data-id=${sp.MASP}, data-name=${sp.TENSP}, data-quantity=${sp.SOLUONGTON}">
+                    <td th:text="${idx.index + 1}"></td>
+                    <td th:text="${sp.MASP}"></td>
+                    <td th:text="${sp.TENSP}"></td>
+                    <td th:text="${sp.SOLUONGTON}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sản phẩm đã chọn -->
+        <h2 class="text-xl font-semibold mb-4">Sản phẩm đã chọn</h2>
+        <table class="w-full border-collapse mb-4">
+            <thead>
+            <tr class="bg-gray-200">
+                <th class="border p-3 text-left">STT</th>
+                <th class="border p-3 text-left">Tên sản phẩm</th>
+                <th class="border p-3 text-left">Số lượng xuất</th>
+                <th class="border p-3 text-left">Giá xuất</th>
+                <th class="border p-3 text-left">Tổng tiền</th>
+                <th class="border p-3 text-left">Hành động</th>
+            </tr>
+            </thead>
+            <tbody id="selected-products">
+            </tbody>
+        </table>
+
+        <div id="total-amount" class="text-lg font-bold mb-4">
+            Tổng tiền: <span id="tongTien">0</span> VND
+        </div>
+        <input type="hidden" id="tongTienInput" name="tongTien" value="0">
+        <input type="hidden" name="chiTietList" id="chiTietList">
+
+        <div class="flex gap-4">
+            <button type="submit"
+                    class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
+                Tạo Phiếu Xuất
+            </button>
+            <button type="button" class="flex-1 cancel-btn" onclick="window.history.back()">Hủy</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const selectedProducts = [];
+    let stt = 1;
+
+    // 🟢 Bắt sự kiện click chọn sản phẩm
+    document.addEventListener('click', function (e) {
+        const row = e.target.closest('tr');
+        if (row && row.parentElement.id === 'product-list') {
+            const id = parseInt(row.dataset.id);
+            const name = row.dataset.name;
+            const quantity = parseInt(row.dataset.quantity);
+            addProduct({id, name, quantity});
+        }
+    });
+
+    function addProduct(product) {
+        if (!selectedProducts.find(p => p.id === product.id)) {
+            selectedProducts.push({...product, importQuantity: 1, importPrice: 0, itemStt: stt++});
+            renderSelectedProducts();
+        }
+    }
+
+    function renderSelectedProducts() {
+        const tbody = document.getElementById('selected-products');
+        tbody.innerHTML = '';
+        let total = 0;
+
+        selectedProducts.forEach((p, index) => {
+            const subtotal = p.importQuantity * p.importPrice;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="border p-3">${p.itemStt}</td>
+                <td class="border p-3">${p.name}</td>
+                <td class="border p-3">
+                    <div class="input-group">
+                        <input type="number" value="${p.importQuantity}" min="1" required
+                               class="w-full p-2 border border-gray-300 rounded-lg"
+                               onchange="updateQuantity(${index}, this.value)">
+                        <div class="btn-group">
+                            <button type="button" onclick="incrementQuantity(${index})">+</button>
+                            <button type="button" onclick="decrementQuantity(${index})">-</button>
+                        </div>
+                    </div>
+                </td>
+                <td class="border p-3">
+                    <input type="text" value="${p.importPrice.toLocaleString('vi-VN')}" 
+                           class="w-full p-2 border border-gray-300 rounded-lg"
+                           oninput="formatPriceInput(this, ${index})"
+                           onchange="updatePrice(${index}, this.value.replace(/\\D/g, ''))">
+                </td>
+                <td class="border p-3">${subtotal.toLocaleString('vi-VN')} VND</td>
+                <td class="border p-3"><button type="button" class="delete-btn" onclick="removeProduct(${index})">Xóa</button></td>
+            `;
+            tbody.appendChild(row);
+            total += subtotal;
+        });
+
+        document.getElementById('tongTien').innerText = total.toLocaleString('vi-VN');
+        document.getElementById('tongTienInput').value = total;
+    }
+
+    function updateQuantity(index, value) {
+        selectedProducts[index].importQuantity = parseInt(value) || 1;
+        renderSelectedProducts();
+    }
+
+    function incrementQuantity(index) {
+        if (selectedProducts[index].importQuantity < selectedProducts[index].quantity) {
+            selectedProducts[index].importQuantity++;
+            renderSelectedProducts();
+        } else {
+            alert('Số lượng xuất vượt quá tồn kho!');
+        }
+    }
+
+    function decrementQuantity(index) {
+        if (selectedProducts[index].importQuantity > 1) {
+            selectedProducts[index].importQuantity--;
+            renderSelectedProducts();
+        }
+    }
+
+    function updatePrice(index, value) {
+        selectedProducts[index].importPrice = parseFloat(value) || 0;
+        renderSelectedProducts();
+    }
+
+    function formatPriceInput(input) {
+        let val = input.value.replace(/\D/g, '');
+        input.value = Number(val).toLocaleString('vi-VN');
+    }
+
+    function removeProduct(index) {
+        selectedProducts.splice(index, 1);
+        selectedProducts.forEach((p, i) => p.itemStt = i + 1);
+        stt = selectedProducts.length + 1;
+        renderSelectedProducts();
+    }
+
+    // 🟢 Tìm kiếm sản phẩm
+    document.getElementById('product-search').addEventListener('input', function (e) {
+        const filter = e.target.value.toLowerCase();
+        document.querySelectorAll('#product-list tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
+        });
+    });
+
+    // 🟢 Gửi form
+    document.querySelector('form').addEventListener('submit', function (e) {
+        if (selectedProducts.length === 0) {
+            alert('Vui lòng chọn ít nhất một sản phẩm để xuất!');
+            e.preventDefault();
+            return;
+        }
+
+        for (let p of selectedProducts) {
+            if (!p.importPrice || p.importPrice <= 0) {
+                alert('Vui lòng nhập giá xuất hợp lệ cho tất cả sản phẩm!');
+                e.preventDefault();
+                return;
+            }
+        }
+
+        const chiTietList = selectedProducts.map(p => ({
+            MASP: p.id,
+            SOLUONG: p.importQuantity,
+            GIAXUAT: p.importPrice
+        }));
+
+        document.getElementById('chiTietList').value = JSON.stringify(chiTietList);
+        console.log("JSON gửi lên:", document.getElementById('chiTietList').value);
+    });
+</script>
+</body>
+</html>

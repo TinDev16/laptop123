@@ -116,7 +116,9 @@ public class PhieuxuatController {
             // Xử lý giá xuất
             String giaStr = giaXuatsStr.get(i);
             if (giaStr == null) giaStr = "0";
-            giaStr = giaStr.replace(".", "").trim();
+            giaStr = giaStr.replaceAll("[^0-9]", "");
+            if (giaStr.isEmpty()) giaStr = "0";
+
 
             BigDecimal giaMoi;
             try {

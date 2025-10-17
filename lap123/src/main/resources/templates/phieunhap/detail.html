@@ -116,6 +116,7 @@
                         <tr>
                             <th>Mã SP</th>
                             <th>Tên sản phẩm</th>
+                            <th>Hình ảnh</th>
                             <th>Số lượng</th>
                             <th>Giá nhập (VNĐ)</th>
                             <th>Thành tiền (VNĐ)</th>
@@ -125,6 +126,9 @@
                         <tr th:each="ct : ${chiTietList}">
                             <td th:text="${ct.sanpham.MASP}"></td>
                             <td th:text="${ct.sanpham.TENSP}"></td>
+                            <td>
+                                <img th:src="@{'/uploads/' + ${ct.sanpham.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                            </td>
                             <td th:text="${ct.soluong}"></td>
                             <td th:text="${#numbers.formatDecimal(ct.gianhap, 0, 'POINT', 0, 'COMMA')}"></td>
                             <td th:text="${#numbers.formatDecimal(ct.gianhap * ct.soluong, 0, 'POINT', 0, 'COMMA')}"></td>

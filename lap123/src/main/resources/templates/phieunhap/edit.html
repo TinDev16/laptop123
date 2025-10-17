@@ -91,7 +91,9 @@
                                oninput="formatPrice(this)" />
                     
                         <!-- input ẩn để lưu giá trị thực (số nguyên, không có dấu .) -->
-                        <input type="hidden" name="gianhap" th:value="${ct.gianhap}" />
+                        <input type="hidden" name="gianhap"
+                                th:value="${#numbers.formatDecimal(ct.gianhap, 0, 'NONE', 0, 'NONE')}" />
+
                     </td>
                     <td>
                         <span class="thanh-tien" 

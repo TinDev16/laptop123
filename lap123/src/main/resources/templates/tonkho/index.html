@@ -148,10 +148,7 @@
                 <tr>
                     <th>Mã SP</th>
                     <th>Tên sản phẩm</th>
-                    <th>Nhà cung cấp</th>
                     <th>Hình ảnh</th>
-                    <th>Xuất xứ</th>
-                    <th>Chip</th>
                     <th>Hệ điều hành</th>   
                     <th>Thương hiệu</th>
                     <th>Số lượng tồn</th>
@@ -163,67 +160,28 @@
                 </thead>
                 <tbody id="products-table">
                     <tr th:each="tk : ${tonkho}"
-                        th:classappend="${tk.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
-                        <td class="font-semibold" th:text="${tk.MASP}"></td>
-                        <td th:text="${tk.TENSP}"></td>
-                        <td> th:text="${tk.NHACUNGCAP}"</td>
+                        th:classappend="${tk.sanpham.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
+                
+                        <td class="font-semibold" th:text="${tk.sanpham.MASP}"></td>
+                        <td th:text="${tk.sanpham.TENSP}"></td>
                         <td>
-                            <img th:src="@{'/uploads/' + ${tk.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                            <img th:src="@{'/uploads/' + ${tk.sanpham.HINHANHSP}}"
+                                 alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
                         </td>
-                        <td th:text="${tk.XUATXU}"></td>
-                        <td th:text="${tk.CHIP}"></td>
-                        <td th:text="${tk.HEDIEUHANH}"></td>
-                        <td th:text="${tk.thuonghieu != null ? tk.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
-                        <td> th:text="${tk.SOLUONGTON}"</td>
-                        <td >th:text="${#numbers.formatDecimal(tk.GIANHAP, 0, 'COMMA', 0, 'POINT') + ' ₫'}"</td>
-                        <td >th:text="${#numbers.formatDecimal(tk.GIABAN, 0, 'COMMA', 0, 'POINT') + ' ₫'}"</td>
-                        <td >th:text="${#dates.format(tk.NGAYNHAP, 'dd/MM/yyyy')}"</td>
-                        <td th:text="${tk.TRANGTHAI == 0 ? 'Mở bán' : 'Đóng'}"></td>
+                        <td th:text="${tk.sanpham.HEDIEUHANH}"></td>
+                        <td th:text="${tk.sanpham.thuonghieu.TENTH}"></td>
+                        <td th:text="${tk.sanpham.SOLUONGTON}"></td>
+                        <td th:text="${#numbers.formatDecimal(tk.sanpham.GIANHAP, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                        <td th:text="${#numbers.formatDecimal(tk.sanpham.GIABAN, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></td>
+                        <td th:text="${#dates.format(tk.sanpham.NGAYCAPNHAT, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${tk.sanpham.TRANGTHAI == 0 ? 'Mở bán' : 'Đóng'}"></td>
                     </tr>
                 </tbody>
-
+                                 
             </table>
         </div>
     </div>
-
-
-<!-- Modal -->
-<div id="modal-overlay" class="modal-overlay">
-    <div id="modal" class="modal">
-        <div class="modal-header">
-            <h3 id="modal-title" class="modal-title">Modal Title</h3>
-            <button class="modal-close" onclick="closeModal()" title="Close modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <!-- Modal content will be populated here -->
-        </div>
-        <div class="modal-footer" id="modal-footer">
-            <!-- Modal footer will be populated here -->
-        </div>
-    </div>
-</div>
-
-<!-- Confirm Delete Modal -->
-<div id="confirm-modal" class="modal-overlay">
-    <div class="modal modal-small">
-        <div class="modal-header">
-            <h3 class="modal-title">Xác nhận xóa</h3>
-            <button class="modal-close" onclick="closeConfirmModal()" title="Close confirmation modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
-            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
-        </div>
-    </div>
-</div>
-
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>

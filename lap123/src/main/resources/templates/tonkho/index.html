@@ -52,6 +52,105 @@
         width: 400px;
     }
     .hidden { display: none; }
+
+        /* Xóa gạch chân cho tất cả link trong nav */
+    .nav a {
+        text-decoration: none;
+        color: inherit; /* Giữ nguyên màu gốc */
+    }
+
+    /* Tùy chỉnh khi rê chuột (hover) */
+    .nav a:hover {
+        text-decoration: none;
+        color: #007bff; /* Hoặc màu bạn muốn khi hover */
+    }
+
+    /* Nếu muốn tab đang chọn nổi bật hơn */
+    .nav-tab.active {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    /* ===== BẢNG TỒN KHO ===== */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    margin-top: 20px;
+}
+
+.table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.table th, .table td {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+}
+
+.table th {
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.table tbody tr:hover {
+    background-color: #f4f8ff;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Cột hình ảnh */
+.table td img {
+    width: 60px;
+    height: auto;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 0 3px rgba(0,0,0,0.15);
+}
+
+/* Trạng thái */
+.table td:last-child {
+    font-weight: 500;
+}
+
+.table td:last-child:contains("Mở bán") {
+    color: #28a745;
+}
+
+.table td:last-child:contains("Đóng") {
+    color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .table {
+        font-size: 0.9rem;
+    }
+    .table th, .table td {
+        padding: 10px 8px;
+    }
+}
+
+@media (max-width: 700px) {
+    .table {
+        min-width: 700px;
+    }
+}
+
+
 </style>
 </head>
 
@@ -63,16 +162,14 @@
             <i class="fas fa-laptop"></i>
             <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
         </div>
-        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Nếu user đã login -->
-            <div sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </form>
-            </div>
+        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
+        <div class="header-right">
+            <div id="admin-auth">
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
         </div>
+    </div>
 </header>
 
 <!-- Navigation -->
@@ -177,25 +274,20 @@
                 <tr>
                     <th>Mã SP</th>
                     <th>Tên sản phẩm</th>
-                    <th>Nhà cung cấp</th>
                     <th>Hình ảnh</th>
                     <th>Xuất xứ</th>
                     <th>Chip</th>
                     <th>Hệ điều hành</th>   
                     <th>Thương hiệu</th>
                     <th>Số lượng tồn</th>
-                    <th>Giá nhập</th>
-                    <th>Giá bán</th>
-                    <th>Ngày nhập</th>
                     <th>Trạng thái</th>
                 </tr>
                 </thead>
                 <tbody id="products-table">
                     <tr th:each="tk : ${tonkho}"
-                        th:classappend="${tk.TRANGTHAI == 1} ? 'bg-red-100 text-gray-700' : ''">
+                        th:if ="${tk.TRANGTHAI == 0}">
                         <td class="font-semibold" th:text="${tk.MASP}"></td>
                         <td th:text="${tk.TENSP}"></td>
-                        <td> th:text="${tk.NHACUNGCAP}"</td>
                         <td>
                             <img th:src="@{'/uploads/' + ${tk.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
                         </td>
@@ -203,10 +295,7 @@
                         <td th:text="${tk.CHIP}"></td>
                         <td th:text="${tk.HEDIEUHANH}"></td>
                         <td th:text="${tk.thuonghieu != null ? tk.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
-                        <td> th:text="${tk.SOLUONGTON}"</td>
-                        <td >th:text="${#numbers.formatDecimal(tk.GIANHAP, 0, 'COMMA', 0, 'POINT') + ' ₫'}"</td>
-                        <td >th:text="${#numbers.formatDecimal(tk.GIABAN, 0, 'COMMA', 0, 'POINT') + ' ₫'}"</td>
-                        <td >th:text="${#dates.format(tk.NGAYNHAP, 'dd/MM/yyyy')}"</td>
+                        <td th:text="${tk.SOLUONGTON}"></td>
                         <td th:text="${tk.TRANGTHAI == 0 ? 'Mở bán' : 'Đóng'}"></td>
                     </tr>
                 </tbody>
@@ -214,110 +303,63 @@
             </table>
         </div>
     </div>
+</main>
 
-
-<!-- Modal -->
-<div id="modal-overlay" class="modal-overlay">
-    <div id="modal" class="modal">
-        <div class="modal-header">
-            <h3 id="modal-title" class="modal-title">Modal Title</h3>
-            <button class="modal-close" onclick="closeModal()" title="Close modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <!-- Modal content will be populated here -->
-        </div>
-        <div class="modal-footer" id="modal-footer">
-            <!-- Modal footer will be populated here -->
-        </div>
-    </div>
-</div>
-
-<!-- Confirm Delete Modal -->
-<div id="confirm-modal" class="modal-overlay">
-    <div class="modal modal-small">
-        <div class="modal-header">
-            <h3 class="modal-title">Xác nhận xóa</h3>
-            <button class="modal-close" onclick="closeConfirmModal()" title="Close confirmation modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
-            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
-        </div>
-    </div>
-</div>
-
-<!-- Thêm modal đăng nhập vào cuối body -->
-<div id="login-modal" class="modal-overlay">
-    <div class="modal modal-small-width">
-        <div class="modal-header">
-            <h3 class="modal-title">Đăng nhập Admin</h3>
-            <button class="modal-close" onclick="closeLoginModal()" title="Close login modal">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
-                <div class="form-group">
-                    <label class="form-label required">Tên đăng nhập</label>
-                    <input type="text" id="admin-username" class="form-input" required title="Nhập tên đăng nhập" placeholder="Tên đăng nhập">
-                </div>
-                <div class="form-group">
-                    <label class="form-label required">Mật khẩu</label>
-                    <input type="password" id="admin-password" class="form-input" required title="Nhập mật khẩu" placeholder="Mật khẩu">
-                </div>
-                <div class="margin-top-1rem">
-                    <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                    <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
-function filterProducts() {
-    const searchInput = document.getElementById('product-search').value.toLowerCase();
-    const brandFilter = document.getElementById('brand-filter').value.toLowerCase();
-    const rows = document.querySelectorAll('#products-table tr');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-        const tenSp = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
-        const thuongHieu = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || '';
-        let show = true;
-
-        if (searchInput && !tenSp.includes(searchInput)) {
-            show = false;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+    function filterProducts() {
+        const searchValue = document.getElementById('product-search').value.toLowerCase();
+        const rows = document.querySelectorAll('#products-table tr');
+        let visibleCount = 0;
+    
+        rows.forEach(row => {
+            // Lấy dữ liệu từng cột (theo thứ tự bảng của bạn)
+            const maSP = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
+            const tenSP = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+            const xuatXu = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+            const chip = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+            const heDieuHanh = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
+            const thuongHieu = row.querySelector('td:nth-child(7)')?.textContent.toLowerCase() || '';
+    
+            // Nếu khớp bất kỳ thông tin nào trong 6 trường này thì hiển thị
+            const isMatch =
+                maSP.includes(searchValue) ||
+                tenSP.includes(searchValue) ||
+                xuatXu.includes(searchValue) ||
+                chip.includes(searchValue) ||
+                heDieuHanh.includes(searchValue) ||
+                thuongHieu.includes(searchValue);
+    
+            row.style.display = isMatch ? '' : 'none';
+            if (isMatch) visibleCount++;
+        });
+    
+        // Hiển thị dòng "Không có kết quả"
+        let noResultRow = document.getElementById('no-result-row');
+        if (!noResultRow) {
+            noResultRow = document.createElement('tr');
+            noResultRow.id = 'no-result-row';
+            noResultRow.innerHTML = `
+                <td colspan="9" style="text-align:center; color:#dc3545; font-weight:500;">
+                    Không có sản phẩm phù hợp
+                </td>`;
+            document.getElementById('products-table').appendChild(noResultRow);
         }
-        if (brandFilter && thuongHieu !== brandFilter) {
-            show = false;
-        }
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-    });
-
-    let noResultRow = document.getElementById('no-result-row');
-    if (!noResultRow) {
-        noResultRow = document.createElement('tr');
-        noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="13" style="text-align:center;color:#dc3545;font-weight:500;">Không có sản phẩm phù hợp</td>`;
-        document.getElementById('products-table').appendChild(noResultRow);
+        noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
     }
-    noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
-}
-
-function exportExcel() {
-    const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "TonKho"});
-    XLSX.writeFile(wb, 'tonkho.xlsx');
-}
-</script>
+    
+    // ✅ Xuất Excel (bỏ hình ảnh, chỉ xuất text)
+    function exportExcel() {
+        const table = document.querySelector('.table');
+        // Tạo bản sao của bảng, bỏ hình ảnh
+        const clone = table.cloneNode(true);
+        clone.querySelectorAll('img').forEach(img => img.remove());
+    
+        // Chuyển thành workbook và ghi file
+        const wb = XLSX.utils.table_to_book(clone, { sheet: "TonKho" });
+        XLSX.writeFile(wb, 'tonkho.xlsx');
+    }
+    </script>
+    
 </body>
 </html>

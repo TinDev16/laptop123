@@ -2,8 +2,6 @@ package com.example.demo.Entity;
 
 import jakarta.persistence.*;
 
-import javax.lang.model.element.Name;
-
 @Entity
 @Table(name = "thuonghieu")
 public class Thuonghieu {

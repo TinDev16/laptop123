@@ -1,10 +1,8 @@
 package com.example.demo.Service.impl;
 
 import com.example.demo.Entity.Khachhang;
-import com.example.demo.Entity.Nhanvien;
 import com.example.demo.Repository.KhachhangRepository;
 import com.example.demo.Service.KhachhangService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

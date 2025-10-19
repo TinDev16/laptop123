@@ -31,6 +31,25 @@
         color: #333;
         font-weight: 600;
     }
+
+            /* Xóa gạch chân cho tất cả link trong nav */
+            .nav a {
+        text-decoration: none;
+        color: inherit; /* Giữ nguyên màu gốc */
+    }
+
+    /* Tùy chỉnh khi rê chuột (hover) */
+    .nav a:hover {
+        text-decoration: none;
+        color: #007bff; /* Hoặc màu bạn muốn khi hover */
+    }
+
+    /* Nếu muốn tab đang chọn nổi bật hơn */
+    .nav-tab.active {
+        color: #007bff;
+        font-weight: 600;
+    }
+
 </style>
 <body>
 <!-- Header -->
@@ -40,14 +59,12 @@
             <i class="fas fa-laptop"></i>
             <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
         </div>
-        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Nếu user đã login -->
-            <div sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </form>
+        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
+        <div class="header-right">
+            <div id="admin-auth">
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
             </div>
         </div>
     </div>
@@ -252,60 +269,82 @@
 </div>
 
 <script>
-function showDeleteModal(button) {
-    const id = button.getAttribute('data-id');
-    const ten = button.getAttribute('data-ten');
-
-    // Gán giá trị vào modal
-    document.getElementById("deleteId").value = id;
-    document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa nhân viên "${ten}" không?`;
-
-    // Hiện modal
-    document.getElementById("deleteModal").classList.remove("hidden");
-}
-
-
-function closeModal() {
-    document.getElementById("deleteModal").classList.add("hidden");
-}
+    function showDeleteModal(button) {
+        const id = button.getAttribute('data-id');
+        const ten = button.getAttribute('data-ten');
+    
+        // Gán giá trị vào modal
+        document.getElementById("deleteId").value = id;
+        document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa nhân viên "${ten}" không?`;
+    
+        // Hiện modal
+        document.getElementById("deleteModal").classList.remove("hidden");
+    }
+    
+    function closeModal() {
+        document.getElementById("deleteModal").classList.add("hidden");
+    }
 </script>
-<!-- Thêm thư viện SheetJS để xuất Excel -->
+
+<!-- Thư viện xuất Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-// Tìm kiếm nhân viên theo tên
+// =========================
+// 🔍 TÌM KIẾM CẢ 2 BẢNG
+// =========================
 function filterProducts() {
     const searchInput = document.getElementById('product-search').value.toLowerCase();
-    const rows = document.querySelectorAll('#employees-table tr');
+
+    // Lấy tất cả các hàng trong cả 2 bảng
+    const rows = document.querySelectorAll('.table tbody tr');
     let visibleCount = 0;
 
     rows.forEach(row => {
-        const hoTen = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-        let show = true;
-
-        if (searchInput && !hoTen.includes(searchInput)) {
-            show = false;
-        }
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
+        const text = row.innerText.toLowerCase();
+        const match = text.includes(searchInput);
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
     });
 
-    let noResultRow = document.getElementById('no-result-row');
-    if (!noResultRow) {
-        noResultRow = document.createElement('tr');
-        noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="8" style="text-align:center;color:#dc3545;font-weight:500;">Không có nhân viên phù hợp</td>`;
-        document.getElementById('employees-table').appendChild(noResultRow);
+    // Nếu không có kết quả hiển thị
+    let noResult = document.getElementById('no-result-row');
+    if (!noResult) {
+        noResult = document.createElement('tr');
+        noResult.id = 'no-result-row';
+        noResult.innerHTML = `<td colspan="8" style="text-align:center;color:#dc3545;font-weight:500;">
+            Không có nhân viên phù hợp
+        </td>`;
+        document.querySelector('.table tbody').appendChild(noResult);
     }
-    noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
+
+    noResult.style.display = visibleCount === 0 ? '' : 'none';
 }
 
-// Xuất Excel bảng nhân viên
+// =========================
+// 📤 XUẤT EXCEL CẢ 2 BẢNG
+// =========================
 function exportExcel() {
-    const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "NhanVien"});
+    const tables = document.querySelectorAll('.table');
+    if (tables.length === 0) {
+        alert("Không tìm thấy bảng nhân viên!");
+        return;
+    }
+
+    // Tạo workbook Excel mới
+    const wb = XLSX.utils.book_new();
+
+    // Lặp qua 2 bảng và tạo sheet riêng
+    tables.forEach((table, index) => {
+        const sheetName = index === 0 ? "NhanVien_HoatDong" : "NhanVien_NghiViec";
+        const ws = XLSX.utils.table_to_sheet(table);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    // Xuất file Excel
     XLSX.writeFile(wb, 'nhanvien.xlsx');
 }
 </script>
+
 </body>
 </html>

@@ -1,6 +1,5 @@
 package com.example.demo.Service.impl;
 
-import com.example.demo.Entity.Khachhang;
 import com.example.demo.Entity.Thuonghieu;
 import com.example.demo.Repository.ThuonghieuRepository;
 import com.example.demo.Service.ThuonghieuService;

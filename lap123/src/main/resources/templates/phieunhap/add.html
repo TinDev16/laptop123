@@ -68,16 +68,20 @@
                     <th>STT</th>
                     <th>Mã SP</th>
                     <th>Tên sản phẩm</th>
+                    <th>Hình ảnh</th>
                     <th>Số lượng tồn</th>
                 </tr>
                 </thead>
                 <tbody id="product-list">
                 <tr th:each="sp, idx : ${sanpham}"
                     th:if="${sp.TRANGTHAI == 0}"
-                    th:attr="data-id=${sp.MASP}, data-name=${sp.TENSP}, data-quantity=${sp.SOLUONGTON}">
+                    th:attr="data-id=${sp.MASP}, data-name=${sp.TENSP}, data-quantity=${sp.SOLUONGTON}, data-image=@{'/uploads/' + ${sp.HINHANHSP}}">
                     <td th:text="${idx.index + 1}"></td>
                     <td th:text="${sp.MASP}"></td>
                     <td th:text="${sp.TENSP}"></td>
+                    <td>
+                        <img th:src="@{'/uploads/' + ${sp.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                    </td>
                     <td th:text="${sp.SOLUONGTON}"></td>
                 </tr>
                 </tbody>
@@ -91,6 +95,7 @@
             <tr class="bg-gray-200">
                 <th class="border p-3 text-left">STT</th>
                 <th class="border p-3 text-left">Tên sản phẩm</th>
+                <th class="border p-3 text-left">Hình ảnh</th>
                 <th class="border p-3 text-left">Số lượng nhập</th>
                 <th class="border p-3 text-left">Giá nhập</th>
                 <th class="border p-3 text-left">Tổng tiền</th>
@@ -127,9 +132,11 @@
             const id = parseInt(row.dataset.id);
             const name = row.dataset.name;
             const quantity = parseInt(row.dataset.quantity);
-            addProduct({id, name, quantity});
+            const image = row.dataset.image; // ✅ thêm dòng này
+            addProduct({id, name, quantity, image});
         }
     });
+
 
     function addProduct(product) {
         if (!selectedProducts.find(p => p.id === product.id)) {
@@ -150,10 +157,13 @@
                 <td class="border p-3">${p.itemStt}</td>
                 <td class="border p-3">${p.name}</td>
                 <td class="border p-3">
+                    <img src="${p.image}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                </td>
+                <td class="border p-3">
                     <div class="input-group">
                         <input type="number" value="${p.importQuantity}" min="1" required
-                               class="w-full p-2 border border-gray-300 rounded-lg"
-                               onchange="updateQuantity(${index}, this.value)">
+                            class="w-full p-2 border border-gray-300 rounded-lg"
+                            onchange="updateQuantity(${index}, this.value)">
                         <div class="btn-group">
                             <button type="button" onclick="incrementQuantity(${index})">+</button>
                             <button type="button" onclick="decrementQuantity(${index})">-</button>
@@ -162,12 +172,14 @@
                 </td>
                 <td class="border p-3">
                     <input type="text" value="${p.importPrice.toLocaleString('vi-VN')}" 
-                           class="w-full p-2 border border-gray-300 rounded-lg"
-                           oninput="formatPriceInput(this, ${index})"
-                           onchange="updatePrice(${index}, this.value.replace(/\\D/g, ''))">
+                        class="w-full p-2 border border-gray-300 rounded-lg"
+                        oninput="formatPriceInput(this, ${index})"
+                        onchange="updatePrice(${index}, this.value.replace(/\\D/g, ''))">
                 </td>
-                <td class="border p-3">${subtotal.toLocaleString()} VND</td>
-                <td class="border p-3"><button type="button" class="delete-btn" onclick="removeProduct(${index})">Xóa</button></td>
+                <td class="border p-3">${(p.importQuantity * p.importPrice).toLocaleString()} VND</td>
+                <td class="border p-3">
+                    <button type="button" class="delete-btn" onclick="removeProduct(${index})">Xóa</button>
+                </td>
             `;
             tbody.appendChild(row);
             total += subtotal;

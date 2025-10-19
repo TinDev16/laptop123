@@ -2,8 +2,6 @@ package com.example.demo.Entity;
 
 import jakarta.persistence.*;
 
-import javax.lang.model.element.Name;
-
 @Entity
 @Table(name = "sanpham")
 public class Tonkho {
@@ -33,6 +31,9 @@ public class Tonkho {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MATHUONGHIEU")
     private Thuonghieu thuonghieu;
+
+    @Column(name = "SOLUONGTON")
+    private int SOLUONGTON;
 
     @Column(name = "TRANGTHAI")
     private int TRANGTHAI;
@@ -125,8 +126,11 @@ public class Tonkho {
         this.TRANGTHAI = TRANGTHAI;
     }
 
+    public int getSOLUONGTON() {
+        return SOLUONGTON;
+    }
 
-
-
-
+    public void setSOLUONGTON(int SOLUONGTON) {
+        this.SOLUONGTON = SOLUONGTON;
+    }
 }

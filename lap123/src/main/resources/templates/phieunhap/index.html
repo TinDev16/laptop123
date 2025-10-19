@@ -8,7 +8,30 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
+<style>
+    .section-title i { margin-right: 8px; }
+.table th, .table td { padding: 10px 12px; border-bottom: 1px solid #ddd; }
+.table tr:hover { background-color: #f9f9f9; transition: 0.2s; }
+.table-actions a:hover { opacity: 0.8; transform: scale(1.1); transition: 0.2s; }
+        /* Xóa gạch chân cho tất cả link trong nav */
+        .nav a {
+        text-decoration: none;
+        color: inherit; /* Giữ nguyên màu gốc */
+    }
 
+    /* Tùy chỉnh khi rê chuột (hover) */
+    .nav a:hover {
+        text-decoration: none;
+        color: #007bff; /* Hoặc màu bạn muốn khi hover */
+    }
+
+    /* Nếu muốn tab đang chọn nổi bật hơn */
+    .nav-tab.active {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+</style>
 <body>
 <!-- Header -->
 <header class="header">
@@ -17,15 +40,12 @@
             <i class="fas fa-laptop"></i>
             <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
         </div>
-        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Nếu user đã login -->
-            <div sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </form>
-            </div>
+        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
+        <div class="header-right">
+            <div id="admin-auth">
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
         </div>
     </div>
 </header>
@@ -107,123 +127,201 @@
 </nav>
 <!-- Main Content -->
 <main class="main">
-    <!-- Products Tab -->
     <div id="products" class="tab-content active">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý phiếu nhập</h2>
-            <div class="page-actions">
-                <a th:href="@{/phieunhap/create}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Thêm phiếu nhập
+        <!-- Header -->
+        <div class="page-header flex justify-between items-center mb-4">
+            <h2 class="page-title text-2xl font-bold text-gray-800">Quản lý Phiếu nhập</h2>
+            <div class="page-actions flex gap-2">
+                <a th:href="@{/phieunhap/create}" class="btn btn-primary flex items-center gap-1">
+                    <i class="fas fa-plus"></i> Thêm phiếu nhập
                 </a>
-                <a href="#" class="btn btn-success" onclick="exportExcel('products')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
+                <a href="#" class="btn btn-success flex items-center gap-1" onclick="exportExcel('products')">
+                    <i class="fas fa-file-excel"></i> Xuất Excel
                 </a>
             </div>
         </div>
 
-        <div class="search-filters">
-            <div class="search-input">
-                <i class="fas fa-search"></i>
-                <input type="text" id="product-search" placeholder="Tìm kiếm phiếu nhập..." onkeyup="filterProducts()">
+        <!-- Search -->
+        <div class="search-filters mb-6">
+            <div class="search-input relative w-1/3">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                <input type="text" id="product-search" placeholder="Tìm kiếm phiếu nhập..."
+                       class="pl-10 pr-3 py-2 border rounded w-full"
+                       onkeyup="filterProducts()">
             </div>
         </div>
 
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã phiếu nhập</th>
-                    <th>Nhà cung cấp</th>
-                    <th>Nhân viên nhập</th>
-                    <th>Thời gian</th>
-                    <th>Tổng tiền</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="products-table">
-                    <tr th:each="pn : ${phieunhap}">
-                        <td class="font-semibold" th:text="${pn.MAPHIEUNHAP}"></td>
-                        <td th:text="${pn.ncc != null ? pn.ncc.TENNCC : 'Không xác định'}"></td>
-                        <td th:text="${pn.nhanvien != null ? pn.nhanvien.HOTEN : 'Không xác định'}"></td>
-                        <td th:text="${pn.THOIGIAN != null ? #dates.format(pn.THOIGIAN, 'dd/MM/yyyy') : ''}"></td>
-                        <td th:text="${#numbers.formatDecimal(pn.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
-                        <td>
-                            <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/view-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xem chi tiết">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a class="btn btn-icon btn-outline text-red-600" title="Xóa" th:href="@{/delete-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+       
+        <!-- Bảng ĐANG XỬ LÝ -->
+        <section class="status-section mb-8">
+            <h3 class="section-title text-xl font-semibold text-yellow-600 mb-2">
+                <i class="fas fa-hourglass-half"></i> Phiếu nhập đang xử lý
+            </h3>
+            <div class="table-container">
+                <table class="table w-full border-collapse">
+                    <thead class="bg-yellow-100">
+                        <tr>
+                            <th>Mã phiếu nhập</th>
+                            <th>Nhà cung cấp</th>
+                            <th>Nhân viên nhập</th>
+                            <th>Thời gian</th>
+                            <th>Tổng tiền</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pn : ${phieunhap}" th:if="${pn.TRANGTHAI == 0}">
+                            <td th:text="${pn.MAPHIEUNHAP}"></td>
+                            <td th:text="${pn.ncc != null ? pn.ncc.TENNCC : 'Không xác định'}"></td>
+                            <td th:text="${pn.nhanvien != null ? pn.nhanvien.HOTEN : 'Không xác định'}"></td>
+                            <td th:text="${#dates.format(pn.THOIGIAN, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#numbers.formatDecimal(pn.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
+                            <td>
+                                <div class="table-actions flex gap-2">
+                                    <a class="btn btn-icon btn-outline" th:href="@{/view-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a class="btn btn-icon btn-outline" th:href="@{/edit-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a class="btn btn-icon btn-outline text-red-600" th:href="@{/delete-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xóa phiếu nhập">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <br><br><br>
+        <!-- Bảng HOÀN TẤT -->
+        <section class="status-section mb-8">
+            <h3 class="section-title text-xl font-semibold text-green-700 mb-2">
+                <i class="fas fa-check-circle"></i> Phiếu nhập hoàn tất
+            </h3>
+            <div class="table-container">
+                <table class="table w-full border-collapse">
+                    <thead class="bg-green-100">
+                        <tr>
+                            <th>Mã phiếu nhập</th>
+                            <th>Nhà cung cấp</th>
+                            <th>Nhân viên nhập</th>
+                            <th>Thời gian</th>
+                            <th>Tổng tiền</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pn : ${phieunhap}" th:if="${pn.TRANGTHAI == 1}">
+                            <td th:text="${pn.MAPHIEUNHAP}"></td>
+                            <td th:text="${pn.ncc != null ? pn.ncc.TENNCC : 'Không xác định'}"></td>
+                            <td th:text="${pn.nhanvien != null ? pn.nhanvien.HOTEN : 'Không xác định'}"></td>
+                            <td th:text="${#dates.format(pn.THOIGIAN, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#numbers.formatDecimal(pn.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
+                            <td>
+                                <div class="table-actions flex gap-2">
+                                    <a class="btn btn-icon btn-outline" th:href="@{/view-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <!-- <a class="btn btn-icon btn-outline text-red-600" th:href="@{/delete-phieunhap/{id}(id=${pn.MAPHIEUNHAP})}" title="Ẩn phiếu nhập">
+                                        <i class="fas fa-trash"></i>
+                                    </a> -->
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
+</main>
 
-
-
-<!-- Thêm thư viện SheetJS để xuất Excel -->
+<!-- Thêm thư viện SheetJS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-// Tìm kiếm mạnh mẽ phiếu nhập
+/* ======================= 🔍 TÌM KIẾM CẢ 2 BẢNG ======================= */
 function filterProducts() {
     const searchInput = document.getElementById('product-search').value.toLowerCase();
-    const brandFilter = document.getElementById('brand-filter').value.toLowerCase();
-    const rows = document.querySelectorAll('#products-table tr');
+
+    // Lấy tất cả hàng trong cả 2 bảng
+    const rows = document.querySelectorAll('.table tbody tr');
     let visibleCount = 0;
 
     rows.forEach(row => {
-        // Lấy dữ liệu các trường
         const maPhieu = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
         const nhaCungCap = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
         const nhanVien = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
         const thoiGian = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
         const tongTien = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
-        let show = true;
 
-        // Tìm kiếm theo tất cả trường
-        if (searchInput && !(
+        const match = (
             maPhieu.includes(searchInput) ||
             nhaCungCap.includes(searchInput) ||
             nhanVien.includes(searchInput) ||
             thoiGian.includes(searchInput) ||
             tongTien.includes(searchInput)
-        )) {
-            show = false;
-        }
-        // Nếu có lọc thương hiệu (brandFilter), bạn có thể lọc theo nhà cung cấp
-        if (brandFilter && nhaCungCap !== brandFilter) {
-            show = false;
-        }
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
+        );
+
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
     });
 
+    // Nếu không tìm thấy kết quả trong cả 2 bảng
+    const tables = document.querySelectorAll('.table tbody');
     let noResultRow = document.getElementById('no-result-row');
     if (!noResultRow) {
         noResultRow = document.createElement('tr');
         noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="6" style="text-align:center;color:#dc3545;font-weight:500;">Không có phiếu nhập phù hợp</td>`;
-        document.getElementById('products-table').appendChild(noResultRow);
+        noResultRow.innerHTML = `
+            <td colspan="6" style="text-align:center;color:#dc3545;font-weight:500;">
+                Không có phiếu nhập phù hợp
+            </td>`;
+        // thêm dòng này vào cuối bảng đầu tiên
+        tables[0].appendChild(noResultRow);
     }
     noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
 }
 
-// Xuất Excel bảng phiếu nhập
-function exportExcel() {
-    const table = document.querySelector('.table');
-    const wb = XLSX.utils.table_to_book(table, {sheet: "PhieuNhap"});
-    XLSX.writeFile(wb, 'phieunhap.xlsx');
+/* ======================= 📤 XUẤT EXCEL CẢ 2 BẢNG ======================= */
+function exportExcel(tab) {
+    if (tab === 'products') {
+        const tables = document.querySelectorAll('.table');
+        if (tables.length === 0) {
+            alert("Không tìm thấy bảng phiếu nhập!");
+            return;
+        }
+
+        // Tạo workbook mới
+        const wb = XLSX.utils.book_new();
+
+        // Chuyển từng bảng thành sheet
+        tables.forEach((table, index) => {
+            const sheetName = index === 0 ? "PhieuNhap_DangXuLy" : "PhieuNhap_HoanTat";
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+
+        // Xuất file Excel
+        XLSX.writeFile(wb, 'phieunhap.xlsx');
+    }
+}
+
+/* ======================= ⚙️ LỌC TRẠNG THÁI ======================= */
+function filterStatus() {
+    const filter = document.getElementById("statusFilter").value;
+    const rows = document.querySelectorAll(".table tbody tr");
+
+    rows.forEach(row => {
+        const status = row.querySelector(".badge")?.textContent.trim();
+        if (filter === "all") row.style.display = "";
+        else if (filter === "0" && status === "Đang xử lý") row.style.display = "";
+        else if (filter === "1" && status === "Hoàn tất") row.style.display = "";
+        else row.style.display = "none";
+    });
 }
 </script>
+
 </body>
 </html>

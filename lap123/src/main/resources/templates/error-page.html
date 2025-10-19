@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title != null ? title : 'Lỗi Hệ Thống'}">Lỗi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .error-card {
+            max-width: 600px;
+            margin: 80px auto;
+            border-radius: 12px;
+        }
+        .emoji {
+            font-size: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card error-card shadow-lg p-4 text-center">
+        <div class="emoji">⚠️</div>
+        <h2 class="text-danger fw-bold mt-3" th:text="${title != null ? title : 'Đã xảy ra lỗi'}"></h2>
+        <p class="fw-bold text-dark mt-3" th:text="${message != null ? message : 'Vui lòng thử lại sau hoặc liên hệ quản trị viên!'}"></p>
+
+        <a th:href="${backUrl != null ? backUrl : '/'}" class="btn btn-primary mt-4">
+            ← Quay lại
+        </a>
+    </div>
+</body>
+</html>

@@ -2,6 +2,7 @@ package com.example.demo.Controller;
 
 import com.example.demo.Entity.NCC;
 import com.example.demo.Service.NCCService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -9,11 +10,8 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class NCCController {
 
+    @Autowired
     NCCService nccService;
-
-    public NCCController(NCCService nccService) {
-        this.nccService = nccService;
-    }
 
     @GetMapping("/ncc")
     public String nhacungcap(Model model) {

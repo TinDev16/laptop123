@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Xem chi tiết phiếu Xuất hàng hóa bao gồm nhà cung cấp, nhân viên Xuất, thời gian, tổng tiền và danh sách sản phẩm chi tiết.">
+    <meta name="keywords" content="phiếu Xuất, chi tiết phiếu Xuất, quản lý kho, sản phẩm Xuất hàng, cửa hàng laptop">
+    <meta name="author" content="Hệ thống Quản lý Cửa hàng Laptop">
+    <title>Chi tiết Phiếu Xuất | Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .table th {
+            background-color: #000cef;
+            color: white;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .badge-status {
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .badge-hoantat {
+            background-color: #198754;
+        }
+        .badge-xuly {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .breadcrumb a {
+            text-decoration: none;
+            color: #0d6efd;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="container py-5">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/phieuxuat}">Quản lý phiếu Xuất</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Chi tiết Phiếu Xuất</li>
+            </ol>
+        </nav>
+
+        <!-- Tiêu đề -->
+        <header class="mb-4 text-center">
+            <h1 class="text-primary fw-bold">Chi tiết Phiếu Xuất</h1>
+            <p class="text-muted">Thông tin chi tiết phiếu Xuất hàng và danh sách sản phẩm Xuất kho</p>
+        </header>
+
+        <!-- Thông tin phiếu Xuất -->
+        <section class="card mb-5">
+            <div class="card-body">
+                <h5 class="card-title mb-3 text-secondary fw-bold">
+                    Thông tin chung
+                </h5>
+
+                <div class="row mb-2">
+                    <div class="col-md-6 mb-2">
+                        <span class="info-label">Mã phiếu Xuất:</span>
+                        <span th:text="${phieuxuat.MAPHIEUXUAT}"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="info-label">Nhân viên Xuất:</span>
+                        <span th:text="${phieuxuat.nhanvien.HOTEN}"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="info-label">Khách hàng:</span>
+                        <span th:text="${phieuxuat.khachhang.HOTEN}"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="info-label">Thời gian:</span>
+                        <span th:text="${#dates.format(phieuxuat.THOIGIAN, 'dd/MM/yyyy')}"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="info-label">Tổng tiền:</span>
+                        <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(phieuxuat.TONGTIEN, 0, 'POINT', 0, 'COMMA')}"></span> VNĐ
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="info-label">Trạng thái:</span>
+                        <span th:classappend="${phieuxuat.TRANGTHAI == 1} ? 'badge badge-status badge-hoantat' : 'badge badge-status badge-xuly'"
+                              th:text="${phieuxuat.TRANGTHAI == 1 ? 'Hoàn tất' : 'Đang xử lý'}"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Danh sách chi tiết sản phẩm -->
+        <section>
+            <h4 class="fw-bold text-secondary mb-3">Danh sách sản phẩm</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center shadow-sm bg-white rounded">
+                    <thead>
+                        <tr>
+                            <th>Mã SP</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Hình ảnh</th>
+                            <th>Số lượng</th>
+                            <th>Giá Xuất (VNĐ)</th>
+                            <th>Thành tiền (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ct : ${chiTietList}">
+                            <td th:text="${ct.sanpham.MASP}"></td>
+                            <td th:text="${ct.sanpham.TENSP}"></td>
+                            <td>
+                                <img th:src="@{'/uploads/' + ${ct.sanpham.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                            </td>
+                            <td th:text="${ct.soluong}"></td>
+                            <td th:text="${#numbers.formatDecimal(ct.giaxuat, 0, 'POINT', 0, 'COMMA')}"></td>
+                            <td th:text="${#numbers.formatDecimal(ct.giaxuat * ct.soluong, 0, 'POINT', 0, 'COMMA')}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(chiTietList)}">
+                            <td colspan="5" class="text-muted">Không có sản phẩm nào trong phiếu Xuất này.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Nút quay lại -->
+        <div class="mt-4 text-center">
+            <a th:href="@{/phieuxuat}" class="btn btn-outline-primary px-4">
+                ← Quay lại danh sách
+            </a>
+        </div>
+
+    </main>
+
+</body>
+</html>

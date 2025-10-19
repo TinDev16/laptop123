@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa phiếu xuất</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+    /* Tăng độ rõ ràng cho select nhà cung cấp */
+    select.form-select, select {
+        border-radius: 10px;
+        border: 1px solid #007bff;
+        padding: 8px;
+    }
+    /* Format giá xuất khi xuất */
+    input.price-input {
+        text-align: right;
+    }
+</style>
+<body class="container mt-4">
+    <h1 class="text-primary mb-4 text-center">
+        Chỉnh sửa Phiếu xuất #<span th:text="${phieuxuat.MAPHIEUXUAT}"></span>
+    </h1>
+
+    <form id="phieuxuatForm" th:action="@{/update-phieuxuat}" th:object="${phieuxuat}" method="post">
+        <input type="hidden" th:field="*{MAPHIEUXUAT}" />
+        <input type="hidden" id="trangthai" th:field="*{TRANGTHAI}" />
+
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nhân viên xuất</label>
+                        <select class="form-select" th:field="*{nhanvien.MANV}">
+                            <option th:each="nv : ${nhanvienList}"
+                                    th:value="${nv.MANV}"
+                                    th:text="${nv.HOTEN + (nv.TRANGTHAI == 1 ? ' (nghỉ việc)' : '')}"
+                                    th:disabled="${nv.TRANGTHAI == 1}">
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Khách hàng</label>
+                        <select class="form-select" th:field="*{khachhang.MAKH}">
+                            <option th:each="kh : ${khachhangList}"
+                                    th:value="${kh.MAKH}"
+                                    th:text="${kh.HOTEN + (kh.TRANGTHAI == 1 ? ' (bị khóa)' : '')}"
+                                    th:disabled="${kh.TRANGTHAI == 1}">
+                            </option>
+                        </select>
+                    </div>
+                    
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Thời gian</label>
+                    <input type="date" class="form-control" th:field="*{THOIGIAN}" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Chi tiết sản phẩm -->
+        <h4 class="mb-3 text-secondary fw-bold">Danh sách sản phẩm</h4>
+        <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã SP</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Hình ảnh</th>
+                    <th>Số lượng</th>
+                    <th>Giá xuất</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ct, iStat : ${chiTietList}">
+                    <input type="hidden" name="ct_id" th:value="${ct.id}" />
+                    <td th:text="${ct.sanpham.MASP}"></td>
+                    <td th:text="${ct.sanpham.TENSP}"></td>
+                    <td>
+                        <img th:src="@{'/uploads/' + ${ct.sanpham.HINHANHSP}}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control text-center" name="soluong"
+                               th:value="${ct.soluong}" min="1" />
+                    </td>
+                    <td>
+                        <!-- input hiển thị để người dùng thấy có dấu chấm -->
+                        <input type="text" class="form-control price-input"
+                               th:value="${#numbers.formatDecimal(ct.giaxuat, 0, 'POINT', 0, 'COMMA')}"
+                               oninput="formatPrice(this)" />
+                    
+                        <!-- input ẩn để lưu giá trị thực (số nguyên, không có dấu .) -->
+                        <input type="hidden" name="giaxuat"
+                                th:value="${#numbers.formatDecimal(ct.giaxuat, 0, 'NONE', 0, 'NONE')}" />
+                    </td>
+                    <td>
+                        <span class="thanh-tien" 
+                              th:text="${#numbers.formatDecimal(ct.soluong * ct.giaxuat, 0, 'POINT', 0, 'COMMA')}"></span>
+                    </td>
+                    
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a th:href="@{/phieuxuat}" class="btn btn-secondary">
+                ← Quay lại
+            </a>
+            <button type="submit" class="btn btn-success">
+                Xuất hàng
+            </button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    </form>
+    <script th:if="${error}">
+        alert([[${error}]]);
+    </script>
+    
+    <script th:if="${success}">
+        alert([[${success}]]);
+    </script>
+    
+    <!-- FontAwesome + JS xử lý -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        function formatPrice(input) {
+            // Loại bỏ mọi ký tự không phải số
+            let rawValue = input.value.replace(/[^\d]/g, '');
+        
+            // Cập nhật lại input hiển thị có dấu chấm ngăn cách
+            input.value = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+            // Ghi giá trị thực vào input hidden liền kề
+            const hiddenInput = input.parentElement.querySelector('input[type="hidden"][name="giaxuat"]');
+            if (hiddenInput) hiddenInput.value = rawValue;
+        
+            // Cập nhật lại thành tiền trong dòng
+            const row = input.closest('tr');
+            const soLuongInput = row.querySelector('input[name="soluong"]');
+            const thanhTienCell = row.querySelector('.thanh-tien');
+        
+            if (soLuongInput && thanhTienCell) {
+                const soLuong = parseInt(soLuongInput.value) || 0;
+                const giaxuat = parseInt(rawValue) || 0;
+                const thanhTien = soLuong * giaxuat;
+                thanhTienCell.textContent = thanhTien.toLocaleString('vi-VN');
+            }
+        }
+
+        document.querySelectorAll('input[name="soluong"]').forEach(input => {
+            input.addEventListener('input', () => {
+                const row = input.closest('tr');
+                const giaxuatInput = row.querySelector('.price-input');
+                if (giaxuatInput) formatPrice(giaxuatInput);
+            });
+        });
+
+        </script>
+        
+    <script>
+
+        // Khi nhấn nút xác nhận -> set trạng thái = 1 và submit form
+        document.getElementById('btnXacNhan').addEventListener('click', () => {
+            document.getElementById('trangthai').value = 1;
+            document.getElementById('phieuxuatForm').submit();
+        });
+    </script>
+</body>
+</html>

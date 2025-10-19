@@ -10,12 +10,8 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class ThuonghieuController {
 
+    @Autowired
     ThuonghieuService thuonghieuService;
-
-    public ThuonghieuController(ThuonghieuService thuonghieuService) {
-        super();
-        this.thuonghieuService = thuonghieuService;
-    }
 
     @GetMapping("/thuonghieu")
     public String thuonghieu(Model model) {

@@ -30,27 +30,28 @@
         <div class="card mb-4 shadow-sm">
             <div class="card-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Nhân viên xuất</label>
-                    <select class="form-select" th:field="*{nhanvien}">
-                        <option th:each="nv : ${nhanvienList}"
-                                th:if="${nv.TRANGTHAI == 0}"
-                                th:value="${nv.MANV}"
-                                th:text="${nv.HOTEN}"
-                                th:selected="${nv.MANV == phieuxuat.nhanvien.MANV}">
-                        </option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Khách hàng</label>
-                    <select class="form-select" th:field="*{khachhang.MAKH}">
-                        <option th:each="kh : ${khachhangList}" 
-                                th:if="${kh.TRANGTHAI == 0}" 
-                                th:value="${kh.MAKH}"
-                                th:text="${kh.HOTEN}">
-                        </option>
-                    </select>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nhân viên xuất</label>
+                        <select class="form-select" th:field="*{nhanvien.MANV}">
+                            <option th:each="nv : ${nhanvienList}"
+                                    th:value="${nv.MANV}"
+                                    th:text="${nv.HOTEN + (nv.TRANGTHAI == 1 ? ' (nghỉ việc)' : '')}"
+                                    th:disabled="${nv.TRANGTHAI == 1}">
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Khách hàng</label>
+                        <select class="form-select" th:field="*{khachhang.MAKH}">
+                            <option th:each="kh : ${khachhangList}"
+                                    th:value="${kh.MAKH}"
+                                    th:text="${kh.HOTEN + (kh.TRANGTHAI == 1 ? ' (bị khóa)' : '')}"
+                                    th:disabled="${kh.TRANGTHAI == 1}">
+                            </option>
+                        </select>
+                    </div>
+                    
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Thời gian</label>
@@ -116,7 +117,14 @@
         <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
     </form>
-
+    <script th:if="${error}">
+        alert([[${error}]]);
+    </script>
+    
+    <script th:if="${success}">
+        alert([[${success}]]);
+    </script>
+    
     <!-- FontAwesome + JS xử lý -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script>

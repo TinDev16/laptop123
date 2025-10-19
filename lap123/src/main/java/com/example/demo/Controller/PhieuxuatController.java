@@ -80,24 +80,58 @@ public class PhieuxuatController {
                                   @RequestParam("ct_id") List<Integer> ctIds,
                                   @RequestParam("soluong") List<Integer> soLuongs,
                                   @RequestParam("giaxuat") List<String> giaXuatsStr,
-                                  RedirectAttributes redirectAttrs) {
+                                  RedirectAttributes redirectAttrs,
+                                  Model model) {
 
         Phieuxuat existing = phieuxuatService.getPhieuxuatById(phieuxuat.getMAPHIEUXUAT());
         if (existing == null) {
-            redirectAttrs.addFlashAttribute("error", "Phiếu xuất không tồn tại!");
-            return "redirect:/phieuxuat";
+            model.addAttribute("title", "Phiếu Xuất Không Tồn Tại");
+            model.addAttribute("message", "Phiếu xuất bạn đang thao tác không tồn tại trong hệ thống.");
+            model.addAttribute("backUrl", "/phieuxuat");
+            return "error-page";
         }
 
-        // 🧠 Kiểm tra nếu phiếu xuất chứa sản phẩm bị xóa (trạng thái = 0)
+        // ✅ Nạp lại nhân viên và khách hàng bằng ID để tránh null
+        if (phieuxuat.getNhanvien() != null && phieuxuat.getNhanvien().getMANV() > 0) {
+            existing.setNhanvien(nhanvienService.getNhanvienById(phieuxuat.getNhanvien().getMANV()));
+        }
+
+        if (phieuxuat.getKhachhang() != null && phieuxuat.getKhachhang().getMAKH() > 0) {
+            existing.setKhachhang(khachhangService.getKhachhangById(phieuxuat.getKhachhang().getMAKH()));
+        }
+
+        // 🧠 Kiểm tra nhân viên
+        if (phieuxuat.getNhanvien() == null ||
+                phieuxuat.getNhanvien().getTRANGTHAI() == 1) {
+            model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
+            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì nhân viên đã nghỉ việc: "
+                    + phieuxuat.getNhanvien().getHOTEN());
+            model.addAttribute("backUrl", "/phieuxuat");
+            return "error-page";
+        }
+
+        // 🧠 Kiểm tra khách hàng
+        if (phieuxuat.getKhachhang() == null ||
+                phieuxuat.getKhachhang().getTRANGTHAI() == 1) {
+            model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
+            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì khách hàng đã bị vô hiệu hóa: "
+                    + phieuxuat.getKhachhang().getHOTEN());
+            model.addAttribute("backUrl", "/phieuxuat");
+            return "error-page";
+        }
+
+        // 🧠 Kiểm tra sản phẩm bị xóa hoặc ngừng kinh doanh
         for (int i = 0; i < ctIds.size(); i++) {
             CT_Phieuxuat ct = ct_phieuxuatService.getById(ctIds.get(i));
             if (ct != null && ct.getSanpham().getTRANGTHAI() == 1) {
-                redirectAttrs.addFlashAttribute("error",
-                        "Không thể xác nhận phiếu xuất vì có sản phẩm đã bị xóa hoặc ngừng kinh doanh: "
-                                + ct.getSanpham().getTENSP());
-                return "redirect:/phieuxuat/detail/" + phieuxuat.getMAPHIEUXUAT();
+                model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
+                model.addAttribute("message", "Không thể xác nhận vì sản phẩm đã bị xóa hoặc ngừng kinh doanh: "
+                        + ct.getSanpham().getTENSP());
+                model.addAttribute("backUrl", "/phieuxuat");
+                return "error-page";
             }
         }
+
 
         // ✅ Cập nhật thông tin cơ bản
         existing.setNhanvien(phieuxuat.getNhanvien());

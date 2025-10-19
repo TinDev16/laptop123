@@ -31,6 +31,25 @@
         color: #333;
         font-weight: 600;
     }
+
+            /* Xóa gạch chân cho tất cả link trong nav */
+            .nav a {
+        text-decoration: none;
+        color: inherit; /* Giữ nguyên màu gốc */
+    }
+
+    /* Tùy chỉnh khi rê chuột (hover) */
+    .nav a:hover {
+        text-decoration: none;
+        color: #007bff; /* Hoặc màu bạn muốn khi hover */
+    }
+
+    /* Nếu muốn tab đang chọn nổi bật hơn */
+    .nav-tab.active {
+        color: #007bff;
+        font-weight: 600;
+    }
+
 </style>
 <body>
 <!-- Header -->
@@ -135,7 +154,6 @@
                     <th>Số điện thoại</th>
                     <th>Ngày tham gia</th>
                     <th>Trạng thái</th>
-                    <th>Ghi chú</th>
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -149,7 +167,6 @@
                     <td th:text="${kh.SDT}"></td>
                     <td th:text="${kh.NGAYTHAMGIA != null ? #dates.format(kh.NGAYTHAMGIA, 'dd/MM/yyyy') : ''}"></td>
                     <td th:text="${kh.TRANGTHAI == 0 ? 'Hoạt động' : 'Ngừng hoạt động'}"></td>
-                    <td th:text="${kh.GHICHU != null ? kh.GHICHU : ''}"></td>
                     <td>
                         <div class="table-actions">
                             <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}">
@@ -223,6 +240,24 @@
         </form>
     </div>
 </div>
+
+<script>
+    function showDeleteModal(button) {
+        const id = button.getAttribute('data-id');
+        const ten = button.getAttribute('data-ten');
+    
+        // Gán giá trị vào modal
+        document.getElementById("deleteId").value = id;
+        document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa khách hàng "${ten}" không?`;
+    
+        // Hiện modal
+        document.getElementById("deleteModal").classList.remove("hidden");
+    }
+    
+    function closeModal() {
+        document.getElementById("deleteModal").classList.add("hidden");
+    }
+</script>
 
 <!-- Thêm thư viện SheetJS để xuất Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

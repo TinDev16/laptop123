@@ -514,3 +514,20 @@ body {
     font-weight: 600;
 }
 
+/* Xóa gạch chân cho tất cả link trong nav */
+.nav a {
+    text-decoration: none;
+    color: inherit; /* Giữ nguyên màu gốc */
+}
+
+/* Tùy chỉnh khi rê chuột (hover) */
+.nav a:hover {
+    text-decoration: none;
+    color: #007bff; /* Hoặc màu bạn muốn khi hover */
+}
+
+/* Nếu muốn tab đang chọn nổi bật hơn */
+.nav-tab.active {
+    color: #007bff;
+    font-weight: 600;
+}

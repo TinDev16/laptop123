@@ -30,6 +30,25 @@
         color: #333;
         font-weight: 600;
     }
+
+            /* Xóa gạch chân cho tất cả link trong nav */
+            .nav a {
+        text-decoration: none;
+        color: inherit; /* Giữ nguyên màu gốc */
+    }
+
+    /* Tùy chỉnh khi rê chuột (hover) */
+    .nav a:hover {
+        text-decoration: none;
+        color: #007bff; /* Hoặc màu bạn muốn khi hover */
+    }
+
+    /* Nếu muốn tab đang chọn nổi bật hơn */
+    .nav-tab.active {
+        color: #007bff;
+        font-weight: 600;
+    }
+
 </style>
 <body>
 <!-- Header -->
@@ -221,6 +240,25 @@
         </form>
     </div>
 </div>
+
+<script>
+    function showDeleteModal(button) {
+        const id = button.getAttribute('data-id');
+        const ten = button.getAttribute('data-ten');
+    
+        // Gán giá trị vào modal
+        document.getElementById("deleteId").value = id;
+        document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa nhân viên "${ten}" không?`;
+    
+        // Hiện modal
+        document.getElementById("deleteModal").classList.remove("hidden");
+    }
+    
+    function closeModal() {
+        document.getElementById("deleteModal").classList.add("hidden");
+    }
+</script>
+
 <!-- Thư viện xuất Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 

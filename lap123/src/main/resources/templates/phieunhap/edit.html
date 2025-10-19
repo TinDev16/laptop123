@@ -29,29 +29,27 @@
 
         <div class="card mb-4 shadow-sm">
             <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nhà cung cấp</label>
-                    <select class="form-select" th:field="*{ncc.MANCC}">
-                        <option th:each="n : ${nccList}" 
-                                th:if="${n.TRANGTHAI == 0}" 
-                                th:value="${n.MANCC}"
-                                th:text="${n.TENNCC}">
-                        </option>
-                    </select>
-                </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Nhân viên nhập</label>
                     <select class="form-select" th:field="*{nhanvien}">
                         <option th:each="nv : ${nhanvienList}"
-                                th:if="${nv.TRANGTHAI == 0}"
                                 th:value="${nv.MANV}"
-                                th:text="${nv.HOTEN}"
-                                th:selected="${nv.MANV == phieunhap.nhanvien.MANV}">
+                                th:text="${nv.HOTEN + (nv.TRANGTHAI == 1 ? ' (nghỉ việc)' : '')}"
+                                th:disabled="${nv.TRANGTHAI == 1}">
                         </option>
                     </select>
                 </div>
-
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nhà cung cấp</label>
+                    <select class="form-select" th:field="*{ncc.MANCC}">
+                        <option th:each="n : ${nccList}"
+                                th:value="${n.MANCC}"
+                                th:text="${n.TENNCC + (n.TRANGTHAI == 1 ? ' (ngừng hợp tác)' : '')}"
+                                th:disabled="${n.TRANGTHAI == 1}">
+                        </option>
+                    </select>
+                </div>                
                 <div class="mb-3">
                     <label class="form-label fw-bold">Thời gian</label>
                     <input type="date" class="form-control" th:field="*{THOIGIAN}" />

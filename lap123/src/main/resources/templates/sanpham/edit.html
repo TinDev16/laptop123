@@ -146,6 +146,7 @@
             <select th:field="*{thuonghieu}" class="form-control" required>
                 <option value="" disabled>-- Chọn thương hiệu --</option>
                 <option th:each="th : ${thuonghieuList}"
+                        th:if="${th.TRANGTHAI == 0}"
                         th:value="${th.MATHUONGHIEU}"
                         th:text="${th.TENTHUONGHIEU}">
                 </option>

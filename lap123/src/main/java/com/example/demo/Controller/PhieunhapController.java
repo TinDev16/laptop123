@@ -95,22 +95,41 @@ public class PhieunhapController {
                                   @RequestParam("ct_id") List<Integer> ctIds,
                                   @RequestParam("soluong") List<Integer> soLuongs,
                                   @RequestParam("gianhap") List<String> giaNhapsStr,
-                                  RedirectAttributes redirectAttrs) {
+                                  RedirectAttributes redirectAttrs, Model model) {
 
         Phieunhap existing = phieunhapService.getPhieunhapById(phieunhap.getMAPHIEUNHAP());
         if (existing == null) {
-            redirectAttrs.addFlashAttribute("error", "Phiếu nhập không tồn tại!");
-            return "redirect:/phieunhap";
+            model.addAttribute("title", "Phiếu Nhập Không Tồn Tại");
+            model.addAttribute("message", "Phiếu nhập bạn đang thao tác không tồn tại trong hệ thống.");
+            model.addAttribute("backUrl", "/phieunhap");
+            return "error-page";
         }
 
-        // 🧠 Kiểm tra nếu phiếu nhập chứa sản phẩm bị xóa (trạng thái = 0)
+        // 🔹 Kiểm tra nhà cung cấp
+        if (phieunhap.getNcc() == null || phieunhap.getNcc().getTRANGTHAI() == 1) {
+            model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Nhập");
+            model.addAttribute("message", "Không thể xác nhận phiếu nhập vì nhà cung cấp đã bị xóa hoặc ngừng hợp tác.");
+            model.addAttribute("backUrl", "/phieunhap");
+            return "error-page";
+        }
+
+        // 🔹 Kiểm tra nhân viên
+        if (phieunhap.getNhanvien() == null || phieunhap.getNhanvien().getTRANGTHAI() == 1) {
+            model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Nhập");
+            model.addAttribute("message", "Không thể xác nhận phiếu nhập vì nhân viên thực hiện đã bị khóa hoặc nghỉ việc.");
+            model.addAttribute("backUrl", "/phieunhap");
+            return "error-page";
+        }
+
+        // 🔹 Kiểm tra sản phẩm bị xóa hoặc ngừng kinh doanh
         for (int i = 0; i < ctIds.size(); i++) {
             CT_Phieunhap ct = ctPhieunhapService.getById(ctIds.get(i));
             if (ct != null && ct.getSanpham().getTRANGTHAI() == 1) {
-                redirectAttrs.addFlashAttribute("error",
-                        "Không thể xác nhận phiếu nhập vì có sản phẩm đã bị xóa hoặc ngừng kinh doanh: "
-                                + ct.getSanpham().getTENSP());
-                return "redirect:/phieunhap/detail/" + phieunhap.getMAPHIEUNHAP();
+                model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Nhập");
+                model.addAttribute("message", "Không thể xác nhận phiếu nhập vì sản phẩm đã bị xóa hoặc ngừng kinh doanh: "
+                        + ct.getSanpham().getTENSP());
+                model.addAttribute("backUrl", "/phieunhap");
+                return "error-page";
             }
         }
 
@@ -118,17 +137,15 @@ public class PhieunhapController {
         existing.setNcc(phieunhap.getNcc());
         existing.setNhanvien(phieunhap.getNhanvien());
         existing.setTHOIGIAN(phieunhap.getTHOIGIAN());
-
-        // ✅ Khi nhấn lưu thì luôn chuyển trạng thái thành 1 (hoàn tất)
-        existing.setTRANGTHAI(1);
+        existing.setTRANGTHAI(1); // Đánh dấu hoàn tất
 
         BigDecimal tongTien = BigDecimal.ZERO;
 
+        // ✅ Cập nhật chi tiết phiếu nhập
         for (int i = 0; i < ctIds.size(); i++) {
             int ctId = ctIds.get(i);
             int soLuongMoi = soLuongs.get(i);
 
-            // 🧩 Xử lý giá nhập
             String giaStr = giaNhapsStr.get(i);
             if (giaStr == null) giaStr = "0";
             giaStr = giaStr.replaceAll("[^0-9]", "");
@@ -161,9 +178,10 @@ public class PhieunhapController {
         existing.setTONGTIEN(tongTien);
         phieunhapService.update(existing);
 
-        redirectAttrs.addFlashAttribute("success", "Xác nhận phiếu nhập thành công!");
+        redirectAttrs.addFlashAttribute("success", "✅ Xác nhận phiếu nhập thành công!");
         return "redirect:/phieunhap";
     }
+
 
     @GetMapping("/delete-phieunhap/{id}")
     public String deletePhieunhap(@PathVariable("id") int id) {

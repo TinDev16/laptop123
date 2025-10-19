@@ -25,12 +25,6 @@ public class SanphamController {
     @Autowired
     private ThuonghieuService thuonghieuservice;
 
-//    index
-    @GetMapping("/")
-    public String home() {
-        return "index";
-    }
-
 //    trang chủ sanpham
     @GetMapping("/sanpham")
     public String sanpham(Model model) {

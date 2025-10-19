@@ -7,28 +7,8 @@
     <title>Hệ thống Quản lý Cửa hàng Laptop</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
-    
+
 </head>
-<style>
-            /* Xóa gạch chân cho tất cả link trong nav */
-            .nav a {
-        text-decoration: none;
-        color: inherit; /* Giữ nguyên màu gốc */
-    }
-
-    /* Tùy chỉnh khi rê chuột (hover) */
-    .nav a:hover {
-        text-decoration: none;
-        color: #007bff; /* Hoặc màu bạn muốn khi hover */
-    }
-
-    /* Nếu muốn tab đang chọn nổi bật hơn */
-    .nav-tab.active {
-        color: #007bff;
-        font-weight: 600;
-    }
-
-</style>
 <body>
 <!-- Header -->
 <header class="header">
@@ -61,78 +41,78 @@
 
 <!-- Navigation -->
 <nav class="nav">
-        <div class="nav-content">
-            <a class="nav-tab active" data-tab="products" href="/">
-                <i class="fas fa-home"></i>
-                <span>Trang chủ</span>
+    <div class="nav-content">
+        <a class="nav-tab active" data-tab="products" href="/">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/sanpham">
+                <i class="fas fa-user-shield"></i>
+                <span>Sản phẩm</span>
             </a>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-                <a class="nav-tab" data-tab="add-admin" href="/sanpham">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Sản phẩm</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-                <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
-                    <i class="fas fa-user-shield"></i>
-                    <span>phiếu nhập</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-                <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
-                    <i class="fas fa-user-shield"></i>
-                    <span>phiếu xuất</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-                <a class="nav-tab" data-tab="add-admin" href="/khachhang">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Khách hàng</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-                <a class="nav-tab" data-tab="add-admin" href="/ncc">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Nhà cung cấp</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-                <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Nhân viên</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-                <a class="nav-tab" data-tab="add-admin" href="/tonkho">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Tồn kho</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-                <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Thương hiệu</span>
-                </a>
-            </div>
-
-            <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
-                <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Tài khoản</span>
-                </a>
-            </div>
-
-
-
         </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu nhập</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu xuất</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/khachhang">
+                <i class="fas fa-user-shield"></i>
+                <span>Khách hàng</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/ncc">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhà cung cấp</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhân viên</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/tonkho">
+                <i class="fas fa-user-shield"></i>
+                <span>Tồn kho</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
+                <i class="fas fa-user-shield"></i>
+                <span>Thương hiệu</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
+                <i class="fas fa-user-shield"></i>
+                <span>Tài khoản</span>
+            </a>
+        </div>
+
+
+
+    </div>
 </nav>
 
 <!-- Main Content -->
@@ -145,70 +125,70 @@
         </div>
     </div>
 
-<!-- Modal -->
-<div id="modal-overlay" class="modal-overlay">
-    <div id="modal" class="modal">
-        <div class="modal-header">
-            <h3 id="modal-title" class="modal-title">Modal Title</h3>
-            <button class="modal-close" onclick="closeModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="modal-body">
-            <!-- Modal content will be populated here -->
-        </div>
-        <div class="modal-footer" id="modal-footer">
-            <!-- Modal footer will be populated here -->
+    <!-- Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div id="modal" class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title">Modal Title</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be populated here -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- Modal footer will be populated here -->
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Confirm Delete Modal -->
-<div id="confirm-modal" class="modal-overlay">
-    <div class="modal" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3 class="modal-title">Xác nhận xóa</h3>
-            <button class="modal-close" onclick="closeConfirmModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
-            <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
+    <!-- Confirm Delete Modal -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Xác nhận xóa</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
+                <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Thêm modal đăng nhập vào cuối body -->
-<div id="login-modal" class="modal-overlay">
-    <div class="modal" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3 class="modal-title">Đăng nhập Admin</h3>
-            <button class="modal-close" onclick="closeLoginModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
-                <div class="form-group">
-                    <label class="form-label required">Tên đăng nhập</label>
-                    <input type="text" id="admin-username" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label required">Mật khẩu</label>
-                    <input type="password" id="admin-password" class="form-input" required>
-                </div>
-                <div style="margin-top:1rem;">
-                    <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                    <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
-                </div>
-            </form>
+    <!-- Thêm modal đăng nhập vào cuối body -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Đăng nhập Admin</h3>
+                <button class="modal-close" onclick="closeLoginModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label required">Tên đăng nhập</label>
+                        <input type="text" id="admin-username" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Mật khẩu</label>
+                        <input type="password" id="admin-password" class="form-input" required>
+                    </div>
+                    <div style="margin-top:1rem;">
+                        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                        <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-<!--<script src="script.js" type="text/javascript"></script>-->
+    <!--<script src="script.js" type="text/javascript"></script>-->
 </body>
 </html>

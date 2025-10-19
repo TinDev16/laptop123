@@ -46,7 +46,25 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/style.css", "/style1.css").permitAll()
                         .requestMatchers("/", "/signin", "/userLogin", "/forgotPassword", "/newPassword").permitAll()
 
-                        .requestMatchers("/phieunhap/**", "/phieuxuat/**", "/tonkho/**").hasAnyAuthority("NV_nhap_xuat","QLy","ADMIN")
+                        .requestMatchers(
+
+                                "/phieunhap/**",
+                                "/view-phieunhap/**",
+                                "/edit-phieunhap/**",
+                                "/update-phieunhap",
+                                "/delete-phieunhap/**",
+
+
+                                "/phieuxuat/**",
+                                "/view-phieuxuat/**",
+                                "/edit-phieuxuat/**",
+                                "/update-phieuxuat",
+                                "/delete-phieuxuat/**",
+
+
+                                "/tonkho/**"
+                        ).hasAnyAuthority("NV_nhap_xuat", "QLy", "ADMIN")
+
 
                         .requestMatchers("/quanlytaikhoan/**").hasAuthority("ADMIN")
 

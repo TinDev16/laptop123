@@ -60,13 +60,16 @@
             <i class="fas fa-laptop"></i>
             <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
         </div>
-        <!-- Đặt nút đăng nhập/đăng xuất admin ở bên trái, gần ngày -->
-        <div class="header-right">
-            <div id="admin-auth">
-                <button id="logout-btn" class="btn btn-danger">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </button>
+        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
+            <!-- Nếu user đã login -->
+            <div sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </form>
             </div>
+
         </div>
     </div>
 </header>
@@ -272,15 +275,15 @@
     function showDeleteModal(button) {
         const id = button.getAttribute('data-id');
         const ten = button.getAttribute('data-ten');
-    
+
         // Gán giá trị vào modal
         document.getElementById("deleteId").value = id;
         document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa khách hàng "${ten}" không?`;
-    
+
         // Hiện modal
         document.getElementById("deleteModal").classList.remove("hidden");
     }
-    
+
     function closeModal() {
         document.getElementById("deleteModal").classList.add("hidden");
     }

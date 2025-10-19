@@ -37,20 +37,14 @@ public class Nhanvien {
     @Column(name = "GHICHU")
     private String GHICHU;
 
-    @Column(name = "VAITRO")
-    private String role;
-
-    @Column(name = "MATKHAU")
-    private String password;
-
-    @Column(name = "EMAIL")
-    private String email;
+    @OneToOne(mappedBy = "nhanvien")
+    private Taikhoan taikhoan;
 
     public Nhanvien() {
 
     }
 
-    public Nhanvien(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI, String GHICHU, String password, String role, String email) {
+    public Nhanvien(String HOTEN, String GIOITINH, Date NGAYSINH, String SDT, Date NGAYTHAMGIA, int TRANGTHAI, String GHICHU) {
         this.HOTEN = HOTEN;
         this.GIOITINH = GIOITINH;
         this.NGAYSINH = NGAYSINH;
@@ -58,33 +52,6 @@ public class Nhanvien {
         this.NGAYTHAMGIA = NGAYTHAMGIA;
         this.TRANGTHAI = TRANGTHAI;
         this.GHICHU = GHICHU;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public int getMANV() {
@@ -141,9 +108,17 @@ public class Nhanvien {
 
     public void setTRANGTHAI(int TRANGTHAI) {
         this.TRANGTHAI = TRANGTHAI;
-
     }
-        public String getGHICHU() {
+
+    public Taikhoan getTaikhoan() {
+        return taikhoan;
+    }
+
+    public void setTaikhoan(Taikhoan taikhoan) {
+        this.taikhoan = taikhoan;
+    }
+
+    public String getGHICHU() {
         return GHICHU;
     }
 
@@ -163,4 +138,6 @@ public class Nhanvien {
     public int hashCode() {
         return Integer.hashCode(MANV);
     }
+
+
 }

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style1.css">
+    <style>
+        /* Responsive trên mobile */
+    @media (max-width: 768px) {
+        .col-md-6.offset-md-3 {
+            max-width: 95%;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .card-header {
+            font-size: 22px;
+            padding: 16px;
+        }
+        .form-control {
+            padding: 12px;
+            font-size: 15px;
+        }
+        .btn-primary {
+            padding: 12px;
+            font-size: 16px;
+        }
+    }
+
+    /* Reset cơ bản */
+    body, html {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f0f2f5;
+    }
+
+    /* Main và login container full height */
+    .main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding-top: 0%;
+    }
+
+    /* Card login */
+    .login-container .card {
+        width: 450px; /* card rộng */
+        background-color: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+    /* Card header */
+    .login-container .card-header {
+        background-color: #007bff;
+        color: #fff;
+        font-weight: bold;
+        font-size: 24px;
+        text-align: center;
+        padding: 20px;
+    }
+
+    /* Card body */
+    .login-container .card-body {
+        padding: 30px;
+    }
+
+    /* Input fields */
+    .login-container .form-control {
+        width: 100%;
+        padding: 14px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        transition: border-color 0.3s;
+    }
+
+    .login-container .form-control:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 8px rgba(0,123,255,0.5);
+    }
+
+    /* Labels */
+    .login-container label {
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    /* Button */
+    .login-container .btn-primary {
+        width: 100%;
+        padding: 14px;
+        font-size: 18px;
+        border-radius: 8px;
+        border: none;
+        background-color: #007bff;
+        transition: background-color 0.3s;
+    }
+
+    .login-container .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Messages lỗi / success */
+    .login-container .text-danger,
+    .login-container .text-success {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .login-container .card {
+            width: 90%;
+        }
+        .login-container .card-body {
+            padding: 20px;
+        }
+        .login-container .card-header {
+            font-size: 22px;
+            padding: 16px;
+        }
+        .login-container .form-control {
+            padding: 12px;
+            font-size: 15px;
+        }
+        .login-container .btn-primary {
+            padding: 12px;
+            font-size: 16px;
+        }
+    }
+
+    /* Dùng margin âm */
+    .main .login-container {
+        margin-top: -50px; /* kéo card lên trên 50px */
+    }
+
+    /* Hoặc dùng transform */
+    .main .login-container {
+        transform: translateY(-50px); /* kéo lên trên 50px */
+    }
+
+  .custom-btn {
+  text-align: center;
+  line-height: normal;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <i class="fas fa-laptop"></i>
+            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
+        </div>
+
+        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
+            <!-- Nếu user đã login -->
+            <div sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-content">
+        <a class="nav-tab active" data-tab="products" href="/">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/sanpham">
+                <i class="fas fa-user-shield"></i>
+                <span>Sản phẩm</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu nhập</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu xuất</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/khachhang">
+                <i class="fas fa-user-shield"></i>
+                <span>Khách hàng</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/ncc">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhà cung cấp</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhân viên</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/tonkho">
+                <i class="fas fa-user-shield"></i>
+                <span>Tồn kho</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
+                <i class="fas fa-user-shield"></i>
+                <span>Thương hiệu</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
+                <i class="fas fa-user-shield"></i>
+                <span>Tài khoản</span>
+            </a>
+        </div>
+
+
+
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+    <!-- Home Tab -->
+
+    <div class="login-container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header text-center fs-6">THÊM TÀI KHOẢN QUẢN TRỊ</div>
+
+                    <div class="card-body">
+                        <th:block th:if="${session.msg}">
+                            <p class="text-center text-success fs-4">[[${session.msg}]]</p>
+                            <th:block th:text="${@registerServiceImpl.removeSessionMessage()}"></th:block>
+                        </th:block>
+                        <form action="/quanlytaikhoan/newAccount" method="post">
+                            <div class="mb-3">
+                                <label>Chọn loại tài khoản</label>
+                                <select name="vaitro_id" class="form-select" required>
+                                    <option value="1" selected>Admin</option>
+                                    <option value="2">Quản lý</option>
+                                    <option value="3">Nhân viên nhập xuất</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>Nhâp Email</label> <input type="text" name="email"
+                                                                 class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label>Nhập Password</label> <input type="text"
+                                                                     name="password" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary col-md-12 text-center custom-btn">Thêm tài khoản</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal-overlay" class="modal-overlay">
+            <div id="modal" class="modal">
+                <div class="modal-header">
+                    <h3 id="modal-title" class="modal-title">Modal Title</h3>
+                    <button class="modal-close" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <!-- Modal content will be populated here -->
+                </div>
+                <div class="modal-footer" id="modal-footer">
+                    <!-- Modal footer will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirm Delete Modal -->
+        <div id="confirm-modal" class="modal-overlay">
+            <div class="modal" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Xác nhận xóa</h3>
+                    <button class="modal-close" onclick="closeConfirmModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
+                    <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thêm modal đăng nhập vào cuối body -->
+        <div id="login-modal" class="modal-overlay">
+            <div class="modal" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Đăng nhập Admin</h3>
+                    <button class="modal-close" onclick="closeLoginModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label required">Tên đăng nhập</label>
+                            <input type="text" id="admin-username" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Mật khẩu</label>
+                            <input type="password" id="admin-password" class="form-input" required>
+                        </div>
+                        <div style="margin-top:1rem;">
+                            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                            <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!--<script src="script.js" type="text/javascript"></script>-->
+</body>
+</html>

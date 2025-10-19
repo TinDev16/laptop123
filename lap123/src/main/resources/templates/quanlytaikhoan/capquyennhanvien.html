@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<style>
+    .bg-red-100 {
+    background-color: #ffe5e5;
+}
+.modal {
+    position: fixed; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background: white; padding: 20px; border-radius: 10px;
+    width: 400px;
+}
+.hidden { display: none; }
+
+    .bg-red-100 {
+        background-color: #ffe5e5;
+    }
+
+    .table-container h3 {
+        color: #333;
+        font-weight: 600;
+    }
+</style>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <i class="fas fa-laptop"></i>
+            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
+        </div>
+        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
+            <!-- Nếu user đã login -->
+            <div sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-content">
+        <a class="nav-tab active" data-tab="products" href="/">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/sanpham">
+                <i class="fas fa-user-shield"></i>
+                <span>Sản phẩm</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu nhập</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu xuất</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/khachhang">
+                <i class="fas fa-user-shield"></i>
+                <span>Khách hàng</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/ncc">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhà cung cấp</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhân viên</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/tonkho">
+                <i class="fas fa-user-shield"></i>
+                <span>Tồn kho</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
+                <i class="fas fa-user-shield"></i>
+                <span>Thương hiệu</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
+                <i class="fas fa-user-shield"></i>
+                <span>Tài khoản</span>
+            </a>
+        </div>
+
+
+
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+    <div id="products" class="tab-content active">
+        <div class="page-header">
+            <h2 class="page-title">Cấp Quyền Nhân viên</h2>
+        </div>
+
+        <div class="search-filters">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="product-search" placeholder="Tìm kiếm nhân viên..." onkeyup="filterProducts()">
+            </div>
+        </div>
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Mã NV</th>
+                    <th>Họ tên</th>
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày tham gia</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Duyệt danh sách nhân viên chưa có tài khoản -->
+                <tr th:each="nv : ${listNv}">
+                    <td th:text="${nv.MANV}"></td>
+                    <td th:text="${nv.HOTEN}"></td>
+                    <td th:text="${nv.GIOITINH}"></td>
+                    <td th:text="${nv.NGAYSINH != null ? #dates.format(nv.NGAYSINH, 'dd/MM/yyyy') : ''}"></td>
+                    <td th:text="${nv.SDT}"></td>
+                    <td th:text="${nv.NGAYTHAMGIA != null ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy') : ''}"></td>
+                    <td th:text="${nv.TRANGTHAI == 0 ? 'Hoạt động' : 'Nghỉ việc'}"></td>
+                    <td>
+                        <form th:action="@{/quanlytaikhoan/luucapquyen}" method="post">
+                            <!-- Gửi cả 2 id: nhân viên và tài khoản -->
+                            <input type="hidden" name="nhanvienId" th:value="${nv.MANV}" />
+                            <input type="hidden" name="taikhoanId" th:value="${taikhoanId}" />
+                            <button type="submit" class="btn btn-success">Cấp quyền</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</main>
+
+
+<script>
+    function filterProducts() {
+        const input = document.getElementById("product-search");
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll(".table tbody tr");
+
+        rows.forEach(row => {
+            const nameCell = row.querySelector("td:nth-child(2)"); // cột họ tên
+            const name = nameCell.textContent.toLowerCase();
+            row.style.display = name.includes(filter) ? "" : "none";
+        });
+    }
+</script>
+</body>
+</html>

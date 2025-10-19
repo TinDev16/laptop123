@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+
+</head>
+<style>
+    .bg-red-100 {
+    background-color: #ffe5e5;
+}
+.modal {
+    position: fixed; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background: white; padding: 20px; border-radius: 10px;
+    width: 400px;
+}
+.hidden { display: none; }
+
+    .bg-red-100 {
+        background-color: #ffe5e5;
+    }
+
+    .table-container h3 {
+        color: #333;
+        font-weight: 600;
+    }
+</style>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-left">
+            <i class="fas fa-laptop"></i>
+            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
+        </div>
+        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
+            <!-- Nếu user đã login -->
+            <div sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-content">
+        <a class="nav-tab active" data-tab="products" href="/">
+            <i class="fas fa-home"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/sanpham">
+                <i class="fas fa-user-shield"></i>
+                <span>Sản phẩm</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu nhập</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
+                <i class="fas fa-user-shield"></i>
+                <span>phiếu xuất</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/khachhang">
+                <i class="fas fa-user-shield"></i>
+                <span>Khách hàng</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/ncc">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhà cung cấp</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
+                <i class="fas fa-user-shield"></i>
+                <span>Nhân viên</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
+            <a class="nav-tab" data-tab="add-admin" href="/tonkho">
+                <i class="fas fa-user-shield"></i>
+                <span>Tồn kho</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
+                <i class="fas fa-user-shield"></i>
+                <span>Thương hiệu</span>
+            </a>
+        </div>
+
+        <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
+            <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
+                <i class="fas fa-user-shield"></i>
+                <span>Tài khoản</span>
+            </a>
+        </div>
+
+
+
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main">
+    <div id="products" class="tab-content active">
+        <div class="page-header">
+            <h2 class="page-title">Quản lý tài khoản</h2>
+            <div class="page-actions">
+                <a th:href="@{/quanlytaikhoan/themtaikhoanquantri}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Thêm tài khoản
+                </a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h1 style="margin: 20px 0 10px;">Admin</h1>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Id tài khoản</th>
+                    <th>Email</th>
+                    <th>Mã nhân viên</th>
+                    <th>Họ tên</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="employees-table">
+                <tr th:each="tk : ${listTaiKhoan}"
+                    th:if="${tk.vaitro != null and tk.vaitro.vaitro_id == 1}">
+                    <td class="font-semibold" th:text="${tk.taikhoan_id}"></td>
+                    <td th:text="${tk.email}"></td>
+                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.MANV : 'Chưa có'}"></td>
+                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa có'}"></td>
+                    <td style="white-space: nowrap;">
+                        <form th:action="@{/quanlytaikhoan/xoataikhoan}" method="post" style="display:inline-block; margin-right: 5px;">
+                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
+                            <button type="submit" class="btn btn-danger btn-sm">Xoá tài khoản</button>
+                        </form>
+                        <form th:action="@{/quanlytaikhoan/capquyennhanvien}" method="get" style="display:inline;" th:if="${tk.nhanvien == null}">
+                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
+                            <button type="submit" class="btn btn-success">Cấp quyền</button>
+                        </form>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+
+            <h1 style="margin: 20px 0 10px;">Quản lý</h1>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Id tài khoản</th>
+                    <th>Email</th>
+                    <th>Mã nhân viên</th>
+                    <th>Họ tên</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="employees-table">
+                <tr th:each="tk : ${listTaiKhoan}"
+                    th:if="${tk.vaitro != null and tk.vaitro.vaitro_id == 2}">
+                    <td class="font-semibold" th:text="${tk.taikhoan_id}"></td>
+                    <td th:text="${tk.email}"></td>
+                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.MANV : 'Chưa có'}"></td>
+                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa có'}"></td>
+                    <td style="white-space: nowrap;">
+                        <form th:action="@{/quanlytaikhoan/xoataikhoan}" method="post" style="display:inline-block; margin-right: 5px;">
+                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
+                            <button type="submit" class="btn btn-danger btn-sm">Xoá tài khoản</button>
+                        </form>
+                        <form th:action="@{/quanlytaikhoan/capquyennhanvien}" method="get" style="display:inline;" th:if="${tk.nhanvien == null}">
+                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
+                            <button type="submit" class="btn btn-success">Cấp quyền</button>
+                        </form>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+
+            <h1 style="margin: 20px 0 10px;">Nhân viên nhập xuất</h1>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Id tài khoản</th>
+                    <th>Email</th>
+                    <th>Mã nhân viên</th>
+                    <th>Họ tên</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="employees-table">
+                <tr th:each="tk : ${listTaiKhoan}"
+                    th:if="${tk.vaitro != null and tk.vaitro.vaitro_id == 3}">
+                    <td class="font-semibold" th:text="${tk.taikhoan_id}"></td>
+                    <td th:text="${tk.email}"></td>
+                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.MANV : 'Chưa có'}"></td>
+                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa có'}"></td>
+                    <td style="white-space: nowrap;">
+                        <form th:action="@{/quanlytaikhoan/xoataikhoan}" method="post" style="display:inline-block; margin-right: 5px;">
+                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
+                            <button type="submit" class="btn btn-danger btn-sm">Xoá tài khoản</button>
+                        </form>
+                        <form th:action="@{/quanlytaikhoan/capquyennhanvien}" method="get" style="display:inline;" th:if="${tk.nhanvien == null}">
+                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
+                            <button type="submit" class="btn btn-success">Cấp quyền</button>
+                        </form>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+</main>
+
+</body>
+</html>

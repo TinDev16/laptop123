@@ -1,7 +1,7 @@
 package com.example.demo.config;
 
-import com.example.demo.Entity.Nhanvien;
-import com.example.demo.Repository.NhanvienRepository;
+import com.example.demo.Entity.Taikhoan;
+import com.example.demo.Repository.TaikhoanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,16 +12,16 @@ import org.springframework.stereotype.Service;
 public class CustomEmployeeDetailService implements UserDetailsService {
 
     @Autowired
-    private NhanvienRepository nhanvienRepository;
+    private TaikhoanRepository taikhoanRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
-        Nhanvien nhanvien = nhanvienRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Taikhoan taikhoan = taikhoanRepository.findByEmail(username);
 
-        if(nhanvien == null){
-            throw new UsernameNotFoundException("Employee not found");
-        }else {
-            return new CustomEmployee(nhanvien);
+        if (taikhoan == null) {
+            throw new UsernameNotFoundException("Tài khoản không tồn tại");
         }
+
+        return new CustomEmployee(taikhoan);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -15,18 +16,21 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    public CustomAuthSuccessHandler successHandler;
+
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public UserDetailsService getDetailService(){
+    public UserDetailsService getDetailService() {
         return new CustomEmployeeDetailService();
     }
 
     @Bean
-    public DaoAuthenticationProvider getAuthenticationProvider(){
+    public DaoAuthenticationProvider getAuthenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(getDetailService());
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
@@ -38,18 +42,31 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/webjars/**", "/style.css", "/signin","/userLogin","/forgotPassword", "/newPassword", "/style1.css").permitAll()
+                        // Cho phép truy cập file tĩnh và trang login
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/style.css", "/style1.css").permitAll()
+                        .requestMatchers("/", "/signin", "/userLogin", "/forgotPassword", "/newPassword").permitAll()
+
+                        .requestMatchers("/phieunhap/**", "/phieuxuat/**", "/tonkho/**").hasAnyAuthority("NV_nhap_xuat","QLy","ADMIN")
+
+                        .requestMatchers("/quanlytaikhoan/**").hasAuthority("ADMIN")
+
+                        .requestMatchers("/**").hasAnyAuthority("QLy","ADMIN")
+
                         .anyRequest().authenticated()
+
                 )
                 .formLogin(form -> form
                         .loginPage("/signin")
                         .loginProcessingUrl("/userLogin")
-                        //.usernameParameter("email")
-                        .defaultSuccessUrl("/")
+                        .successHandler(successHandler)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/signin?logout")
                         .permitAll()
                 );
 
         return http.build();
     }
-
 }

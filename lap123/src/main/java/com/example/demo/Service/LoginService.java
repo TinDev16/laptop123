@@ -1,6 +1,8 @@
 package com.example.demo.Service;
 
-public interface LoginService {
+import jakarta.servlet.http.HttpSession;
 
-    public void removeSessionMessage();
+public interface LoginService {
+    void handleNewPassword(String email, HttpSession session);
 }
+

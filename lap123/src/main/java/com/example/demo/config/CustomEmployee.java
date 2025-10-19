@@ -1,21 +1,20 @@
 package com.example.demo.config;
 
-import com.example.demo.Entity.Nhanvien;
+import com.example.demo.Entity.Taikhoan;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 public class CustomEmployee implements UserDetails {
 
-    private Nhanvien nhanvien;
+    private Taikhoan taikhoan;
 
-    public CustomEmployee(Nhanvien nhanvien){
+    public CustomEmployee(Taikhoan taikhoan){
         super();
-        this.nhanvien = nhanvien;
+        this.taikhoan = taikhoan;
     }
 
     @Override
@@ -40,17 +39,19 @@ public class CustomEmployee implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(nhanvien.getRole());
+        String roleName = taikhoan.getVaitro().getTen();
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleName);
         return Arrays.asList(authority);
     }
 
+
     @Override
     public String getPassword() {
-        return nhanvien.getPassword();
+        return taikhoan.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return nhanvien.getEmail();
+        return taikhoan.getEmail();
     }
 }

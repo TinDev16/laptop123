@@ -45,6 +45,16 @@ public class PhieunhapController {
         model.addAttribute("nccList", nccService.getAllNCC());
         model.addAttribute("nhanvien", nhanvienService.getAllNhanvien());
         model.addAttribute("sanpham", sanphamService.getAllSanpham());
+
+        // 🔹 Tạo map {MASP -> giá nhập gần nhất}
+        Map<Integer, BigDecimal> lastPrices = new HashMap<>();
+        for (Sanpham sp : sanphamService.getAllSanpham()) {
+            BigDecimal lastPrice = ctPhieunhapRepository.findLastGianhapBySanphamId(sp.getMASP());
+            if (lastPrice != null) {
+                lastPrices.put(sp.getMASP(), lastPrice);
+            }
+        }
+        model.addAttribute("lastPrices", lastPrices);
         return "phieunhap/add";
     }
 

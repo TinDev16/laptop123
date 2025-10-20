@@ -75,7 +75,7 @@
                 <tbody id="product-list">
                 <tr th:each="sp, idx : ${sanpham}"
                     th:if="${sp.TRANGTHAI == 0}"
-                    th:attr="data-id=${sp.MASP}, data-name=${sp.TENSP}, data-quantity=${sp.SOLUONGTON}, data-image=@{'/uploads/' + ${sp.HINHANHSP}}" >
+                    th:attr="data-id=${sp.MASP}, data-name=${sp.TENSP}, data-quantity=${sp.SOLUONGTON}, data-image=@{'/uploads/' + ${sp.HINHANHSP}}, data-price=${lastPrices[sp.MASP]}" >
                     <td th:text="${idx.index + 1}"></td>
                     <td th:text="${sp.MASP}"></td>
                     <td th:text="${sp.TENSP}"></td>
@@ -134,13 +134,14 @@
             const name = row.dataset.name;
             const quantity = parseInt(row.dataset.quantity);
             const image = row.dataset.image;
-            addProduct({id, name, quantity, image});
+            const price = parseFloat(row.dataset.price) || 0;
+            addProduct({id, name, quantity, image, price});
         }
     });
 
     function addProduct(product) {
         if (!selectedProducts.find(p => p.id === product.id)) {
-            selectedProducts.push({...product, importQuantity: 1, importPrice: 0, itemStt: stt++});
+            selectedProducts.push({...product, importQuantity: 1, importPrice: product.price || 0, itemStt: stt++});
             renderSelectedProducts();
         }
     }

@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Entity.*;
+import com.example.demo.Repository.CT_PhieuxuatRepository;
 import com.example.demo.Service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,10 +11,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class PhieuxuatController {
+
+    @Autowired
+    CT_PhieuxuatRepository ctPhieuxuatRepository;
 
     @Autowired
     CT_PhieuxuatService ct_phieuxuatService;
@@ -42,6 +48,17 @@ public class PhieuxuatController {
         model.addAttribute("khachhang", khachhangService.getAllKhachhang());
         model.addAttribute("nhanvien", nhanvienService.getAllNhanvien());
         model.addAttribute("sanpham", sanphamService.getAllSanpham());
+
+        // 🔹 Tạo map {MASP -> giá nhập gần nhất}
+        Map<Integer, BigDecimal> lastPrices = new HashMap<>();
+        for (Sanpham sp : sanphamService.getAllSanpham()) {
+            BigDecimal lastPrice = ctPhieuxuatRepository.findLastGiaxuatBySanphamId(sp.getMASP());
+            if (lastPrice != null) {
+                lastPrices.put(sp.getMASP(), lastPrice);
+            }
+        }
+        model.addAttribute("lastPrices", lastPrices);
+
         return "phieuxuat/add";
     }
 

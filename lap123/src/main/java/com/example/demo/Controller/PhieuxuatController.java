@@ -91,7 +91,7 @@ public class PhieuxuatController {
             return "error-page";
         }
 
-        // ✅ Nạp lại nhân viên và khách hàng bằng ID để tránh null
+        // Nạp lại nhân viên và khách hàng bằng ID để tránh null
         if (phieuxuat.getNhanvien() != null && phieuxuat.getNhanvien().getMANV() > 0) {
             existing.setNhanvien(nhanvienService.getNhanvienById(phieuxuat.getNhanvien().getMANV()));
         }
@@ -100,7 +100,7 @@ public class PhieuxuatController {
             existing.setKhachhang(khachhangService.getKhachhangById(phieuxuat.getKhachhang().getMAKH()));
         }
 
-        // 🧠 Kiểm tra nhân viên
+        // Kiểm tra nhân viên
         if (phieuxuat.getNhanvien() == null ||
                 phieuxuat.getNhanvien().getTRANGTHAI() == 1) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
@@ -110,7 +110,7 @@ public class PhieuxuatController {
             return "error-page";
         }
 
-        // 🧠 Kiểm tra khách hàng
+        // Kiểm tra khách hàng
         if (phieuxuat.getKhachhang() == null ||
                 phieuxuat.getKhachhang().getTRANGTHAI() == 1) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
@@ -120,7 +120,7 @@ public class PhieuxuatController {
             return "error-page";
         }
 
-        // 🧠 Kiểm tra sản phẩm bị xóa hoặc ngừng kinh doanh
+        // Kiểm tra sản phẩm bị xóa hoặc ngừng kinh doanh
         for (int i = 0; i < ctIds.size(); i++) {
             CT_Phieuxuat ct = ct_phieuxuatService.getById(ctIds.get(i));
             if (ct != null && ct.getSanpham().getTRANGTHAI() == 1) {

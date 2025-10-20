@@ -105,7 +105,7 @@ public class PhieunhapController {
             return "error-page";
         }
 
-        // 🔹 Kiểm tra nhà cung cấp
+        // Kiểm tra nhà cung cấp
         if (phieunhap.getNcc() == null || phieunhap.getNcc().getTRANGTHAI() == 1) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Nhập");
             model.addAttribute("message", "Không thể xác nhận phiếu nhập vì nhà cung cấp đã bị xóa hoặc ngừng hợp tác.");
@@ -178,10 +178,9 @@ public class PhieunhapController {
         existing.setTONGTIEN(tongTien);
         phieunhapService.update(existing);
 
-        redirectAttrs.addFlashAttribute("success", "✅ Xác nhận phiếu nhập thành công!");
+        redirectAttrs.addFlashAttribute("success", "Xác nhận phiếu nhập thành công!");
         return "redirect:/phieunhap";
     }
-
 
     @GetMapping("/delete-phieunhap/{id}")
     public String deletePhieunhap(@PathVariable("id") int id) {

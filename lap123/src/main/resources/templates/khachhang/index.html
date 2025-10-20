@@ -222,7 +222,7 @@
                     <th>Số điện thoại</th>
                     <th>Ngày tham gia</th>
                     <th>Trạng thái</th>
-                    <!-- <th>Ghi chú</th> -->
+                    <th>Ghi chú</th>
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -236,7 +236,7 @@
                     <td th:text="${kh.SDT}"></td>
                     <td th:text="${kh.NGAYTHAMGIA != null ? #dates.format(kh.NGAYTHAMGIA, 'dd/MM/yyyy') : ''}"></td>
                     <td th:text="${kh.TRANGTHAI == 0 ? 'Hoạt động' : 'Ngừng hoạt động'}"></td>
-                    <!-- <td th:text="${kh.GHICHU != null ? kh.GHICHU : ''}"></td> -->
+                    <td th:text="${kh.GHICHU != null ? kh.GHICHU : ''}"></td>
                     <td>
                         <div class="table-actions">
                             <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}">

@@ -100,22 +100,30 @@ public class PhieuxuatController {
             existing.setKhachhang(khachhangService.getKhachhangById(phieuxuat.getKhachhang().getMAKH()));
         }
 
-        // Kiểm tra nhân viên
-        if (phieuxuat.getNhanvien() == null ||
-                phieuxuat.getNhanvien().getTRANGTHAI() == 1) {
+        Nhanvien nv = existing.getNhanvien();
+        if (nv == null) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
-            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì nhân viên đã nghỉ việc: "
-                    + phieuxuat.getNhanvien().getHOTEN());
+            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì nhân viên không tồn tại hoặc bị xóa khỏi hệ thống.");
+            model.addAttribute("backUrl", "/phieuxuat");
+            return "error-page";
+        }
+        if (nv.getTRANGTHAI() == 1) {
+            model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
+            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì nhân viên đã nghỉ việc: " + nv.getHOTEN());
             model.addAttribute("backUrl", "/phieuxuat");
             return "error-page";
         }
 
-        // Kiểm tra khách hàng
-        if (phieuxuat.getKhachhang() == null ||
-                phieuxuat.getKhachhang().getTRANGTHAI() == 1) {
+        Khachhang kh = existing.getKhachhang();
+        if (kh == null) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
-            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì khách hàng đã bị vô hiệu hóa: "
-                    + phieuxuat.getKhachhang().getHOTEN());
+            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì khách hàng không tồn tại hoặc bị xóa khỏi hệ thống.");
+            model.addAttribute("backUrl", "/phieuxuat");
+            return "error-page";
+        }
+        if (kh.getTRANGTHAI() == 1) {
+            model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
+            model.addAttribute("message", "Không thể xác nhận phiếu xuất vì khách hàng đã bị vô hiệu hóa: " + kh.getHOTEN());
             model.addAttribute("backUrl", "/phieuxuat");
             return "error-page";
         }
@@ -131,7 +139,6 @@ public class PhieuxuatController {
                 return "error-page";
             }
         }
-
 
         // ✅ Cập nhật thông tin cơ bản
         existing.setNhanvien(phieuxuat.getNhanvien());

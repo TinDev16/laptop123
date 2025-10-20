@@ -8,6 +8,7 @@ import com.example.demo.Repository.TaikhoanRepository;
 import com.example.demo.Repository.VaitroRepository;
 import com.example.demo.Service.QuanlytaikhoanService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -22,6 +23,9 @@ public class QuanlytaikhoanServiceImpl implements QuanlytaikhoanService {
 
     @Autowired
     private VaitroRepository vaitroRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public List<Nhanvien> getNhanvienChuaCoTaiKhoan() {
@@ -61,6 +65,8 @@ public class QuanlytaikhoanServiceImpl implements QuanlytaikhoanService {
     public Taikhoan taoTaiKhoanMoi(Taikhoan taikhoan, int vaitroId) {
         Vaitro vaitro = vaitroRepository.findById(vaitroId).orElse(null);
         taikhoan.setVaitro(vaitro);
+        String encodedPassword = passwordEncoder.encode(taikhoan.getPassword());
+        taikhoan.setPassword(encodedPassword);
         return taikhoanRepository.save(taikhoan);
     }
 }

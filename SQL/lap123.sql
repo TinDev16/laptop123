@@ -26,7 +26,7 @@ CREATE TABLE `chucnang` (
   `chucnang_id` int NOT NULL AUTO_INCREMENT,
   `ten` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`chucnang_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -35,6 +35,7 @@ CREATE TABLE `chucnang` (
 
 LOCK TABLES `chucnang` WRITE;
 /*!40000 ALTER TABLE `chucnang` DISABLE KEYS */;
+INSERT INTO `chucnang` VALUES (1,'QL_san_pham'),(2,'QL_phieu_nhap'),(3,'QL_phieu_xuat'),(4,'QL_khach_hang'),(5,'QL_nha_cung_cap'),(6,'QL_nhan_vien'),(7,'QL_ton_kho'),(8,'QL_thuong_hieu'),(9,'QL_tai_khoan');
 /*!40000 ALTER TABLE `chucnang` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -170,8 +171,6 @@ DROP TABLE IF EXISTS `nhanvien`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nhanvien` (
   `manv` int NOT NULL AUTO_INCREMENT,
-  `vaitro_id` int DEFAULT NULL,
-  `taikhoan_id` int DEFAULT NULL,
   `hoten` varchar(255) DEFAULT NULL,
   `gioitinh` varchar(255) DEFAULT NULL,
   `ngaysinh` datetime(6) DEFAULT NULL,
@@ -180,10 +179,7 @@ CREATE TABLE `nhanvien` (
   `TRANGTHAI` int DEFAULT NULL,
   `ghichu` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`manv`),
-  KEY `_idx` (`vaitro_id`),
-  KEY `taikhoan_id_idx` (`taikhoan_id`),
-  CONSTRAINT `taikhoan_id` FOREIGN KEY (`taikhoan_id`) REFERENCES `taikhoan` (`taikhoan_id`)
+  PRIMARY KEY (`manv`)
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -193,7 +189,7 @@ CREATE TABLE `nhanvien` (
 
 LOCK TABLES `nhanvien` WRITE;
 /*!40000 ALTER TABLE `nhanvien` DISABLE KEYS */;
-INSERT INTO `nhanvien` VALUES (4,NULL,NULL,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434','2321-12-11 17:00:00.000000',1,'',NULL),(6,NULL,NULL,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212','2032-12-11 17:00:00.000000',0,'',NULL),(7,NULL,NULL,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313','2002-12-10 17:00:00.000000',1,'k',NULL),(15,NULL,NULL,'Nguyễn Thanh Tri','Khác','2023-12-11 17:00:00.000000','121321','2034-12-11 17:00:00.000000',0,NULL,NULL),(24,NULL,NULL,'Dương Thị Anh Thi','Nữ','2005-02-04 17:00:00.000000','01234567','2025-10-04 17:00:00.000000',0,NULL,NULL),(25,NULL,NULL,'test','Nam','2001-11-30 17:00:00.000000','023569875','2004-12-01 17:00:00.000000',1,'DS',NULL);
+INSERT INTO `nhanvien` VALUES (4,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434','2321-12-11 17:00:00.000000',1,'',NULL),(6,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212','2032-12-11 17:00:00.000000',0,'',NULL),(7,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313','2002-12-10 17:00:00.000000',1,'k',NULL),(15,'Nguyễn Thanh Tri','Khác','2023-12-11 17:00:00.000000','121321','2034-12-11 17:00:00.000000',0,NULL,NULL),(24,'Dương Thị Anh Thi','Nữ','2005-02-04 17:00:00.000000','01234567','2025-10-04 17:00:00.000000',0,NULL,NULL),(25,'test','Nam','2001-11-30 17:00:00.000000','023569875','2004-12-01 17:00:00.000000',1,'DS',NULL);
 /*!40000 ALTER TABLE `nhanvien` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,12 +201,13 @@ DROP TABLE IF EXISTS `phanquyen`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `phanquyen` (
-  `vaitro_id` int DEFAULT NULL,
-  `chucnang_id` int DEFAULT NULL,
+  `vaitro_id` int NOT NULL,
+  `chucnang_id` int NOT NULL,
+  PRIMARY KEY (`vaitro_id`,`chucnang_id`),
   KEY `vaitro_id_idx` (`vaitro_id`),
   KEY `chucnang_id_idx` (`chucnang_id`),
   CONSTRAINT `chucnang_id` FOREIGN KEY (`chucnang_id`) REFERENCES `chucnang` (`chucnang_id`),
-  CONSTRAINT `vaitro_id` FOREIGN KEY (`vaitro_id`) REFERENCES `vaitro` (`vaitro_id`)
+  CONSTRAINT `vaitro_id` FOREIGN KEY (`vaitro_id`) REFERENCES `vaitro` (`vaitro_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -220,6 +217,7 @@ CREATE TABLE `phanquyen` (
 
 LOCK TABLES `phanquyen` WRITE;
 /*!40000 ALTER TABLE `phanquyen` DISABLE KEYS */;
+INSERT INTO `phanquyen` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7),(2,8),(3,2),(3,3),(3,7);
 /*!40000 ALTER TABLE `phanquyen` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -333,10 +331,16 @@ DROP TABLE IF EXISTS `taikhoan`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `taikhoan` (
   `taikhoan_id` int NOT NULL AUTO_INCREMENT,
-  `email` varchar(45) DEFAULT NULL,
-  `matkhau` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`taikhoan_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `email` varchar(255) DEFAULT NULL,
+  `vaitro_id` int DEFAULT NULL,
+  `manv` int DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`taikhoan_id`),
+  KEY `fk_taikhoan_vaitro` (`vaitro_id`),
+  KEY `fk_taikhoan_nhanvien` (`manv`),
+  CONSTRAINT `fk_taikhoan_nhanvien` FOREIGN KEY (`manv`) REFERENCES `nhanvien` (`manv`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_taikhoan_vaitro` FOREIGN KEY (`vaitro_id`) REFERENCES `vaitro` (`vaitro_id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -345,7 +349,7 @@ CREATE TABLE `taikhoan` (
 
 LOCK TABLES `taikhoan` WRITE;
 /*!40000 ALTER TABLE `taikhoan` DISABLE KEYS */;
-INSERT INTO `taikhoan` VALUES (1,'admin@mail.com','123123'),(2,'chien@gmail.com','1234'),(3,'df@gmial.com','123123');
+INSERT INTO `taikhoan` VALUES (1,'admin@mail.com',1,4,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(2,'chien@gmail.com',2,6,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(3,'df@gmial.com',3,7,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(8,'n',3,NULL,'$2a$10$Z4.jFULwRXs7t0s9mZQWre/txiUydiQru7KcCsb1LThyhjWkcLLYC'),(9,'q',2,NULL,'$2a$10$3wddomiRO4uWIisigXVhKO.JHRbVfvqRT3PnvNWcc/J4ZmrfetLVy'),(10,'a',1,NULL,'$2a$10$Er1A91EBjSxXQi9gK1xHc.dHetBhQKEJpXSUsOIVXd8.sKKUfr5Yu');
 /*!40000 ALTER TABLE `taikhoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -383,10 +387,10 @@ DROP TABLE IF EXISTS `vaitro`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vaitro` (
-  `vaitro_id` int NOT NULL AUTO_INCREMENT,
-  `ten` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`vaitro_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `vaitro_id` int NOT NULL AUTO_INCREMENT,
+  `ten` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`vaitro_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -395,6 +399,7 @@ CREATE TABLE `vaitro` (
 
 LOCK TABLES `vaitro` WRITE;
 /*!40000 ALTER TABLE `vaitro` DISABLE KEYS */;
+INSERT INTO `vaitro` VALUES (1,'ADMIN'),(2,'QLy'),(3,'NV_nhap_xuat');
 /*!40000 ALTER TABLE `vaitro` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -407,4 +412,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-19 12:39:23
+-- Dump completed on 2025-10-20 15:47:14

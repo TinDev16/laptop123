@@ -65,6 +65,6 @@ public class QuanlytaikhoanController {
         session.setAttribute("msg", u != null ?
                 "Tạo tài khoản thành công" : "Lỗi hệ thống");
 
-        return "redirect:/quanlytaikhoan/themtaikhoanquantri";
+        return "redirect:/quanlytaikhoan";
     }
 }

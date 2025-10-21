@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface NhanvienRepository extends JpaRepository<Nhanvien, Integer> {
     List<Nhanvien> findByTaikhoanIsNull();
+    List<Nhanvien> findByTaikhoanIsNullAndTRANGTHAI(int trangthai);
+
 
 }

@@ -29,8 +29,9 @@ public class QuanlytaikhoanServiceImpl implements QuanlytaikhoanService {
 
     @Override
     public List<Nhanvien> getNhanvienChuaCoTaiKhoan() {
-        return nhanvienRepository.findByTaikhoanIsNull();
+        return nhanvienRepository.findByTaikhoanIsNullAndTRANGTHAI(0);
     }
+
 
     @Override
     public void ganQuyenNhanvien(int nhanvienId, int taikhoanId) {

@@ -159,6 +159,13 @@
             </div>
         </div>
 
+        <div class="search-filters">
+            <div class="search-input">
+                <i class="fas fa-search"></i>
+                <input type="text" id="product-search" placeholder="Nhập tên nhân viên hoặc email để tìm kiếm tài khoản" onkeyup="filterProducts()">
+            </div>
+        </div>
+
         <div class="table-container">
             <h1 style="margin: 20px 0 10px;">Admin</h1>
             <table class="table">
@@ -259,8 +266,29 @@
                 </tbody>
             </table>
         </div>
-
+    </div>
 </main>
+
+<script>
+    function filterProducts() {
+        const input = document.getElementById("product-search").value.toLowerCase();
+        const tables = document.querySelectorAll(".table tbody");
+
+        tables.forEach(tbody => {
+            const rows = tbody.querySelectorAll("tr");
+            rows.forEach(row => {
+                const email = row.querySelector("td:nth-child(2)")?.innerText.toLowerCase() || "";
+                const hoten = row.querySelector("td:nth-child(4)")?.innerText.toLowerCase() || "";
+
+                if (email.includes(input) || hoten.includes(input)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    }
+</script>
 
 </body>
 </html>

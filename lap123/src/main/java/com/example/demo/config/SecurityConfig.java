@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép truy cập file tĩnh và trang login
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/style.css", "/style1.css").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/style.css", "/style1.css", "/uploads/**").permitAll()
                         .requestMatchers("/", "/signin", "/userLogin", "/forgotPassword", "/newPassword").permitAll()
 
                         .requestMatchers(

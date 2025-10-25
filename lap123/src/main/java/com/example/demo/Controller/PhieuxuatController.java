@@ -49,7 +49,7 @@ public class PhieuxuatController {
         model.addAttribute("nhanvien", nhanvienService.getAllNhanvien());
         model.addAttribute("sanpham", sanphamService.getAllSanpham());
 
-        // 🔹 Tạo map {MASP -> giá nhập gần nhất}
+        // Tạo map {MASP -> giá nhập gần nhất}
         Map<Integer, BigDecimal> lastPrices = new HashMap<>();
         for (Sanpham sp : sanphamService.getAllSanpham()) {
             BigDecimal lastPrice = ctPhieuxuatRepository.findLastGiaxuatBySanphamId(sp.getMASP());

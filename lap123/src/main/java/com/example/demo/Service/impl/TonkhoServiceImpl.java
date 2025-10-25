@@ -11,7 +11,6 @@ import java.util.List;
 @Service
 public class TonkhoServiceImpl implements TonkhoService {
 
-
     @Autowired
     TonkhoRepository tonkhoRepository;
 

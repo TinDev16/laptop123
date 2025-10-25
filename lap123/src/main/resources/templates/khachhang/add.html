@@ -73,6 +73,7 @@
             font-weight: 600;
             margin: 0 8px;
             transition: background 0.2s;
+            text-decoration: none;
         }
         .btn-primary {
             background: #4f46e5;
@@ -110,7 +111,7 @@
         <div class="form-group">
             <label>Giới tính</label>
             <select id="GIOITINH" th:field="*{GIOITINH}" class="form-control">
-                <option value="" disabled selected>-- Chọn giới tính --</option>
+                <option value="" selected>-- Chọn giới tính --</option>
                 <option value="Nam">Nam</option>
                 <option value="Nữ">Nữ</option>
                 <option value="Khác">Khác</option>

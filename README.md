@@ -10,19 +10,42 @@ Lap123 is a website for managing inventory of laptop stores. It allows managing 
 - Assign permissions to Admin, managers, employees.
 - High security.
 
+## Technologies Used:
+
+Spring Boot (version 3.5.5)
+Java (version 25)
+Build tool (Maven)
+Database (MySQL)
+Other relevant libraries or frameworks (Spring Security).
+
+## Prerequisites:
+
+Java Development Kit (JDK)
+Maven
+An IDE (e.g., IntelliJ IDEA, Eclipse)
+Database client or server (if applicable).
+
 ## Getting Started
 
 1. Clone the repository:
     ```bash
     git clone https://github.com/TinDev16/laptop123
     ```
-2. Setup your account DB in application.properties:
+
+    Building the Project:
+       For Maven:
+        ```bash
+       mvn clean install
+        ```
+3. Setup your account DB in application.properties:
     ```bash
     spring.datasource.username= yourUsername
     spring.datasource.password= yourPassword
     ```
-3. Start the development server:
-
+4. Start the development server:
+    ```bash
+    mvn spring-boot:run
+    ```
 ## Contributing
 
 Contributions are welcome! Please open issues or submit pull requests for improvements and bug fixes.

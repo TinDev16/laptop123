@@ -9,6 +9,7 @@ import com.example.demo.Service.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class PhieunhapServiceImpl implements PhieunhapService {
 
     @Override
     public List<Phieunhap> getAllPhieunhap() {
-        return phieunhapRepository.findAll();
+        return phieunhapRepository.findAll(Sort.by(Sort.Direction.DESC, "THOIGIAN"));
     }
 
     @Override
@@ -39,20 +40,20 @@ public class PhieunhapServiceImpl implements PhieunhapService {
 
     @Transactional
     public void savePhieuNhap(Phieunhap phieunhap, String chiTietListJson, BigDecimal tongTien) throws Exception {
-        // 1️⃣ Gán thông tin cho phiếu nhập
+        // Gán thông tin cho phiếu nhập
         phieunhap.setTHOIGIAN(new Date());
         phieunhap.setTONGTIEN(tongTien);
         phieunhap.setTRANGTHAI(0);
 
-        // 2️⃣ Lưu phiếu nhập chính
+        // Lưu phiếu nhập chính
         Phieunhap savedPhieuNhap = phieunhapRepository.save(phieunhap);
 
-        // 3️⃣ Parse danh sách chi tiết
+        // Parse danh sách chi tiết
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> chiTietList =
                 mapper.readValue(chiTietListJson, new TypeReference<>() {});
 
-        // 4️⃣ Lưu chi tiết phiếu nhập (chưa cộng tồn kho)
+        // Lưu chi tiết phiếu nhập (chưa cộng tồn kho)
         for (Map<String, Object> item : chiTietList) {
             int masp = (int) item.get("MASP");
             int soluong = (int) item.get("SOLUONG");

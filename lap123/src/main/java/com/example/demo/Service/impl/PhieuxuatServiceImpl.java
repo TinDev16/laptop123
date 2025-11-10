@@ -8,6 +8,7 @@ import com.example.demo.Service.PhieuxuatService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,7 @@ public class PhieuxuatServiceImpl implements PhieuxuatService {
 
     @Override
     public List<Phieuxuat> getAllPhieuxuat() {
-        return phieuxuatRepository.findAll();
+        return phieuxuatRepository.findAll(Sort.by(Sort.Direction.DESC, "THOIGIAN"));
     }
 
     @Override
@@ -45,20 +46,20 @@ public class PhieuxuatServiceImpl implements PhieuxuatService {
 
     @Transactional
     public void savePhieuXuat(Phieuxuat phieuxuat, String chiTietListJson, BigDecimal tongTien) throws Exception {
-        // 1️⃣ Gán thông tin cho phiếu nhập
+        // Gán thông tin cho phiếu nhập
         phieuxuat.setTHOIGIAN(new Date());
         phieuxuat.setTONGTIEN(tongTien);
         phieuxuat.setTRANGTHAI(0);
 
-        // 2️⃣ Lưu phiếu nhập chính
+        // Lưu phiếu nhập chính
         Phieuxuat savedPhieuXuat = phieuxuatRepository.save(phieuxuat);
 
-        // 3️⃣ Parse danh sách chi tiết
+        // Parse danh sách chi tiết
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> chiTietList =
                 mapper.readValue(chiTietListJson, new TypeReference<>() {});
 
-        // 4️⃣ Lưu chi tiết phiếu nhập (chưa cộng tồn kho)
+        // Lưu chi tiết phiếu nhập (chưa cộng tồn kho)
         for (Map<String, Object> item : chiTietList) {
             int masp = (int) item.get("MASP");
             int soluong = (int) item.get("SOLUONG");

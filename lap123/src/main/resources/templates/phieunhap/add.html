@@ -95,7 +95,7 @@
             <tr class="bg-gray-200">
                 <th class="border p-3 text-left">STT</th>
                 <th class="border p-3 text-left">Tên sản phẩm</th>
-                <th class="border p-3 text-left">Hình ảnh</th>
+                <!-- <th class="border p-3 text-left">Hình ảnh</th> -->
                 <th class="border p-3 text-left">Số lượng nhập</th>
                 <th class="border p-3 text-left">Giá nhập</th>
                 <th class="border p-3 text-left">Tổng tiền</th>
@@ -157,9 +157,6 @@
             row.innerHTML = `
                 <td class="border p-3">${p.itemStt}</td>
                 <td class="border p-3">${p.name}</td>
-                <td class="border p-3">
-                    <img src="${p.image}" alt="Ảnh sản phẩm" style="width:60px; border-radius:6px;">
-                </td>
                 <td class="border p-3">
                     <div class="input-group">
                         <input type="number" value="${p.importQuantity}" min="1" required

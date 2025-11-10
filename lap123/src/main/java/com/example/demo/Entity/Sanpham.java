@@ -44,6 +44,7 @@ public class Sanpham {
     public Sanpham() {
 
     }
+
     public Sanpham(String TENSP, String HINHANHSP, String XUATXU, String CHIP, String HEDIEUHANH, String KICHTHUOCMAN, Thuonghieu thuonghieu, int TRANGTHAI, String GHICHU, Integer SOLUONGTON) {
         super();
         this.TENSP = TENSP;

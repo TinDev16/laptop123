@@ -32,10 +32,10 @@ Database client or server (if applicable).
     git clone https://github.com/TinDev16/laptop123
     ```
 
-    Building the Project:
+2. Building the Project:
        For Maven:
         ```bash
-       mvn clean install
+        mvn clean install
         ```
 3. Setup your account DB in application.properties:
     ```bash

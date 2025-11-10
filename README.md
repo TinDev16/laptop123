@@ -33,10 +33,9 @@ Database client or server (if applicable).
     ```
 
 2. Building the Project:
-       For Maven:
-        ```bash
-        mvn clean install
-        ```
+   ```bash
+   mvn clean install
+   ```
 3. Setup your account DB in application.properties:
     ```bash
     spring.datasource.username= yourUsername

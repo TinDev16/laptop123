@@ -1,4 +1,4 @@
-# ClassDemoShare
+# Lap123
 ## Overview
 
 Lap123 is a website for managing inventory of laptop stores. It allows managing import and export of goods more easily and transparently instead of using Excel as usual. In addition, it is also multi-tasking in using various types of management accounts.

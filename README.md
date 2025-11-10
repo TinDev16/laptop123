@@ -1,18 +1,32 @@
+# ClassDemoShare
+## Overview
 
-Sanpham(MASP, MANCC, TENSP, HINHANHSP, XUATXU, CHIP, HEDIEUHANH, KICHTHUOCMAN, MATHUONGHIEU, TRANGTHAI)
+Lap123 is a website for managing inventory of laptop stores. It allows managing import and export of goods more easily and transparently instead of using Excel as usual. In addition, it is also multi-tasking in using various types of management accounts.
 
-thuonghieu(MATHUONGHIEU, TENTHUONGHIEU, TRANGTHAI)
+## Features
 
-Phieunhap(MAPHIEUNHAP, MANCC, MANV, THOIGIAN, TONGTIEN, PHUONGTHUCNHAP, TRANGTHAI)
+- Add, edit, delete products, suppliers, customers.
+- Manage import & export of items.
+- Assign permissions to Admin, managers, employees.
+- High security.
 
-Ct_phieunhap(MAPHIEUNHAP, MASP, SOLUONG, GIANHAP, TRANGTHAI)
+## Getting Started
 
-Phiexuat(MAPHIEUXUAT, MAKH, MANV, THOIGIAN, TONGTIEN, TRANGTHAI)
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/TinDev16/laptop123
+    ```
+2. Setup your account DB in application.properties:
+    ```bash
+    spring.datasource.username= yourUsername
+    spring.datasource.password= yourPassword
+    ```
+3. Start the development server:
 
-Ct_phieuxuat(MAPHIEUXUAT, MASP, SOLUONG, GIAXUAT, TRANGTHAI)
+## Contributing
 
-Khachhang(MAKH, HOTEN, GIOITINH, NGAYSINH, SDT, NGAYTHAMGIA, TRANGTHAI)
+Contributions are welcome! Please open issues or submit pull requests for improvements and bug fixes.
 
-Nhacungcap(MANCC, TENNCC, DIACHI, SDT, TRANGTHAI)
+## License
 
-Nhanvien(MANV, HOTEN, GIOITINH, NGAYSINH, SDT, NGAYTHAMGIA, TRANGTHAI)
+This project is licensed under the MIT License.

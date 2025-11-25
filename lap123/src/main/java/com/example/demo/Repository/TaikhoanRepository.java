@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TaikhoanRepository extends JpaRepository<Taikhoan, Integer> {
     public Taikhoan findByEmail(String email);
+    Taikhoan findByResetToken(String resetToken);
 }

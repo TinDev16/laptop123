@@ -17,6 +17,10 @@ public class Taikhoan {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "reset_token")
+    private String resetToken;
+
+
     @OneToOne
     @JoinColumn(name = "MANV")
     private Nhanvien nhanvien;
@@ -57,6 +61,15 @@ public class Taikhoan {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
 
     public Nhanvien getNhanvien() { return nhanvien; }
 

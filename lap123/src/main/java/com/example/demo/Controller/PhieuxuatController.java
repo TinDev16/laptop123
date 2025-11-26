@@ -100,6 +100,7 @@ public class PhieuxuatController {
                                   RedirectAttributes redirectAttrs,
                                   Model model) {
 
+        // Lấy phiếu xuất hiện tại
         Phieuxuat existing = phieuxuatService.getPhieuxuatById(phieuxuat.getMAPHIEUXUAT());
         if (existing == null) {
             model.addAttribute("title", "Phiếu Xuất Không Tồn Tại");
@@ -108,15 +109,15 @@ public class PhieuxuatController {
             return "error-page";
         }
 
-        // Nạp lại nhân viên và khách hàng bằng ID để tránh null
+        // Nạp lại nhân viên và khách hàng bằng ID
         if (phieuxuat.getNhanvien() != null && phieuxuat.getNhanvien().getMANV() > 0) {
             existing.setNhanvien(nhanvienService.getNhanvienById(phieuxuat.getNhanvien().getMANV()));
         }
-
         if (phieuxuat.getKhachhang() != null && phieuxuat.getKhachhang().getMAKH() > 0) {
             existing.setKhachhang(khachhangService.getKhachhangById(phieuxuat.getKhachhang().getMAKH()));
         }
 
+        // Kiểm tra nhân viên
         Nhanvien nv = existing.getNhanvien();
         if (nv == null) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
@@ -131,6 +132,7 @@ public class PhieuxuatController {
             return "error-page";
         }
 
+        // Kiểm tra khách hàng
         Khachhang kh = existing.getKhachhang();
         if (kh == null) {
             model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
@@ -157,16 +159,14 @@ public class PhieuxuatController {
             }
         }
 
-        // ✅ Cập nhật thông tin cơ bản
+        // Cập nhật thông tin cơ bản
         existing.setNhanvien(phieuxuat.getNhanvien());
         existing.setKhachhang(phieuxuat.getKhachhang());
         existing.setTHOIGIAN(phieuxuat.getTHOIGIAN());
 
-        // ✅ Khi nhấn lưu thì luôn chuyển trạng thái thành 1 (hoàn tất)
-        existing.setTRANGTHAI(1);
-
         BigDecimal tongTien = BigDecimal.ZERO;
 
+        // Duyệt các chi tiết phiếu xuất
         for (int i = 0; i < ctIds.size(); i++) {
             int ctId = ctIds.get(i);
             int soLuongMoi = soLuongs.get(i);
@@ -176,7 +176,6 @@ public class PhieuxuatController {
             if (giaStr == null) giaStr = "0";
             giaStr = giaStr.replaceAll("[^0-9]", "");
             if (giaStr.isEmpty()) giaStr = "0";
-
 
             BigDecimal giaMoi;
             try {
@@ -189,12 +188,23 @@ public class PhieuxuatController {
             if (ct != null) {
                 Sanpham sp = ct.getSanpham();
 
+                // ✅ Kiểm tra tồn kho trước khi xuất
+                if (soLuongMoi > sp.getSOLUONGTON()) {
+                    model.addAttribute("title", "Lỗi Khi Xác Nhận Phiếu Xuất");
+                    model.addAttribute("message", "Sản phẩm \"" + sp.getTENSP() + "\" chỉ còn "
+                            + sp.getSOLUONGTON() + " trong kho, không thể xuất " + soLuongMoi);
+                    model.addAttribute("backUrl", "/phieuxuat");
+                    return "error-page"; // Ngăn chuyển trạng thái hoàn tất
+                }
+
                 // Cập nhật số lượng tồn
                 sp.setSOLUONGTON(sp.getSOLUONGTON() - soLuongMoi);
 
+                // Cập nhật chi tiết phiếu xuất
                 ct.setSoluong(soLuongMoi);
                 ct.setGiaxuat(giaMoi);
 
+                // Cộng tiền
                 tongTien = tongTien.add(giaMoi.multiply(BigDecimal.valueOf(soLuongMoi)));
 
                 sanphamService.saveSanpham(sp);
@@ -202,6 +212,8 @@ public class PhieuxuatController {
             }
         }
 
+        // Chỉ khi tất cả sản phẩm hợp lệ mới chuyển trạng thái hoàn tất
+        existing.setTRANGTHAI(1);
         existing.setTONGTIEN(tongTien);
         phieuxuatService.update(existing);
 

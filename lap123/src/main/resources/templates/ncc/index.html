@@ -51,104 +51,17 @@
 
 </style>
 <body>
-<!-- Header -->
-<header class="header">
-    <div class="header-content">
-        <div class="header-left">
-            <i class="fas fa-laptop"></i>
-            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
-        </div>
-        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Nếu user đã login -->
-            <div sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </form>
-            </div>
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('ncc')}"></div>
 
-        </div>
-    </div>
-</header>
+    <!-- KHÔNG GIAN NỘI DUNG CHÍNH -->
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Quản Lý Nhà Cung Cấp', 'Danh mục / Nhà cung cấp')}"></div>
 
-<!-- Navigation -->
-<nav class="nav">
-    <div class="nav-content">
-        <a class="nav-tab" data-tab="products" href="/">
-            <i class="fas fa-home"></i>
-            <span>Trang chủ</span>
-        </a>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/sanpham">
-                <i class="fas fa-box"></i>
-                <span>Sản phẩm</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-            <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
-                <i class="fas fa-arrow-down"></i>
-                <span>Phiếu nhập</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-            <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
-                <i class="fas fa-arrow-up"></i>
-                <span>Phiếu xuất</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/khachhang">
-                <i class="fas fa-users"></i>
-                <span>Khách hàng</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab active" data-tab="add-admin" href="/ncc">
-                <i class="fas fa-building"></i>
-                <span>Nhà cung cấp</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
-                <i class="fas fa-user-tie"></i>
-                <span>Nhân viên</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-            <a class="nav-tab" data-tab="add-admin" href="/tonkho">
-                <i class="fas fa-warehouse"></i>
-                <span>Tồn kho</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
-                <i class="fas fa-tags"></i>
-                <span>Thương hiệu</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
-                <i class="fas fa-user-shield"></i>
-                <span>Tài khoản</span>
-            </a>
-        </div>
-    </div>
-</nav>
-
-<!-- Main Content -->
-<main class="main">
-    <!-- Products Tab -->
-    <div id="products" class="tab-content active">
+        <main class="content-body">
+            <div id="products" class="tab-content active" style="display: block;">
         <div class="page-header">
             <h2 class="page-title">Quản lý nhà cung cấp</h2>
             <div class="page-actions">
@@ -260,6 +173,8 @@
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
             </div>
         </form>
+    </div>
+        </main>
     </div>
 </div>
 

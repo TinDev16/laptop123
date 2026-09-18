@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Thống Kê Xuất Nhập Tồn & MRP - LAPTOP 123 MRP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('baocao')}"></div>
+
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Báo Cáo Thống Kê Xuất - Nhập - Tồn Kho & MRP', 'Báo cáo & Thống kê / Xuất Nhập Tồn')}"></div>
+
+        <main class="content-body">
+            <!-- BỘ LỌC BÁO CÁO THEO THÁNG / QUÝ / NĂM (Yêu cầu đề bài) -->
+            <div class="content-card">
+                <div class="content-card-body" style="padding: 1.25rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Loại danh mục:</label>
+                            <select class="form-control" style="font-weight: 600;">
+                                <option>TẤT CẢ (Linh kiện & Laptop)</option>
+                                <option>Chỉ Nguyên vật liệu / Linh kiện</option>
+                                <option>Chỉ Thành phẩm Laptop hoàn chỉnh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Kỳ thống kê:</label>
+                            <select class="form-control" style="font-weight: 600;">
+                                <option>Theo Tháng</option>
+                                <option>Theo Quý (Quý 1, 2, 3, 4)</option>
+                                <option>Theo Năm</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Thời gian:</label>
+                            <input type="month" class="form-control" value="2026-09">
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #475569; margin-bottom: 0.35rem; display: block;">Kho lưu trữ:</label>
+                            <select class="form-control">
+                                <option>Kho Tổng Cửa Hàng</option>
+                                <option>Kho Xưởng Lắp Ráp Kỹ Thuật</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" style="height: 42px; display: flex; align-items: center; gap: 6px;" onclick="alert('Đã cập nhật số liệu báo cáo kỳ tháng 09/2026!')">
+                                <i class="fas fa-filter"></i> Lọc báo cáo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TỔNG HỢP SỐ LIỆU BIẾN ĐỘNG -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tồn đầu kỳ</div>
+                        <div class="kpi-value">1,480</div>
+                        <div class="kpi-sub">Gồm 1,240 LK + 240 Laptop</div>
+                    </div>
+                    <div class="kpi-icon blue"><i class="fas fa-archive"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tổng nhập trong kỳ</div>
+                        <div class="kpi-value" style="color: #16a34a;">+ 520</div>
+                        <div class="kpi-sub">Mua từ NCC & Xưởng lắp xong</div>
+                    </div>
+                    <div class="kpi-icon green"><i class="fas fa-arrow-circle-down"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tổng xuất trong kỳ</div>
+                        <div class="kpi-value" style="color: #ea580c;">- 430</div>
+                        <div class="kpi-sub">Xuất cho xưởng & Bán khách</div>
+                    </div>
+                    <div class="kpi-icon orange"><i class="fas fa-arrow-circle-up"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Tồn cuối kỳ</div>
+                        <div class="kpi-value" style="color: #0284c7;">1,570</div>
+                        <div class="kpi-sub">Khả dụng trong kho hiện tại</div>
+                    </div>
+                    <div class="kpi-icon purple"><i class="fas fa-warehouse"></i></div>
+                </div>
+            </div>
+
+            <!-- BẢNG CHI TIẾT BÁO CÁO XUẤT NHẬP TỒN -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title">
+                        <i class="fas fa-table text-primary"></i>
+                        <span>Chi Tiết Biến Động Kho Tháng 09 / 2026</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline" style="font-size: 0.85rem;" onclick="alert('Đang trích xuất dữ liệu ra file Excel (.xlsx)...')">
+                            <i class="fas fa-file-excel text-success"></i> Xuất Excel báo cáo
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã hàng</th>
+                                <th>Tên hàng hóa</th>
+                                <th>Phân loại</th>
+                                <th style="text-align: center;">Tồn đầu kỳ</th>
+                                <th style="text-align: center;">Nhập trong kỳ</th>
+                                <th style="text-align: center;">Xuất trong kỳ</th>
+                                <th style="text-align: center;">Tồn cuối kỳ</th>
+                                <th>Đơn vị tính</th>
+                                <th>Đánh giá tồn trữ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>LK-RAM-16</strong></td>
+                                <td>RAM Kingston Fury DDR5 16GB</td>
+                                <td><span class="badge" style="background: #e0f2fe; color: #0284c7;">Linh kiện</span></td>
+                                <td style="text-align: center;">18</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">+ 20</td>
+                                <td style="text-align: center; color: #ea580c; font-weight: 700;">- 26</td>
+                                <td style="text-align: center; font-weight: 800; color: #dc2626;">12</td>
+                                <td>Thanh</td>
+                                <td><span class="badge-status danger"><i class="fas fa-exclamation-triangle"></i> Sắp hết</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>LK-CPU-07</strong></td>
+                                <td>CPU AMD Ryzen 7-8745H</td>
+                                <td><span class="badge" style="background: #e0f2fe; color: #0284c7;">Linh kiện</span></td>
+                                <td style="text-align: center;">10</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">+ 12</td>
+                                <td style="text-align: center; color: #ea580c; font-weight: 700;">- 10</td>
+                                <td style="text-align: center; font-weight: 800; color: #16a34a;">12</td>
+                                <td>Con</td>
+                                <td><span class="badge-status success"><i class="fas fa-check"></i> An toàn</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>SP027</strong></td>
+                                <td>Laptop Lenovo Legion 5 R7000 AHP9</td>
+                                <td><span class="badge" style="background: #dcfce7; color: #16a34a;">Thành phẩm</span></td>
+                                <td style="text-align: center;">35</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">+ 15 (Ráp xong)</td>
+                                <td style="text-align: center; color: #ea580c; font-weight: 700;">- 10 (Bán)</td>
+                                <td style="text-align: center; font-weight: 800; color: #0284c7;">40</td>
+                                <td>Chiếc</td>
+                                <td><span class="badge-status success"><i class="fas fa-check"></i> Đủ cung ứng</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>SP020</strong></td>
+                                <td>Apple MacBook Air M2 2024</td>
+                                <td><span class="badge" style="background: #dcfce7; color: #16a34a;">Thành phẩm</span></td>
+                                <td style="text-align: center;">228</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">+ 5 (Ráp xong)</td>
+                                <td style="text-align: center; color: #ea580c; font-weight: 700;">- 3 (Bán)</td>
+                                <td style="text-align: center; font-weight: 800; color: #0284c7;">230</td>
+                                <td>Chiếc</td>
+                                <td><span class="badge-status success"><i class="fas fa-check"></i> Dồi dào</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

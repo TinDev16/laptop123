@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kế Hoạch Sản Xuất & Tính Toán MRP Tự Động - LAPTOP 123 MRP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .shortage-row {
+            background-color: #fff1f2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Kế Hoạch Sản Xuất & Hoạch Định Nhu Cầu Vật Tư (MRP)', 'Sản xuất & MRP / Tính MRP')}"></div>
+
+        <main class="content-body">
+            <!-- Form Lập Kế hoạch sản xuất & Chạy thuật toán MRP -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title">
+                        <i class="fas fa-calculator text-primary"></i>
+                        <span>Bước 1: Thiết Lập Nhu Cầu Sản Xuất (Lệnh MRP Mới)</span>
+                    </div>
+                </div>
+                <div class="content-card-body">
+                    <form th:action="@{/mrp}" method="get">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+                            <div>
+                                <label style="font-weight: 600; font-size: 0.88rem; color: #334155; margin-bottom: 0.35rem; display: block;">Chọn Laptop Cần Sản Xuất:</label>
+                                <select class="form-control" name="sanphamId" style="font-weight: 600;">
+                                    <option value="27" selected>Laptop Lenovo Legion 5 R7000 AHP9</option>
+                                    <option value="20">Apple MacBook Air M2 2024</option>
+                                    <option value="25">Lenovo Lecoo Fighter 7000</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; font-size: 0.88rem; color: #334155; margin-bottom: 0.35rem; display: block;">Số lượng cần ráp (Chiếc):</label>
+                                <input type="number" name="soluong" class="form-control" th:value="${soluongCanLap}" min="1" max="500" required>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; font-size: 0.88rem; color: #334155; margin-bottom: 0.35rem; display: block;">Hạn hoàn thành:</label>
+                                <input type="date" class="form-control" value="2026-09-25">
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary" style="height: 42px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-bolt"></i> Phân tích MRP
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- BẢNG KẾT QUẢ PHÂN TÍCH NHU CẦU NGUYÊN VẬT LIỆU (MRP ENGINE RESULT) -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title">
+                        <i class="fas fa-microchip text-primary"></i>
+                        <span>Bước 2: Kết Quả Hoạch Định Vật Tư Cần Cho <span th:text="${soluongCanLap}">10</span> Laptop</span>
+                    </div>
+                    <div>
+                        <span class="badge-status danger"><i class="fas fa-exclamation-triangle"></i> Cảnh báo: Tồn kho đang thiếu 2 loại vật tư</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã linh kiện</th>
+                                <th>Tên linh kiện</th>
+                                <th style="text-align: center;">Định mức (BOM)</th>
+                                <th style="text-align: center;">Tổng nhu cầu (Gross)</th>
+                                <th style="text-align: center;">Tồn kho khả dụng (On-Hand)</th>
+                                <th style="text-align: center;">Vật tư thiếu (Net Shortage)</th>
+                                <th>Đơn vị tính</th>
+                                <th>Tình trạng cung ứng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><strong>LK-BB-01</strong></td>
+                                <td>Khung máy Barebone + Màn 15.6"</td>
+                                <td style="text-align: center;">1</td>
+                                <td style="text-align: center; font-weight: 700;">10</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">15</td>
+                                <td style="text-align: center; font-weight: 700; color: #16a34a;">0</td>
+                                <td>Bộ</td>
+                                <td><span class="badge-status success"><i class="fas fa-check"></i> Đủ linh kiện</span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><strong>LK-CPU-07</strong></td>
+                                <td>CPU AMD Ryzen 7-8745H</td>
+                                <td style="text-align: center;">1</td>
+                                <td style="text-align: center; font-weight: 700;">10</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">12</td>
+                                <td style="text-align: center; font-weight: 700; color: #16a34a;">0</td>
+                                <td>Con</td>
+                                <td><span class="badge-status success"><i class="fas fa-check"></i> Đủ linh kiện</span></td>
+                            </tr>
+                            <tr class="shortage-row">
+                                <td>3</td>
+                                <td><strong>LK-RAM-16</strong></td>
+                                <td>RAM Kingston Fury 16GB DDR5</td>
+                                <td style="text-align: center;">2</td>
+                                <td style="text-align: center; font-weight: 700; color: #dc2626;">20</td>
+                                <td style="text-align: center; font-weight: 700;">12</td>
+                                <td style="text-align: center; font-weight: 800; color: #dc2626; font-size: 1.05rem;">-8</td>
+                                <td>Thanh</td>
+                                <td><span class="badge-status danger"><i class="fas fa-exclamation-circle"></i> Thiếu 8 thanh (Cần mua)</span></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><strong>LK-SSD-512</strong></td>
+                                <td>Ổ cứng SSD NVMe Samsung 512GB</td>
+                                <td style="text-align: center;">1</td>
+                                <td style="text-align: center; font-weight: 700;">10</td>
+                                <td style="text-align: center; color: #16a34a; font-weight: 700;">18</td>
+                                <td style="text-align: center; font-weight: 700; color: #16a34a;">0</td>
+                                <td>Ổ</td>
+                                <td><span class="badge-status success"><i class="fas fa-check"></i> Đủ linh kiện</span></td>
+                            </tr>
+                            <tr class="shortage-row">
+                                <td>5</td>
+                                <td><strong>LK-BAT-80</strong></td>
+                                <td>Pin sạc Lithium-ion 80Wh Lenovo</td>
+                                <td style="text-align: center;">1</td>
+                                <td style="text-align: center; font-weight: 700; color: #dc2626;">10</td>
+                                <td style="text-align: center; font-weight: 700;">6</td>
+                                <td style="text-align: center; font-weight: 800; color: #dc2626; font-size: 1.05rem;">-4</td>
+                                <td>Cục</td>
+                                <td><span class="badge-status danger"><i class="fas fa-exclamation-circle"></i> Thiếu 4 cục (Cần mua)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="content-card-body" style="background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 0.88rem; color: #64748b;">
+                        Hệ thống đề xuất: Tạo phiếu nhập mua bổ sung <strong>8 RAM Kingston</strong> và <strong>4 Pin 80Wh</strong> trước khi duyệt xuất xưởng.
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <a th:href="@{/phieunhap}" class="btn btn-outline" style="color: #dc2626; border-color: #dc2626;">
+                            <i class="fas fa-cart-plus"></i> Tạo nhanh phiếu nhập linh kiện thiếu
+                        </a>
+                        <button class="btn btn-primary" onclick="alert('Đã tạo Lệnh Sản Xuất #LSX-2026-001 và gửi thông báo trực tiếp đến Nhân viên lắp ráp!')">
+                            <i class="fas fa-paper-plane"></i> Tạo Lệnh Sản Xuất & Gửi Nhân Viên
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

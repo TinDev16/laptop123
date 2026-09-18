@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trung Tâm Phê Duyệt Phiếu Kho - LAPTOP 123 MRP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .approval-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #0284c7;
+            color: #ffffff;
+        }
+        .tab-badge {
+            background: #ef4444;
+            color: #fff;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+        }
+        .tab-btn.active .tab-badge {
+            background: #ffffff;
+            color: #0284c7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('duyet')}"></div>
+
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Trung Tâm Phê Duyệt Phiếu Kho (Dành cho Quản Lý)', 'Quản lý kho / Phê duyệt phiếu')}"></div>
+
+        <main class="content-body">
+            <!-- TAB CHUYỂN ĐỔI -->
+            <div class="approval-tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-nvl', this)">
+                    <i class="fas fa-boxes"></i> 1. Duyệt Xuất Linh Kiện Cho Xưởng <span class="tab-badge">1</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-tp', this)">
+                    <i class="fas fa-laptop"></i> 2. Duyệt Nhập Kho Laptop Thành Phẩm <span class="tab-badge" style="background: #10b981;">1</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-ban', this)">
+                    <i class="fas fa-shopping-bag"></i> 3. Duyệt Xuất Bán Laptop Cho Khách <span class="tab-badge">1</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: DUYỆT XUẤT LINH KIỆN -->
+            <div id="tab-nvl" class="tab-panel">
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <div class="content-card-title">
+                            <i class="fas fa-arrow-circle-up text-primary"></i>
+                            <span>Đề Xuất Xuất Linh Kiện Đang Chờ Phê Duyệt</span>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã phiếu</th>
+                                    <th>Lệnh sản xuất</th>
+                                    <th>Nhân viên đề xuất</th>
+                                    <th>Ngày đề xuất</th>
+                                    <th>Linh kiện xin xuất</th>
+                                    <th>Trạng thái</th>
+                                    <th style="text-align: center;">Hành động của Quản lý</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="row-dx-01">
+                                    <td><strong>#DX-NVL-001</strong></td>
+                                    <td><span class="badge" style="background: #e0f2fe; color: #0284c7;">#LSX-2026-001</span></td>
+                                    <td>NV Nguyễn Văn A</td>
+                                    <td>17/09/2026 09:30</td>
+                                    <td>
+                                        <div style="font-size: 0.85rem; line-height: 1.4;">
+                                            • 10 Khung máy Barebone Legion 5<br>
+                                            • 10 CPU AMD Ryzen 7-8745H<br>
+                                            • 20 RAM Kingston DDR5 16GB<br>
+                                            • 10 SSD Samsung 512GB, 10 Pin 80Wh
+                                        </div>
+                                    </td>
+                                    <td><span class="badge-status pending"><i class="fas fa-clock"></i> Chờ quản lý duyệt</span></td>
+                                    <td style="text-align: center;">
+                                        <div style="display: flex; gap: 6px; justify-content: center;">
+                                            <button class="btn btn-outline" style="color: #dc2626; border-color: #dc2626; padding: 6px 12px;" onclick="rejectRow('row-dx-01')">
+                                                <i class="fas fa-times"></i> Từ chối
+                                            </button>
+                                            <button class="btn btn-success" style="background: #10b981; color: white; padding: 6px 12px;" onclick="approveRow('row-dx-01', 'Đã duyệt xuất kho linh kiện thành công! Số lượng vật tư đã được tự động trừ trong kho.')">
+                                                <i class="fas fa-check"></i> Duyệt & Trừ tồn kho NVL
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: DUYỆT NHẬP THÀNH PHẨM -->
+            <div id="tab-tp" class="tab-panel" style="display: none;">
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <div class="content-card-title">
+                            <i class="fas fa-warehouse text-success"></i>
+                            <span>Đề Xuất Nhập Kho Laptop Sau Khi Nhân Viên Lắp Ráp Xong</span>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã phiếu</th>
+                                    <th>Sản phẩm Laptop</th>
+                                    <th>Số lượng</th>
+                                    <th>Nhân viên lắp ráp</th>
+                                    <th>Thời gian hoàn thành</th>
+                                    <th>Trạng thái</th>
+                                    <th style="text-align: center;">Hành động của Quản lý</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="row-tp-01">
+                                    <td><strong>#NK-TP-005</strong></td>
+                                    <td><strong>Apple MacBook Air M2 2024 Chính hãng</strong></td>
+                                    <td><span class="badge" style="background: #dcfce7; color: #16a34a; font-weight: 700; font-size: 0.9rem;">5 Chiếc</span></td>
+                                    <td>NV Dương Thị Anh Thi</td>
+                                    <td>17/09/2026 14:15</td>
+                                    <td><span class="badge-status pending"><i class="fas fa-clock"></i> Chờ nghiệm thu kho</span></td>
+                                    <td style="text-align: center;">
+                                        <button class="btn btn-success" style="background: #10b981; color: white; padding: 6px 12px;" onclick="approveRow('row-tp-01', 'Đã duyệt nhập kho thành công! Tồn kho MacBook Air M2 đã tăng thêm 5 chiếc.')">
+                                            <i class="fas fa-check-double"></i> Duyệt Nhập Kho Laptop
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: DUYỆT XUẤT BÁN LAPTOP -->
+            <div id="tab-ban" class="tab-panel" style="display: none;">
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <div class="content-card-title">
+                            <i class="fas fa-shopping-cart text-primary"></i>
+                            <span>Đề Xuất Xuất Kho Bán Laptop Cho Khách Hàng</span>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đề xuất</th>
+                                    <th>Khách hàng</th>
+                                    <th>Laptop xuất bán</th>
+                                    <th>Số lượng</th>
+                                    <th>Nhân viên lập</th>
+                                    <th>Trạng thái</th>
+                                    <th style="text-align: center;">Hành động của Quản lý</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="row-ban-01">
+                                    <td><strong>#XB-2026-012</strong></td>
+                                    <td>Lê Văn A (012345678)</td>
+                                    <td>Laptop Lenovo Legion 5 R7000 AHP9</td>
+                                    <td><strong style="color: #0284c7;">1 Chiếc</strong></td>
+                                    <td>NV Phan Văn Tre</td>
+                                    <td><span class="badge-status pending"><i class="fas fa-clock"></i> Chờ duyệt xuất bán</span></td>
+                                    <td style="text-align: center;">
+                                        <button class="btn btn-primary" style="padding: 6px 12px;" onclick="approveRow('row-ban-01', 'Đã phê duyệt xuất bán laptop! Tồn kho máy đã được trừ 1 chiếc.')">
+                                            <i class="fas fa-check"></i> Phê Duyệt Xuất Bán
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).style.display = 'block';
+        btn.classList.add('active');
+    }
+    function approveRow(rowId, msg) {
+        alert(msg);
+        const row = document.getElementById(rowId);
+        row.style.background = '#f0fdf4';
+        row.querySelector('.badge-status').outerHTML = '<span class="badge-status success"><i class="fas fa-check"></i> Đã phê duyệt</span>';
+        row.cells[row.cells.length - 1].innerHTML = '<small style="color: #16a34a; font-weight: 600;">Đã xử lý xong</small>';
+    }
+    function rejectRow(rowId) {
+        if(confirm('Bạn có chắc chắn muốn từ chối phiếu đề xuất này?')) {
+            const row = document.getElementById(rowId);
+            row.style.background = '#fef2f2';
+            row.querySelector('.badge-status').outerHTML = '<span class="badge-status danger"><i class="fas fa-times"></i> Đã từ chối</span>';
+            row.cells[row.cells.length - 1].innerHTML = '<small style="color: #dc2626; font-weight: 600;">Đã hủy</small>';
+        }
+    }
+</script>
+
+</body>
+</html>

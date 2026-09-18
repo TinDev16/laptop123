@@ -62,9 +62,13 @@ public class SecurityConfig {
                                 "/delete-phieuxuat/**",
 
 
-                                "/tonkho/**"
+                                "/tonkho/**",
+                                "/xuong-lap-rap/**",
+                                "/de-xuat-nvl/**",
+                                "/de-xuat-tp/**"
                         ).hasAnyAuthority("NV_nhap_xuat", "QLy", "ADMIN")
 
+                        .requestMatchers("/bom/**", "/mrp/**", "/duyet-kho/**", "/baocao/**").hasAnyAuthority("QLy", "ADMIN")
 
                         .requestMatchers("/quanlytaikhoan/**").hasAuthority("ADMIN")
 

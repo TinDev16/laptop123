@@ -5,11 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="40523376-f630-4d04-8532-2a6b16c4a298" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SQL/lap123.sql" beforeDir="false" afterPath="$PROJECT_DIR$/SQL/lap123.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Baocao_nhom1.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/nhanvien/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/nhanvien/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/capquyennhanvien.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/capquyennhanvien.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/quanlytaikhoan.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/quanlytaikhoan.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/themtaikhoanquantri.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/themtaikhoanquantri.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/tonkho/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/tonkho/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,24 +28,21 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="167" />
+    <option name="cachedIndexableFilesCount" value="173" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;TinDev16&quot;
+  &quot;lastFilter&quot;: {}
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/TinDev16/laptop123.git&quot;,
+    &quot;accountId&quot;: &quot;2a2fb574-d886-4e63-8476-749b61d8c4a5&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/TinDev16/laptop123.git",
-    "accountId": "2a2fb574-d886-4e63-8476-749b61d8c4a5"
-  }
-}]]></component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -80,9 +88,9 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Global Libraries&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
@@ -120,7 +128,10 @@
       <workItem from="1789435235789" duration="998000" />
       <workItem from="1789444578320" duration="42000" />
       <workItem from="1789484826914" duration="1858000" />
-      <workItem from="1789613949558" duration="333000" />
+      <workItem from="1789613949558" duration="1483000" />
+      <workItem from="1789629384659" duration="1190000" />
+      <workItem from="1789636007571" duration="2687000" />
+      <workItem from="1789699936077" duration="1267000" />
     </task>
     <servers />
   </component>

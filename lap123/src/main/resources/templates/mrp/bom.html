@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Định Mức Sản Xuất (BOM) - LAPTOP 123 MRP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div>
+
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Định Mức Sản Xuất (BOM - Bill of Materials)', 'Sản xuất & MRP / Định mức BOM')}"></div>
+
+        <main class="content-body">
+            <!-- Header actions -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <div>
+                    <h2 style="font-size: 1.4rem; font-weight: 700; color: #0f172a;">Công Thức Cấu Thành Sản Phẩm (BOM)</h2>
+                    <p style="color: #64748b; font-size: 0.88rem;">Thiết lập định mức linh kiện cần thiết để lắp ráp thành 1 sản phẩm Laptop hoàn chỉnh.</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="alert('Mở form tạo công thức BOM mới cho model Laptop!')">
+                        <i class="fas fa-plus"></i> Tạo công thức BOM mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bộ chọn Laptop để xem công thức -->
+            <div class="content-card">
+                <div class="content-card-body" style="padding: 1.25rem;">
+                    <div style="display: flex; gap: 1.5rem; align-items: center;">
+                        <div style="flex: 1;">
+                            <label style="font-weight: 600; font-size: 0.88rem; color: #334155; margin-bottom: 0.35rem; display: block;">Chọn Laptop Thành Phẩm:</label>
+                            <select class="form-control" style="font-weight: 600;">
+                                <option>Laptop Lenovo Legion 5 R7000 AHP9 (Bản chuẩn Gaming)</option>
+                                <option>Apple MacBook Air M2 2024 Chính hãng</option>
+                                <option>Laptop Lenovo Lecoo Fighter 7000 2025</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-weight: 600; font-size: 0.88rem; color: #334155; margin-bottom: 0.35rem; display: block;">Phiên bản BOM:</label>
+                            <input type="text" class="form-control" value="BOM-VER-2026.1 (Áp dụng từ 01/01/2026)" readonly style="background: #f8fafc;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BẢNG CHI TIẾT LINH KIỆN ĐỊNH MỨC -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title">
+                        <i class="fas fa-layer-group text-primary"></i>
+                        <span>Chi Tiết Linh Kiện Cho 1 Đơn Vị Laptop (1 Chiếc)</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline" style="font-size: 0.85rem;" onclick="alert('Đã mở modal thêm linh kiện vào danh sách!')">
+                            <i class="fas fa-plus-circle"></i> Thêm linh kiện vào BOM
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">STT</th>
+                                <th>Mã linh kiện</th>
+                                <th>Tên linh kiện (Nguyên vật liệu)</th>
+                                <th>Phân loại kỹ thuật</th>
+                                <th style="text-align: center;">Định mức / 1 Máy</th>
+                                <th>Đơn vị tính</th>
+                                <th>Hao hụt cho phép</th>
+                                <th style="text-align: center;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><strong>LK-BB-01</strong></td>
+                                <td>Khung máy Barebone + Màn hình 15.6 inch 165Hz</td>
+                                <td><span class="badge" style="background: #e0f2fe; color: #0284c7;">Vỏ & Panel</span></td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;">1</td>
+                                <td>Bộ</td>
+                                <td>0%</td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem;"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><strong>LK-CPU-07</strong></td>
+                                <td>CPU AMD Ryzen 7-8745H (8 cores 16 threads)</td>
+                                <td><span class="badge" style="background: #f3e8ff; color: #9333ea;">Vi xử lý</span></td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;">1</td>
+                                <td>Con</td>
+                                <td>0%</td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem;"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><strong>LK-RAM-16</strong></td>
+                                <td>RAM Kingston Fury Impact 16GB DDR5 5600MHz</td>
+                                <td><span class="badge" style="background: #dcfce7; color: #16a34a;">Bộ nhớ RAM</span></td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;">2</td>
+                                <td>Thanh (Tổng 32GB)</td>
+                                <td>1%</td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem;"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><strong>LK-SSD-512</strong></td>
+                                <td>Ổ cứng SSD NVMe Samsung PM9A1 512GB PCIe 4.0</td>
+                                <td><span class="badge" style="background: #ffedd5; color: #ea580c;">Lưu trữ</span></td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;">1</td>
+                                <td>Ổ</td>
+                                <td>0%</td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem;"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><strong>LK-BAT-80</strong></td>
+                                <td>Pin sạc Lithium-ion 4-Cell 80Wh Lenovo</td>
+                                <td><span class="badge" style="background: #fee2e2; color: #dc2626;">Pin / Nguồn</span></td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;">1</td>
+                                <td>Cục</td>
+                                <td>0%</td>
+                                <td style="text-align: center;">
+                                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem;"><i class="fas fa-edit"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

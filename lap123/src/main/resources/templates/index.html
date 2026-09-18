@@ -4,231 +4,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
+    <title>Hệ Thống Quản Lý Kho & MRP - Cửa Hàng Laptop 123</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
-
+    <style>
+        .quick-action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+        .action-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: #0284c7;
+        }
+        .action-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
-<style>
-    .bg-red-100 {
-    background-color: #ffe5e5;
-    }
-    .modal {
-        position: fixed; inset: 0; display: flex;
-        align-items: center; justify-content: center;
-        background: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-        background: white; padding: 20px; border-radius: 10px;
-        width: 400px;
-    }
-    .hidden { display: none; }
-
-    .bg-red-100 {
-        background-color: #ffe5e5;
-    }
-
-    .table-container h3 {
-        color: #333;
-        font-weight: 600;
-    }
-
-    /* Xóa gạch chân cho tất cả link trong nav */
-    .nav a {
-        text-decoration: none;
-        color: inherit; /* Giữ nguyên màu gốc */
-    }
-
-    /* Tùy chỉnh khi rê chuột (hover) */
-    .nav a:hover {
-        text-decoration: none;
-        color: #007bff;
-    }
-
-    .nav-tab.active {
-        color: #007bff;
-        font-weight: 600;
-    }
-
-</style>
 <body>
-<!-- Header -->
-<header class="header">
-    <div class="header-content">
-        <div class="header-left">
-            <i class="fas fa-laptop"></i>
-            <h1 class="header-title">Quản lý Cửa hàng Laptop</h1>
-        </div>
 
-        <div id="admin-auth" style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Nếu user đã login -->
-            <div sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </form>
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></div>
+
+    <!-- KHÔNG GIAN NỘI DUNG CHÍNH BÊN PHẢI -->
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Tổng Quan Hệ Thống Quản Lý Kho & MRP', 'Trang chủ / Bảng điều khiển')}"></div>
+
+        <main class="content-body">
+            <!-- Banner Chào mừng -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%); color: white; padding: 2rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Hệ Thống Thông Tin Doanh Nghiệp
+                    </span>
+                    <h1 style="font-size: 1.75rem; font-weight: 800; margin: 0.75rem 0 0.5rem; color: #ffffff;">
+                        Hệ Thống Quản Lý Kho & Hoạch Định Vật Tư MRP
+                    </h1>
+                    <p style="font-size: 0.95rem; color: #cbd5e1; max-width: 650px; margin: 0; line-height: 1.5;">
+                        Tự động hóa bóc tách định mức linh kiện (BOM), hoạch định tồn kho khả dụng, phân luồng lệnh sản xuất cho nhân viên và tối ưu hóa phê duyệt xuất nhập kho.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <div sec:authorize="hasAnyAuthority('QLy','ADMIN')">
+                        <a th:href="@{/mrp}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-weight: 600; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);">
+                            <i class="fas fa-calculator"></i> Lập Kế Hoạch MRP
+                        </a>
+                    </div>
+                    <div>
+                        <a th:href="@{/xuong-lap-rap}" class="btn" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 0.75rem 1.5rem; font-weight: 600;">
+                            <i class="fas fa-tools"></i> Xưởng Lắp Ráp NV
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <!-- Nếu user chưa login -->
-            <div sec:authorize="isAnonymous()">
-                <a th:href="@{/signin}" class="btn btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
+            <!-- 4 THẺ KPI TỔNG QUAN HỆ THỐNG -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Laptop Đang Lắp Ráp</div>
+                        <div class="kpi-value text-blue">15</div>
+                        <div class="kpi-sub">Theo 2 Lệnh MRP tuần này</div>
+                    </div>
+                    <div class="kpi-icon blue"><i class="fas fa-laptop"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Linh Kiện Sắp Hết Hàng</div>
+                        <div class="kpi-value text-red-600">2</div>
+                        <div class="kpi-sub">Cần tạo phiếu nhập từ NCC</div>
+                    </div>
+                    <div class="kpi-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Phiếu Chờ Phê Duyệt</div>
+                        <div class="kpi-value" style="color: #ea580c;">3</div>
+                        <div class="kpi-sub">Xuất linh kiện & Bán hàng</div>
+                    </div>
+                    <div class="kpi-icon orange"><i class="fas fa-clipboard-check"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Laptop Thành Phẩm Tồn Kho</div>
+                        <div class="kpi-value text-green-600">285</div>
+                        <div class="kpi-sub">Sẵn sàng xuất bán cho khách</div>
+                    </div>
+                    <div class="kpi-icon green"><i class="fas fa-warehouse"></i></div>
+                </div>
+            </div>
+
+            <!-- SƠ ĐỒ TRỰC QUAN QUY TRÌNH MRP TRONG CỬA HÀNG LAPTOP -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title">
+                        <i class="fas fa-project-diagram text-primary"></i>
+                        <span>Quy Trình Khép Kín: Quản Lý Kho &nbsp;<i class="fas fa-exchange-alt text-primary" style="font-size: 0.85rem;"></i>&nbsp; Tính Toán MRP &nbsp;<i class="fas fa-exchange-alt text-primary" style="font-size: 0.85rem;"></i>&nbsp; Nhân Viên Lắp Ráp</span>
+                    </div>
+                </div>
+                <div class="content-card-body">
+                    <div class="mrp-workflow">
+                        <div class="workflow-step completed">
+                            <div class="step-circle"><i class="fas fa-sitemap"></i></div>
+                            <div class="step-label">1. Định mức BOM</div>
+                            <div class="step-actor">Quản lý tạo công thức</div>
+                        </div>
+                        <div class="workflow-step completed">
+                            <div class="step-circle"><i class="fas fa-truck-loading"></i></div>
+                            <div class="step-label">2. Nhập linh kiện</div>
+                            <div class="step-actor">Tăng tồn kho NVL</div>
+                        </div>
+                        <div class="workflow-step active">
+                            <div class="step-circle"><i class="fas fa-calculator"></i></div>
+                            <div class="step-label">3. Lập Lệnh MRP</div>
+                            <div class="step-actor">Tự động tính thiếu/đủ</div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-circle"><i class="fas fa-file-export"></i></div>
+                            <div class="step-label">4. Duyệt xuất NVL</div>
+                            <div class="step-actor">Nhân viên đề xuất &rarr; QL duyệt</div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-circle"><i class="fas fa-tools"></i></div>
+                            <div class="step-label">5. Lắp ráp Laptop</div>
+                            <div class="step-actor">Nhân viên thực thi</div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-circle"><i class="fas fa-box-check"></i></div>
+                            <div class="step-label">6. Nhập kho & Bán</div>
+                            <div class="step-actor">Lưu kho TP & Xuất bán</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CÁC PHÍM TẮT TRUY CẬP NHANH CHỨC NĂNG -->
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-top: 2rem;">Lối Tắt Thao Tác Nhanh Theo Phân Vai</h3>
+            <div class="quick-action-grid">
+                <!-- Thẻ cho Quản lý -->
+                <a th:href="@{/mrp}" class="action-card" sec:authorize="hasAnyAuthority('QLy','ADMIN')">
+                    <div>
+                        <div class="action-icon blue" style="background: #e0f2fe; color: #0284c7;">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h4 style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.35rem; color: #0f172a;">Tính Toán Nhu Cầu MRP</h4>
+                        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.4;">Nhập số lượng Laptop cần sản xuất để hệ thống bóc tách linh kiện và kiểm tra tồn kho.</p>
+                    </div>
+                    <div style="color: #0284c7; font-weight: 600; font-size: 0.85rem; margin-top: 1rem;">
+                        Vào lập kế hoạch <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Thẻ cho Nhân viên -->
+                <a th:href="@{/xuong-lap-rap}" class="action-card">
+                    <div>
+                        <div class="action-icon green" style="background: #dcfce7; color: #16a34a;">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h4 style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.35rem; color: #0f172a;">Xưởng Lắp Ráp Của Nhân Viên</h4>
+                        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.4;">Xem lệnh sản xuất, lập phiếu đề xuất xuất linh kiện từ kho, báo cáo hoàn thành lắp ráp.</p>
+                    </div>
+                    <div style="color: #16a34a; font-weight: 600; font-size: 0.85rem; margin-top: 1rem;">
+                        Vào không gian nhân viên <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Thẻ Phê duyệt cho Quản lý -->
+                <a th:href="@{/duyet-kho}" class="action-card" sec:authorize="hasAnyAuthority('QLy','ADMIN')">
+                    <div>
+                        <div class="action-icon orange" style="background: #ffedd5; color: #ea580c;">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h4 style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.35rem; color: #0f172a;">Trung Tâm Phê Duyệt Phiếu</h4>
+                        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.4;">Duyệt xuất linh kiện cho nhân viên, duyệt nhập kho laptop thành phẩm và xuất bán.</p>
+                    </div>
+                    <div style="color: #ea580c; font-weight: 600; font-size: 0.85rem; margin-top: 1rem;">
+                        Xử lý phiếu chờ <i class="fas fa-arrow-right"></i>
+                    </div>
                 </a>
             </div>
-
-        </div>
-
-</header>
-
-<!-- Navigation -->
-<nav class="nav">
-    <div class="nav-content">
-        <a class="nav-tab active" data-tab="products" href="/">
-            <i class="fas fa-home"></i>
-            <span>Trang chủ</span>
-        </a>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/sanpham">
-                <i class="fas fa-box"></i>
-                <span>Sản phẩm</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-            <a class="nav-tab" data-tab="add-admin" href="/phieunhap">
-                <i class="fas fa-arrow-down"></i>
-                <span>Phiếu nhập</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-            <a class="nav-tab" data-tab="add-admin" href="/phieuxuat">
-                <i class="fas fa-arrow-up"></i>
-                <span>Phiếu xuất</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/khachhang">
-                <i class="fas fa-users"></i>
-                <span>Khách hàng</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/ncc">
-                <i class="fas fa-building"></i>
-                <span>Nhà cung cấp</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/nhanvien">
-                <i class="fas fa-user-tie"></i>
-                <span>Nhân viên</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN','NV_nhap_xuat')">
-            <a class="nav-tab" data-tab="add-admin" href="/tonkho">
-                <i class="fas fa-warehouse"></i>
-                <span>Tồn kho</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAnyAuthority('QLy','ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/thuonghieu">
-                <i class="fas fa-tags"></i>
-                <span>Thương hiệu</span>
-            </a>
-        </div>
-
-        <div sec:authorize="isAuthenticated() and hasAuthority('ADMIN')">
-            <a class="nav-tab" data-tab="add-admin" href="/quanlytaikhoan">
-                <i class="fas fa-user-shield"></i>
-                <span>Tài khoản</span>
-            </a>
-        </div>
+        </main>
     </div>
-</nav>
+</div>
 
-
-<!-- Main Content -->
-<main class="main">
-    <!-- Home Tab -->
-    <div id="home" class="tab-content active">
-        <div class="welcome-section">
-            <h1 style="text-align: center">Chào mừng đến với Hệ thống Quản lý Cửa hàng Laptop</h1>
-            <p style="text-align: center">Hệ thống giúp bạn quản lý sản phẩm, khách hàng, nhà cung cấp, nhân viên và các hoạt động kinh doanh một cách hiệu quả.</p>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div id="modal-overlay" class="modal-overlay">
-        <div id="modal" class="modal">
-            <div class="modal-header">
-                <h3 id="modal-title" class="modal-title">Modal Title</h3>
-                <button class="modal-close" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                <!-- Modal content will be populated here -->
-            </div>
-            <div class="modal-footer" id="modal-footer">
-                <!-- Modal footer will be populated here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirm Delete Modal -->
-    <div id="confirm-modal" class="modal-overlay">
-        <div class="modal" style="max-width: 400px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Xác nhận xóa</h3>
-                <button class="modal-close" onclick="closeConfirmModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p id="confirm-message">Bạn có chắc chắn muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeConfirmModal()">Hủy</button>
-                <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thêm modal đăng nhập vào cuối body -->
-    <div id="login-modal" class="modal-overlay">
-        <div class="modal" style="max-width: 400px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Đăng nhập Admin</h3>
-                <button class="modal-close" onclick="closeLoginModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="admin-login-form" onsubmit="submitAdminLogin(event)">
-                    <div class="form-group">
-                        <label class="form-label required">Tên đăng nhập</label>
-                        <input type="text" id="admin-username" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label required">Mật khẩu</label>
-                        <input type="password" id="admin-password" class="form-input" required>
-                    </div>
-                    <div style="margin-top:1rem;">
-                        <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                        <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Hủy</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!--<script src="script.js" type="text/javascript"></script>-->
 </body>
 </html>

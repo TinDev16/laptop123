@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xưởng Lắp Ráp & Thực Thi Sản Xuất (Nhân Viên) - LAPTOP 123 MRP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .order-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+        .order-card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .order-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.25rem 0;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        .step-box {
+            flex: 1;
+            padding: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .step-box.active {
+            border-color: #0284c7;
+            background: #f0f9ff;
+            font-weight: 600;
+            color: #0284c7;
+        }
+        .step-box.done {
+            border-color: #10b981;
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #e2e8f0;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR BÊN TRÁI -->
+    <div th:replace="~{fragments/sidebar :: sidebar('xuong')}"></div>
+
+    <!-- NỘI DUNG CHÍNH BÊN PHẢI -->
+    <div class="main-wrapper">
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Xưởng Lắp Ráp & Thực Thi Sản Xuất', 'Sản xuất & MRP / Xưởng lắp ráp')}"></div>
+
+        <main class="content-body">
+            <!-- Alert Banner Hướng dẫn vai trò Nhân viên -->
+            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; padding: 1.25rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.35rem;">
+                        <i class="fas fa-hard-hat"></i> Không Gian Làm Việc Của Nhân Viên Kỹ Thuật
+                    </h3>
+                    <p style="font-size: 0.88rem; opacity: 0.9; margin: 0;">
+                        Tiếp nhận Lệnh sản xuất <i class="fas fa-arrow-right" style="font-size: 0.75rem; margin: 0 4px;"></i> Đề xuất xuất kho linh kiện <i class="fas fa-arrow-right" style="font-size: 0.75rem; margin: 0 4px;"></i> Lắp ráp máy <i class="fas fa-arrow-right" style="font-size: 0.75rem; margin: 0 4px;"></i> Đề xuất nhập kho Laptop hoặc Xuất bán.
+                    </p>
+                </div>
+                <div>
+                    <button class="btn btn-outline" style="background: white; color: #0284c7; font-weight: 600;" onclick="openModal('modal-xuat-ban')">
+                        <i class="fas fa-paper-plane"></i> Lập đề xuất xuất bán Laptop
+                    </button>
+                </div>
+            </div>
+
+            <!-- THẺ THỐNG KÊ NHIỆM VỤ NHÂN VIÊN -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Lệnh SX đang thực hiện</div>
+                        <div class="kpi-value text-blue">2</div>
+                        <div class="kpi-sub">Cần hoàn thành trước ngày 25/09</div>
+                    </div>
+                    <div class="kpi-icon blue"><i class="fas fa-cogs"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Đề xuất linh kiện chờ duyệt</div>
+                        <div class="kpi-value" style="color: #ea580c;">1</div>
+                        <div class="kpi-sub">Đang chờ Quản lý kho duyệt xuất</div>
+                    </div>
+                    <div class="kpi-icon orange"><i class="fas fa-clock"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Laptop đã lắp ráp xong</div>
+                        <div class="kpi-value" style="color: #16a34a;">15</div>
+                        <div class="kpi-sub">Đã bàn giao nhập kho trong tuần</div>
+                    </div>
+                    <div class="kpi-icon green"><i class="fas fa-laptop-code"></i></div>
+                </div>
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-title">Đề xuất xuất bán cần gửi</div>
+                        <div class="kpi-value" style="color: #9333ea;">3</div>
+                        <div class="kpi-sub">Đơn hàng bán lẻ của khách</div>
+                    </div>
+                    <div class="kpi-icon purple"><i class="fas fa-shopping-cart"></i></div>
+                </div>
+            </div>
+
+            <!-- DANH SÁCH LỆNH SẢN XUẤT ĐƯỢC GIAO CHO NHÂN VIÊN -->
+            <div class="content-card">
+                <div class="content-card-header">
+                    <div class="content-card-title">
+                        <i class="fas fa-clipboard-list text-primary"></i>
+                        <span>Danh Sách Lệnh Sản Xuất & Tiến Độ Lắp Ráp</span>
+                    </div>
+                </div>
+                <div class="content-card-body">
+
+                    <!-- LỆNH SẢN XUẤT 1: ĐANG CHỜ XUẤT LINH KIỆN -->
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div>
+                                <div class="order-title">
+                                    <span>#LSX-2026-001: Lắp ráp Laptop Lenovo Legion 5 R7000 (SL: 10 Chiếc)</span>
+                                    <span class="badge-status pending"><i class="fas fa-hourglass-half"></i> Chờ xuất linh kiện</span>
+                                </div>
+                                <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">
+                                    Người giao lệnh: <strong>Trưởng kho Lê Tin</strong> | Hạn chót: <strong>25/09/2026</strong> | Định mức BOM: Bản tiêu chuẩn 2026
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge" style="background: #e0f2fe; color: #0284c7; padding: 6px 12px; font-weight: 600;">Mục tiêu: 10 Máy</span>
+                            </div>
+                        </div>
+
+                        <!-- Tiến độ thực hiện -->
+                        <div class="step-progress">
+                            <div class="step-box active">
+                                <i class="fas fa-file-export"></i><br>
+                                <strong>Bước 1: Đề xuất xuất NVL</strong><br>
+                                <small>Đang gửi duyệt</small>
+                            </div>
+                            <div class="step-box">
+                                <i class="fas fa-box-open"></i><br>
+                                <strong>Bước 2: Nhận linh kiện</strong><br>
+                                <small>Chờ thủ kho bàn giao</small>
+                            </div>
+                            <div class="step-box">
+                                <i class="fas fa-tools"></i><br>
+                                <strong>Bước 3: Lắp ráp & Test</strong><br>
+                                <small>Chưa bắt đầu</small>
+                            </div>
+                            <div class="step-box">
+                                <i class="fas fa-warehouse"></i><br>
+                                <strong>Bước 4: Báo nhập kho TP</strong><br>
+                                <small>Hoàn tất chu kỳ</small>
+                            </div>
+                        </div>
+
+                        <!-- Chi tiết vật tư cần cho lệnh này -->
+                        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem;">
+                            <strong>Vật tư theo định mức (BOM):</strong> 10 Vỏ máy Barebone, 10 CPU Ryzen 7, 20 Thanh RAM DDR5 16GB, 10 Ổ SSD 512GB, 10 Pin 80Wh.
+                        </div>
+
+                        <!-- Các nút hành động của Nhân viên -->
+                        <div class="action-bar">
+                            <button class="btn btn-primary" onclick="openModal('modal-xuat-nvl')">
+                                <i class="fas fa-file-signature"></i> 1. Lập đề xuất xuất linh kiện gửi Quản lý duyệt
+                            </button>
+                            <button class="btn btn-outline" onclick="alert('Đã gửi thông báo nhắc Quản lý kho kiểm tra phiếu xuất!')">
+                                <i class="fas fa-bell"></i> Hối thúc duyệt xuất
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LỆNH SẢN XUẤT 2: ĐÃ NHẬN LINH KIỆN - ĐANG LẮP RÁP -->
+                    <div class="order-card" style="border-left: 4px solid #10b981;">
+                        <div class="order-header">
+                            <div>
+                                <div class="order-title">
+                                    <span>#LSX-2026-002: Lắp ráp Apple MacBook Air M2 2024 (SL: 5 Chiếc)</span>
+                                    <span class="badge-status info"><i class="fas fa-wrench"></i> Đang lắp ráp & QA</span>
+                                </div>
+                                <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">
+                                    Đã nhận đủ 5 combo linh kiện từ kho ngày 16/09/2026 | Phụ trách: <strong>NV Nguyễn Văn A</strong>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge" style="background: #dcfce7; color: #16a34a; padding: 6px 12px; font-weight: 600;">Tiến độ: 5/5 Đang test</span>
+                            </div>
+                        </div>
+
+                        <div class="step-progress">
+                            <div class="step-box done">
+                                <i class="fas fa-check-circle"></i><br>
+                                <strong>Bước 1: Đề xuất NVL</strong><br>
+                                <small>Đã duyệt</small>
+                            </div>
+                            <div class="step-box done">
+                                <i class="fas fa-check-circle"></i><br>
+                                <strong>Bước 2: Nhận linh kiện</strong><br>
+                                <small>Đã nhận đủ</small>
+                            </div>
+                            <div class="step-box active">
+                                <i class="fas fa-tools"></i><br>
+                                <strong>Bước 3: Lắp ráp</strong><br>
+                                <small>Đang hoàn thiện</small>
+                            </div>
+                            <div class="step-box">
+                                <i class="fas fa-warehouse"></i><br>
+                                <strong>Bước 4: Báo nhập kho TP</strong><br>
+                                <small>Sẵn sàng bấm</small>
+                            </div>
+                        </div>
+
+                        <!-- Hành động hoàn thành -->
+                        <div class="action-bar">
+                            <button class="btn btn-success" style="background: #10b981; color: white;" onclick="openModal('modal-nhap-tp')">
+                                <i class="fas fa-check-double"></i> Báo cáo hoàn thành & Lập phiếu đề xuất nhập kho 5 Laptop
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- MODAL 1: NHÂN VIÊN ĐỀ XUẤT XUẤT LINH KIỆN -->
+<div id="modal-xuat-nvl" class="modal hidden">
+    <div class="modal-content" style="width: 550px; max-width: 95%;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-file-export text-primary"></i> Đề Xuất Xuất Kho Linh Kiện (NV)</h3>
+            <button class="modal-close" onclick="closeModal('modal-xuat-nvl')"><i class="fas fa-times"></i></button>
+        </div>
+        <form onsubmit="event.preventDefault(); submitProposal('Đề xuất xuất linh kiện đã được gửi lên Quản lý phê duyệt thành công!', 'modal-xuat-nvl');">
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Lệnh sản xuất liên quan:</label>
+                    <input type="text" class="form-control" value="#LSX-2026-001 - Lắp 10 Laptop Lenovo Legion 5" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Danh sách linh kiện xin xuất:</label>
+                    <textarea class="form-control" rows="4" readonly style="background: #f8fafc; font-size: 0.85rem;">
+1. 10 Bộ Khung máy + Màn hình Legion 5
+2. 10 Con CPU AMD Ryzen 7-8745H
+3. 20 Thanh RAM Kingston DDR5 16GB
+4. 10 Ổ SSD NVMe Samsung 512GB
+5. 10 Cục Pin 80Wh</textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Ghi chú gửi Quản lý:</label>
+                    <input type="text" class="form-control" placeholder="Ví dụ: Đề nghị xuất ca sáng để kịp tiến độ ráp..." required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-xuat-nvl')">Đóng</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Gửi duyệt xuất kho</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 2: NHÂN VIÊN BÁO HOÀN THÀNH & ĐỀ XUẤT NHẬP KHO LAPTOP -->
+<div id="modal-nhap-tp" class="modal hidden">
+    <div class="modal-content" style="width: 500px; max-width: 95%;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-warehouse text-success"></i> Đề Xuất Nhập Kho Thành Phẩm</h3>
+            <button class="modal-close" onclick="closeModal('modal-nhap-tp')"><i class="fas fa-times"></i></button>
+        </div>
+        <form onsubmit="event.preventDefault(); submitProposal('Đề xuất nhập kho Laptop hoàn chỉnh đã được gửi lên Quản lý!', 'modal-nhap-tp');">
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Laptop thành phẩm hoàn thành:</label>
+                    <input type="text" class="form-control" value="Apple MacBook Air M2 2024 Chính hãng" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Số lượng đã lắp ráp & Test đạt chuẩn:</label>
+                    <input type="number" class="form-control" value="5" min="1" max="5" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Vị trí lưu kho đề xuất:</label>
+                    <input type="text" class="form-control" value="Kệ TP-02 (Khu vực Laptop nguyên chiếc)" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-nhap-tp')">Hủy</button>
+                <button type="submit" class="btn btn-success" style="background: #10b981; color: white;"><i class="fas fa-check"></i> Xác nhận & Gửi Quản lý</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 3: NHÂN VIÊN LẬP ĐỀ XUẤT XUẤT BÁN LAPTOP -->
+<div id="modal-xuat-ban" class="modal hidden">
+    <div class="modal-content" style="width: 500px; max-width: 95%;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-shopping-cart text-primary"></i> Đề Xuất Xuất Kho Bán Laptop</h3>
+            <button class="modal-close" onclick="closeModal('modal-xuat-ban')"><i class="fas fa-times"></i></button>
+        </div>
+        <form onsubmit="event.preventDefault(); submitProposal('Phiếu đề xuất xuất bán laptop đã được gửi Quản lý phê duyệt!', 'modal-xuat-ban');">
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Chọn Laptop xuất bán:</label>
+                    <select class="form-control">
+                        <option th:each="sp : ${sanphams}" th:value="${sp.masp}" th:text="${sp.TENSP}"></option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Số lượng máy xuất bán:</label>
+                    <input type="number" class="form-control" value="1" min="1" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600;">Khách hàng / Đơn hàng số:</label>
+                    <input type="text" class="form-control" placeholder="Tên khách hàng hoặc Mã đơn hàng..." required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-xuat-ban')">Đóng</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Gửi Quản lý duyệt xuất</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+    function submitProposal(msg, modalId) {
+        alert(msg);
+        closeModal(modalId);
+    }
+</script>
+
+</body>
+</html>

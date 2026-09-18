@@ -513,3 +513,420 @@ body {
 .font-semibold {
     font-weight: 600;
 }
+
+/* ==========================================================================
+   LEFT SIDEBAR DASHBOARD LAYOUT & MRP UI STYLES
+   ========================================================================== */
+:root {
+    --sidebar-width: 260px;
+    --sidebar-bg: #0f172a;       /* Slate 900 */
+    --sidebar-hover: #1e293b;    /* Slate 800 */
+    --sidebar-active: #0284c7;   /* Sky 600 */
+    --sidebar-text: #94a3b8;     /* Slate 400 */
+    --sidebar-text-bright: #f8fafc;
+    --primary-color: #2563eb;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+}
+
+/* Layout tổng thể */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f1f5f9;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+}
+
+/* Sidebar bên trái */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+/* Logo thương hiệu trên Sidebar */
+.sidebar-brand {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--sidebar-text-bright);
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.5px;
+}
+
+.sidebar-brand i {
+    font-size: 1.5rem;
+    color: #38bdf8;
+}
+
+/* Thông tin người dùng đăng nhập */
+.sidebar-user {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-user .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #38bdf8;
+    font-size: 1.25rem;
+    border: 2px solid #0284c7;
+}
+
+.sidebar-user .user-info {
+    overflow: hidden;
+}
+
+.sidebar-user .user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user .user-role {
+    font-size: 0.75rem;
+    color: #38bdf8;
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 1px 8px;
+    border-radius: 10px;
+    margin-top: 2px;
+}
+
+/* Danh sách Menu */
+.sidebar-menu {
+    flex: 1;
+    padding: 0.75rem 0;
+}
+
+.menu-heading {
+    padding: 1rem 1.5rem 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.08em;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 1.5rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.menu-item i {
+    width: 22px;
+    font-size: 1.05rem;
+    margin-right: 0.85rem;
+    text-align: center;
+}
+
+.menu-item:hover {
+    background-color: var(--sidebar-hover);
+    color: #38bdf8;
+    border-left-color: #38bdf8;
+}
+
+.menu-item.active {
+    background-color: rgba(2, 132, 199, 0.18);
+    color: #38bdf8;
+    font-weight: 600;
+    border-left-color: #0284c7;
+}
+
+.menu-badge {
+    margin-left: auto;
+    background: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+}
+
+.menu-badge.badge-blue {
+    background: #0284c7;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Main Content Wrapper */
+.main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Topbar */
+.topbar {
+    height: 64px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topbar-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.topbar-breadcrumb {
+    font-size: 0.82rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.content-body {
+    padding: 1.75rem;
+    flex: 1;
+}
+
+/* Thẻ Dashboard KPI Cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.kpi-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+}
+
+.kpi-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.35rem;
+}
+
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.kpi-sub {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.kpi-icon.blue { background: #e0f2fe; color: #0284c7; }
+.kpi-icon.green { background: #dcfce7; color: #16a34a; }
+.kpi-icon.orange { background: #ffedd5; color: #ea580c; }
+.kpi-icon.purple { background: #f3e8ff; color: #9333ea; }
+.kpi-icon.red { background: #fee2e2; color: #dc2626; }
+
+/* Thẻ Content Card */
+.content-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+}
+
+.content-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+}
+
+.content-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.content-card-body {
+    padding: 1.5rem;
+}
+
+/* Quy trình MRP Step-by-Step Timeline */
+.mrp-workflow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border: 1px dashed #cbd5e1;
+}
+
+.workflow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    position: relative;
+}
+
+.workflow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: #cbd5e1;
+    z-index: 1;
+}
+
+.step-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #0284c7;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.workflow-step.active .step-circle {
+    background: #0284c7;
+    color: #ffffff;
+}
+
+.workflow-step.completed .step-circle {
+    background: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+}
+
+.step-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.step-actor {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+/* Badges trạng thái */
+.badge-status {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-status.pending { background: #fef3c7; color: #b45309; }
+.badge-status.success { background: #dcfce7; color: #15803d; }
+.badge-status.danger  { background: #fee2e2; color: #b91c1c; }
+.badge-status.info    { background: #e0f2fe; color: #0369a1; }
+

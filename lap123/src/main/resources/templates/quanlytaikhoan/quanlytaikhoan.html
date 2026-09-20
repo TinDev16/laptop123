@@ -1,209 +1,30 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
-
-</head>
-<style>
-    .bg-red-100 {
-    background-color: #ffe5e5;
-    }
-    .modal {
-        position: fixed; inset: 0; display: flex;
-        align-items: center; justify-content: center;
-        background: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-        background: white; padding: 20px; border-radius: 10px;
-        width: 400px;
-    }
-    .hidden { display: none; }
-
-    .bg-red-100 {
-        background-color: #ffe5e5;
-    }
-
-    .table-container h3 {
-        color: #333;
-        font-weight: 600;
-    }
-
-    /* Xóa gạch chân cho tất cả link trong nav */
-    .nav a {
-        text-decoration: none;
-        color: inherit; /* Giữ nguyên màu gốc */
-    }
-
-    /* Tùy chỉnh khi rê chuột (hover) */
-    .nav a:hover {
-        text-decoration: none;
-        color: #007bff;
-    }
-
-    .nav-tab.active {
-        color: #007bff;
-        font-weight: 600;
-    }
-
-</style>
-<body>
-<div class="app-container">
-    <!-- SIDEBAR BÊN TRÁI -->
-    <div th:replace="~{fragments/sidebar :: sidebar('taikhoan')}"></div>
-
-    <!-- KHÔNG GIAN NỘI DUNG CHÍNH -->
-    <div class="main-wrapper">
-        <!-- TOPBAR -->
-        <div th:replace="~{fragments/sidebar :: topbar('Quản Lý Tài Khoản & Phân Quyền', 'Hệ thống / Tài khoản')}"></div>
-
-        <main class="content-body">
-            <div id="products" class="tab-content active" style="display: block;">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý tài khoản</h2>
-            <div class="page-actions">
-                <a th:href="@{/quanlytaikhoan/themtaikhoanquantri}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Thêm tài khoản
-                </a>
-            </div>
-        </div>
-
-        <div class="search-filters">
-            <div class="search-input">
-                <i class="fas fa-search"></i>
-                <input type="text" id="product-search" placeholder="Nhập tên nhân viên hoặc email để tìm kiếm tài khoản" onkeyup="filterProducts()">
-            </div>
-        </div>
-
-        <div class="table-container">
-            <h1 style="margin: 20px 0 10px;">Admin</h1>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Id tài khoản</th>
-                    <th>Email</th>
-                    <th>Mã nhân viên</th>
-                    <th>Họ tên</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="employees-table">
-                <tr th:each="tk : ${listTaiKhoan}"
-                    th:if="${tk.vaitro != null and tk.vaitro.vaitro_id == 1}">
-                    <td class="font-semibold" th:text="${tk.taikhoan_id}"></td>
-                    <td th:text="${tk.email}"></td>
-                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.MANV : 'Chưa có'}"></td>
-                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa có'}"></td>
-                    <td style="white-space: nowrap;">
-                        <form th:action="@{/quanlytaikhoan/xoataikhoan}" method="post" style="display:inline-block; margin-right: 5px;">
-                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
-                            <button type="submit" class="btn btn-danger btn-sm">Xoá tài khoản</button>
-                        </form>
-                        <form th:action="@{/quanlytaikhoan/capquyennhanvien}" method="get" style="display:inline;" th:if="${tk.nhanvien == null}">
-                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
-                            <button type="submit" class="btn btn-success">Cấp quyền</button>
-                        </form>
-                    </td>
-
-                </tr>
-                </tbody>
-            </table>
-
-            <h1 style="margin: 20px 0 10px;">Quản lý</h1>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Id tài khoản</th>
-                    <th>Email</th>
-                    <th>Mã nhân viên</th>
-                    <th>Họ tên</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="employees-table">
-                <tr th:each="tk : ${listTaiKhoan}"
-                    th:if="${tk.vaitro != null and tk.vaitro.vaitro_id == 2}">
-                    <td class="font-semibold" th:text="${tk.taikhoan_id}"></td>
-                    <td th:text="${tk.email}"></td>
-                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.MANV : 'Chưa có'}"></td>
-                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa có'}"></td>
-                    <td style="white-space: nowrap;">
-                        <form th:action="@{/quanlytaikhoan/xoataikhoan}" method="post" style="display:inline-block; margin-right: 5px;">
-                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
-                            <button type="submit" class="btn btn-danger btn-sm">Xoá tài khoản</button>
-                        </form>
-                        <form th:action="@{/quanlytaikhoan/capquyennhanvien}" method="get" style="display:inline;" th:if="${tk.nhanvien == null}">
-                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
-                            <button type="submit" class="btn btn-success">Cấp quyền</button>
-                        </form>
-                    </td>
-
-                </tr>
-                </tbody>
-            </table>
-
-            <h1 style="margin: 20px 0 10px;">Nhân viên nhập xuất</h1>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Id tài khoản</th>
-                    <th>Email</th>
-                    <th>Mã nhân viên</th>
-                    <th>Họ tên</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="employees-table">
-                <tr th:each="tk : ${listTaiKhoan}"
-                    th:if="${tk.vaitro != null and tk.vaitro.vaitro_id == 3}">
-                    <td class="font-semibold" th:text="${tk.taikhoan_id}"></td>
-                    <td th:text="${tk.email}"></td>
-                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.MANV : 'Chưa có'}"></td>
-                    <td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa có'}"></td>
-                    <td style="white-space: nowrap;">
-                        <form th:action="@{/quanlytaikhoan/xoataikhoan}" method="post" style="display:inline-block; margin-right: 5px;">
-                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
-                            <button type="submit" class="btn btn-danger btn-sm">Xoá tài khoản</button>
-                        </form>
-                        <form th:action="@{/quanlytaikhoan/capquyennhanvien}" method="get" style="display:inline;" th:if="${tk.nhanvien == null}">
-                            <input type="hidden" name="id" th:value="${tk.taikhoan_id}" />
-                            <button type="submit" class="btn btn-success">Cấp quyền</button>
-                        </form>
-                    </td>
-
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        </main>
-    </div>
-</div>
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý tài khoản</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('taikhoan')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Quản lý tài khoản', 'Hệ thống / Tài khoản')}"></div>
+<main class="content-body account-page">
+<div class="page-header"><div><h1 class="page-title">Tài khoản hệ thống</h1><p class="page-description">Theo dõi quyền truy cập và trạng thái tài khoản.</p></div><a class="btn btn-primary" th:href="@{/quanlytaikhoan/themtaikhoanquantri}"><i class="fas fa-plus" aria-hidden="true"></i> Tạo tài khoản</a></div>
+<div class="directory-alert directory-alert--success" th:if="${success}" th:text="${success}"></div><div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
+<div class="search-filters"><div class="search-input"><i class="fas fa-search" aria-hidden="true"></i><input id="account-search" type="search" placeholder="Tìm theo tài khoản hoặc tên nhân viên..." aria-label="Tìm tài khoản" oninput="filterAccounts()"></div></div>
+<section class="content-card"><div class="content-card-header"><h2 class="content-card-title">Danh sách tài khoản</h2><span class="record-count" th:text="${#lists.size(listTaiKhoan) + ' tài khoản'}"></span></div>
+<div class="table-container"><table><thead><tr><th>Tài khoản</th><th>Nhân viên</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+<tr class="account-row" th:each="tk : ${listTaiKhoan}"><td th:text="${tk.email}"></td><td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa liên kết'}"></td>
+<td><form class="account-role-form" th:if="${tk.email != #authentication.name}" th:action="@{/quanlytaikhoan/doi-vai-tro}" method="post"><input type="hidden" name="id" th:value="${tk.taikhoan_id}"><select name="roleCode" class="form-control" th:aria-label="${'Vai trò của ' + tk.email}"><option value="QUAN_LY_KHO" th:selected="${tk.vaitro != null and tk.vaitro.ten == 'QUAN_LY_KHO'}">Quản lý kho</option><option value="NHAN_VIEN" th:selected="${tk.vaitro != null and tk.vaitro.ten == 'NHAN_VIEN'}">Nhân viên</option></select><button type="submit" class="btn btn-outline">Lưu</button></form><span th:if="${tk.email == #authentication.name}" th:text="${tk.vaitro.ten == 'QUAN_LY_KHO' ? 'Quản lý kho' : 'Nhân viên'}"></span></td>
+<td><span class="status-pill" th:classappend="${tk.locked ? ' account-status-locked' : ' account-status-active'}" th:text="${tk.locked ? 'Đã khóa' : 'Hoạt động'}"></span></td>
+<td><form th:if="${tk.email != #authentication.name}" th:action="@{/quanlytaikhoan/khoa}" method="post"><input type="hidden" name="id" th:value="${tk.taikhoan_id}"><input type="hidden" name="locked" th:value="${!tk.locked}"><button type="submit" class="btn btn-outline" th:text="${tk.locked ? 'Mở khóa' : 'Khóa'}"></button></form></td></tr>
+<tr class="empty-row" th:if="${#lists.isEmpty(listTaiKhoan)}"><td colspan="5">Chưa có tài khoản.</td></tr>
+<tr id="account-search-empty" class="empty-row" hidden><td colspan="5">Không có tài khoản phù hợp.</td></tr>
+</tbody></table></div></section></main></div></div>
 <script>
-    function filterProducts() {
-        const input = document.getElementById("product-search").value.toLowerCase();
-        const tables = document.querySelectorAll(".table tbody");
-
-        tables.forEach(tbody => {
-            const rows = tbody.querySelectorAll("tr");
-            rows.forEach(row => {
-                const email = row.querySelector("td:nth-child(2)")?.innerText.toLowerCase() || "";
-                const hoten = row.querySelector("td:nth-child(4)")?.innerText.toLowerCase() || "";
-
-                if (email.includes(input) || hoten.includes(input)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        });
-    }
-</script>
-
-</body>
-</html>
+function filterAccounts() {
+  const term = document.getElementById('account-search').value.trim().toLocaleLowerCase('vi');
+  let matches = 0;
+  document.querySelectorAll('.account-row').forEach(row => {
+    const text = row.children[0].textContent + ' ' + row.children[1].textContent;
+    const visible = text.toLocaleLowerCase('vi').includes(term);
+    row.hidden = !visible;
+    if (visible) matches++;
+  });
+  document.getElementById('account-search-empty').hidden = matches > 0 || document.querySelectorAll('.account-row').length === 0;
+}
+</script></body></html>

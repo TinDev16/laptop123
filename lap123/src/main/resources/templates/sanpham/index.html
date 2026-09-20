@@ -1,285 +1,73 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
-</head>
-<style>
-    .bg-red-100 {
-    background-color: #ffe5e5;
-    }
-    .modal {
-        position: fixed; inset: 0; display: flex;
-        align-items: center; justify-content: center;
-        background: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-        background: white; padding: 20px; border-radius: 10px;
-        width: 400px;
-    }
-    .hidden { display: none; }
-
-    .bg-red-100 {
-        background-color: #ffe5e5;
-    }
-
-    .table-container h3 {
-        color: #333;
-        font-weight: 600;
-    }
-
-    /* Xóa gạch chân cho tất cả link trong nav */
-    .nav a {
-        text-decoration: none;
-        color: inherit; /* Giữ nguyên màu gốc */
-    }
-
-    /* Tùy chỉnh khi rê chuột (hover) */
-    .nav a:hover {
-        text-decoration: none;
-        color: #007bff;
-    }
-
-    .nav-tab.active {
-        color: #007bff;
-        font-weight: 600;
-    }
-
-</style>
-<body>
-<div class="app-container">
-    <!-- SIDEBAR BÊN TRÁI -->
-    <div th:replace="~{fragments/sidebar :: sidebar('sanpham')}"></div>
-
-    <!-- KHÔNG GIAN NỘI DUNG CHÍNH -->
-    <div class="main-wrapper">
-        <!-- TOPBAR -->
-        <div th:replace="~{fragments/sidebar :: topbar('Quản Lý Sản Phẩm & Linh Kiện', 'Danh mục / Sản phẩm')}"></div>
-
-        <main class="content-body">
-            <!-- Products Tab -->
-            <div id="products" class="tab-content active" style="display: block;">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý Sản phẩm</h2>
-            <div class="page-actions">
-                <a th:href="@{/sanpham/create}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Thêm sản phẩm
-                </a>
-                <a href="#" class="btn btn-success" onclick="exportExcel('products')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
-            </div>
-        </div>
-
-        <div class="search-filters">
-            <div class="search-input">
-                <i class="fas fa-search"></i>
-                <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm..." onkeyup="filterProducts()">
-            </div>
-        </div>
-
-        <div class="table-container">
-
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Mã SP</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Hệ điều hành</th>
-                    <th>Thương hiệu</th>
-                    <th>Trạng thái</th>
-                    <!-- <th>Ghi chú</th> -->
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="products-table">
-                    <!-- Hiển thị SP có TRANGTHAI = 0 -->
-                    <tr th:each="sp : ${sanpham}"
-                        th:if="${sp.TRANGTHAI == 0}">
-                        <td th:text="${sp.MASP}"></td>
-                        <td th:text="${sp.TENSP}"></td>
-                        <td th:text="${sp.HEDIEUHANH}"></td>
-                        <td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
-                        <td th:text="'Mở bán'"></td>
-                        <!-- <td th:text="${sp.GHICHU != null ? sp.GHICHU : ''}"></td> -->
-                        <td>
-                            <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/view-sanpham/{id}(id=${sp.MASP})}" title="Xem chi tiết">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button type="button"
-                                        class="btn btn-danger"
-                                        th:attr="data-id=${sp.MASP}, data-ten=${sp.TENSP}"
-                                        onclick="showDeleteModal(this)">
-                                    Xóa
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        
-            <br><br><br>
-            <h1 style="margin: 20px 0 10px;">🚫Sản phẩm ngừng bán</h1>
-            <table class="table bg-red-100">
-                <thead>
-                <tr>
-                    <th>Mã SP</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Hệ điều hành</th>
-                    <th>Thương hiệu</th>
-                    <th>Trạng thái</th>
-                    <th>Ghi chú</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="stopped-products">
-                    <!-- Hiển thị SP có TRANGTHAI = 1 -->
-                    <tr th:each="sp : ${sanpham}"
-                        th:if="${sp.TRANGTHAI == 1}">
-                        <td th:text="${sp.MASP}"></td>
-                        <td th:text="${sp.TENSP}"></td>
-                        <td th:text="${sp.HEDIEUHANH}"></td>
-                        <td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Không có'}"></td>
-                        <td th:text="'Ngừng bán'"></td>
-                        <td th:text="${sp.GHICHU != null ? sp.GHICHU : ''}"></td>
-                        <td>
-                            <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" th:href="@{/view/{id}(id=${sp.MASP})}" title="Xem chi tiết">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-    </div>
-
-<!-- Modal xác nhận xóa -->
-<div id="deleteModal" class="modal hidden">
-    <div class="modal-content">
-        <h3>Xóa sản phẩm</h3>
-        <p id="deleteMessage"></p>
-        <form th:action="@{/delete-sanpham}" method="POST">
-            <input type="hidden" id="deleteId" name="id">
-            <textarea name="GHICHU" placeholder="Nhập lý do xóa..." required></textarea>
-            <div class="modal-actions">
-                <button type="submit" class="btn btn-danger">Xác nhận</button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-            </div>
-        </form>
-    </div>
-        </main>
-    </div>
-</div>
-<script>
-function showDeleteModal(button) {
-    const id = button.getAttribute('data-id');
-    const ten = button.getAttribute('data-ten');
-
-    // Gán giá trị vào modal
-    document.getElementById("deleteId").value = id;
-    document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa sản phẩm "${ten}" không?`;
-
-    // Hiện modal
-    document.getElementById("deleteModal").classList.remove("hidden");
-}
-
-
-function closeModal() {
-    document.getElementById("deleteModal").classList.add("hidden");
-}
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản lý sản phẩm</title><link rel="stylesheet" th:href="@{/style.css}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('sanpham')}"></div>
+<div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Quản lý sản phẩm', 'Danh mục / Sản phẩm')}"></div>
+<main class="content-body directory-page product-directory">
+<div class="page-header"><div><h1 class="page-title">Quản lý sản phẩm</h1><p class="directory-subtitle">Theo dõi sản phẩm đang bán và hồ sơ đã ngừng bán.</p></div>
+<div class="page-actions"><a class="btn btn-primary" th:href="@{/sanpham/create}"><i class="fas fa-plus"></i> Thêm sản phẩm</a>
+<button type="button" class="btn btn-outline" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button></div></div>
+<div class="search-filters"><div class="search-input"><i class="fas fa-search"></i><input id="product-search" type="search" placeholder="Tìm theo mã, tên, thương hiệu..." aria-label="Tìm sản phẩm" oninput="filterProducts()"></div></div>
+<section class="directory-section"><div class="directory-section-header"><div><h2>Sản phẩm đang bán</h2><p>Danh mục sản phẩm đang kinh doanh.</p></div><span class="directory-state directory-state--active">Đang bán</span></div>
+<div class="table-container"><table class="table directory-table" data-sheet="DangBan"><thead><tr><th>Mã SP</th><th>Tên sản phẩm</th><th>Hệ điều hành</th><th>Thương hiệu</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+<tr class="directory-row" th:each="sp : ${sanpham}" th:if="${sp.TRANGTHAI == 0}">
+<td th:text="${sp.MASP}"></td><td th:text="${sp.TENSP}"></td><td th:text="${sp.HEDIEUHANH}"></td>
+<td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Chưa có'}"></td>
+<td><span class="directory-state directory-state--active">Đang bán</span></td>
+<td><div class="table-actions directory-actions"><a class="btn btn-outline btn-compact" th:href="@{/view-sanpham/{id}(id=${sp.MASP})}">Chi tiết</a>
+<a class="btn btn-outline btn-compact" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">Sửa</a>
+<button type="button" class="btn btn-outline btn-compact" th:attr="data-id=${sp.MASP},data-name=${sp.TENSP}" onclick="showArchiveModal(this)">Ngừng bán</button></div></td></tr>
+<tr class="directory-empty" style="display:none"><td colspan="6">Không có sản phẩm phù hợp.</td></tr></tbody></table></div></section>
+<section class="directory-section"><div class="directory-section-header"><div><h2>Sản phẩm đã ngừng bán</h2><p>Giữ hồ sơ sản phẩm để tra cứu chứng từ và lịch sử tồn kho.</p></div><span class="directory-state directory-state--archived">Đã ngừng bán</span></div>
+<div class="table-container"><table class="table directory-table" data-sheet="NgungBan"><thead><tr><th>Mã SP</th><th>Tên sản phẩm</th><th>Hệ điều hành</th><th>Thương hiệu</th><th>Trạng thái</th><th>Lý do / ghi chú</th><th>Thao tác</th></tr></thead><tbody>
+<tr class="directory-row" th:each="sp : ${sanpham}" th:if="${sp.TRANGTHAI == 1}">
+<td th:text="${sp.MASP}"></td><td th:text="${sp.TENSP}"></td><td th:text="${sp.HEDIEUHANH}"></td>
+<td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Chưa có'}"></td>
+<td><span class="directory-state directory-state--archived">Đã ngừng bán</span></td>
+<td class="directory-note" th:text="${sp.GHICHU != null and !#strings.isEmpty(sp.GHICHU) ? sp.GHICHU : '—'}"></td>
+<td><div class="table-actions directory-actions"><a class="btn btn-outline btn-compact" th:href="@{/view-sanpham/{id}(id=${sp.MASP})}">Chi tiết</a>
+<a class="btn btn-outline btn-compact" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">Sửa / mở bán lại</a></div></td></tr>
+<tr class="directory-empty" style="display:none"><td colspan="7">Không có sản phẩm phù hợp.</td></tr></tbody></table></div></section>
+<div id="archive-modal" class="directory-modal hidden" role="dialog" aria-modal="true" aria-labelledby="archive-title"><div class="directory-modal-panel">
+<h2 id="archive-title">Ngừng bán sản phẩm</h2><p id="archive-message"></p><form th:action="@{/delete-sanpham}" method="post">
+<input type="hidden" id="archive-id" name="id"><label for="archive-reason">Lý do <span aria-hidden="true">*</span></label>
+<textarea id="archive-reason" name="GHICHU" rows="3" maxlength="255" placeholder="Nhập lý do ngừng bán" required></textarea>
+<div class="directory-modal-actions"><button type="button" class="btn btn-outline" onclick="closeArchiveModal()">Hủy</button><button type="submit" class="btn btn-primary">Xác nhận ngừng bán</button></div></form></div></div>
+</main></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script>
 function filterProducts() {
-    const searchInput = document.getElementById('product-search').value.toLowerCase();
-
-    // Hai bảng cần lọc
-    const tables = [
-        document.querySelectorAll('#products-table tr'),
-        document.querySelectorAll('#stopped-products tr')
-    ];
-
-    // Duyệt qua từng bảng
-    tables.forEach((rows, tableIndex) => {
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const maSp = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
-            const tenSp = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-            const heDieuHanh = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
-            const thuongHieu = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
-            const trangThai = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
-            const ghiChu = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
-
-            // Kiểm tra có khớp không
-            const match = !searchInput || (
-                maSp.includes(searchInput) ||
-                tenSp.includes(searchInput) ||
-                heDieuHanh.includes(searchInput) ||
-                thuongHieu.includes(searchInput) ||
-                trangThai.includes(searchInput) ||
-                ghiChu.includes(searchInput)
-            );
-
-            row.style.display = match ? '' : 'none';
-            if (match) visibleCount++;
-        });
-
-        // Thêm hoặc hiển thị dòng "Không có sản phẩm phù hợp" riêng cho từng bảng
-        const tableBody = tableIndex === 0 ? document.getElementById('products-table') : document.getElementById('stopped-products');
-        let noResultRow = tableBody.querySelector('.no-result-row');
-        if (!noResultRow) {
-            noResultRow = document.createElement('tr');
-            noResultRow.classList.add('no-result-row');
-            noResultRow.innerHTML = `<td colspan="7" style="text-align:center;color:#dc3545;font-weight:500;">Không có sản phẩm phù hợp</td>`;
-            tableBody.appendChild(noResultRow);
-        }
-        noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
+  const term = document.getElementById('product-search').value.trim().toLocaleLowerCase('vi');
+  document.querySelectorAll('.directory-table').forEach(table => {
+    let count = 0;
+    table.querySelectorAll('.directory-row').forEach(row => {
+      const match = row.textContent.toLocaleLowerCase('vi').includes(term);
+      row.style.display = match ? '' : 'none';
+      if (match) count++;
     });
+    table.querySelector('.directory-empty').style.display = count ? 'none' : '';
+  });
 }
-
-
-// Xuất Excel toàn bộ bảng sản phẩm
-function exportExcel(tab) {
-    if (tab === 'products') {
-        // Lấy 2 bảng: mở bán & ngừng bán
-        const openTable = document.querySelectorAll('.table')[0];
-        const stoppedTable = document.querySelectorAll('.table')[1];
-
-        // Tạo workbook
-        const wb = XLSX.utils.book_new();
-
-        // Tạo 2 sheet từ 2 bảng
-        const wsOpen = XLSX.utils.table_to_sheet(openTable);
-        const wsStopped = XLSX.utils.table_to_sheet(stoppedTable);
-
-        // Thêm vào workbook
-        XLSX.utils.book_append_sheet(wb, wsOpen, "SanPham_MoBan");
-        XLSX.utils.book_append_sheet(wb, wsStopped, "SanPham_NgungBan");
-
-        // Xuất file Excel
-        XLSX.writeFile(wb, 'sanpham.xlsx');
-    }
+function showArchiveModal(button) {
+  document.getElementById('archive-id').value = button.dataset.id;
+  document.getElementById('archive-message').textContent = 'Chuyển sản phẩm “' + button.dataset.name + '” sang danh sách ngừng bán? Hồ sơ và lịch sử liên quan vẫn được giữ lại.';
+  document.getElementById('archive-reason').value = '';
+  document.getElementById('archive-modal').classList.remove('hidden');
 }
-</script>
-
-
-<!--<script src="script.js" type="text/javascript"></script>-->
-</body>
-</html>
+function closeArchiveModal() { document.getElementById('archive-modal').classList.add('hidden'); }
+document.getElementById('archive-modal').addEventListener('click', event => { if (event.target.id === 'archive-modal') closeArchiveModal(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeArchiveModal(); });
+function exportExcel() {
+  if (typeof XLSX === 'undefined') { alert('Chưa tải được thư viện Excel. Vui lòng thử lại.'); return; }
+  const book = XLSX.utils.book_new();
+  document.querySelectorAll('.directory-table').forEach(table => {
+    const copy = table.cloneNode(true);
+    copy.querySelectorAll('tr').forEach(row => row.lastElementChild?.remove());
+    copy.querySelectorAll('.directory-empty').forEach(row => row.remove());
+    XLSX.utils.book_append_sheet(book, XLSX.utils.table_to_sheet(copy), table.dataset.sheet);
+  });
+  XLSX.writeFile(book, 'sanpham.xlsx');
+}
+filterProducts();
+</script></body></html>

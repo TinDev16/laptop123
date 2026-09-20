@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ghi kết quả sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Ghi kết quả sản xuất', 'Sản xuất / Kết quả')}"></div>
+<main class="content-body mrp-entry-page">
+<div class="page-header"><div><h1 class="page-title">Ghi kết quả sản xuất</h1><p class="page-description">Ghi nhận số lượng hoàn thành theo yêu cầu được phân công.</p></div><a class="btn btn-outline" th:href="@{/san-xuat/ket-qua}">Về danh sách</a></div>
+<div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
+<section class="content-card"><div class="content-card-header"><h2 class="content-card-title">Yêu cầu của tôi</h2><span class="record-count" th:text="${#lists.size(orders) + ' yêu cầu'}"></span></div>
+<div class="table-container"><table><thead><tr><th>Yêu cầu</th><th>Sản phẩm</th><th>Số lượng yêu cầu</th><th>Đã hoàn thành</th><th>Còn lại</th></tr></thead><tbody>
+<tr th:each="o : ${orders}"><td th:text="${o.mayeucau}"></td><td th:text="${o.tensp}"></td><td th:text="${o.soluongyeucau}"></td><td th:text="${o.soluonghoanthanh}"></td><td th:text="${o.soluongyeucau - o.soluonghoanthanh}"></td></tr>
+<tr class="empty-row" th:if="${#lists.isEmpty(orders)}"><td colspan="5">Bạn chưa có yêu cầu đang thực hiện.</td></tr></tbody></table></div></section>
+<form th:action="@{/san-xuat/ket-qua}" method="post" class="content-card ceo-form">
+<div class="content-card-header"><h2 class="content-card-title">Thông tin kết quả</h2></div>
+<div class="content-card-body"><div class="ceo-form-grid">
+<div class="ceo-field ceo-field-full"><label for="orderId">Yêu cầu sản xuất <span class="ceo-required">*</span></label><select id="orderId" name="orderId" class="form-control" required><option value="" disabled selected>Chọn yêu cầu sản xuất</option><option th:each="o : ${orders}" th:value="${o.mayeucau}" th:text="${'#' + o.mayeucau + ' - ' + o.tensp + ' (' + o.soluonghoanthanh + '/' + o.soluongyeucau + ')'}"></option></select><small>Chỉ hiển thị yêu cầu đã phân công cho bạn.</small></div>
+<div class="ceo-field"><label for="completed">Số lượng hoàn thành lần này <span class="ceo-required">*</span></label><input id="completed" name="completed" type="number" min="1" required class="form-control" placeholder="Nhập số lượng hoàn thành"></div>
+<div class="ceo-field"><label for="defective">Số lượng lỗi <span class="ceo-required">*</span></label><input id="defective" name="defective" type="number" min="0" value="0" required class="form-control"></div>
+<div class="ceo-field ceo-field-full"><label for="note">Ghi chú</label><textarea id="note" name="note" maxlength="255" rows="3" class="form-control" placeholder="Mô tả tình trạng sản xuất nếu cần"></textarea></div>
+</div><div class="ceo-form-actions"><button type="submit" class="btn btn-primary" th:disabled="${#lists.isEmpty(orders)}">Gửi kết quả</button></div></div></form>
+</main></div></div></body></html>

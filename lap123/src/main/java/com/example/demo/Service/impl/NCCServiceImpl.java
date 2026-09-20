@@ -3,7 +3,9 @@ package com.example.demo.Service.impl;
 import com.example.demo.Entity.NCC;
 import com.example.demo.Repository.NCCRepository;
 import com.example.demo.Service.NCCService;
+import com.example.demo.Service.ReferencedRecordDeleteGuard;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,10 +14,12 @@ import java.util.Optional;
 public class NCCServiceImpl implements NCCService {
 
     NCCRepository nccRepository;
+    private final ReferencedRecordDeleteGuard deleteGuard;
 
-    public NCCServiceImpl(NCCRepository nccRepository) {
+    public NCCServiceImpl(NCCRepository nccRepository, ReferencedRecordDeleteGuard deleteGuard) {
         super();
         this.nccRepository = nccRepository;
+        this.deleteGuard = deleteGuard;
     }
 
     @Override
@@ -57,4 +61,16 @@ public class NCCServiceImpl implements NCCService {
         nccRepository.save(ncc);
     }
 
+    @Override
+    @Transactional
+    public void permanentlyDeleteNCC(int id) {
+        NCC ncc = nccRepository.findForDeletion(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhà cung cấp."));
+        if (ncc.getTRANGTHAI() != 1) {
+            throw new IllegalStateException("Chỉ có thể xóa nhà cung cấp đã ngừng hợp tác.");
+        }
+        deleteGuard.checkUnreferenced("ncc", id);
+        nccRepository.delete(ncc);
+        nccRepository.flush();
+    }
 }

@@ -2,69 +2,81 @@ package com.example.demo.Controller;
 
 import com.example.demo.Entity.Taikhoan;
 import com.example.demo.Service.QuanlytaikhoanService;
-import com.example.demo.Service.RegisterService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/quanlytaikhoan")
 public class QuanlytaikhoanController {
+    private final QuanlytaikhoanService accounts;
 
-    @Autowired
-    private QuanlytaikhoanService quanlytaikhoanService;
+    public QuanlytaikhoanController(QuanlytaikhoanService accounts) { this.accounts = accounts; }
 
-    @Autowired
-    private RegisterService registerService;
+    @GetMapping
+    public String list(Model model) {
+        model.addAttribute("listTaiKhoan", accounts.getAllTaiKhoan());
+        return "quanlytaikhoan/quanlytaikhoan";
+    }
+
+    @GetMapping("/themtaikhoanquantri")
+    public String createForm(Model model) {
+        model.addAttribute("employees", accounts.getNhanvienChuaCoTaiKhoan());
+        return "quanlytaikhoan/themtaikhoanquantri";
+    }
+
+    @PostMapping("/newAccount")
+    public String create(@RequestParam String email, @RequestParam String password,
+                         @RequestParam(defaultValue = "NHAN_VIEN") String roleCode,
+                         @RequestParam int nhanvienId, RedirectAttributes flash) {
+        try {
+            Taikhoan account = new Taikhoan();
+            account.setEmail(email);
+            account.setPassword(password);
+            accounts.taoTaiKhoanMoi(account, roleCode, nhanvienId);
+            flash.addFlashAttribute("success", "Tạo tài khoản thành công.");
+            return "redirect:/quanlytaikhoan";
+        } catch (IllegalArgumentException | IllegalStateException error) {
+            flash.addFlashAttribute("error", error.getMessage());
+            return "redirect:/quanlytaikhoan/themtaikhoanquantri";
+        }
+    }
+
+    @PostMapping("/doi-vai-tro")
+    public String changeRole(@RequestParam int id, @RequestParam String roleCode, Authentication auth, RedirectAttributes flash) {
+        try { accounts.doiVaiTro(id, roleCode, auth.getName()); flash.addFlashAttribute("success", "Đã cập nhật vai trò."); }
+        catch (IllegalArgumentException error) { flash.addFlashAttribute("error", error.getMessage()); }
+        return "redirect:/quanlytaikhoan";
+    }
+
+    @PostMapping("/khoa")
+    public String lock(@RequestParam int id, @RequestParam boolean locked, Authentication auth, RedirectAttributes flash) {
+        accounts.datTrangThaiKhoa(id, locked, auth.getName());
+        flash.addFlashAttribute("success", locked ? "Đã khóa tài khoản." : "Đã mở khóa tài khoản.");
+        return "redirect:/quanlytaikhoan";
+    }
+
+    @PostMapping("/xoataikhoan")
+    public String delete(@RequestParam int id, Authentication auth) {
+        accounts.xoaTaiKhoan(id, auth.getName());
+        return "redirect:/quanlytaikhoan";
+    }
 
     @GetMapping("/capquyennhanvien")
-    public String capQuyenForm(@RequestParam("id") int taikhoanId, Model model) {
-        model.addAttribute("listNv", quanlytaikhoanService.getNhanvienChuaCoTaiKhoan());
-        model.addAttribute("taikhoanId", taikhoanId);
+    public String assignForm(@RequestParam("id") int accountId, Model model) {
+        model.addAttribute("listNv", accounts.getNhanvienChuaCoTaiKhoan());
+        model.addAttribute("taikhoanId", accountId);
         return "quanlytaikhoan/capquyennhanvien";
     }
 
     @PostMapping("/luucapquyen")
-    public String luuCapQuyen(@RequestParam("nhanvienId") int nhanvienId,
-                              @RequestParam("taikhoanId") int taikhoanId) {
-        quanlytaikhoanService.ganQuyenNhanvien(nhanvienId, taikhoanId);
-        return "redirect:/quanlytaikhoan";
-    }
-
-    @GetMapping("/themtaikhoanquantri")
-    public String themtaikhoan() {
-        return "quanlytaikhoan/themtaikhoanquantri";
-    }
-
-    @GetMapping("")
-    public String quanlytaikhoan(Model model) {
-        model.addAttribute("listTaiKhoan", quanlytaikhoanService.getAllTaiKhoan());
-        return "quanlytaikhoan/quanlytaikhoan";
-    }
-
-    @PostMapping("/xoataikhoan")
-    public String xoataikhoan(@RequestParam int id) {
-        quanlytaikhoanService.xoaTaiKhoan(id);
-        return "redirect:/quanlytaikhoan";
-    }
-
-    @PostMapping("/newAccount")
-    public String newAccount(@ModelAttribute Taikhoan taikhoan, HttpSession session,
-                             @RequestParam("vaitro_id") int vaitroid) {
-
-        if (registerService.emailExists(taikhoan.getEmail())) {
-            session.setAttribute("msg", "Email đã tồn tại!");
-            return "redirect:/quanlytaikhoan/themtaikhoanquantri";
-        }
-
-        Taikhoan u = quanlytaikhoanService.taoTaiKhoanMoi(taikhoan, vaitroid);
-
-        session.setAttribute("msg", u != null ?
-                "Tạo tài khoản thành công" : "Lỗi hệ thống");
-
+    public String assign(@RequestParam int nhanvienId, @RequestParam int taikhoanId) {
+        accounts.ganQuyenNhanvien(nhanvienId, taikhoanId);
         return "redirect:/quanlytaikhoan";
     }
 }

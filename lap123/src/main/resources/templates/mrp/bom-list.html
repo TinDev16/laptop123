@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>BOM</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container">
+  <div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div>
+  <div class="main-wrapper">
+    <div th:replace="~{fragments/sidebar :: topbar('BOM / Định mức', 'MRP / BOM')}"></div>
+    <main class="content-body">
+      <h1>BOM / Định mức</h1>
+      <p><a class="btn btn-primary" th:href="@{/bom/create}">Tạo BOM</a></p>
+      <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Định mức sản xuất</h2><span class="record-count" th:text="${#lists.size(boms) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table>
+        <thead><tr><th>Mã</th><th>Sản phẩm</th><th>Phiên bản</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+        <tbody><tr th:each="bom : ${boms}">
+          <td th:text="${bom.mabom}"></td><td th:text="${bom.tensp}"></td>
+          <td th:text="${bom.phienban}"></td><td th:text="${bom.trangthai}"></td>
+          <td><a th:href="@{/bom/{id}(id=${bom.mabom})}">Xem</a></td>
+        </tr><tr class="empty-row" th:if="${#lists.isEmpty(boms)}"><td colspan="5">Chưa có dữ liệu để hiển thị.</td></tr></tbody>
+      </table></div></div>
+    </main>
+  </div>
+</div></body></html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Yêu cầu sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container">
+  <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+  <div class="main-wrapper">
+    <div th:replace="~{fragments/sidebar :: topbar('Yêu cầu sản xuất', 'MRP / Sản xuất')}"></div>
+    <main class="content-body">
+      <h1>Yêu cầu sản xuất</h1>
+      <p th:if="${manager}"><a class="btn btn-primary" th:href="@{/san-xuat/yeu-cau/create}">Tạo yêu cầu</a></p>
+      <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Yêu cầu sản xuất</h2><span class="record-count" th:text="${#lists.size(orders) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table>
+        <thead><tr><th>Mã</th><th>Sản phẩm</th><th>Số lượng</th><th>Hoàn thành</th><th>Còn lại</th><th>Ngày giao</th><th>Tiến độ</th><th>Nhân viên</th><th>Hạn</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody><tr th:each="order : ${orders}">
+          <td th:text="${order.mayeucau}"></td><td th:text="${order.tensp}"></td>
+          <td th:text="${order.soluongyeucau}"></td><td th:text="${order.soluonghoanthanh}"></td><td th:text="${order.soluongyeucau - order.soluonghoanthanh}"></td><td th:text="${order.ngayyeucau}"></td><td><progress th:value="${order.soluonghoanthanh}" th:max="${order.soluongyeucau > 0 ? order.soluongyeucau : 1}"></progress> <span th:text="${order.soluongyeucau > 0 ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%' : '0%'}"></span></td>
+          <td th:text="${order.hoten}"></td><td th:text="${order.hanhoanthanh}"></td>
+          <td th:text="${order.trangthai}"></td><td><a th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}">Xem</a></td>
+        </tr><tr class="empty-row" th:if="${#lists.isEmpty(orders)}"><td colspan="11">Chưa có dữ liệu để hiển thị.</td></tr></tbody>
+      </table></div></div>
+    </main>
+  </div>
+</div></body></html>

@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Tạo phiếu nhập NVL</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
+<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Tạo phiếu nhập NVL', 'Kho / Nhập NVL')}"></div><main class="content-body">
+<h1>Tạo phiếu nhập NVL</h1><p th:if="${error}" th:text="${error}" style="color:#b91c1c"></p>
+<form th:action="@{/kho/nhap-nvl}" method="post" class="content-card" style="padding:1.5rem">
+<label>Nhà cung cấp</label><select name="supplierId" required class="form-control"><option th:each="s : ${suppliers}" th:value="${s.mancc}" th:text="${s.tenncc}"></option></select>
+<label>Ghi chú</label><input name="note" maxlength="255" class="form-control">
+<h2>Chi tiết</h2><div id="receipt-lines"><div class="receipt-line" style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+<select name="materialId" class="form-control" required><option th:each="m : ${materials}" th:value="${m.manvl}" th:text="${m.manvl_code + ' - ' + m.tennvl}"></option></select>
+<input name="quantity" type="number" min="1" value="1" required aria-label="Số lượng" class="form-control" oninput="total()">
+<input name="price" type="number" min="0" step="0.01" value="0" required aria-label="Đơn giá" class="form-control" oninput="total()">
+<button type="button" onclick="if(document.querySelectorAll('.receipt-line').length>1){this.parentElement.remove();total()}">Xóa</button></div></div>
+<button type="button" onclick="document.getElementById('receipt-lines').appendChild(document.querySelector('.receipt-line').cloneNode(true));total()">Thêm dòng</button>
+<p>Tổng tiền dự kiến: <strong id="total">0</strong></p><button type="submit" class="btn btn-primary">Lưu phiếu</button></form>
+</main></div></div><script>function total(){let sum=0;document.querySelectorAll('.receipt-line').forEach(row=>{sum+=Number(row.querySelector('[name=quantity]').value)*Number(row.querySelector('[name=price]').value)});document.getElementById('total').textContent=sum.toLocaleString('vi-VN')}</script></body></html>

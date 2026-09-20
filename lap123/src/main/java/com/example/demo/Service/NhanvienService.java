@@ -16,5 +16,6 @@ public interface NhanvienService {
     Nhanvien updateNhanvien(Nhanvien nhanvien);
 
     void deleteNhanvien(int id, String GHICHU);
+    void permanentlyDeleteNhanvien(int id);
 
 }

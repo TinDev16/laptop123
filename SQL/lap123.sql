@@ -217,7 +217,7 @@ CREATE TABLE `phanquyen` (
 
 LOCK TABLES `phanquyen` WRITE;
 /*!40000 ALTER TABLE `phanquyen` DISABLE KEYS */;
-INSERT INTO `phanquyen` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7),(2,8),(3,2),(3,3),(3,7);
+INSERT INTO `phanquyen` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(2,2),(2,3),(2,7);
 /*!40000 ALTER TABLE `phanquyen` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -349,7 +349,7 @@ CREATE TABLE `taikhoan` (
 
 LOCK TABLES `taikhoan` WRITE;
 /*!40000 ALTER TABLE `taikhoan` DISABLE KEYS */;
-INSERT INTO `taikhoan` VALUES (1,'admin@mail.com',1,4,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(2,'chien@gmail.com',2,6,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(3,'df@gmial.com',3,7,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(8,'n',3,NULL,'$2a$10$Z4.jFULwRXs7t0s9mZQWre/txiUydiQru7KcCsb1LThyhjWkcLLYC'),(9,'q',2,NULL,'$2a$10$3wddomiRO4uWIisigXVhKO.JHRbVfvqRT3PnvNWcc/J4ZmrfetLVy'),(10,'a',1,NULL,'$2a$10$Er1A91EBjSxXQi9gK1xHc.dHetBhQKEJpXSUsOIVXd8.sKKUfr5Yu');
+INSERT INTO `taikhoan` VALUES (1,'admin@mail.com',1,4,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(2,'chien@gmail.com',1,6,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(3,'df@gmial.com',2,7,'$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO'),(8,'n',2,NULL,'$2a$10$Z4.jFULwRXs7t0s9mZQWre/txiUydiQru7KcCsb1LThyhjWkcLLYC'),(9,'q',1,NULL,'$2a$10$3wddomiRO4uWIisigXVhKO.JHRbVfvqRT3PnvNWcc/J4ZmrfetLVy'),(10,'a',1,NULL,'$2a$10$Er1A91EBjSxXQi9gK1xHc.dHetBhQKEJpXSUsOIVXd8.sKKUfr5Yu');
 /*!40000 ALTER TABLE `taikhoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -399,7 +399,7 @@ CREATE TABLE `vaitro` (
 
 LOCK TABLES `vaitro` WRITE;
 /*!40000 ALTER TABLE `vaitro` DISABLE KEYS */;
-INSERT INTO `vaitro` VALUES (1,'ADMIN'),(2,'QLy'),(3,'NV_nhap_xuat');
+INSERT INTO `vaitro` VALUES (1,'QUAN_LY_KHO'),(2,'NHAN_VIEN');
 /*!40000 ALTER TABLE `vaitro` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

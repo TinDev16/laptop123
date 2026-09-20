@@ -6,21 +6,80 @@
   <component name="ChangeListManager">
     <list default="true" id="40523376-f630-4d04-8532-2a6b16c4a298" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Baocao_nhom1.docx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/EER.mwb" beforeDir="false" afterPath="$PROJECT_DIR$/SQL/EER.mwb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/EER.mwb.bak" beforeDir="false" afterPath="$PROJECT_DIR$/SQL/EER.mwb.bak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/lap123.sql" beforeDir="false" afterPath="$PROJECT_DIR$/SQL/lap123.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/MrpController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/MrpController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/NCCController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/NCCController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/NhanvienController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/NhanvienController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/QuanlytaikhoanController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/QuanlytaikhoanController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Entity/Taikhoan.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Entity/Taikhoan.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Entity/Vaitro.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Entity/Vaitro.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Repository/NCCRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Repository/NCCRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Repository/NhanvienRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Repository/NhanvienRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Repository/VaitroRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Repository/VaitroRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/NCCService.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/NCCService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/NhanvienService.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/NhanvienService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/QuanlytaikhoanService.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/QuanlytaikhoanService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/impl/NCCServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/impl/NCCServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/impl/NhanvienServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/impl/NhanvienServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/impl/QuanlytaikhoanServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/impl/QuanlytaikhoanServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/CustomAuthSuccessHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/CustomAuthSuccessHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/CustomEmployee.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/CustomEmployee.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759482122975_Screenshot 2025-10-01 085034.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759505841375_Screenshot 2025-10-01 085034.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759561655142_Screenshot 2025-10-03 231703.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759562972801_Screenshot 2025-10-01 231805.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759591850843_Screenshot 2025-10-04 201614.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759591864426_Screenshot 2025-10-04 201614.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759592778283_440426110_404991259118437_5169100339175499606_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759650690212_vn_mac_1_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759650784448_vn_mac_1_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759651379395_image_1425_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759673597449_vn_mac_1_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759722753890_vn_mac_1_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759810598888_image_1425_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759832795542_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759833083130_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759833116605_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759854002739_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759854015473_image_1425_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759854045109_vn_mac_1_2.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1759854075546_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1760281476855__new_-anh-sp-web_2f3716d0b1ad4d84930fba0c644ceebb_compact.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1760500552290__new_-anh-sp-web_2f3716d0b1ad4d84930fba0c644ceebb_compact.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1760802028111_QLDA.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761750676180_Screenshot 2025-10-28 234925.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761750713887_Screenshot 2025-10-29 000106.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761750780094_Screenshot 2025-10-29 150752.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761750886503_435994962_427400250107347_5638932358453807066_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761750931113_1759853568610_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761751260561_1759853568610_anh-chup-man-hinh-2025-08-20-183546.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761751555388_435994962_427400250107347_5638932358453807066_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761751857704_440426110_404991259118437_5169100339175499606_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761754471678_435994962_427400250107347_5638932358453807066_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1761754624536_435994962_427400250107347_5638932358453807066_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1763306832809_EER.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/uploads/1763306856542_440426110_404991259118437_5169100339175499606_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/edit.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/edit.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/ncc/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/nhanvien/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/nhanvien/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/capquyennhanvien.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/capquyennhanvien.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/quanlytaikhoan.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/quanlytaikhoan.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/themtaikhoanquantri.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/quanlytaikhoan/themtaikhoanquantri.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/edit.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/tonkho/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/tonkho/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/test/java/com/example/demo/DemoApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/test/java/com/example/demo/DemoApplicationTests.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,7 +87,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="173" />
+    <option name="cachedIndexableFilesCount" value="214" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -131,7 +190,12 @@
       <workItem from="1789613949558" duration="1483000" />
       <workItem from="1789629384659" duration="1190000" />
       <workItem from="1789636007571" duration="2687000" />
-      <workItem from="1789699936077" duration="1267000" />
+      <workItem from="1789699936077" duration="1534000" />
+      <workItem from="1789714701983" duration="619000" />
+      <workItem from="1789741351950" duration="6000" />
+      <workItem from="1789799215085" duration="36000" />
+      <workItem from="1789879426187" duration="1087000" />
+      <workItem from="1789891672999" duration="1920000" />
     </task>
     <servers />
   </component>

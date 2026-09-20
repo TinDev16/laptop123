@@ -2,13 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <title>Thêm khách hàng mới</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f4f6f8;
-            padding: 32px;
+            padding: 0;
         }
         .form-container {
             max-width: 540px;
@@ -97,6 +99,11 @@
     </style>
 </head>
 <body>
+<div class="app-container">
+  <div th:replace="~{fragments/sidebar :: sidebar('khachhang')}"></div>
+  <div class="main-wrapper">
+    <div th:replace="~{fragments/sidebar :: topbar('Thêm Khách hàng', 'Đối tác / Khách hàng')}"></div>
+    <main class="content-body">
 <div class="form-container">
     <h1>Thêm khách hàng</h1>
     <form th:action="@{/khachhang}" th:object="${khachhang}" method="POST" enctype="multipart/form-data" autocomplete="off">
@@ -151,6 +158,9 @@
             <a th:href="@{/khachhang}" class="btn btn-secondary">Hủy</a>
         </div>
     </form>
+</div>
+    </main>
+  </div>
 </div>
 <script>
     function previewImage(event) {

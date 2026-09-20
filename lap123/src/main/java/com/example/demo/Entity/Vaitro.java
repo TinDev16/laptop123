@@ -12,6 +12,9 @@ public class Vaitro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int vaitro_id;
 
+    @Column(name = "ma_vaitro")
+    private String maVaitro;
+
     @Column(name = "ten")
     private String ten;
 
@@ -34,12 +37,15 @@ public class Vaitro {
     }
 
     public String getTen() {
-        return ten;
+        return maVaitro;
     }
 
     public void setTen(String Role) {
-        this.ten = ten;
+        this.ten = Role;
     }
+
+    public String getMaVaitro() { return maVaitro; }
+    public void setMaVaitro(String maVaitro) { this.maVaitro = maVaitro; }
 
     public List<Taikhoan> getTaikhoans() {
         return taikhoans;

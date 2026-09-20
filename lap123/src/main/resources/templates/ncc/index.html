@@ -1,264 +1,176 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Cửa hàng Laptop</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản lý nhà cung cấp</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/style.css}">
 </head>
-<style>
-    .bg-red-100 {
-    background-color: #ffe5e5;
-    }
-    .modal {
-        position: fixed; inset: 0; display: flex;
-        align-items: center; justify-content: center;
-        background: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-        background: white; padding: 20px; border-radius: 10px;
-        width: 400px;
-    }
-    .hidden { display: none; }
-
-    .bg-red-100 {
-        background-color: #ffe5e5;
-    }
-
-    .table-container h3 {
-        color: #333;
-        font-weight: 600;
-    }
-
-    /* Xóa gạch chân cho tất cả link trong nav */
-    .nav a {
-        text-decoration: none;
-        color: inherit; /* Giữ nguyên màu gốc */
-    }
-
-    /* Tùy chỉnh khi rê chuột (hover) */
-    .nav a:hover {
-        text-decoration: none;
-        color: #007bff;
-    }
-
-    .nav-tab.active {
-        color: #007bff;
-        font-weight: 600;
-    }
-
-</style>
 <body>
 <div class="app-container">
-    <!-- SIDEBAR BÊN TRÁI -->
-    <div th:replace="~{fragments/sidebar :: sidebar('ncc')}"></div>
-
-    <!-- KHÔNG GIAN NỘI DUNG CHÍNH -->
-    <div class="main-wrapper">
-        <!-- TOPBAR -->
-        <div th:replace="~{fragments/sidebar :: topbar('Quản Lý Nhà Cung Cấp', 'Danh mục / Nhà cung cấp')}"></div>
-
-        <main class="content-body">
-            <div id="products" class="tab-content active" style="display: block;">
-        <div class="page-header">
-            <h2 class="page-title">Quản lý nhà cung cấp</h2>
-            <div class="page-actions">
-                <a th:href="@{/ncc/create}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Thêm nhà cung cấp
-                </a>
-                <a href="#" class="btn btn-success" onclick="exportExcel('products')">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
-            </div>
-        </div>
-
-        <div class="search-filters">
-            <div class="search-input">
-                <i class="fas fa-search"></i>
-                <input type="text" id="product-search" placeholder="Tìm kiếm nhà cung cấp..." onkeyup="filterProducts()">
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table class="table">
-                <thead> 
-                <tr>
-                    <th>Mã Nhà cung cấp</th>
-                    <th>Tên nhà cung cấp</th>
-                    <th>Địa chỉ</th>
-                    <th>Số điện thoại</th>
-                    <th>Trang thái</th>
-                    <!-- <th>Ghi chú</th> -->
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="products-table">
-                    <tr th:each="ncc : ${ncc}"
-                        th:if="${ncc.TRANGTHAI} == 0">
-                        <td class="font-semibold" th:text="${ncc.MANCC}"></td>
-                        <td th:text="${ncc.TENNCC}"></td>
-                        <td th:text="${ncc.DIACHI}"></td>
-                        <td th:text="${ncc.SDT}"></td>
-                        <td th:text="${ncc.TRANGTHAI == 0 ? 'Mở nhập' : 'Ngừng nhập'}"></td>
-                        <!-- <td th:text="${ncc.GHICHU != null ? ncc.GHICHU : ''}"></td> -->
-                        <td>
-                            <div class="table-actions">
-                                <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-ncc/{id}(id=${ncc.MANCC})}">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button
-                                    type="button"
-                                    class="btn btn-danger"
-                                    th:attr="data-id=${ncc.MANCC}, data-ten=${ncc.TENNCC}"
-                                    onclick="showDeleteModal(this)">
-                                        Xóa
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h1 style="margin: 20px 0 10px;">🚫Nhà cung cấp ngưng hợp tác</h1>
-            <table class="table bg-red-100">
-            <table class="table bg-red-100">
-                <thead>
-                <tr>
-                    <th>Mã Nhà cung cấp</th>
-                    <th>Tên nhà cung cấp</th>
-                    <th>Địa chỉ</th>
-                    <th>Số điện thoại</th>
-                    <th>Trang thái</th>
-                    <th>Ghi chú</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody id="products-table">
-                <tr th:each="ncc : ${ncc}"
-                    th:if="${ncc.TRANGTHAI} == 1">
-                    <td class="font-semibold" th:text="${ncc.MANCC}"></td>
-                    <td th:text="${ncc.TENNCC}"></td>
-                    <td th:text="${ncc.DIACHI}"></td>
-                    <td th:text="${ncc.SDT}"></td>
-                    <td th:text="${ncc.TRANGTHAI == 0 ? 'Mở nhập' : 'Ngừng nhập'}"></td>
-                    <td th:text="${ncc.GHICHU != null ? ncc.GHICHU : ''}"></td>
-                    <td>
-                        <div class="table-actions">
-                            <a class="btn btn-icon btn-outline" title="Sửa" th:href="@{/edit-ncc/{id}(id=${ncc.MANCC})}">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-
-    <!-- Modal xác nhận xóa -->
-<div id="deleteModal" class="modal hidden">
-    <div class="modal-content">
-        <h3>Xóa nhà cung cấp</h3>
-        <p id="deleteMessage"></p>
-        <form th:action="@{/delete-ncc}" method="POST">
-            <input type="hidden" id="deleteId" name="id">
-            <textarea name="GHICHU" placeholder="Nhập lý do xóa..." required></textarea>
-            <div class="modal-actions">
-                <button type="submit" class="btn btn-danger">Xác nhận</button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-            </div>
-        </form>
-    </div>
-        </main>
-    </div>
+<div th:replace="~{fragments/sidebar :: sidebar('ncc')}">
 </div>
-
-<script>
-    function showDeleteModal(button) {
-        const id = button.getAttribute('data-id');
-        const ten = button.getAttribute('data-ten');
-    
-        // Gán giá trị vào modal
-        document.getElementById("deleteId").value = id;
-        document.getElementById("deleteMessage").textContent = `Bạn có chắc chắn muốn xóa nhà cung cấp "${ten}" không?`;
-    
-        // Hiện modal
-        document.getElementById("deleteModal").classList.remove("hidden");
-    }
-    
-    function closeModal() {
-        document.getElementById("deleteModal").classList.add("hidden");
-    }
+<div class="main-wrapper">
+<div th:replace="~{fragments/sidebar :: topbar('Quản lý Nhà cung cấp', 'Đối tác / Nhà cung cấp')}">
+</div>
+<main class="content-body directory-page">
+<div class="page-header">
+<div>
+<h1 class="page-title">Quản lý nhà cung cấp</h1>
+<p class="directory-subtitle">Theo dõi hồ sơ hiện tại và hồ sơ lưu trữ.</p>
+</div>
+<div class="page-actions">
+<a class="btn btn-primary" th:href="@{/ncc/create}">
+<i class="fas fa-plus">
+</i> Thêm nhà cung cấp</a>
+<button type="button" class="btn btn-outline" onclick="exportExcel()">
+<i class="fas fa-file-excel">
+</i> Xuất Excel</button>
+</div>
+</div>
+<div class="directory-alert directory-alert--success" th:if="${success}" th:text="${success}">
+</div>
+<div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}">
+</div>
+<div class="search-filters">
+<div class="search-input">
+<i class="fas fa-search">
+</i>
+<input id="directory-search" type="search" placeholder="Tìm theo mã, tên hoặc số điện thoại..." oninput="filterDirectory()" aria-label="Tìm kiếm nhà cung cấp">
+</div>
+</div>
+<section class="directory-section">
+<div class="directory-section-header">
+<div>
+<h2>Nhà cung cấp đang hợp tác</h2>
+<p>Danh sách đang sử dụng trong nghiệp vụ.</p>
+</div>
+<span class="directory-state directory-state--active">Đang hợp tác</span>
+</div>
+<div class="table-container">
+<table class="table directory-table" data-sheet="HienTai">
+<thead>
+<tr>
+<th>Mã NCC</th>
+<th>Tên nhà cung cấp</th>
+<th>Địa chỉ</th>
+<th>Số điện thoại</th>
+<th>Trạng thái</th>
+<th>Thao tác</th>
+</tr>
+</thead>
+<tbody>
+<tr class="directory-row" th:each="item : ${ncc}" th:if="${item.TRANGTHAI == 0}">
+<td th:text="${item.MANCC}">
+</td>
+<td th:text="${item.TENNCC}">
+</td>
+<td th:text="${item.DIACHI}">
+</td>
+<td th:text="${item.SDT}">
+</td>
+<td>
+<span class="directory-state directory-state--active">Đang hợp tác</span>
+</td>
+<td>
+<div class="table-actions directory-actions">
+<a class="btn btn-outline btn-compact" th:href="@{/edit-ncc/{id}(id=${item.MANCC})}">Sửa</a>
+<button class="btn btn-outline btn-compact" type="button" data-mode="archive" th:attr="data-id=${item.MANCC},data-name=${item.TENNCC}" onclick="openAction(this)">Ngừng hợp tác</button>
+</div>
+</td>
+</tr>
+<tr class="directory-empty" style="display:none">
+<td colspan="6">Không có nhà cung cấp phù hợp.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="directory-section">
+<div class="directory-section-header">
+<div>
+<h2>Nhà cung cấp đã ngừng hợp tác</h2>
+<p>Hồ sơ có chứng từ hoặc vật tư liên quan cần được giữ lại để tra cứu lịch sử.</p>
+</div>
+<span class="directory-state directory-state--archived">Đã ngừng hợp tác</span>
+</div>
+<div class="table-container">
+<table class="table directory-table" data-sheet="LuuTru">
+<thead>
+<tr>
+<th>Mã NCC</th>
+<th>Tên nhà cung cấp</th>
+<th>Địa chỉ</th>
+<th>Số điện thoại</th>
+<th>Trạng thái</th>
+<th>Lý do / ghi chú</th>
+<th>Thao tác</th>
+</tr>
+</thead>
+<tbody>
+<tr class="directory-row" th:each="item : ${ncc}" th:if="${item.TRANGTHAI == 1}">
+<td th:text="${item.MANCC}">
+</td>
+<td th:text="${item.TENNCC}">
+</td>
+<td th:text="${item.DIACHI}">
+</td>
+<td th:text="${item.SDT}">
+</td>
+<td>
+<span class="directory-state directory-state--archived">Đã ngừng hợp tác</span>
+</td>
+<td class="directory-note" th:text="${item.GHICHU != null and !#strings.isEmpty(item.GHICHU) ? item.GHICHU : '—'}">
+</td>
+<td>
+<div class="table-actions directory-actions">
+<a class="btn btn-outline btn-compact" th:href="@{/edit-ncc/{id}(id=${item.MANCC})}">Sửa / khôi phục</a>
+<button class="btn btn-text-danger btn-compact" type="button" data-mode="permanent" th:attr="data-id=${item.MANCC},data-name=${item.TENNCC}" onclick="openAction(this)">Xóa vĩnh viễn</button>
+</div>
+</td>
+</tr>
+<tr class="directory-empty" style="display:none">
+<td colspan="7">Không có nhà cung cấp phù hợp.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<div id="action-modal" class="directory-modal hidden" role="dialog" aria-modal="true" aria-labelledby="action-title">
+<div class="directory-modal-panel">
+<h2 id="action-title">
+</h2>
+<p id="action-message">
+</p>
+<form id="action-form" method="post">
+<input id="action-id" type="hidden" name="id">
+<div id="action-reason-group">
+<label for="action-reason">Lý do <span aria-hidden="true">*</span>
+</label>
+<textarea id="action-reason" name="GHICHU" rows="3" maxlength="255" placeholder="Nhập lý do để lưu hồ sơ">
+</textarea>
+</div>
+<div class="directory-modal-actions">
+<button class="btn btn-outline" type="button" onclick="closeAction()">Hủy</button>
+<button id="action-submit" class="btn btn-primary" type="submit">Xác nhận</button>
+</div>
+</form>
+</div>
+</div>
+</main>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
 </script>
-
- <!-- Thêm thư viện SheetJS để xuất Excel -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <script>
-// 🔍 Tìm kiếm nhà cung cấp theo tên, địa chỉ hoặc số điện thoại (cả 2 bảng)
-function filterProducts() {
-    const searchInput = document.getElementById('product-search').value.toLowerCase();
-
-    // Lấy tất cả các hàng trong cả 2 bảng
-    const rows = document.querySelectorAll('.table tbody tr');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-        const maNCC = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
-        const tenNCC = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-        const diaChi = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
-        const sdt = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
-
-        const match =
-            maNCC.includes(searchInput) ||
-            tenNCC.includes(searchInput) ||
-            diaChi.includes(searchInput) ||
-            sdt.includes(searchInput);
-
-        row.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
-    });
-
-    // Nếu không có kết quả
-    let noResultRow = document.getElementById('no-result-row');
-    if (!noResultRow) {
-        noResultRow = document.createElement('tr');
-        noResultRow.id = 'no-result-row';
-        noResultRow.innerHTML = `<td colspan="7" style="text-align:center;color:#dc3545;font-weight:500;">
-            Không có nhà cung cấp phù hợp
-        </td>`;
-        document.querySelector('.table tbody').appendChild(noResultRow);
-    }
-    noResultRow.style.display = (visibleCount === 0) ? '' : 'none';
-}
-
-// 📤 Xuất Excel gồm cả 2 bảng
-function exportExcel() {
-    const tables = document.querySelectorAll('.table');
-    if (tables.length === 0) {
-        alert("Không tìm thấy bảng nhà cung cấp!");
-        return;
-    }
-
-    // Tạo workbook mới
-    const wb = XLSX.utils.book_new();
-
-    // Lặp qua từng bảng và thêm vào workbook
-    tables.forEach((table, index) => {
-        const sheetName = index === 0 ? "NCC_HopTac" : "NCC_NgungHopTac";
-        const ws = XLSX.utils.table_to_sheet(table);
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
-    });
-
-    // Xuất file
-    XLSX.writeFile(wb, 'nhacungcap.xlsx');
-}
+const directoryKind='ncc', directoryLabel='nhà cung cấp';
+function filterDirectory(){const term=document.getElementById('directory-search').value.trim().toLocaleLowerCase('vi');document.querySelectorAll('.directory-table').forEach(table=>{let count=0;table.querySelectorAll('.directory-row').forEach(row=>{const match=row.textContent.toLocaleLowerCase('vi').includes(term);row.style.display=match?'':'none';if(match)count++});table.querySelector('.directory-empty').style.display=count?'none':''})}
+function openAction(button){const archive=button.dataset.mode==='archive';document.getElementById('action-id').value=button.dataset.id;document.getElementById('action-form').action=archive?'/delete-'+directoryKind:'/permanently-delete-'+directoryKind;document.getElementById('action-title').textContent=archive?button.textContent.trim():'Xóa vĩnh viễn';document.getElementById('action-message').textContent=archive?'Chuyển '+directoryLabel+' “'+button.dataset.name+'” sang danh sách lưu trữ. Hồ sơ vẫn có thể được chỉnh sửa và khôi phục.':'Xóa vĩnh viễn '+directoryLabel+' “'+button.dataset.name+'”? Chỉ xóa được khi hồ sơ không liên kết với tài khoản hoặc dữ liệu nghiệp vụ.';document.getElementById('action-reason-group').hidden=!archive;document.getElementById('action-reason').required=archive;document.getElementById('action-reason').value='';document.getElementById('action-submit').className=archive?'btn btn-primary':'btn btn-danger';document.getElementById('action-modal').classList.remove('hidden')}
+function closeAction(){document.getElementById('action-modal').classList.add('hidden')}
+document.getElementById('action-modal').addEventListener('click',event=>{if(event.target.id==='action-modal')closeAction()});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeAction()});
+function exportExcel(){if(typeof XLSX==='undefined'){alert('Chưa tải được thư viện Excel. Vui lòng thử lại.');return}const wb=XLSX.utils.book_new();document.querySelectorAll('.directory-table').forEach(table=>{const copy=table.cloneNode(true);copy.querySelectorAll('tr').forEach(row=>row.lastElementChild?.remove());copy.querySelectorAll('.directory-empty').forEach(row=>row.remove());XLSX.utils.book_append_sheet(wb,XLSX.utils.table_to_sheet(copy),table.dataset.sheet)});XLSX.writeFile(wb,'ncc.xlsx')}
+filterDirectory();
 </script>
-
 </body>
 </html>

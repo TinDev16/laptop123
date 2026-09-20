@@ -3,21 +3,22 @@ package com.example.demo.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    private CustomAuthSuccessHandler successHandler;
 
     @Autowired
-    public CustomAuthSuccessHandler successHandler;
+    private CustomEmployeeDetailService detailService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -25,70 +26,51 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService getDetailService() {
-        return new CustomEmployeeDetailService();
-    }
-
-    @Bean
     public DaoAuthenticationProvider getAuthenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(getDetailService());
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        return daoAuthenticationProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(detailService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // Cho phép truy cập file tĩnh và trang login
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/style.css", "/style1.css", "/uploads/**").permitAll()
-                        .requestMatchers("/", "/signin", "/userLogin", "/forgotPassword", "/newPassword","/forgot-password","/reset-password").permitAll()
-
-                        .requestMatchers(
-
-                                "/phieunhap/**",
-                                "/view-phieunhap/**",
-                                "/edit-phieunhap/**",
-                                "/update-phieunhap",
-                                "/delete-phieunhap/**",
-
-
-                                "/phieuxuat/**",
-                                "/view-phieuxuat/**",
-                                "/edit-phieuxuat/**",
-                                "/update-phieuxuat",
-                                "/delete-phieuxuat/**",
-
-
-                                "/tonkho/**",
-                                "/xuong-lap-rap/**",
-                                "/de-xuat-nvl/**",
-                                "/de-xuat-tp/**"
-                        ).hasAnyAuthority("NV_nhap_xuat", "QLy", "ADMIN")
-
-                        .requestMatchers("/bom/**", "/mrp/**", "/duyet-kho/**", "/baocao/**").hasAnyAuthority("QLy", "ADMIN")
-
-                        .requestMatchers("/quanlytaikhoan/**").hasAuthority("ADMIN")
-
-                        .requestMatchers("/**").hasAnyAuthority("QLy","ADMIN")
-
-                        .anyRequest().authenticated()
-
-                )
-                .formLogin(form -> form
-                        .loginPage("/signin")
-                        .loginProcessingUrl("/userLogin")
-                        .successHandler(successHandler)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/signin?logout")
-                        .permitAll()
-                );
-
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**",
+                        "/style.css", "/style1.css", "/script.js", "/sidebar.js", "/uploads/**").permitAll()
+                .requestMatchers("/signin", "/userLogin", "/forgotPassword",
+                        "/newPassword", "/forgot-password", "/reset-password").permitAll()
+                .requestMatchers("/quanlytaikhoan/**").hasRole("QUAN_LY_KHO")
+                .requestMatchers(HttpMethod.POST, "/kho/xuat-nvl/*/duyet",
+                        "/kho/xuat-nvl/*/tu-choi", "/kho/xuat-thanh-pham/*/duyet",
+                        "/kho/xuat-thanh-pham/*/tu-choi", "/san-xuat/ket-qua/*/confirm").hasRole("QUAN_LY_KHO")
+                .requestMatchers(HttpMethod.POST, "/san-xuat/yeu-cau").hasRole("QUAN_LY_KHO")
+                .requestMatchers(HttpMethod.POST, "/kho/xuat-nvl", "/san-xuat/ket-qua", "/kho/xuat-thanh-pham").hasRole("NHAN_VIEN")
+                .requestMatchers("/kho/xuat-nvl/create", "/san-xuat/ket-qua/create", "/kho/xuat-thanh-pham/create").hasRole("NHAN_VIEN")
+                .requestMatchers("/san-xuat/yeu-cau/create", "/bom", "/bom/**",
+                        "/nguyen-vat-lieu", "/nguyen-vat-lieu/**",
+                        "/kho/nhap-nvl", "/kho/nhap-nvl/**", "/kho/lich-su",
+                        "/baocao", "/baocao/**", "/nhanvien/**",
+                        "/sanpham/**", "/ncc/**", "/khachhang/**", "/thuonghieu/**").hasRole("QUAN_LY_KHO")
+                .requestMatchers("/kho/xuat-nvl", "/kho/xuat-nvl/**",
+                        "/kho/xuat-thanh-pham", "/kho/xuat-thanh-pham/**",
+                        "/san-xuat/yeu-cau", "/san-xuat/yeu-cau/**",
+                        "/san-xuat/ket-qua", "/san-xuat/ket-qua/**",
+                        "/dashboard", "/tai-khoan/ca-nhan").hasAnyRole("QUAN_LY_KHO", "NHAN_VIEN")
+                .requestMatchers("/phieunhap/**", "/view-phieunhap/**", "/edit-phieunhap/**",
+                        "/update-phieunhap", "/delete-phieunhap/**", "/phieuxuat/**",
+                        "/view-phieuxuat/**", "/edit-phieuxuat/**", "/update-phieuxuat",
+                        "/delete-phieuxuat/**", "/tonkho/**", "/xuong-lap-rap/**",
+                        "/de-xuat-nvl/**", "/de-xuat-tp/**").hasRole("QUAN_LY_KHO")
+                .requestMatchers("/**").hasRole("QUAN_LY_KHO")
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form.loginPage("/signin").loginProcessingUrl("/userLogin")
+                    .successHandler(successHandler).permitAll())
+            .logout(logout -> logout.logoutUrl("/logout")
+                    .logoutSuccessUrl("/signin?logout").permitAll());
         return http.build();
     }
 }

@@ -17,6 +17,9 @@ public class Taikhoan {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "locked", nullable = false)
+    private boolean locked;
+
     @Column(name = "reset_token")
     private String resetToken;
 
@@ -61,6 +64,9 @@ public class Taikhoan {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public boolean isLocked() { return locked; }
+    public void setLocked(boolean locked) { this.locked = locked; }
 
     public String getResetToken() {
         return resetToken;

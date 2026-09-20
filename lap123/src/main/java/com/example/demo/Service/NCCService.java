@@ -16,4 +16,5 @@ public interface NCCService {
     NCC updateNCC(NCC ncc);
 
     void deleteNCC(int id, String GHICHU);
+    void permanentlyDeleteNCC(int id);
 }

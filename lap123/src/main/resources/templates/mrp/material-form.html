@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title th:text="${material == null ? 'Thêm nguyên vật liệu' : 'Sửa nguyên vật liệu'}">Nguyên vật liệu</title>
+<link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('nvl')}"></div><div class="main-wrapper">
+<div th:replace="~{fragments/sidebar :: topbar('Nguyên vật liệu', 'Kho / NVL')}"></div>
+<main class="content-body mrp-entry-page material-form-page">
+<div class="page-header"><div><h1 class="page-title" th:text="${material == null ? 'Thêm nguyên vật liệu' : 'Sửa nguyên vật liệu'}"></h1>
+<p class="page-description">Cập nhật thông tin danh mục phục vụ kế hoạch mua hàng và sản xuất.</p></div>
+<a class="btn btn-outline" th:href="@{/nguyen-vat-lieu}">Về danh sách</a></div>
+<div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
+<form th:action="@{/nguyen-vat-lieu}" method="post" class="content-card ceo-form">
+<input th:if="${material != null}" type="hidden" name="id" th:value="${material.manvl}">
+<div class="content-card-header"><h2 class="content-card-title">Thông tin nguyên vật liệu</h2></div>
+<div class="content-card-body"><div class="ceo-form-grid">
+<div class="ceo-field"><label for="code">Mã NVL <span class="ceo-required">*</span></label>
+<input id="code" name="code" type="text" required maxlength="30" th:value="${material?.manvl_code}" class="form-control" placeholder="Ví dụ: NVL-001"><small>Mã duy nhất để nhận diện vật liệu.</small></div>
+<div class="ceo-field"><label for="name">Tên nguyên vật liệu <span class="ceo-required">*</span></label>
+<input id="name" name="name" type="text" required maxlength="255" th:value="${material?.tennvl}" class="form-control" placeholder="Nhập tên nguyên vật liệu"></div>
+<div class="ceo-field"><label for="supplierId">Nhà cung cấp</label><select id="supplierId" name="supplierId" class="form-control">
+<option value="">Chưa chọn</option><option th:each="s : ${suppliers}" th:value="${s.mancc}" th:text="${s.tenncc}" th:selected="${material != null and material.mancc == s.mancc}"></option></select></div>
+<div class="ceo-field"><label for="unit">Đơn vị tính <span class="ceo-required">*</span></label>
+<input id="unit" name="unit" type="text" required maxlength="50" th:value="${material?.donvitinh}" class="form-control" placeholder="Ví dụ: cái, bộ, kg"></div>
+<div class="ceo-field"><label for="price">Đơn giá nhập <span class="ceo-required">*</span></label>
+<input id="price" name="price" type="number" min="0" step="0.01" required th:value="${material == null ? 0 : material.dongianhap}" class="form-control" inputmode="decimal"><small>Đơn giá dự kiến cho một đơn vị vật liệu.</small></div>
+<div class="ceo-field"><label for="minimum">Tồn kho tối thiểu <span class="ceo-required">*</span></label>
+<input id="minimum" name="minimum" type="number" min="0" required th:value="${material == null ? 0 : material.ton_toithieu}" class="form-control" inputmode="numeric"></div>
+<div class="ceo-field"><label for="leadDays">Thời gian cung ứng (ngày) <span class="ceo-required">*</span></label>
+<input id="leadDays" name="leadDays" type="number" min="0" required th:value="${material == null ? 0 : material.lead_time_ngay}" class="form-control" inputmode="numeric"></div>
+<div class="ceo-field"><label for="status">Trạng thái</label><select id="status" name="status" class="form-control">
+<option value="HOAT_DONG" th:selected="${material == null or material.trangthai != 0}">Hoạt động</option>
+<option value="NGUNG_SU_DUNG" th:selected="${material != null and material.trangthai == 0}">Ngừng sử dụng</option></select></div>
+<div class="ceo-field ceo-field-full"><label for="note">Ghi chú</label>
+<textarea id="note" name="note" maxlength="255" rows="3" class="form-control" placeholder="Thông tin thêm về vật liệu hoặc nhà cung cấp" th:text="${material?.ghichu}"></textarea></div>
+</div><p class="material-form-hint"><i class="fas fa-circle-info" aria-hidden="true"></i> Tồn kho thực tế chỉ thay đổi qua phiếu nhập và phiếu xuất.</p>
+<div class="ceo-form-actions"><a class="btn btn-outline" th:href="@{/nguyen-vat-lieu}">Hủy</a>
+<button class="btn btn-primary" type="submit" th:text="${material == null ? 'Thêm nguyên vật liệu' : 'Lưu thay đổi'}">Lưu</button></div></div></form>
+</main></div></div></body></html>

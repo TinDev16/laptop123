@@ -17,7 +17,7 @@ public class MrpController {
     private SanphamService sanphamService;
 
     // 1. Quản lý Định mức sản xuất (BOM - Bill of Materials) - Dành cho Quản lý
-    @GetMapping("/bom")
+    @GetMapping("/bom-demo")
     public String viewBomPage(Model model) {
         List<Sanpham> danhSachSp = sanphamService.getAllSanpham();
         model.addAttribute("sanphams", danhSachSp);
@@ -51,7 +51,7 @@ public class MrpController {
     }
 
     // 5. Báo cáo thống kê Xuất - Nhập - Tồn MRP - Dành cho Quản lý
-    @GetMapping("/baocao")
+    @GetMapping("/baocao-demo")
     public String viewBaoCaoPage(Model model) {
         List<Sanpham> danhSachSp = sanphamService.getAllSanpham();
         model.addAttribute("sanphams", danhSachSp);

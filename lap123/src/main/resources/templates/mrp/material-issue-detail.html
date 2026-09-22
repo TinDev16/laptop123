@@ -5,7 +5,7 @@
 <p th:if="${success}" th:text="${success}" class="alert alert-success"></p><p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
 <div class="content-card"><div class="content-card-body">
 <h2 class="ceo-section-title"><i class="fas fa-file-alt"></i> Thông tin đề nghị</h2>
-<div class="detail-meta"><span th:text="${'Yêu cầu #' + issue.mayeucau}"></span><span th:text="${'Sản phẩm: ' + issue.tensp}"></span><span th:text="${'Người lập: ' + issue.hoten}"></span><span><strong>Trạng thái:</strong> <span th:text="${issue.trangthai}"></span></span></div>
+<div class="detail-meta"><span th:text="${'Yêu cầu #' + issue.mayeucau}"></span><span th:text="${'Sản phẩm: ' + issue.tensp}"></span><span th:text="${'Người lập: ' + issue.hoten}"></span><span><strong>Trạng thái:</strong> <span class="status-pill" th:text="${issue.trangthai}"></span></span></div>
 <p th:if="${issue.ghichu != null and !#strings.isEmpty(issue.ghichu)}" th:text="${issue.ghichu}"></p><p th:if="${issue.lydo != null}" class="alert alert-danger" th:text="${'Lý do từ chối: ' + issue.lydo}"></p>
 <div th:if="${manager and issue.trangthai == 'CHO_DUYET'}" class="approval-panel">
 <form class="approval-approve" th:action="@{/kho/xuat-nvl/{id}/duyet(id=${issue.maphieu})}" method="post" onsubmit="return confirm('Duyệt và xuất nguyên vật liệu?')"><button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Duyệt và xuất kho</button></form>

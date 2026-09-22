@@ -1,9 +1,141 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Lập đề nghị xuất NVL</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('xuat-nvl')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Lập đề nghị xuất NVL', 'Kho / Xuất NVL')}"></div><main class="content-body">
-<h1>Lập đề nghị xuất NVL</h1><p th:if="${error}" th:text="${error}" style="color:#b91c1c"></p>
-<label>Yêu cầu sản xuất được giao</label><select class="form-control" onchange="location.href='/kho/xuat-nvl/create?orderId='+this.value"><option value="">Chọn yêu cầu</option><option th:each="o : ${orders}" th:value="${o.mayeucau}" th:text="${'#' + o.mayeucau + ' - ' + o.tensp}" th:selected="${selectedOrder != null and selectedOrder == o.mayeucau}"></option></select>
-<form th:if="${selectedOrder != null}" th:action="@{/kho/xuat-nvl}" method="post" class="content-card" style="padding:1.5rem"><input type="hidden" name="orderId" th:value="${selectedOrder}">
-<div class="table-container"><table><thead><tr><th>NVL</th><th>Định mức</th><th>Hao hụt (%)</th><th>Cần</th><th>Tồn hiện tại</th><th>Thiếu hụt</th><th>SL đề nghị</th></tr></thead><tbody>
-<tr th:each="l : ${lines}"><td th:text="${l.manvl_code + ' - ' + l.tennvl}"></td><td th:text="${l.soluong_dinhmuc}"></td><td th:text="${l.tyle_haohut}"></td><td th:text="${l.nhu_cau}"></td><td th:text="${l.soluongton}"></td><td th:text="${l.nhu_cau > l.soluongton ? l.nhu_cau - l.soluongton : 0}"></td><td><input type="hidden" name="materialId" th:value="${l.manvl}"><input name="quantity" type="number" min="1" required th:value="${l.nhu_cau}" class="form-control"></td></tr>
-</tbody></table></div><label>Ghi chú</label><input name="note" maxlength="255" class="form-control"><button class="btn btn-primary" type="submit">Gửi đề nghị</button></form>
-</main></div></div></body></html>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lập đề nghị xuất NVL</title>
+  <link rel="stylesheet" th:href="@{/style.css}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-container">
+  <div th:replace="~{fragments/sidebar :: sidebar('xuat-nvl')}"></div>
+  <div class="main-wrapper">
+    <div th:replace="~{fragments/sidebar :: topbar('Lập đề nghị xuất NVL', 'Kho / Xuất NVL')}"></div>
+
+    <main class="content-body mrp-entry-page material-issue-form-page">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Lập đề nghị xuất nguyên vật liệu</h1>
+          <p class="page-description">Chọn yêu cầu sản xuất, kiểm tra tồn kho và xác nhận số lượng vật tư cần xuất.</p>
+        </div>
+        <a class="btn btn-back" th:href="@{/kho/xuat-nvl}">
+          <i class="fas fa-arrow-left"></i> Về danh sách
+        </a>
+      </div>
+
+      <p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
+
+      <section class="content-card material-order-selector" aria-labelledby="material-order-title">
+        <div class="content-card-body">
+          <div class="material-order-selector__intro">
+            <span class="material-order-selector__icon"><i class="fas fa-clipboard-list"></i></span>
+            <div>
+              <h2 id="material-order-title">Yêu cầu sản xuất được giao</h2>
+              <p>Chọn một yêu cầu để hệ thống tải định mức và số lượng tồn kho hiện tại.</p>
+            </div>
+          </div>
+          <div class="ceo-field material-order-selector__field">
+            <label for="orderId">Yêu cầu sản xuất <span class="ceo-required">*</span></label>
+            <select id="orderId" class="form-control"
+                    onchange="location.href=this.value ? '/kho/xuat-nvl/create?orderId=' + encodeURIComponent(this.value) : '/kho/xuat-nvl/create'">
+              <option value="">-- Chọn yêu cầu sản xuất --</option>
+              <option th:each="o : ${orders}"
+                      th:value="${o.mayeucau}"
+                      th:text="${'#' + o.mayeucau + ' - ' + o.tensp}"
+                      th:selected="${selectedOrder != null and selectedOrder == o.mayeucau}"></option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <form th:if="${selectedOrder != null}" th:action="@{/kho/xuat-nvl}" method="post"
+            class="content-card ceo-form-card material-issue-card">
+        <input type="hidden" name="orderId" th:value="${selectedOrder}">
+
+        <div class="content-card-header">
+          <div>
+            <h2 class="content-card-title"><i class="fas fa-boxes"></i> Chi tiết vật tư đề nghị xuất</h2>
+            <p class="content-card-subtitle">Số lượng đề nghị có thể điều chỉnh theo thực tế cấp phát.</p>
+          </div>
+          <span class="record-count" th:text="${#lists.size(lines) + ' vật tư'}">0 vật tư</span>
+        </div>
+
+        <div class="content-card-body">
+          <div class="table-container material-request-table-wrap">
+            <table class="material-request-table">
+              <thead>
+              <tr>
+                <th>Nguyên vật liệu</th>
+                <th class="numeric-column">Định mức</th>
+                <th class="numeric-column">Hao hụt (%)</th>
+                <th class="numeric-column">Nhu cầu</th>
+                <th class="numeric-column">Tồn hiện tại</th>
+                <th class="numeric-column">Thiếu hụt</th>
+                <th class="quantity-column">SL đề nghị</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="l : ${lines}">
+                <td>
+                  <div class="material-cell">
+                    <strong th:text="${l.tennvl}"></strong>
+                    <span th:text="${l.manvl_code}"></span>
+                  </div>
+                </td>
+                <td class="numeric-column" data-number th:text="${l.soluong_dinhmuc}"></td>
+                <td class="numeric-column"><span data-number th:text="${l.tyle_haohut}"></span><span class="number-unit">%</span></td>
+                <td class="numeric-column" data-number th:text="${l.nhu_cau}"></td>
+                <td class="numeric-column">
+                  <span class="stock-chip"
+                        th:classappend="${l.soluongton < l.nhu_cau ? ' stock-chip--low' : ' stock-chip--enough'}"
+                        data-number th:text="${l.soluongton}"></span>
+                </td>
+                <td class="numeric-column">
+                  <span class="shortage-value"
+                        th:classappend="${l.nhu_cau > l.soluongton ? ' shortage-value--alert' : ' shortage-value--ok'}"
+                        data-number th:text="${l.nhu_cau > l.soluongton ? l.nhu_cau - l.soluongton : 0}"></span>
+                </td>
+                <td class="quantity-column">
+                  <input type="hidden" name="materialId" th:value="${l.manvl}">
+                  <input name="quantity" type="number" min="1" required th:value="${l.nhu_cau}"
+                         class="form-control issue-quantity-input" aria-label="Số lượng đề nghị">
+                </td>
+              </tr>
+              <tr class="empty-row" th:if="${#lists.isEmpty(lines)}">
+                <td colspan="7">Yêu cầu này chưa có định mức nguyên vật liệu để lập phiếu xuất.</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="ceo-field material-issue-note">
+            <label for="issueNote">Ghi chú</label>
+            <textarea id="issueNote" name="note" maxlength="255" rows="3" class="form-control"
+                      placeholder="Nhập lưu ý cấp phát, khu vực nhận hoặc thông tin nội bộ"></textarea>
+            <small>Tối đa 255 ký tự.</small>
+          </div>
+
+          <div class="ceo-form-actions material-issue-actions">
+            <a class="btn btn-back" th:href="@{/kho/xuat-nvl}">
+              <i class="fas fa-arrow-left"></i> Trở lại
+            </a>
+            <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(lines)}">
+              <i class="fas fa-paper-plane"></i> Gửi đề nghị
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <section th:if="${selectedOrder == null}" class="material-issue-empty">
+        <i class="fas fa-arrow-up"></i>
+        <div>
+          <strong>Chưa chọn yêu cầu sản xuất</strong>
+          <p>Chọn yêu cầu ở phía trên để xem danh sách nguyên vật liệu cần xuất.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

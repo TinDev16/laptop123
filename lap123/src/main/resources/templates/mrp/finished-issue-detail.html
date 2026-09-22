@@ -1,7 +1,22 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Chi tiết xuất thành phẩm</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('xuat-tp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết xuất thành phẩm', 'Kho / Xuất thành phẩm')}"></div><main class="content-body">
-<h1 th:text="${'Phiếu xuất thành phẩm #' + issue.maphieu}"></h1><p th:if="${success}" th:text="${success}" style="color:#15803d"></p><p th:if="${error}" th:text="${error}" style="color:#b91c1c"></p>
-<p th:text="${'Sản phẩm: ' + issue.tensp + ' · Số lượng: ' + issue.soluong + ' · Người lập: ' + issue.hoten}"></p><p th:text="${'Trạng thái: ' + issue.trangthai}"></p><p th:text="${issue.ghichu}"></p><p th:if="${issue.lydo != null}" th:text="${'Lý do từ chối: ' + issue.lydo}" style="color:#b91c1c"></p>
-<div th:if="${manager and issue.trangthai == 'CHO_DUYET'}" style="display:flex;gap:1rem"><form th:action="@{/kho/xuat-thanh-pham/{id}/duyet(id=${issue.maphieu})}" method="post" onsubmit="return confirm('Duyệt và xuất thành phẩm?')"><button type="submit" class="btn btn-primary">Duyệt và xuất</button></form>
-<form th:action="@{/kho/xuat-thanh-pham/{id}/tu-choi(id=${issue.maphieu})}" method="post" onsubmit="return confirm('Từ chối phiếu này?')"><input name="reason" required maxlength="255" placeholder="Lý do từ chối"><button type="submit">Từ chối</button></form></div>
-<a th:href="@{/kho/xuat-thanh-pham}">Về danh sách</a></main></div></div></body></html>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chi tiết xuất thành phẩm</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('xuat-tp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết xuất thành phẩm', 'Kho / Xuất thành phẩm')}"></div>
+<main class="content-body detail-page">
+<div class="page-header"><div><h1 class="page-title" th:text="${'Phiếu xuất thành phẩm #' + issue.maphieu}"></h1><p class="page-description">Kiểm tra đề nghị trước khi xác nhận xuất kho thành phẩm.</p></div><a class="btn btn-back" th:href="@{/kho/xuat-thanh-pham}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
+<p th:if="${success}" th:text="${success}" class="alert alert-success"></p><p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
+<div class="content-card"><div class="content-card-body">
+<h2 class="ceo-section-title"><i class="fas fa-truck-loading"></i> Thông tin đề nghị</h2>
+<div class="ceo-detail-grid">
+<div><span class="detail-label">Sản phẩm</span><strong th:text="${issue.tensp}"></strong></div>
+<div><span class="detail-label">Số lượng xuất</span><strong data-number th:text="${issue.soluong}"></strong></div>
+<div><span class="detail-label">Người lập</span><strong th:text="${issue.hoten}"></strong></div>
+<div><span class="detail-label">Trạng thái</span><span class="status-pill" th:text="${issue.trangthai}"></span></div>
+<div class="ceo-detail-note" th:if="${issue.ghichu != null and !#strings.isEmpty(issue.ghichu)}"><span class="detail-label">Ghi chú</span><p th:text="${issue.ghichu}"></p></div>
+</div>
+<p th:if="${issue.lydo != null}" class="alert alert-danger" th:text="${'Lý do từ chối: ' + issue.lydo}"></p>
+<div th:if="${manager and issue.trangthai == 'CHO_DUYET'}" class="approval-panel">
+<form class="approval-approve" th:action="@{/kho/xuat-thanh-pham/{id}/duyet(id=${issue.maphieu})}" method="post" onsubmit="return confirm('Duyệt và xuất thành phẩm?')"><button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Duyệt và xuất kho</button></form>
+<form class="reject-form" th:action="@{/kho/xuat-thanh-pham/{id}/tu-choi(id=${issue.maphieu})}" method="post" onsubmit="return confirm('Xác nhận từ chối phiếu này?')"><div class="ceo-field"><label for="rejectReason">Lý do từ chối <span class="ceo-required">*</span></label><input id="rejectReason" name="reason" required maxlength="255" class="form-control" placeholder="Nhập lý do cụ thể để người lập xử lý"></div><button type="submit" class="btn btn-reject"><i class="fas fa-times"></i> Từ chối</button></form>
+</div>
+</div></div>
+</main></div></div></body></html>

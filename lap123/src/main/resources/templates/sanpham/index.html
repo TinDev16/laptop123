@@ -11,25 +11,31 @@
 <button type="button" class="btn btn-outline" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button></div></div>
 <div class="search-filters"><div class="search-input"><i class="fas fa-search"></i><input id="product-search" type="search" placeholder="Tìm theo mã, tên, thương hiệu..." aria-label="Tìm sản phẩm" oninput="filterProducts()"></div></div>
 <section class="directory-section"><div class="directory-section-header"><div><h2>Sản phẩm đang bán</h2><p>Danh mục sản phẩm đang kinh doanh.</p></div><span class="directory-state directory-state--active">Đang bán</span></div>
-<div class="table-container"><table class="table directory-table" data-sheet="DangBan"><thead><tr><th>Mã SP</th><th>Tên sản phẩm</th><th>Hệ điều hành</th><th>Thương hiệu</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+<div class="table-container"><table class="table directory-table product-table" data-sheet="DangBan"><thead><tr><th>Mã SP</th><th>Hình ảnh</th><th>Tên sản phẩm</th><th>Thương hiệu</th><th>Hệ điều hành</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
 <tr class="directory-row" th:each="sp : ${sanpham}" th:if="${sp.TRANGTHAI == 0}">
-<td th:text="${sp.MASP}"></td><td th:text="${sp.TENSP}"></td><td th:text="${sp.HEDIEUHANH}"></td>
-<td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Chưa có'}"></td>
+<td th:text="${sp.MASP}"></td>
+<td><div class="product-thumbnail"><img th:if="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}" th:src="@{/uploads/{file}(file=${sp.HINHANHSP})}" th:alt="${'Ảnh ' + sp.TENSP}" loading="lazy"><span th:unless="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}" class="product-thumbnail-placeholder"><i class="fas fa-image"></i></span></div></td>
+<td class="product-name-cell" th:text="${sp.TENSP}"></td>
+<td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Chưa có'}"></td><td th:text="${sp.HEDIEUHANH}"></td>
+<td><span class="stock-quantity" th:classappend="${sp.SOLUONGTON == null or sp.SOLUONGTON == 0 ? ' stock-quantity--empty' : ''}"><strong data-number th:text="${sp.SOLUONGTON != null ? sp.SOLUONGTON : 0}">0</strong><small>chiếc</small></span></td>
 <td><span class="directory-state directory-state--active">Đang bán</span></td>
 <td><div class="table-actions directory-actions"><a class="btn btn-outline btn-compact" th:href="@{/view-sanpham/{id}(id=${sp.MASP})}">Chi tiết</a>
 <a class="btn btn-outline btn-compact" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">Sửa</a>
 <button type="button" class="btn btn-outline btn-compact" th:attr="data-id=${sp.MASP},data-name=${sp.TENSP}" onclick="showArchiveModal(this)">Ngừng bán</button></div></td></tr>
-<tr class="directory-empty" style="display:none"><td colspan="6">Không có sản phẩm phù hợp.</td></tr></tbody></table></div></section>
+<tr class="directory-empty" style="display:none"><td colspan="8">Không có sản phẩm phù hợp.</td></tr></tbody></table></div></section>
 <section class="directory-section"><div class="directory-section-header"><div><h2>Sản phẩm đã ngừng bán</h2><p>Giữ hồ sơ sản phẩm để tra cứu chứng từ và lịch sử tồn kho.</p></div><span class="directory-state directory-state--archived">Đã ngừng bán</span></div>
-<div class="table-container"><table class="table directory-table" data-sheet="NgungBan"><thead><tr><th>Mã SP</th><th>Tên sản phẩm</th><th>Hệ điều hành</th><th>Thương hiệu</th><th>Trạng thái</th><th>Lý do / ghi chú</th><th>Thao tác</th></tr></thead><tbody>
+<div class="table-container"><table class="table directory-table product-table" data-sheet="NgungBan"><thead><tr><th>Mã SP</th><th>Hình ảnh</th><th>Tên sản phẩm</th><th>Thương hiệu</th><th>Hệ điều hành</th><th>Tồn kho</th><th>Trạng thái</th><th>Lý do / ghi chú</th><th>Thao tác</th></tr></thead><tbody>
 <tr class="directory-row" th:each="sp : ${sanpham}" th:if="${sp.TRANGTHAI == 1}">
-<td th:text="${sp.MASP}"></td><td th:text="${sp.TENSP}"></td><td th:text="${sp.HEDIEUHANH}"></td>
-<td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Chưa có'}"></td>
+<td th:text="${sp.MASP}"></td>
+<td><div class="product-thumbnail"><img th:if="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}" th:src="@{/uploads/{file}(file=${sp.HINHANHSP})}" th:alt="${'Ảnh ' + sp.TENSP}" loading="lazy"><span th:unless="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}" class="product-thumbnail-placeholder"><i class="fas fa-image"></i></span></div></td>
+<td class="product-name-cell" th:text="${sp.TENSP}"></td>
+<td th:text="${sp.thuonghieu != null ? sp.thuonghieu.TENTHUONGHIEU : 'Chưa có'}"></td><td th:text="${sp.HEDIEUHANH}"></td>
+<td><span class="stock-quantity" th:classappend="${sp.SOLUONGTON == null or sp.SOLUONGTON == 0 ? ' stock-quantity--empty' : ''}"><strong data-number th:text="${sp.SOLUONGTON != null ? sp.SOLUONGTON : 0}">0</strong><small>chiếc</small></span></td>
 <td><span class="directory-state directory-state--archived">Đã ngừng bán</span></td>
 <td class="directory-note" th:text="${sp.GHICHU != null and !#strings.isEmpty(sp.GHICHU) ? sp.GHICHU : '—'}"></td>
 <td><div class="table-actions directory-actions"><a class="btn btn-outline btn-compact" th:href="@{/view-sanpham/{id}(id=${sp.MASP})}">Chi tiết</a>
 <a class="btn btn-outline btn-compact" th:href="@{/edit-sanpham/{id}(id=${sp.MASP})}">Sửa / mở bán lại</a></div></td></tr>
-<tr class="directory-empty" style="display:none"><td colspan="7">Không có sản phẩm phù hợp.</td></tr></tbody></table></div></section>
+<tr class="directory-empty" style="display:none"><td colspan="9">Không có sản phẩm phù hợp.</td></tr></tbody></table></div></section>
 <div id="archive-modal" class="directory-modal hidden" role="dialog" aria-modal="true" aria-labelledby="archive-title"><div class="directory-modal-panel">
 <h2 id="archive-title">Ngừng bán sản phẩm</h2><p id="archive-message"></p><form th:action="@{/delete-sanpham}" method="post">
 <input type="hidden" id="archive-id" name="id"><label for="archive-reason">Lý do <span aria-hidden="true">*</span></label>

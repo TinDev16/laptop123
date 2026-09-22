@@ -18,4 +18,18 @@
 
   sidebar.addEventListener('scroll', savePosition, { passive: true });
   window.addEventListener('pagehide', savePosition);
+
+
+  document.querySelectorAll('a').forEach(link => {
+    const label = link.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+    if (/^(về danh sách|quay lại|quay lại danh sách|trở lại|trở về)/.test(label)) {
+      link.classList.add('btn', 'btn-back');
+      if (!link.querySelector('i')) {
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-arrow-left';
+        icon.setAttribute('aria-hidden', 'true');
+        link.prepend(icon);
+      }
+    }
+  });
 })();

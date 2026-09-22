@@ -1,27 +1,20 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Chi tiết BOM</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container">
-  <div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div>
-  <div class="main-wrapper">
-    <div th:replace="~{fragments/sidebar :: topbar('Chi tiết BOM', 'MRP / BOM')}"></div>
-    <main class="content-body">
-      <p th:if="${error}" th:text="${error}" style="color:#b91c1c"></p>
-      <h1 th:text="${bom.tensp + ' / ' + bom.phienban}"></h1>
-      <p th:text="${bom.ghichu}"></p><p th:text="${bom.trangthai}"></p>
-      <form th:if="${bom.trangthai == 'HIEU_LUC'}" th:action="@{/bom/{id}/disable(id=${bom.mabom})}" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
-        <button type="submit">Ngừng sử dụng</button>
-      </form>
-      <div class="content-card"><div class="table-container"><table>
-        <thead><tr><th>Mã NVL</th><th>Tên NVL</th><th>Định mức</th><th>Đơn vị</th><th>Hao hụt (%)</th></tr></thead>
-        <tbody><tr th:each="line : ${details}">
-          <td th:text="${line.manvl_code}"></td><td th:text="${line.tennvl}"></td>
-          <td th:text="${line.soluong_dinhmuc}"></td><td th:text="${line.donvitinh}"></td>
-          <td th:text="${line.ty_le_hao_hut}"></td>
-        </tr></tbody>
-      </table></div></div>
-      <a th:href="@{/bom}">Về danh sách</a>
-    </main>
-  </div>
-</div></body></html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chi tiết BOM</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết BOM', 'MRP / BOM')}"></div>
+<main class="content-body detail-page">
+<div class="page-header"><div><h1 class="page-title" th:text="${bom.tensp + ' / ' + bom.phienban}"></h1><p class="page-description">Định mức nguyên vật liệu áp dụng cho một đơn vị thành phẩm.</p></div><a class="btn btn-back" th:href="@{/bom}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
+<p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
+<div class="content-card"><div class="content-card-body bom-summary">
+<div><span class="detail-label">Trạng thái</span><span class="status-pill" th:text="${bom.trangthai}"></span></div>
+<div><span class="detail-label">Ghi chú</span><span th:text="${bom.ghichu != null and !#strings.isEmpty(bom.ghichu) ? bom.ghichu : 'Không có ghi chú'}"></span></div>
+<form th:if="${bom.trangthai == 'HIEU_LUC'}" th:action="@{/bom/{id}/disable(id=${bom.mabom})}" method="post" onsubmit="return confirm('Ngừng sử dụng BOM này? BOM sẽ không còn được chọn cho yêu cầu sản xuất mới.')">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
+<button type="submit" class="btn btn-disable"><i class="fas fa-ban"></i> Ngừng sử dụng</button>
+</form>
+</div></div>
+<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Danh sách nguyên vật liệu</h2><span class="record-count" th:text="${#lists.size(details) + ' dòng'}"></span></div><div class="table-container"><table class="table">
+<thead><tr><th>Mã NVL</th><th>Tên NVL</th><th>Định mức</th><th>Đơn vị</th><th>Hao hụt (%)</th></tr></thead>
+<tbody><tr th:each="line : ${details}"><td th:text="${line.manvl_code}"></td><td th:text="${line.tennvl}"></td><td data-number th:text="${line.soluong_dinhmuc}"></td><td th:text="${line.donvitinh}"></td><td data-number th:text="${line.ty_le_hao_hut}"></td></tr>
+<tr class="empty-row" th:if="${#lists.isEmpty(details)}"><td colspan="5">BOM chưa có nguyên vật liệu.</td></tr></tbody>
+</table></div></div>
+</main></div></div></body></html>

@@ -2,14 +2,14 @@
 <div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('baocao')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Báo cáo MRP', 'Báo cáo')}"></div><main class="content-body">
 <h1>Báo cáo MRP</h1><form th:action="@{/baocao}" method="get" style="display:flex;gap:0.5rem;flex-wrap:wrap">
 <select name="period"><option value="month" th:selected="${period == 'month'}">Tháng</option><option value="quarter" th:selected="${period == 'quarter'}">Quý</option><option value="year" th:selected="${period == 'year'}">Năm</option></select>
-<input type="number" name="month" min="1" max="12" placeholder="Tháng"><input type="number" name="quarter" min="1" max="4" placeholder="Quý"><input type="number" name="year" min="2000" max="2100" placeholder="Năm">
+<input type="number" data-number-format="plain" name="month" min="1" max="12" placeholder="Tháng"><input type="number" data-number-format="plain" name="quarter" min="1" max="4" placeholder="Quý"><input type="number" data-number-format="plain" name="year" min="2000" max="2100" placeholder="Năm">
 <input type="date" name="from" th:value="${from}"><input type="date" name="to" th:value="${to}"><button type="submit">Xem</button></form>
 <p th:text="${'Từ ' + from + ' đến ' + to}"></p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem">
-<div class="content-card" style="padding:1rem"><strong>Tổng NVL nhập</strong><h2 th:text="${totals.getOrDefault('NHAP_NVL', 0)}"></h2></div>
-<div class="content-card" style="padding:1rem"><strong>Tổng NVL xuất</strong><h2 th:text="${totals.getOrDefault('XUAT_NVL', 0)}"></h2></div>
-<div class="content-card" style="padding:1rem"><strong>Tổng thành phẩm nhập</strong><h2 th:text="${totals.getOrDefault('NHAP_THANH_PHAM', 0)}"></h2></div>
-<div class="content-card" style="padding:1rem"><strong>Tổng thành phẩm xuất</strong><h2 th:text="${totals.getOrDefault('XUAT_THANH_PHAM', 0)}"></h2></div></div>
-<h2>Giao dịch chi tiết</h2><div class="content-card"><div class="table-container"><table><thead><tr><th>Ngày</th><th>Giao dịch</th><th>Tên hàng</th><th>Số lượng</th><th>Chứng từ</th></tr></thead><tbody><tr th:each="r : ${rows}"><td th:text="${r.ngay_giao_dich}"></td><td th:text="${r.loai_giao_dich}"></td><td th:text="${r.tenhang}"></td><td th:text="${r.so_luong}"></td><td th:text="${r.ma_chung_tu}"></td></tr><tr class="empty-row" th:if="${#lists.isEmpty(rows)}"><td colspan="5">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div>
+<div class="content-card" style="padding:1rem"><strong>Tổng NVL nhập</strong><h2 data-number th:text="${totals.getOrDefault('NHAP_NVL', 0)}"></h2></div>
+<div class="content-card" style="padding:1rem"><strong>Tổng NVL xuất</strong><h2 data-number th:text="${totals.getOrDefault('XUAT_NVL', 0)}"></h2></div>
+<div class="content-card" style="padding:1rem"><strong>Tổng thành phẩm nhập</strong><h2 data-number th:text="${totals.getOrDefault('NHAP_THANH_PHAM', 0)}"></h2></div>
+<div class="content-card" style="padding:1rem"><strong>Tổng thành phẩm xuất</strong><h2 data-number th:text="${totals.getOrDefault('XUAT_THANH_PHAM', 0)}"></h2></div></div>
+<h2>Giao dịch chi tiết</h2><div class="content-card"><div class="table-container"><table><thead><tr><th>Ngày</th><th>Giao dịch</th><th>Tên hàng</th><th>Số lượng</th><th>Chứng từ</th></tr></thead><tbody><tr th:each="r : ${rows}"><td th:text="${r.ngay_giao_dich}"></td><td th:text="${r.loai_giao_dich}"></td><td th:text="${r.tenhang}"></td><td data-number th:text="${r.so_luong}"></td><td th:text="${r.ma_chung_tu}"></td></tr><tr class="empty-row" th:if="${#lists.isEmpty(rows)}"><td colspan="5">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div>
 <h2>Biểu đồ nhập và xuất</h2>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem">
   <div class="content-card" style="padding:1rem"><canvas id="nvlChart" aria-label="Nhập và xuất NVL"></canvas></div>

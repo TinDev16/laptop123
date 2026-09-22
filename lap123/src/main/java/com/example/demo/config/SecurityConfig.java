@@ -39,7 +39,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**",
-                        "/style.css", "/style1.css", "/script.js", "/sidebar.js", "/uploads/**").permitAll()
+                        "/style.css", "/style1.css", "/script.js", "/sidebar.js", "/number-format.js", "/uploads/**").permitAll()
                 .requestMatchers("/signin", "/userLogin", "/forgotPassword",
                         "/newPassword", "/forgot-password", "/reset-password").permitAll()
                 .requestMatchers("/quanlytaikhoan/**").hasRole("QUAN_LY_KHO")

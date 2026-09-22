@@ -144,7 +144,7 @@
             const thanhTienCell = row.querySelector('.thanh-tien');
         
             if (soLuongInput && thanhTienCell) {
-                const soLuong = parseInt(soLuongInput.value) || 0;
+                const soLuong = Lap123Number.parse(soLuongInput.value) || 0;
                 const giaxuat = parseInt(rawValue) || 0;
                 const thanhTien = soLuong * giaxuat;
                 thanhTienCell.textContent = thanhTien.toLocaleString('vi-VN');
@@ -169,5 +169,6 @@
             document.getElementById('phieuxuatForm').submit();
         });
     </script>
+<script src="/number-format.js"></script>
 </body>
 </html>

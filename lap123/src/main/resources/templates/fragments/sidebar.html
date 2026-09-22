@@ -20,6 +20,7 @@
       <div class="menu-heading">ĐỐI TÁC</div>
       <a th:href="@{/ncc}" class="menu-item" th:classappend="${activeTab == 'ncc' ? 'active' : ''}"><i class="fas fa-building"></i><span>Nhà cung cấp</span></a>
       <a th:href="@{/khachhang}" class="menu-item" th:classappend="${activeTab == 'khachhang' ? 'active' : ''}"><i class="fas fa-users"></i><span>Khách hàng</span></a>
+      <a th:href="@{/thuonghieu}" class="menu-item" th:classappend="${activeTab == 'thuonghieu' ? 'active' : ''}"><i class="fas fa-tags"></i><span>Thương hiệu</span></a>
       <div class="menu-heading">HỆ THỐNG</div>
       <a th:href="@{/nhanvien}" class="menu-item" th:classappend="${activeTab == 'nhanvien' ? 'active' : ''}"><i class="fas fa-user-tie"></i><span>Nhân viên</span></a>
       <a th:href="@{/quanlytaikhoan}" class="menu-item" th:classappend="${activeTab == 'taikhoan' ? 'active' : ''}"><i class="fas fa-user-shield"></i><span>Tài khoản</span></a>
@@ -35,6 +36,7 @@
       <a th:href="@{/tai-khoan/ca-nhan}" class="menu-item" th:classappend="${activeTab == 'ca-nhan' ? 'active' : ''}"><i class="fas fa-user"></i><span>Thông tin cá nhân</span></a>
     </div>
   </nav>
+  <script th:src="@{/number-format.js}" defer></script>
   <script th:src="@{/sidebar.js}" defer></script>
   <div class="sidebar-footer" sec:authorize="isAuthenticated()"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-danger" style="width:100%">Đăng xuất</button></form></div>
 </aside>

@@ -188,7 +188,7 @@
     }
 
     function updateQuantity(index, value) {
-        selectedProducts[index].importQuantity = parseInt(value) || 1;
+        selectedProducts[index].importQuantity = Lap123Number.parse(value) || 1;
         renderSelectedProducts();
     }
     function incrementQuantity(index) { selectedProducts[index].importQuantity++; renderSelectedProducts(); }
@@ -224,8 +224,8 @@ document.querySelector("form").addEventListener("submit", function (event) {
     const selectedProducts = [];
     document.querySelectorAll("#selected-products tr").forEach(row => {
         const masp = row.getAttribute("data-id");
-        const soluong = parseInt(row.querySelector(".soluong").value);
-        const gianhap = parseFloat(row.querySelector(".gianhap").value);
+        const soluong = Lap123Number.parse(row.querySelector(".soluong").value);
+        const gianhap = Lap123Number.parse(row.querySelector(".gianhap").value);
         if (masp && soluong > 0 && gianhap > 0) {
             selectedProducts.push({
                 MASP: masp,
@@ -270,5 +270,6 @@ document.querySelector("form").addEventListener("submit", function (event) {
         console.log("JSON gửi lên:", document.getElementById('chiTietList').value);
     });
 </script>
+<script src="/number-format.js"></script>
 </body>
 </html>

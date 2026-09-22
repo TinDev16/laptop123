@@ -5,15 +5,16 @@ import com.example.demo.Entity.Thuonghieu;
 import com.example.demo.Service.SanphamService;
 import com.example.demo.Service.ThuonghieuService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 @Controller
@@ -25,92 +26,51 @@ public class SanphamController {
     @Autowired
     private ThuonghieuService thuonghieuservice;
 
-//    trang chủ sanpham
+    @Value("${app.upload-dir:uploads}")
+    private String uploadDir;
+
     @GetMapping("/sanpham")
     public String sanpham(Model model) {
         model.addAttribute("sanpham", sanphamService.getAllSanpham());
         return "sanpham/index";
     }
 
-//    TẠO SP MỚI
     @GetMapping("/sanpham/create")
     public String newSanpham(Model model) {
-        Sanpham sanpham = new Sanpham();
-        model.addAttribute("sanpham", sanpham);
+        model.addAttribute("sanpham", new Sanpham());
         model.addAttribute("thuonghieuList", thuonghieuservice.getAllThuonghieu());
         return "sanpham/add";
     }
 
     @PostMapping("/sanpham")
     public String saveSanpham(@ModelAttribute("sanpham") Sanpham sanpham,
-                              @RequestParam("file") MultipartFile file) {
-        try {
-            if (!file.isEmpty()) {
-                // Thư mục trong static
-                String uploadDir = "src/main/resources/static/uploads/";
-
-                // Lấy tên file gốc + gắn timestamp tránh trùng
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-                // Tạo path đầy đủ
-                Path path = Paths.get(uploadDir + fileName);
-
-                // Nếu thư mục chưa có thì tạo
-                Files.createDirectories(path.getParent());
-
-                // Lưu file
-                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-                // Lưu tên file (không cần cả path) vào DB
-                sanpham.setHINHANHSP(fileName);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+                              @RequestParam(value = "file", required = false) MultipartFile file) {
+        if (file != null && !file.isEmpty()) {
+            sanpham.setHINHANHSP(storeImage(file));
         }
-
         sanphamService.saveSanpham(sanpham);
         return "redirect:/sanpham";
     }
-//
 
-//  SỬA SP
     @GetMapping("/edit-sanpham/{id}")
     public String editSanpham(@PathVariable("id") int id, Model model) {
-        model.addAttribute("sanpham", sanphamService.getSanphamById(id));
-        model.addAttribute("thuonghieuList", thuonghieuservice.getAllThuonghieu());
         Sanpham sanpham = sanphamService.getSanphamById(id);
         if (sanpham.getThuonghieu() == null) {
             sanpham.setThuonghieu(new Thuonghieu());
         }
-
+        model.addAttribute("sanpham", sanpham);
+        model.addAttribute("thuonghieuList", thuonghieuservice.getAllThuonghieu());
         return "sanpham/edit";
     }
 
     @PostMapping("/update-sanpham")
     public String updateSanpham(@ModelAttribute Sanpham sanpham,
                                 @RequestParam(value = "file", required = false) MultipartFile file) {
-
-        // Lấy sản phẩm cũ
         Sanpham existing = sanphamService.getSanphamById(sanpham.getMASP());
-
-        // Nếu có upload ảnh mới
         if (file != null && !file.isEmpty()) {
-            try {
-                String uploadDir = "src/main/resources/static/uploads/";
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-                Path path = Paths.get(uploadDir + fileName);
-                Files.createDirectories(path.getParent());
-                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-                existing.setHINHANHSP(fileName);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            existing.setHINHANHSP(storeImage(file));
         }
 
-
-        // Cập nhật các trường khác
         existing.setTENSP(sanpham.getTENSP());
         existing.setXUATXU(sanpham.getXUATXU());
         existing.setCHIP(sanpham.getCHIP());
@@ -129,17 +89,13 @@ public class SanphamController {
         model.addAttribute("sanpham", sanphamService.getSanphamById(id));
         return "sanpham/detail";
     }
-//
 
-    // GET - Hiển thị form xác nhận xóa (nếu bạn có form nhập lý do xóa)
     @GetMapping("/delete-sanpham/{id}")
     public String showDeleteForm(@PathVariable int id, Model model) {
-        Sanpham sanpham = sanphamService.getSanphamById(id);
-        model.addAttribute("sanpham", sanpham);
-        return "sanpham/delete"; // Trang confirm xóa có ô nhập ghi chú
+        model.addAttribute("sanpham", sanphamService.getSanphamById(id));
+        return "sanpham/delete";
     }
 
-    // POST - Xử lý khi người dùng xác nhận xóa
     @PostMapping("/delete-sanpham")
     public String deleteSanpham(@RequestParam("id") int id,
                                 @RequestParam("GHICHU") String GHICHU) {
@@ -147,11 +103,21 @@ public class SanphamController {
         return "redirect:/sanpham";
     }
 
-
-
-
-
-
-
-
+    private String storeImage(MultipartFile file) {
+        String originalName = StringUtils.cleanPath(file.getOriginalFilename() == null ? "image" : file.getOriginalFilename());
+        String safeName = originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String fileName = System.currentTimeMillis() + "_" + safeName;
+        Path root = Path.of(uploadDir).toAbsolutePath().normalize();
+        Path target = root.resolve(fileName).normalize();
+        if (!target.startsWith(root)) {
+            throw new IllegalArgumentException("Tên tệp hình ảnh không hợp lệ.");
+        }
+        try {
+            Files.createDirectories(root);
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể lưu hình ảnh sản phẩm.", exception);
+        }
+    }
 }

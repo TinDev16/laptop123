@@ -187,7 +187,7 @@
     }
 
     function updateQuantity(index, value) {
-        selectedProducts[index].importQuantity = parseInt(value) || 1;
+        selectedProducts[index].importQuantity = Lap123Number.parse(value) || 1;
         renderSelectedProducts();
     }
 
@@ -258,5 +258,6 @@
         console.log("JSON gửi lên:", document.getElementById('chiTietList').value);
     });
 </script>
+<script src="/number-format.js"></script>
 </body>
 </html>

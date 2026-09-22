@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Sửa sản phẩm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/style.css}">
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -108,14 +109,18 @@
         </div>
     
         <div class="form-group">
-            <label>Hình ảnh sản phẩm</label><br>
-            <img th:if="${sanpham.HINHANHSP != null}"
-                 th:src="@{'/uploads/' + ${sanpham.HINHANHSP}}"
-                 alt="Ảnh hiện tại" style="max-width: 200px; height: auto;">
-    
-            <div id="imagePreview" style="margin-top:10px;"></div>
-    
-            <input type="file" name="file" accept="image/*" onchange="previewImage(event)">
+            <label for="productImage">Hình ảnh sản phẩm</label>
+            <div id="currentImage" class="current-image-card"
+                 th:if="${sanpham.HINHANHSP != null and !#strings.isEmpty(sanpham.HINHANHSP)}">
+                <img th:src="@{/uploads/{file}(file=${sanpham.HINHANHSP})}"
+                     th:alt="${'Ảnh hiện tại của ' + sanpham.TENSP}">
+                <div>
+                    <strong>Ảnh đang sử dụng</strong>
+                    <p style="margin:.35rem 0 0;color:#64748b">Chọn ảnh mới bên dưới nếu cần thay thế. Để trống để giữ nguyên ảnh này.</p>
+                </div>
+            </div>
+            <div id="imagePreview" class="image-preview" style="margin-top:10px;"></div>
+            <input id="productImage" type="file" name="file" accept="image/*" onchange="previewImage(event)">
         </div>
     
         <div class="form-group">
@@ -178,6 +183,8 @@
         const input = event.target;
         const preview = document.getElementById('imagePreview');
         preview.innerHTML = '';
+        const currentImage = document.getElementById('currentImage');
+        if (currentImage && input.files && input.files[0]) currentImage.style.display = 'none';
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {

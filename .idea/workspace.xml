@@ -6,6 +6,35 @@
   <component name="ChangeListManager">
     <list default="true" id="40523376-f630-4d04-8532-2a6b16c4a298" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/EER.mwb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/EER.mwb.bak" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/ERD.mwb.bak" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SQL/ERD_img.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/SanphamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/SanphamController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/sidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/sidebar.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/khachhang/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/bom-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/bom-detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/bom-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/bom-form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/finished-issue-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/finished-issue-detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/material-issue-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/material-issue-detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/materials.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/materials.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/order-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/order-detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/order-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/order-form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/report.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/report.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/warehouse-history.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/warehouse-history.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/sanpham/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/thuonghieu/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,7 +42,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="186" />
+    <option name="cachedIndexableFilesCount" value="185" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -123,7 +152,9 @@
       <workItem from="1789879426187" duration="1087000" />
       <workItem from="1789891672999" duration="2552000" />
       <workItem from="1789965831396" duration="607000" />
-      <workItem from="1790000279242" duration="342000" />
+      <workItem from="1790000279242" duration="1676000" />
+      <workItem from="1790037105393" duration="429000" />
+      <workItem from="1790044709324" duration="850000" />
     </task>
     <servers />
   </component>

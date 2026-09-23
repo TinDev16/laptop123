@@ -75,6 +75,27 @@ public class MrpDocumentService {
         return id;
     }
 
+    @Transactional
+    public void deleteDraftReceipt(long receiptId) {
+        List<String> statuses = jdbc.queryForList(
+                "SELECT trangthai FROM phieunhap_nvl WHERE mapn = ? FOR UPDATE",
+                String.class, receiptId);
+        if (statuses.isEmpty()) {
+            throw new IllegalArgumentException("Phiếu nhập không tồn tại.");
+        }
+        if (!"NHAP_NHAP".equals(statuses.get(0))) {
+            throw new IllegalStateException("Chỉ có thể xóa phiếu nhập ở trạng thái Bản nháp.");
+        }
+
+        jdbc.update("DELETE FROM ct_phieunhap_nvl WHERE mapn = ?", receiptId);
+        int deleted = jdbc.update(
+                "DELETE FROM phieunhap_nvl WHERE mapn = ? AND trangthai = 'NHAP_NHAP'",
+                receiptId);
+        if (deleted != 1) {
+            throw new IllegalStateException("Không thể xóa phiếu nhập này.");
+        }
+    }
+
     public List<Map<String, Object>> materialIssues(String email, boolean manager) {
         String sql = "SELECT p.mapx AS maphieu, p.maycsx AS mayeucau, p.ngaylap AS ngaytao, p.trangthai, p.ghichu, n.hoten, s.tensp " +
                 "FROM phieuxuat_nvl p JOIN nhanvien n ON n.manv = p.nguoilap " +

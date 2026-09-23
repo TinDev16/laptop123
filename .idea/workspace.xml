@@ -6,11 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="40523376-f630-4d04-8532-2a6b16c4a298" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/MrpWorkflowController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/MrpWorkflowController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/MrpDocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Service/MrpDocumentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/number-format.js" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/number-format.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/material-issue-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/material-issue-detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/material-issue-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/material-issue-form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/materials.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/materials.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipt-form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipts.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/receipts.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lap123/src/test/java/com/example/demo/Service/MrpEndToEndTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/test/java/com/example/demo/Service/MrpEndToEndTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,7 +24,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="185" />
+    <option name="cachedIndexableFilesCount" value="186" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -132,6 +138,7 @@
       <workItem from="1790037105393" duration="429000" />
       <workItem from="1790044709324" duration="850000" />
       <workItem from="1790074489960" duration="1176000" />
+      <workItem from="1790155712089" duration="1868000" />
     </task>
     <servers />
   </component>

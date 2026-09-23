@@ -1411,3 +1411,113 @@ input.number-input {
     width: 100%;
   }
 }
+
+/* Shared quantity stepper */
+.quantity-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 140px;
+  min-height: 42px;
+  overflow: hidden;
+  border: 1px solid #b9c8d8;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 38, 61, .04);
+  transition: border-color .16s, box-shadow .16s;
+}
+
+.quantity-stepper:hover {
+  border-color: #8fa8c2;
+}
+
+.quantity-stepper:focus-within {
+  border-color: #2b72ce;
+  box-shadow: 0 0 0 3px rgba(43, 114, 206, .14);
+}
+
+.quantity-stepper > input.number-input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 48px;
+  min-height: 40px;
+  margin: 0;
+  padding: .5rem .35rem;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fff;
+  text-align: center !important;
+  box-shadow: none !important;
+}
+
+.quantity-stepper__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  border: 0;
+  background: #f1f5f9;
+  color: #25415f;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+
+.quantity-stepper__button:first-child {
+  border-right: 1px solid #d8e1eb;
+}
+
+.quantity-stepper__button:last-child {
+  border-left: 1px solid #d8e1eb;
+}
+
+.quantity-stepper__button:hover:not(:disabled) {
+  background: #e1efff;
+  color: #1e62ab;
+}
+
+.quantity-stepper__button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #2b72ce;
+  outline-offset: -2px;
+}
+
+.quantity-stepper__button:disabled {
+  background: #f8fafc;
+  color: #aeb9c6;
+  cursor: not-allowed;
+}
+
+td .quantity-stepper,
+.quantity-column .quantity-stepper {
+  max-width: 156px;
+  margin-inline: auto;
+}
+
+.quantity-column {
+  min-width: 166px;
+}
+
+@media (max-width: 560px) {
+  .quantity-stepper__button {
+    width: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Material inventory state */
+.material-stock-cell { display:flex;align-items:center;gap:.45rem; }
+.inventory-warning { display:inline-flex;padding:.2rem .42rem;border-radius:999px;background:#fff7df;color:#9a5a06;font-size:.68rem;font-weight:750;white-space:nowrap; }
+.material-lifecycle-status--active { color:#176b47 !important;background:#e8f5ee !important;border-color:#b9e2ce !important; }
+
+/* Draft receipt actions */
+.receipt-table-actions { flex-wrap:nowrap;min-width:150px; }
+.receipt-table-actions form, .receipt-detail-actions form { margin:0; }
+.receipt-detail-actions { display:flex;align-items:center;gap:.65rem;margin-top:1rem; }
+.btn-delete-draft { display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:38px;padding:.48rem .72rem;border:1px solid #ef9aa3;border-radius:8px;background:#fff;color:#a51f2d;font-weight:750;cursor:pointer;white-space:nowrap; }
+.btn-delete-draft:hover { border-color:#dc6f7a;background:#fff0f1;color:#861521; }

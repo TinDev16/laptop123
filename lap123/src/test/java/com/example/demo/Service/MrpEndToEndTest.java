@@ -84,6 +84,27 @@ class MrpEndToEndTest {
     }
 
     @Test
+    void draftReceiptCanBeDeletedButCompletedReceiptIsProtected() {
+        long draftId = transaction.execute(status -> documents.createReceipt("manager@test.local", 1, null,
+                List.of(1L), List.of(2), List.of(BigDecimal.valueOf(100))));
+        transaction.executeWithoutResult(status -> documents.deleteDraftReceipt(draftId));
+
+        assertEquals(0, jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ct_phieunhap_nvl WHERE mapn = ?", Integer.class, draftId));
+        assertEquals(0, jdbc.queryForObject(
+                "SELECT COUNT(*) FROM phieunhap_nvl WHERE mapn = ?", Integer.class, draftId));
+
+        long completedId = transaction.execute(status -> documents.createReceipt("manager@test.local", 1, null,
+                List.of(1L), List.of(1), List.of(BigDecimal.valueOf(100))));
+        transaction.executeWithoutResult(status -> warehouse.completeMaterialReceipt(completedId));
+
+        assertThrows(IllegalStateException.class,
+                () -> transaction.executeWithoutResult(status -> documents.deleteDraftReceipt(completedId)));
+        assertEquals(1, jdbc.queryForObject(
+                "SELECT COUNT(*) FROM phieunhap_nvl WHERE mapn = ?", Integer.class, completedId));
+    }
+
+    @Test
     void completeDemoWorkflow() {
         long bomId = transaction.execute(status -> boms.create("manager@test.local", 1, "1.0", null,
                 List.of(1L), List.of(BigDecimal.ONE), List.of(BigDecimal.ZERO)));

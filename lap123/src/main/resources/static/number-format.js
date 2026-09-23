@@ -53,6 +53,81 @@
     if (number !== null && input.dataset.numberMax !== '' && number > Number(input.dataset.numberMax)) message = `Gia tri lon nhat la ${format(input.dataset.numberMax)}.`;
     input.setCustomValidity(message);
   };
+  const quantityContext = input => {
+    const attributes = [input.name, input.id, input.getAttribute('aria-label'), input.placeholder]
+      .filter(Boolean)
+      .join(' ');
+    const labels = Array.from(input.labels || []).map(label => label.textContent).join(' ');
+    const container = input.closest('.ceo-field,.form-group,.mb-3,.mb-4,td');
+    const nearbyLabel = container?.querySelector('label')?.textContent || '';
+    return norm(attributes + ' ' + labels + ' ' + nearbyLabel);
+  };
+  const isQuantityInput = input => {
+    if (input.dataset.quantityStepper === 'off' || input.readOnly || input.disabled) return false;
+    const context = quantityContext(input);
+    const compact = context.replace(/[^a-z0-9]/g, '');
+    return compact.includes('quantity') || compact.includes('soluong') ||
+      context.includes('so luong') || context.includes('dinh muc') ||
+      context.includes('ton toi thieu');
+  };
+  const updateQuantityButtons = input => {
+    const wrapper = input.closest('.quantity-stepper');
+    if (!wrapper) return;
+    const value = parseVi(input.value);
+    const min = input.dataset.numberMin === '' ? null : Number(input.dataset.numberMin);
+    const max = input.dataset.numberMax === '' ? null : Number(input.dataset.numberMax);
+    const decrease = wrapper.querySelector('[data-quantity-step="-1"]');
+    const increase = wrapper.querySelector('[data-quantity-step="1"]');
+    if (decrease) decrease.disabled = value !== null && min !== null && value <= min;
+    if (increase) increase.disabled = value !== null && max !== null && value >= max;
+  };
+  const enhanceQuantityStepper = input => {
+    if (!isQuantityInput(input)) return;
+    if (input.closest('.quantity-stepper')) {
+      updateQuantityButtons(input);
+      return;
+    }
+    if (input.parentElement?.querySelector('.btn-group')) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'quantity-stepper';
+
+    const decrease = document.createElement('button');
+    decrease.type = 'button';
+    decrease.className = 'quantity-stepper__button';
+    decrease.dataset.quantityStep = '-1';
+    decrease.setAttribute('aria-label', 'Giảm số lượng');
+    decrease.textContent = '−';
+
+    const increase = document.createElement('button');
+    increase.type = 'button';
+    increase.className = 'quantity-stepper__button';
+    increase.dataset.quantityStep = '1';
+    increase.setAttribute('aria-label', 'Tăng số lượng');
+    increase.textContent = '+';
+
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.append(decrease, input, increase);
+    input.addEventListener('input', () => updateQuantityButtons(input));
+    updateQuantityButtons(input);
+  };
+  const stepQuantity = (input, direction) => {
+    const places = decimals(input);
+    const stepValue = Number(input.dataset.numberStep) || 1;
+    const min = input.dataset.numberMin === '' ? null : Number(input.dataset.numberMin);
+    const max = input.dataset.numberMax === '' ? null : Number(input.dataset.numberMax);
+    let current = parseVi(input.value);
+    if (current === null) current = min !== null ? min : 0;
+    let next = current + direction * stepValue;
+    if (min !== null) next = Math.max(min, next);
+    if (max !== null) next = Math.min(max, next);
+    next = Number(next.toFixed(places));
+    input.value = format(next, places);
+    validate(input);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    updateQuantityButtons(input);
+  };
   const formatTyping = input => {
     const places = decimals(input);
     let text = input.value.replace(/\s+/g, '').replace(/[^\d,.-]/g, '');
@@ -86,15 +161,16 @@
     const number = parseInitial(initial);
     input.value = number === null ? '' : format(number, decimals(input));
     validate(input);
-    input.addEventListener('input', () => formatTyping(input));
+    input.addEventListener('input', () => formatTyping(input), true);
     input.addEventListener('blur', () => {
       const current = parseVi(input.value);
       if (current !== null) input.value = format(current, decimals(input));
       validate(input);
     });
+    enhanceQuantityStepper(input);
   };
   const formatElement = element => {
-    if (!element || element.children.length || element.closest('script,style,input,textarea,select')) return;
+    if (!element || element.dataset.numberValueReady === 'true' || element.children.length || element.closest('script,style,input,textarea,select')) return;
     const original = element.textContent.trim();
     const match = original.match(/^(-?[\d.,]+)(\s*(?:VND|VNĐ|%|sp|chiếc|bộ|cái)?)$/i);
     if (!match) return;
@@ -102,6 +178,7 @@
     if (number === null) return;
     element.textContent = `${format(number, match[2].trim() === '%' ? 2 : 6)}${match[2]}`;
     element.classList.add('number-value');
+    element.dataset.numberValueReady = 'true';
   };
   const formatTable = table => {
     const headers = Array.from(table.querySelectorAll('thead th'));
@@ -128,6 +205,12 @@
   const prepareForm = form => form.querySelectorAll('input[data-number-input]').forEach(input => { input.value = raw(input); validate(input); });
   const init = () => {
     enhance(document);
+    document.addEventListener('click', event => {
+      const button = event.target.closest?.('[data-quantity-step]');
+      if (!button) return;
+      const input = button.closest('.quantity-stepper')?.querySelector('input[data-number-input]');
+      if (input) stepQuantity(input, Number(button.dataset.quantityStep));
+    });
     document.addEventListener('submit', event => prepareForm(event.target), true);
     new MutationObserver(mutations => mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
       if (node.nodeType === Node.ELEMENT_NODE) enhance(node);

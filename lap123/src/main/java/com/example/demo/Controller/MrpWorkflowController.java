@@ -78,7 +78,17 @@ public class MrpWorkflowController {
         return "redirect:/kho/nhap-nvl/" + id;
     }
 
-    @GetMapping("/kho/xuat-nvl")
+        @PostMapping("/kho/nhap-nvl/{id}/delete")
+    public String deleteDraftReceipt(@PathVariable long id, RedirectAttributes flash) {
+        try {
+            documents.deleteDraftReceipt(id);
+            flash.addFlashAttribute("success", "Đã xóa phiếu nhập bản nháp.");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            flash.addFlashAttribute("error", exception.getMessage());
+        }
+        return "redirect:/kho/nhap-nvl";
+    }
+@GetMapping("/kho/xuat-nvl")
     public String materialIssues(Authentication auth, Model model) {
         model.addAttribute("manager", manager(auth));
         model.addAttribute("issues", documents.materialIssues(auth.getName(), manager(auth)));

@@ -37,7 +37,7 @@
     </div>
   </nav>
   <script th:src="@{/number-format.js}" defer></script>
-  <script th:src="@{/status-format.js}" defer></script>
+  <script th:src="@{/status-format.js(v='20260923-1')}" defer></script>
   <script th:src="@{/sidebar.js}" defer></script>
   <div class="sidebar-footer" sec:authorize="isAuthenticated()"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-danger" style="width:100%">Đăng xuất</button></form></div>
 </aside>

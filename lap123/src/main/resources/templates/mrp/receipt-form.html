@@ -16,8 +16,8 @@
 <h2 class="ceo-section-title"><i class="fas fa-boxes"></i> Chi tiết nguyên vật liệu</h2>
 <div id="receipt-lines" class="line-editor"><div class="receipt-line line-row">
 <div class="ceo-field"><label>Nguyên vật liệu</label><select name="materialId" class="form-control" required><option th:each="m : ${materials}" th:value="${m.manvl}" th:text="${m.manvl_code + ' - ' + m.tennvl}"></option></select></div>
-<div class="ceo-field"><label>Số lượng</label><input name="quantity" type="number" min="1" value="1" required class="form-control" oninput="total()"></div>
-<div class="ceo-field"><label>Đơn giá</label><input name="price" type="number" min="0" step="0.01" value="0" required class="form-control" oninput="total()"></div>
+<div class="ceo-field"><label>Số lượng</label><input name="quantity" type="number" min="1" value="1" required class="form-control"></div>
+<div class="ceo-field"><label>Đơn giá</label><input name="price" type="number" min="0" step="0.01" value="0" required class="form-control"></div>
 <button type="button" class="btn-line-remove" onclick="removeReceiptLine(this)"><i class="fas fa-trash-alt"></i> Xóa</button>
 </div></div>
 <button type="button" class="btn btn-line-add" onclick="addReceiptLine()"><i class="fas fa-plus"></i> Thêm dòng vật tư</button>
@@ -29,4 +29,6 @@
 function total(){let sum=0;document.querySelectorAll('.receipt-line').forEach(row=>{sum+=(Lap123Number.parse(row.querySelector('[name=quantity]').value)||0)*(Lap123Number.parse(row.querySelector('[name=price]').value)||0)});document.getElementById('total').textContent=sum.toLocaleString('vi-VN')}
 function addReceiptLine(){const source=document.querySelector('.receipt-line');const clone=source.cloneNode(true);clone.querySelector('[name=quantity]').value='1';clone.querySelector('[name=price]').value='0';document.getElementById('receipt-lines').appendChild(clone);total()}
 function removeReceiptLine(button){if(document.querySelectorAll('.receipt-line').length>1){button.closest('.receipt-line').remove();total()}}
+document.getElementById('receipt-lines').addEventListener('input', total);
+total();
 </script></body></html>

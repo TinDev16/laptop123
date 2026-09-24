@@ -39,6 +39,8 @@
   <script th:src="@{/number-format.js}" defer></script>
   <script th:src="@{/status-format.js(v='20260923-1')}" defer></script>
   <script th:src="@{/sidebar.js}" defer></script>
+  <link rel="stylesheet" th:href="@{/css/list-controls.css}">
+  <script th:src="@{/js/list-controls.js}" defer></script>
   <div class="sidebar-footer" sec:authorize="isAuthenticated()"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-danger" style="width:100%">Đăng xuất</button></form></div>
 </aside>
 <header th:fragment="topbar(pageTitle, breadcrumb)" class="topbar"><div class="topbar-left"><div><div class="topbar-title" th:text="${pageTitle}"></div><div class="topbar-breadcrumb"><i class="fas fa-home"></i> / <span th:text="${breadcrumb}"></span></div></div></div><div class="topbar-right"><span th:text="${#calendars.format(#calendars.createNow(), 'dd/MM/yyyy')}"></span></div></header>

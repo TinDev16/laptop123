@@ -1,0 +1,9 @@
+.list-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; margin:12px 0; }
+.list-control { display:flex; flex:1 1 170px; flex-direction:column; gap:6px; font-size:13px; font-weight:600; color:#334155; min-width:0; }
+.list-controls .form-control,.list-pagination .form-control { width:100%; min-height:40px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; background:white; color:#0f172a; }
+.list-pagination { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:14px 16px; border-top:1px solid #e2e8f0; }
+.list-summary { flex:1 1 250px; font-size:13px; color:#475569; }
+.list-page-select { display:flex; align-items:center; gap:8px; white-space:nowrap; }
+.list-pagination button:disabled { opacity:.45; cursor:not-allowed; }
+table[data-list-ready] tr[hidden] { display:none !important; }
+@media(max-width:600px) { .list-control { flex-basis:100%; } .list-pagination { justify-content:center; } .list-summary { flex-basis:100%; text-align:center; } }

@@ -22,6 +22,8 @@
         .cancel-btn { background: #6b7280; color: white; padding: 6px 12px; border-radius: 6px; transition: background 0.2s; }
         .cancel-btn:hover { background: #4b5563; }
     </style>
+<link rel="stylesheet" th:href="@{/css/list-controls.css}">
+<script th:src="@{/js/list-controls.js}" defer></script>
 </head>
 <body class="bg-gray-100">
 <div class="container mx-auto p-6 max-w-4xl">
@@ -128,7 +130,7 @@
 
     document.addEventListener('click', function (e) {
         const row = e.target.closest('tr');
-        if (row && row.parentElement.id === 'product-list') {
+        if (row && row.dataset.id && row.parentElement.id === 'product-list') {
             const id = parseInt(row.dataset.id);
             const name = row.dataset.name;
             const quantity = parseInt(row.dataset.quantity);
@@ -222,7 +224,7 @@
 
 document.querySelector("form").addEventListener("submit", function (event) {
     const selectedProducts = [];
-    document.querySelectorAll("#selected-products tr").forEach(row => {
+    document.querySelectorAll("#selected-products tr:not(.empty-row)").forEach(row => {
         const masp = row.getAttribute("data-id");
         const soluong = Lap123Number.parse(row.querySelector(".soluong").value);
         const gianhap = Lap123Number.parse(row.querySelector(".gianhap").value);

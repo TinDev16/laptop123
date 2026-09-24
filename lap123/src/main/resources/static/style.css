@@ -1521,3 +1521,15 @@ td .quantity-stepper,
 .receipt-detail-actions { display:flex;align-items:center;gap:.65rem;margin-top:1rem; }
 .btn-delete-draft { display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:38px;padding:.48rem .72rem;border:1px solid #ef9aa3;border-radius:8px;background:#fff;color:#a51f2d;font-weight:750;cursor:pointer;white-space:nowrap; }
 .btn-delete-draft:hover { border-color:#dc6f7a;background:#fff0f1;color:#861521; }
+
+.report-summary-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem; }
+.report-summary-card { display:block;padding:1rem;text-decoration:none;color:inherit;border:1px solid transparent;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease; }
+.report-summary-card:hover { border-color:#93c5fd;box-shadow:0 10px 25px rgba(37,99,235,.12);transform:translateY(-2px); }
+.report-summary-card.is-active { border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.1); }
+.report-summary-card h2 { margin:.55rem 0; }
+.report-summary-card span { display:flex;align-items:center;gap:.4rem;color:#2563eb;font-size:.84rem;font-weight:700; }
+.report-details { margin-top:1.5rem;scroll-margin-top:1rem; }
+.report-details-heading { display:flex;align-items:end;justify-content:space-between;gap:1rem;margin-bottom:.75rem; }
+.report-details-heading h2,.report-details-heading p { margin:0; }
+.report-details-heading p { margin-top:.25rem;color:#64748b; }
+@media (max-width:640px) { .report-details-heading { align-items:stretch;flex-direction:column; }.report-details-heading .btn { align-self:flex-start; } }

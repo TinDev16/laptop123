@@ -50,7 +50,7 @@ class MrpPageSmokeTest {
         for (String path : new String[]{"/dashboard", "/nguyen-vat-lieu", "/kho/nhap-nvl",
                 "/kho/xuat-nvl", "/kho/lich-su", "/bom", "/san-xuat/yeu-cau",
                 "/san-xuat/ket-qua", "/sanpham", "/kho/xuat-thanh-pham",
-                "/ncc", "/khachhang", "/thuonghieu", "/nhanvien", "/baocao"}) {
+                "/ncc", "/khachhang", "/thuonghieu", "/nhanvien"}) {
             mvc.perform(get(path).with(user("manager@test.local").roles("QUAN_LY_KHO")))
                     .andExpect(status().isOk())
                     .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
@@ -62,6 +62,24 @@ class MrpPageSmokeTest {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
                         .string(org.hamcrest.Matchers.containsString("<table")));
     }
+    @Test
+    void reportDetailsOnlyRenderAfterSelectingSummaryCard() throws Exception {
+        var manager = user("manager@test.local").roles("QUAN_LY_KHO");
+        mvc.perform(get("/baocao").with(manager))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("giao-dich-chi-tiet"))))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<table"))));
+
+        mvc.perform(get("/baocao").param("type", "NHAP_NVL").with(manager))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.containsString("giao-dich-chi-tiet")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .string(org.hamcrest.Matchers.containsString("<table")));
+    }
+
     @Test
     void partnerPagesKeepDashboardShell() throws Exception {
         for (String path : new String[]{"/ncc", "/khachhang", "/thuonghieu",

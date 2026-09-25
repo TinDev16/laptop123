@@ -166,10 +166,10 @@ public class MrpWorkflowController {
 
     @PostMapping("/san-xuat/ket-qua")
     public String createResult(Authentication auth, @RequestParam long orderId, @RequestParam int completed,
-                               @RequestParam int defective, @RequestParam(required = false) String note,
+                               @RequestParam(required = false) String note,
                                RedirectAttributes flash) {
         try {
-            long id = documents.createResult(auth.getName(), orderId, completed, defective, note);
+            long id = documents.createResult(auth.getName(), orderId, completed, 0, note);
             flash.addFlashAttribute("success", "Đã gửi kết quả sản xuất để xác nhận.");
             return "redirect:/san-xuat/ket-qua/" + id;
         } catch (IllegalArgumentException | IllegalStateException exception) {

@@ -13,8 +13,17 @@
 <div class="content-card-header"><h2 class="content-card-title">Thông tin kết quả</h2></div>
 <div class="content-card-body"><div class="ceo-form-grid">
 <div class="ceo-field ceo-field-full"><label for="orderId">Yêu cầu sản xuất <span class="ceo-required">*</span></label><select id="orderId" name="orderId" class="form-control" required><option value="" disabled selected>Chọn yêu cầu sản xuất</option><option th:each="o : ${orders}" th:value="${o.mayeucau}" th:text="${'#' + o.mayeucau + ' - ' + o.tensp + ' (' + o.soluonghoanthanh + '/' + o.soluongyeucau + ')'}"></option></select><small>Chỉ hiển thị yêu cầu đã phân công cho bạn.</small></div>
-<div class="ceo-field"><label for="completed">Số lượng hoàn thành lần này <span class="ceo-required">*</span></label><input id="completed" name="completed" type="number" min="1" required class="form-control" placeholder="Nhập số lượng hoàn thành"></div>
-<div class="ceo-field"><label for="defective">Số lượng lỗi <span class="ceo-required">*</span></label><input id="defective" name="defective" type="number" min="0" value="0" required class="form-control"></div>
-<div class="ceo-field ceo-field-full"><label for="note">Ghi chú</label><textarea id="note" name="note" maxlength="255" rows="3" class="form-control" placeholder="Mô tả tình trạng sản xuất nếu cần"></textarea></div>
+    <div class="ceo-field ceo-field-full">
+        <label for="completed">
+            Số lượng hoàn thành lần này <span class="ceo-required">*</span>
+        </label>
+        <input id="completed"
+               name="completed"
+               type="number"
+               min="1"
+               required
+               class="form-control"
+               placeholder="Nhập số lượng hoàn thành">
+    </div><div class="ceo-field ceo-field-full"><label for="note">Ghi chú</label><textarea id="note" name="note" maxlength="255" rows="3" class="form-control" placeholder="Mô tả tình trạng sản xuất nếu cần"></textarea></div>
 </div><div class="ceo-form-actions"><button type="submit" class="btn btn-primary" th:disabled="${#lists.isEmpty(orders)}">Gửi kết quả</button></div></div></form>
 </main></div></div></body></html>

@@ -8,7 +8,7 @@
 <div class="content-card-body"><dl class="ceo-detail-grid">
 <div><dt>Yêu cầu sản xuất</dt><dd th:text="${'#' + result.mayeucau}"></dd></div><div><dt>Sản phẩm</dt><dd th:text="${result.tensp}"></dd></div>
 <div><dt>Nhân viên thực hiện</dt><dd th:text="${result.hoten}"></dd></div><div><dt>Số lượng hoàn thành</dt><dd th:text="${result.soluonghoanthanh}"></dd></div>
-<div><dt>Số lượng lỗi</dt><dd th:text="${result.soluongloi}"></dd></div><div class="ceo-detail-note"><dt>Ghi chú</dt><dd th:text="${result.ghichu != null and !#strings.isEmpty(result.ghichu) ? result.ghichu : 'Không có ghi chú'}"></dd></div>
+<div class="ceo-detail-note"><dt>Ghi chú</dt><dd th:text="${result.ghichu != null and !#strings.isEmpty(result.ghichu) ? result.ghichu : 'Không có ghi chú'}"></dd></div>
 </dl></div></section>
 <form th:if="${manager and result.trangthai == 'CHO_XAC_NHAN'}" th:action="@{/san-xuat/ket-qua/{id}/confirm(id=${result.maketqua})}" method="post" class="ceo-detail-action" onsubmit="return confirm('Xác nhận nhập thành phẩm?')"><button type="submit" class="btn btn-primary">Xác nhận nhập kho</button></form>
 </main></div></div></body></html>

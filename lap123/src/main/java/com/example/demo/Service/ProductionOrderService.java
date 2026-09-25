@@ -9,6 +9,8 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class ProductionOrderService {
@@ -19,11 +21,31 @@ public class ProductionOrderService {
     }
 
     public List<Map<String, Object>> list(String email, boolean manager) {
-        String sql = "SELECT y.maycsx AS mayeucau, y.soluongyeucau, y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, y.trangthai, " +
-                "s.tensp, n.hoten FROM yeucausanxuat y JOIN sanpham s ON s.masp = y.masp " +
+        String sql = "SELECT y.maycsx AS mayeucau, y.soluongyeucau, " +
+                "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
+                "y.trangthai, s.tensp, n.hoten " +
+                "FROM yeucausanxuat y " +
+                "JOIN sanpham s ON s.masp = y.masp " +
                 "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach ";
-        if (manager) return jdbc.queryForList(sql + "ORDER BY y.maycsx DESC");
-        return jdbc.queryForList(sql + "JOIN taikhoan t ON t.manv = y.nguoiphutrach WHERE t.email = ? ORDER BY y.maycsx DESC", email);
+
+        List<Map<String, Object>> rows;
+
+        if (manager) {
+            rows = jdbc.queryForList(sql + "ORDER BY y.maycsx DESC");
+        } else {
+            rows = jdbc.queryForList(
+                    sql +
+                            "JOIN taikhoan t ON t.manv = y.nguoiphutrach " +
+                            "WHERE t.email = ? ORDER BY y.maycsx DESC",
+                    email
+            );
+        }
+
+        for (Map<String, Object> row : rows) {
+            addOverdueInfo(row);
+        }
+
+        return rows;
     }
 
     public Map<String, Object> get(long id, String email, boolean manager) {
@@ -38,7 +60,11 @@ public class ProductionOrderService {
             if (!manager) throw new org.springframework.security.access.AccessDeniedException("Không có quyền xem yêu cầu sản xuất này.");
             throw new IllegalArgumentException("Không tìm thấy yêu cầu sản xuất.");
         }
-        return rows.get(0);
+        Map<String, Object> order = rows.get(0);
+
+        addOverdueInfo(order);
+
+        return order;
     }
 
     public List<Map<String, Object>> activeBoms() {
@@ -85,6 +111,35 @@ public class ProductionOrderService {
                     needed.subtract(available).max(BigDecimal.ZERO)));
         }
         return result;
+    }
+
+    private void addOverdueInfo(Map<String, Object> order) {
+        Object deadlineValue = order.get("hanhoanthanh");
+
+        if (deadlineValue == null) {
+            order.put("overdueDays", 0L);
+            return;
+        }
+
+        LocalDate deadline;
+
+        if (deadlineValue instanceof java.sql.Date date) {
+            deadline = date.toLocalDate();
+        } else if (deadlineValue instanceof LocalDate date) {
+            deadline = date;
+        } else {
+            deadline = LocalDate.parse(deadlineValue.toString());
+        }
+
+        boolean completed = "HOAN_THANH".equals(order.get("trangthai"));
+
+        long overdueDays = 0;
+
+        if (!completed && LocalDate.now().isAfter(deadline)) {
+            overdueDays = ChronoUnit.DAYS.between(deadline, LocalDate.now());
+        }
+
+        order.put("overdueDays", overdueDays);
     }
 
     public record MaterialNeed(String code, String name, String unit, BigDecimal standard, BigDecimal waste,

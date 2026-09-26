@@ -10,8 +10,23 @@
 <div class="ceo-field ceo-field-full"><label for="bomId">Thành phẩm / BOM <span class="ceo-required">*</span></label><select id="bomId" name="bomId" required class="form-control"><option value="">-- Chọn BOM sản xuất --</option><option th:each="bom : ${boms}" th:value="${bom.mabom}" th:text="${bom.tensp + ' / ' + bom.phienban}"></option></select></div>
 <div class="ceo-field"><label for="employeeId">Nhân viên phụ trách <span class="ceo-required">*</span></label><select id="employeeId" name="employeeId" required class="form-control"><option value="">-- Chọn nhân viên --</option><option th:each="employee : ${employees}" th:value="${employee.manv}" th:text="${employee.hoten}"></option></select></div>
 <div class="ceo-field"><label for="quantity">Số lượng cần sản xuất <span class="ceo-required">*</span></label><input id="quantity" name="quantity" type="number" min="1" required class="form-control" placeholder="Nhập số lượng"></div>
-<div class="ceo-field"><label for="deadline">Hạn hoàn thành <span class="ceo-required">*</span></label><input id="deadline" name="deadline" type="date" required class="form-control"></div>
+<div class="ceo-field"><label for="deadline">Hạn hoàn thành <span class="ceo-required">*</span></label><input id="deadline"
+                                                                                                              name="deadline"
+                                                                                                              type="date"
+                                                                                                              required
+                                                                                                              class="form-control"></div>
 <div class="ceo-field ceo-field-full"><label for="orderNote">Ghi chú</label><textarea id="orderNote" name="note" maxlength="255" rows="3" class="form-control" placeholder="Yêu cầu kỹ thuật hoặc ưu tiên sản xuất"></textarea></div>
 </div>
 <div class="ceo-form-actions"><a class="btn btn-back" th:href="@{/san-xuat/yeu-cau}"><i class="fas fa-arrow-left"></i> Trở lại</a><button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Giao việc</button></div>
-</div></form></main></div></div></body></html>
+</div></form></main></div></div>
+<script>
+    const deadlineInput = document.getElementById("deadline");
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    deadlineInput.min = `${yyyy}-${mm}-${dd}`;
+</script>
+</body></html>

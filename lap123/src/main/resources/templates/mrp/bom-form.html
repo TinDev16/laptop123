@@ -14,7 +14,13 @@
 <h2 class="ceo-section-title"><i class="fas fa-cubes"></i> Danh sách nguyên vật liệu</h2>
 <div id="lines" class="line-editor"><div class="bom-line line-row">
 <div class="ceo-field"><label>Nguyên vật liệu</label><select name="materialId" required class="form-control"><option th:each="material : ${materials}" th:value="${material.manvl}" th:text="${material.manvl_code + ' - ' + material.tennvl}"></option></select></div>
-<div class="ceo-field"><label>Định mức</label><input name="quantity" type="number" min="0.001" step="0.001" required value="1" class="form-control"></div>
+<div class="ceo-field"><label>Định mức</label><input name="quantity"
+                                                     type="number"
+                                                     min="0.001"
+                                                     step="1"
+                                                     required
+                                                     value="1"
+                                                     class="form-control"></div>
 <div class="ceo-field"><label>Hao hụt (%)</label><input name="waste" type="number" min="0" max="999.99" step="0.01" required value="0" class="form-control"></div>
 <button type="button" class="btn-line-remove" onclick="removeBomLine(this)"><i class="fas fa-trash-alt"></i> Xóa</button>
 </div></div>

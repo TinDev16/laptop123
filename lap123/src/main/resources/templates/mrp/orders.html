@@ -1,60 +1,600 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Yêu cầu sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Yêu cầu sản xuất</title>
+
+  <link rel="stylesheet" th:href="@{/style.css}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        rel="stylesheet">
+
+  <style>
+    /* Bảng yêu cầu sản xuất luôn nằm trong chiều rộng màn hình */
+    .orders-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    .orders-table th,
+    .orders-table td {
+      padding: 7px 5px;
+      font-size: 12px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      vertical-align: middle;
+    }
+
+    /* Mã */
+    .orders-table th:nth-child(1),
+    .orders-table td:nth-child(1) {
+      width: 5%;
+      text-align: center;
+    }
+
+    /* Sản phẩm */
+    .orders-table th:nth-child(2),
+    .orders-table td:nth-child(2) {
+      width: 12%;
+    }
+
+    /* Số lượng */
+    .orders-table th:nth-child(3),
+    .orders-table td:nth-child(3),
+      /* Hoàn thành */
+    .orders-table th:nth-child(4),
+    .orders-table td:nth-child(4),
+      /* Còn lại */
+    .orders-table th:nth-child(5),
+    .orders-table td:nth-child(5) {
+      width: 6%;
+      text-align: center;
+    }
+
+    /* Ngày giao */
+    .orders-table th:nth-child(6),
+    .orders-table td:nth-child(6) {
+      width: 9%;
+      text-align: center;
+    }
+
+    /* Tiến độ */
+    .orders-table th:nth-child(7),
+    .orders-table td:nth-child(7) {
+      width: 9%;
+      text-align: center;
+    }
+
+    .orders-table progress {
+      width: 100%;
+      max-width: 70px;
+      height: 8px;
+    }
+
+    /* Nhân viên */
+    .orders-table th:nth-child(8),
+    .orders-table td:nth-child(8) {
+      width: 9%;
+    }
+
+    /* Hạn */
+    .orders-table th:nth-child(9),
+    .orders-table td:nth-child(9) {
+      width: 8%;
+      text-align: center;
+    }
+
+    /* Trạng thái */
+    .orders-table th:nth-child(10),
+    .orders-table td:nth-child(10) {
+      width: 8%;
+      text-align: center;
+    }
+
+    /* Cảnh báo */
+    .orders-table th:nth-child(11),
+    .orders-table td:nth-child(11) {
+      width: 9%;
+      text-align: center;
+    }
+
+    /* Thao tác */
+    .orders-table th:nth-child(12),
+    .orders-table td:nth-child(12) {
+      width: 13%;
+    }
+
+    /* Các nút */
+    .orders-table .btn {
+      font-size: 11px;
+      padding: 4px 6px;
+      white-space: nowrap;
+    }
+
+    /* Khu vực thao tác */
+    .order-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+      width: 100%;
+    }
+
+    .orders-table .action-btn {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 6px 3px;
+      border-radius: 6px;
+      border: none;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Status nhỏ hơn */
+    .orders-table .status-pill {
+      font-size: 10px;
+      padding: 3px 5px;
+      white-space: normal;
+    }
+
+    .orders-table .action-btn {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 11px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .orders-table .action-view {
+      background-color: #e2e8f0;
+      color: #334155;
+    }
+
+    .orders-table .action-edit {
+      background-color: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .orders-table .action-history {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+
+    .orders-table .action-cancel {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .orders-table .action-btn:hover {
+      opacity: 0.8;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="app-container">
+
+  <!-- SIDEBAR -->
   <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+
   <div class="main-wrapper">
+
+    <!-- TOPBAR -->
     <div th:replace="~{fragments/sidebar :: topbar('Yêu cầu sản xuất', 'MRP / Sản xuất')}"></div>
+
     <main class="content-body">
+
       <h1>Yêu cầu sản xuất</h1>
-      <p th:if="${manager}"><a class="btn btn-primary" th:href="@{/san-xuat/yeu-cau/create}">Tạo yêu cầu</a></p>
-      <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Yêu cầu sản xuất</h2><span class="record-count" th:text="${#lists.size(orders) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table>
-        <thead>
-        <tr>
-          <th>Mã</th>
-          <th>Sản phẩm</th>
-          <th>Số lượng</th>
-          <th>Hoàn thành</th>
-          <th>Còn lại</th>
-          <th>Ngày giao</th>
-          <th>Tiến độ</th>
-          <th>Nhân viên</th>
-          <th>Hạn</th>
-          <th>Trạng thái</th>
-          <th>Cảnh báo quá hạn</th>
-          <th></th>
-        </tr>
-        </thead>
-        <tbody><tr th:each="order : ${orders}">
-          <td th:text="${order.mayeucau}"></td><td th:text="${order.tensp}"></td>
-          <td th:text="${order.soluongyeucau}"></td><td th:text="${order.soluonghoanthanh}"></td><td th:text="${order.soluongyeucau - order.soluonghoanthanh}"></td><td th:text="${order.ngayyeucau}"></td><td><progress th:value="${order.soluonghoanthanh}" th:max="${order.soluongyeucau > 0 ? order.soluongyeucau : 1}"></progress> <span th:text="${order.soluongyeucau > 0 ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%' : '0%'}"></span></td>
-          <td th:text="${order.hoten}"></td>
 
-          <td th:text="${order.hanhoanthanh}"></td>
+      <!-- Nút tạo yêu cầu -->
+      <p th:if="${manager}">
+        <a class="btn btn-primary"
+           th:href="@{/san-xuat/yeu-cau/create}">
+          Tạo yêu cầu
+        </a>
+      </p>
 
-          <td th:text="${order.trangthai}"></td>
+      <!-- Thông báo -->
+      <div th:if="${success}"
+           class="status-pill"
+           style="background-color:#dcfce7;color:#166534;margin-bottom:15px;"
+           th:text="${success}">
+      </div>
 
-          <!-- Cảnh báo quá hạn -->
-          <td>
-            <span th:if="${order.overdueDays > 0}"
-                  class="status-pill"
-                  style="background-color: #fee2e2; color: #b91c1c;"
-                  th:text="'Quá hạn ' + order.overdueDays + ' ngày'">
-            </span>
+      <div th:if="${error}"
+           class="status-pill"
+           style="background-color:#fee2e2;color:#b91c1c;margin-bottom:15px;"
+           th:text="${error}">
+      </div>
 
-                    <span th:if="${order.overdueDays == 0}"
-                          style="color: #64748b;">
-                -
-            </span>
-          </td>
 
-          <td>
-            <a th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}">
-              Xem
-            </a>
-          </td>
-        </tr><tr class="empty-row" th:if="${#lists.isEmpty(orders)}"><td colspan="12">Chưa có dữ liệu để hiển thị.</td></tr></tbody>
-      </table></div></div>
+      <div class="content-card">
+
+        <div class="content-card-header">
+          <h2 class="content-card-title">
+            Yêu cầu sản xuất
+          </h2>
+
+          <span class="record-count"
+                th:text="${#lists.size(orders) + ' bản ghi'}">
+                        0 bản ghi
+                    </span>
+        </div>
+
+
+        <div class="table-container">
+
+          <table class="orders-table">
+
+            <thead>
+            <tr>
+              <th>Mã</th>
+              <th>Sản phẩm</th>
+              <th>SL</th>
+              <th>Đã Xong</th>
+              <th>Còn</th>
+              <th>Ngày giao</th>
+              <th>Tiến độ</th>
+              <th>Nhân viên</th>
+              <th>Hạn</th>
+              <th>Trạng thái</th>
+              <th>Cảnh báo</th>
+              <th style="text-align: center;">Thao tác</th>
+            </tr>
+            </thead>
+
+
+            <tbody>
+
+            <tr th:each="order : ${orders}">
+
+              <!-- Mã -->
+              <td th:text="${order.mayeucau}">
+              </td>
+
+
+              <!-- Sản phẩm -->
+              <td th:text="${order.tensp}">
+              </td>
+
+
+              <!-- Số lượng -->
+              <td th:text="${order.soluongyeucau}">
+              </td>
+
+
+              <!-- Hoàn thành -->
+              <td th:text="${order.soluonghoanthanh}">
+              </td>
+
+
+              <!-- Còn lại -->
+              <td th:text="${order.soluongyeucau - order.soluonghoanthanh}">
+              </td>
+
+
+              <!-- Ngày giao -->
+              <td th:text="${order.ngayyeucau}">
+              </td>
+
+
+              <!-- Tiến độ -->
+              <td>
+
+                <progress
+                        th:value="${order.soluonghoanthanh}"
+                        th:max="${order.soluongyeucau > 0 ? order.soluongyeucau : 1}">
+                </progress>
+
+                <span
+                        th:text="${order.soluongyeucau > 0
+                                        ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%'
+                                        : '0%'}">
+                                </span>
+
+              </td>
+
+
+              <!-- Nhân viên -->
+              <td th:text="${order.hoten}">
+              </td>
+
+
+              <!-- Hạn -->
+              <td th:text="${order.hanhoanthanh}">
+              </td>
+
+
+              <!-- Trạng thái -->
+              <td>
+                              <span
+                                      class="status-pill"
+                                      th:text="${
+                                      order.trangthai == 'HUY' ? 'Hủy' :
+                                      order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
+                                      order.trangthai
+                                  }">
+                              </span>
+
+              </td>
+
+
+              <!-- Cảnh báo quá hạn -->
+              <td>
+
+                                <span
+                                        th:if="${order.overdueDays > 0}"
+                                        class="status-pill"
+                                        style="background-color:#fee2e2;color:#b91c1c;"
+                                        th:text="'Quá hạn ' + ${order.overdueDays} + ' ngày'">
+                                </span>
+
+                <span
+                        th:if="${order.overdueDays == 0}"
+                        style="color:#64748b;">
+                                    -
+                                </span>
+
+              </td>
+
+
+              <!-- ================================================= -->
+              <!-- THAO TÁC -->
+              <!-- ================================================= -->
+
+              <td>
+
+                <div class="order-actions">
+
+                  <!-- XEM -->
+                  <a
+                          th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
+                          class="action-btn action-view">
+                    Xem
+                  </a>
+
+
+                  <!-- =============================== -->
+                  <!-- CHỈ QUẢN LÝ -->
+                  <!-- =============================== -->
+
+                  <th:block th:if="${manager}">
+
+                    <!-- SỬA -->
+                    <a
+                            th:if="${order.trangthai != 'HOAN_THANH'
+                and order.trangthai != 'HUY'}"
+                            th:href="@{/san-xuat/yeu-cau/{id}/edit(id=${order.mayeucau})}"
+                            class="action-btn action-edit">
+                      Sửa
+                    </a>
+
+
+                    <!-- LỊCH SỬ -->
+                    <a
+                            th:href="@{/san-xuat/yeu-cau/{id}/history(id=${order.mayeucau})}"
+                            class="action-btn action-history">
+                      Lịch sử
+                    </a>
+
+
+                    <!-- HỦY -->
+                    <button
+                            th:if="${order.trangthai != 'HOAN_THANH'
+                and order.trangthai != 'HUY'}"
+                            type="button"
+                            class="action-btn action-cancel"
+                            th:onclick="'openCancelModal(' + ${order.mayeucau} + ')'">
+                      Hủy
+                    </button>
+
+                  </th:block>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+
+            <!-- Không có dữ liệu -->
+            <tr
+                    class="empty-row"
+                    th:if="${#lists.isEmpty(orders)}">
+
+              <td colspan="12">
+                Chưa có dữ liệu để hiển thị.
+              </td>
+
+            </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
     </main>
+
   </div>
-</div></body></html>
+
+</div>
+
+<!-- POPUP HỦY -->
+<div id="cancelModal" class="cancel-modal">
+
+  <div class="cancel-modal-content">
+
+    <div class="cancel-modal-header">
+      <h3>
+        <i class="fas fa-times-circle"></i>
+        Hủy yêu cầu sản xuất
+      </h3>
+
+      <button
+              type="button"
+              class="cancel-modal-close"
+              onclick="closeCancelModal()">
+        &times;
+      </button>
+    </div>
+
+    <div class="cancel-modal-body">
+
+      <p>Vui lòng nhập lý do hủy yêu cầu:</p>
+
+      <form id="cancelForm" method="post">
+
+        <textarea
+                name="reason"
+                id="cancelReason"
+                maxlength="255"
+                required
+                placeholder="Nhập lý do hủy..."
+                rows="4"></textarea>
+
+        <div class="cancel-modal-actions">
+
+          <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="closeCancelModal()">
+            Đóng
+          </button>
+
+          <button
+                  type="submit"
+                  class="btn btn-danger"
+                  onclick="return confirm('Bạn có chắc muốn hủy yêu cầu này?');">
+            <i class="fas fa-times"></i>
+            Xác nhận hủy
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  .cancel-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cancel-modal-content {
+    width: 420px;
+    max-width: calc(100vw - 40px);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+  }
+
+  .cancel-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .cancel-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .cancel-modal-close {
+    border: none;
+    background: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #64748b;
+  }
+
+  .cancel-modal-body {
+    padding: 20px;
+  }
+
+  .cancel-modal-body p {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #475569;
+  }
+
+  .cancel-modal-body textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .cancel-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 15px;
+  }
+</style>
+
+<script>
+  function openCancelModal(id) {
+
+    const modal = document.getElementById('cancelModal');
+    const form = document.getElementById('cancelForm');
+    const reason = document.getElementById('cancelReason');
+
+    form.action = '/san-xuat/yeu-cau/' + id + '/cancel';
+
+    modal.style.display = 'flex';
+
+    reason.value = '';
+    reason.focus();
+  }
+
+  function closeCancelModal() {
+    document.getElementById('cancelModal').style.display = 'none';
+  }
+
+  document.getElementById('cancelModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+      closeCancelModal();
+    }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeCancelModal();
+    }
+  });
+</script>
+
+</body>
+</html>

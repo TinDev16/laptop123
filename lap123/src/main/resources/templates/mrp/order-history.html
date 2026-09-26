@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử chỉnh sửa yêu cầu</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+
+    <style>
+        .history-info {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            row-gap: 12px;
+            column-gap: 20px;
+            padding: 18px 20px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .history-info-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .history-info-value {
+            color: #1e293b;
+        }
+
+        .history-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 9px 8px;
+            font-size: 12px;
+            vertical-align: middle;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .history-table th {
+            text-align: left;
+        }
+
+        .history-table th:nth-child(1),
+        .history-table td:nth-child(1) {
+            width: 15%;
+        }
+
+        .history-table th:nth-child(2),
+        .history-table td:nth-child(2) {
+            width: 14%;
+        }
+
+        .history-table th:nth-child(3),
+        .history-table td:nth-child(3) {
+            width: 12%;
+            text-align: center;
+        }
+
+        .history-table th:nth-child(4),
+        .history-table td:nth-child(4) {
+            width: 16%;
+            text-align: center;
+        }
+
+        .history-table th:nth-child(5),
+        .history-table td:nth-child(5) {
+            width: 18%;
+        }
+
+        .history-table th:nth-child(6),
+        .history-table td:nth-child(6) {
+            width: 25%;
+        }
+
+        .history-table .change-arrow {
+            color: #64748b;
+            margin: 0 4px;
+        }
+
+        .history-table strong {
+            color: #1e293b;
+        }
+
+        .history-back {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+
+            .history-info {
+                grid-template-columns: 140px 1fr;
+            }
+
+            .history-table th,
+            .history-table td {
+                font-size: 11px;
+                padding: 7px 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar(
+            'Lịch sử chỉnh sửa',
+            'MRP / Sản xuất'
+        )}"></div>
+
+        <main class="content-body">
+
+            <h1>Lịch sử chỉnh sửa yêu cầu sản xuất</h1>
+
+
+            <!-- THÔNG TIN YÊU CẦU -->
+            <div class="content-card"
+                 style="margin-bottom:20px;">
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+                        Yêu cầu #
+                        <span th:text="${order.mayeucau}"></span>
+                    </h2>
+
+                </div>
+
+
+                <div class="history-info">
+
+                    <div class="history-info-label">
+                        Sản phẩm
+                    </div>
+
+                    <div class="history-info-value"
+                         th:text="${order.tensp}">
+                    </div>
+
+
+                    <div class="history-info-label">
+                        Số lượng hiện tại
+                    </div>
+
+                    <div class="history-info-value"
+                         th:text="${order.soluongyeucau}">
+                    </div>
+
+
+                    <div class="history-info-label">
+                        Nhân viên phụ trách
+                    </div>
+
+                    <div class="history-info-value"
+                         th:text="${order.hoten}">
+                    </div>
+
+
+                    <div class="history-info-label">
+                        Trạng thái
+                    </div>
+
+                    <div class="history-info-value">
+
+                        <span
+                                class="status-pill"
+                                th:text="${
+                                    order.trangthai == 'HUY' ? 'Hủy' :
+                                    order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
+                                    order.trangthai
+                                }">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- LỊCH SỬ -->
+            <div class="content-card">
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+                        Lịch sử điều chỉnh
+                    </h2>
+
+                    <span
+                            class="record-count"
+                            th:text="${#lists.size(history) + ' lần chỉnh sửa'}">
+                        0 lần chỉnh sửa
+                    </span>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table class="history-table">
+
+                        <thead>
+
+                        <tr>
+
+                            <th>Thời gian</th>
+
+                            <th>Người sửa</th>
+
+                            <th>Số lượng</th>
+
+                            <th>Hạn hoàn thành</th>
+
+                            <th>Nhân viên phụ trách</th>
+
+                            <th>Nội dung điều chỉnh</th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        <tr th:each="item : ${history}">
+
+                            <!-- Thời gian -->
+                            <td th:text="${item.thoigian}">
+                            </td>
+
+
+                            <!-- Người sửa -->
+                            <td th:text="${item.tennguoisua}">
+                            </td>
+
+
+                            <!-- Số lượng -->
+                            <td>
+
+                                <span th:text="${item.soluongcu}">
+                                </span>
+
+                                <span class="change-arrow">
+                                    →
+                                </span>
+
+                                <strong th:text="${item.soluongmoi}">
+                                </strong>
+
+                            </td>
+
+
+                            <!-- Hạn -->
+                            <td>
+
+                                <span th:text="${item.han_cu}">
+                                </span>
+
+                                <span class="change-arrow">
+                                    →
+                                </span>
+
+                                <strong th:text="${item.han_moi}">
+                                </strong>
+
+                            </td>
+
+
+                            <!-- Nhân viên -->
+                            <td>
+
+                                <span th:text="${item.ten_nhanvien_cu != null ? item.ten_nhanvien_cu : 'Chưa có'}">
+                                </span>
+
+                                <span class="change-arrow">
+        →
+                                </span>
+
+                                <strong th:text="${item.ten_nhanvien_moi != null ? item.ten_nhanvien_moi : 'Chưa có'}">
+                                </strong>
+
+                            </td>
+
+
+                            <!-- Nội dung -->
+                            <td th:text="${item.lydodieuchinh}">
+                            </td>
+
+                        </tr>
+
+
+                        <!-- Không có lịch sử -->
+                        <tr
+                                class="empty-row"
+                                th:if="${#lists.isEmpty(history)}">
+
+                            <td colspan="6">
+                                Yêu cầu này chưa có lịch sử chỉnh sửa.
+                            </td>
+
+                        </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- QUAY LẠI -->
+            <div class="history-back">
+
+                <a
+                        th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
+                        class="btn btn-secondary">
+
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại yêu cầu
+
+                </a>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

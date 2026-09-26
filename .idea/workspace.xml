@@ -6,17 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="40523376-f630-4d04-8532-2a6b16c4a298" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/WarehouseReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/java/com/example/demo/Controller/WarehouseReportController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/static/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/fragments/sidebar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/report.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/mrp/report.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/add.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieunhap/edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/add.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/add.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/main/resources/templates/phieuxuat/edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lap123/src/test/java/com/example/demo/MrpPageSmokeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/lap123/src/test/java/com/example/demo/MrpPageSmokeTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="188" />
+    <option name="cachedIndexableFilesCount" value="191" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -143,6 +132,7 @@
       <workItem from="1790173435852" duration="6000" />
       <workItem from="1790232054672" duration="1431000" />
       <workItem from="1790235107609" duration="410000" />
+      <workItem from="1790257722203" duration="1039000" />
     </task>
     <servers />
   </component>

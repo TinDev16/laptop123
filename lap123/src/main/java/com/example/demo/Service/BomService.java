@@ -33,6 +33,35 @@ public class BomService {
         return jdbc.queryForList("SELECT manvl, manvl_code, tennvl, donvitinh FROM nguyenvatlieu WHERE trangthai = 1 ORDER BY tennvl");
     }
 
+    public List<Map<String, Object>> versions(int productId) {
+        return jdbc.queryForList(
+                "SELECT mabom, phienban, trangthai " +
+                        "FROM bom " +
+                        "WHERE masp = ? " +
+                        "AND trangthai = 'HIEU_LUC' " +
+                        "ORDER BY mabom DESC",
+                productId
+        );
+    }
+
+    public List<Map<String, Object>> materialsByBom(long bomId) {
+        return jdbc.queryForList(
+                "SELECT c.manvl, " +
+                        "n.manvl_code, " +
+                        "n.tennvl, " +
+                        "n.donvitinh, " +
+                        "c.soluong_dinhmuc, " +
+                        "c.tyle_haohut AS ty_le_hao_hut " +
+                        "FROM bom_chitiet c " +
+                        "JOIN nguyenvatlieu n ON n.manvl = c.manvl " +
+                        "JOIN bom b ON b.mabom = c.mabom " +
+                        "WHERE c.mabom = ? " +
+                        "AND b.trangthai = 'HIEU_LUC' " +
+                        "ORDER BY c.id",
+                bomId
+        );
+    }
+
     public Map<String, Object> get(long id) {
         return jdbc.queryForMap("SELECT b.mabom, b.masp, b.phienban, b.trangthai, b.ghichu, s.tensp " +
                 "FROM bom b JOIN sanpham s ON s.masp = b.masp WHERE b.mabom = ?", id);

@@ -1,33 +1,698 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tạo BOM</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Tạo BOM', 'MRP / BOM')}"></div>
-<main class="content-body mrp-entry-page"><div class="page-header"><div><h1 class="page-title">Tạo định mức sản xuất</h1><p class="page-description">Khai báo phiên bản BOM, định mức vật tư và tỷ lệ hao hụt.</p></div><a class="btn btn-back" th:href="@{/bom}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
-<p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
-<form th:action="@{/bom}" method="post" class="content-card ceo-form-card"><div class="content-card-body">
-<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
-<h2 class="ceo-section-title"><i class="fas fa-sitemap"></i> Thông tin BOM</h2>
-<div class="ceo-form-grid cols-3">
-<div class="ceo-field"><label for="productId">Thành phẩm <span class="ceo-required">*</span></label><select id="productId" name="productId" required class="form-control"><option value="">-- Chọn thành phẩm --</option><option th:each="product : ${products}" th:value="${product.masp}" th:text="${product.tensp}"></option></select></div>
-<div class="ceo-field"><label for="version">Phiên bản <span class="ceo-required">*</span></label><input id="version" name="version" required maxlength="30" class="form-control" placeholder="Ví dụ: V1.0"></div>
-<div class="ceo-field"><label for="bomNote">Ghi chú</label><input id="bomNote" name="note" maxlength="255" class="form-control" placeholder="Mô tả thay đổi phiên bản"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tạo BOM</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div>
+
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Tạo BOM', 'MRP / BOM')}"></div>
+
+        <main class="content-body mrp-entry-page">
+
+            <!-- HEADER -->
+            <div class="page-header">
+
+                <div>
+                    <h1 class="page-title">
+                        Tạo định mức sản xuất
+                    </h1>
+
+                    <p class="page-description">
+                        Chọn BOM mẫu nếu muốn sao chép nguyên vật liệu,
+                        sau đó có thể chỉnh sửa trước khi lưu BOM mới.
+                    </p>
+                </div>
+
+                <a class="btn btn-back"
+                   th:href="@{/bom}">
+                    <i class="fas fa-arrow-left"></i>
+                    Về danh sách
+                </a>
+
+            </div>
+
+            <!-- ERROR -->
+            <p th:if="${error}"
+               th:text="${error}"
+               class="alert alert-danger">
+            </p>
+
+
+            <!-- FORM -->
+            <form th:action="@{/bom}"
+                  method="post"
+                  class="content-card ceo-form-card">
+
+                <div class="content-card-body">
+
+                    <!-- CSRF -->
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}"
+                           th:if="${_csrf != null}">
+
+
+                    <!-- ========================= -->
+                    <!-- THÔNG TIN BOM -->
+                    <!-- ========================= -->
+
+                    <h2 class="ceo-section-title">
+                        <i class="fas fa-sitemap"></i>
+                        Thông tin BOM
+                    </h2>
+
+
+                    <div class="ceo-form-grid cols-3">
+
+                        <!-- THÀNH PHẨM -->
+                        <div class="ceo-field">
+
+                            <label for="productId">
+                                Thành phẩm
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select id="productId"
+                                    name="productId"
+                                    required
+                                    class="form-control"
+                                    onchange="loadVersions()">
+
+                                <option value="">
+                                    -- Chọn thành phẩm --
+                                </option>
+
+                                <option th:each="product : ${products}"
+                                        th:value="${product.masp}"
+                                        th:text="${product.tensp}">
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- BOM MẪU -->
+                        <div class="ceo-field">
+
+                            <label for="templateBom">
+                                BOM mẫu
+                            </label>
+
+                            <select id="templateBom"
+                                    class="form-control"
+                                    disabled
+                                    onchange="loadMaterials()">
+
+                                <option value="">
+                                    -- Chọn thành phẩm trước --
+                                </option>
+
+                            </select>
+
+                            <small>
+                                Có thể bỏ qua nếu muốn tạo BOM từ đầu.
+                            </small>
+
+                        </div>
+
+
+                        <!-- VERSION MỚI -->
+                        <div class="ceo-field">
+
+                            <label for="version">
+                                Phiên bản mới
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <input id="version"
+                                   name="version"
+                                   required
+                                   maxlength="30"
+                                   class="form-control"
+                                   placeholder="Ví dụ: V2.0">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- GHI CHÚ -->
+
+                    <div class="ceo-field"
+                         style="margin-top: 15px;">
+
+                        <label for="bomNote">
+                            Ghi chú
+                        </label>
+
+                        <input id="bomNote"
+                               name="note"
+                               maxlength="255"
+                               class="form-control"
+                               placeholder="Mô tả thay đổi phiên bản">
+
+                    </div>
+
+
+                    <!-- ========================= -->
+                    <!-- DANH SÁCH NVL -->
+                    <!-- ========================= -->
+
+                    <h2 class="ceo-section-title"
+                        style="margin-top: 30px;">
+
+                        <i class="fas fa-cubes"></i>
+                        Danh sách nguyên vật liệu
+
+                    </h2>
+
+
+                    <div id="lines"
+                         class="line-editor">
+
+                        <!-- BAN ĐẦU -->
+                        <div class="bom-empty-message">
+
+                            Chọn BOM mẫu để tự động lấy nguyên vật liệu
+                            hoặc bấm "Thêm nguyên vật liệu" để tạo từ đầu.
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ========================= -->
+                    <!-- THÊM NVL -->
+                    <!-- ========================= -->
+
+                    <button type="button"
+                            class="btn btn-line-add"
+                            onclick="addBomLine()">
+
+                        <i class="fas fa-plus"></i>
+                        Thêm nguyên vật liệu
+
+                    </button>
+
+
+                    <!-- ========================= -->
+                    <!-- BUTTON -->
+                    <!-- ========================= -->
+
+                    <div class="ceo-form-actions ceo-form-actions--end">
+
+                        <button class="btn btn-primary"
+                                type="submit">
+
+                            <i class="fas fa-save"></i>
+                            Lưu BOM
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+
 </div>
-<h2 class="ceo-section-title"><i class="fas fa-cubes"></i> Danh sách nguyên vật liệu</h2>
-<div id="lines" class="line-editor"><div class="bom-line line-row">
-<div class="ceo-field"><label>Nguyên vật liệu</label><select name="materialId" required class="form-control"><option th:each="material : ${materials}" th:value="${material.manvl}" th:text="${material.manvl_code + ' - ' + material.tennvl}"></option></select></div>
-<div class="ceo-field"><label>Định mức</label><input name="quantity"
-                                                     type="number"
-                                                     min="0.001"
-                                                     step="1"
-                                                     required
-                                                     value="1"
-                                                     class="form-control"></div>
-<div class="ceo-field"><label>Hao hụt (%)</label><input name="waste" type="number" min="0" max="999.99" step="0.01" required value="0" class="form-control"></div>
-<button type="button" class="btn-line-remove" onclick="removeBomLine(this)"><i class="fas fa-trash-alt"></i> Xóa</button>
-</div></div>
-<button type="button" class="btn btn-line-add" onclick="addBomLine()"><i class="fas fa-plus"></i> Thêm nguyên vật liệu</button>
-<div class="ceo-form-actions ceo-form-actions--end"><button class="btn btn-primary" type="submit"><i class="fas fa-save"></i> Lưu BOM</button></div>
-</div></form></main></div></div>
+
+<template id="materialOptionsTemplate">
+    <option value="">-- Chọn nguyên vật liệu --</option>
+
+    <option th:each="material : ${materials}"
+            th:value="${material.manvl}"
+            th:text="${material.manvl_code + ' - ' + material.tennvl}">
+    </option>
+</template>
+
 <script>
-function addBomLine(){const clone=document.querySelector('.bom-line').cloneNode(true);clone.querySelector('[name=quantity]').value='1';clone.querySelector('[name=waste]').value='0';document.getElementById('lines').appendChild(clone)}
-function removeBomLine(button){if(document.querySelectorAll('.bom-line').length>1)button.closest('.bom-line').remove()}
-</script></body></html>
+
+    /*
+    =========================================================
+    1. CHỌN THÀNH PHẨM
+    =========================================================
+    */
+
+    async function loadVersions() {
+
+        const productId =
+            document.getElementById("productId").value;
+
+        const templateBom =
+            document.getElementById("templateBom");
+
+        const lines =
+            document.getElementById("lines");
+
+
+        // Reset BOM mẫu
+        templateBom.innerHTML =
+            '<option value="">-- Chọn BOM mẫu --</option>';
+
+        templateBom.disabled = true;
+
+
+        // Reset NVL
+        lines.innerHTML =
+            `
+        <div class="bom-empty-message">
+            Chọn BOM mẫu để tự động lấy nguyên vật liệu
+            hoặc bấm "Thêm nguyên vật liệu" để tạo từ đầu.
+        </div>
+        `;
+
+
+        // Không chọn sản phẩm
+        if (!productId) {
+
+            templateBom.innerHTML =
+                '<option value="">-- Chọn thành phẩm trước --</option>';
+
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/bom/versions?productId=${encodeURIComponent(productId)}`
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Không thể tải danh sách BOM."
+                );
+
+            }
+
+
+            const versions =
+                await response.json();
+
+
+            // Không có BOM
+            if (versions.length === 0) {
+
+                templateBom.innerHTML =
+                    '<option value="">-- Chưa có BOM mẫu --</option>';
+
+                return;
+            }
+
+
+            // Đổ danh sách BOM
+            versions.forEach(bom => {
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    bom.mabom;
+
+                option.textContent =
+                    bom.phienban +
+                    " (BOM #" +
+                    bom.mabom +
+                    ")";
+
+                templateBom.appendChild(option);
+
+            });
+
+
+            templateBom.disabled = false;
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            templateBom.innerHTML =
+                '<option value="">-- Lỗi tải BOM --</option>';
+
+        }
+    }
+
+
+    /*
+    =========================================================
+    2. CHỌN BOM MẪU
+    =========================================================
+    */
+
+    async function loadMaterials() {
+
+        const bomId =
+            document.getElementById("templateBom").value;
+
+        const lines =
+            document.getElementById("lines");
+
+
+        // Không chọn BOM
+        if (!bomId) {
+
+            lines.innerHTML =
+                `
+            <div class="bom-empty-message">
+                Chọn BOM mẫu để tự động lấy nguyên vật liệu
+                hoặc bấm "Thêm nguyên vật liệu" để tạo từ đầu.
+            </div>
+            `;
+
+            return;
+        }
+
+
+        // Loading
+        lines.innerHTML =
+            `
+        <div class="bom-loading-message">
+            <i class="fas fa-spinner fa-spin"></i>
+            Đang tải nguyên vật liệu...
+        </div>
+        `;
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/bom/materials-by-bom?bomId=${encodeURIComponent(bomId)}`
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Không thể tải nguyên vật liệu."
+                );
+
+            }
+
+
+            const materials =
+                await response.json();
+
+
+            lines.innerHTML = "";
+
+
+            // BOM không có NVL
+            if (materials.length === 0) {
+
+                lines.innerHTML =
+                    `
+                <div class="bom-empty-message">
+                    BOM này chưa có nguyên vật liệu.
+                </div>
+                `;
+
+                return;
+            }
+
+
+            /*
+            Đổ từng NVL vào form
+            */
+
+            materials.forEach(material => {
+
+                addMaterialRow(
+                    material.manvl,
+                    material.manvl_code,
+                    material.tennvl,
+                    material.donvitinh,
+                    material.soluong_dinhmuc,
+                    material.ty_le_hao_hut
+                );
+
+            });
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            lines.innerHTML =
+                `
+            <div class="bom-empty-message">
+                Không thể tải nguyên vật liệu.
+            </div>
+            `;
+
+        }
+    }
+
+
+    /*
+    =========================================================
+    3. THÊM 1 DÒNG NVL TỪ BOM MẪU
+    =========================================================
+    */
+
+    function addMaterialRow(
+        materialId,
+        materialCode,
+        materialName,
+        unit,
+        quantity,
+        waste
+    ) {
+
+        const lines = document.getElementById("lines");
+
+        const row = document.createElement("div");
+
+        row.className = "bom-line line-row";
+
+        row.innerHTML = `
+        <div class="ceo-field">
+            <label>Nguyên vật liệu</label>
+
+            <select name="materialId"
+                    required
+                    class="form-control material-select">
+            </select>
+        </div>
+
+        <div class="ceo-field">
+            <label>Định mức</label>
+
+            <input name="quantity"
+                   type="number"
+                   min="1"
+                   step="1"
+                   required
+                   value="${quantity}"
+                   class="form-control">
+        </div>
+
+        <div class="ceo-field">
+            <label>Hao hụt (%)</label>
+
+            <input name="waste"
+                   type="number"
+                   min="0"
+                   max="100"
+                   step="0.01"
+                   required
+                   value="${waste}"
+                   class="form-control">
+        </div>
+
+        <button type="button"
+                class="btn-line-remove"
+                onclick="removeBomLine(this)">
+
+            <i class="fas fa-trash-alt"></i>
+            Xóa
+
+        </button>
+    `;
+
+        // Lấy toàn bộ NVL
+        const template =
+            document.getElementById("materialOptionsTemplate");
+
+        const select =
+            row.querySelector(".material-select");
+
+        const options =
+            template.content.cloneNode(true);
+
+        select.appendChild(options);
+
+        // Chọn đúng NVL lấy từ BOM mẫu
+        select.value = materialId;
+
+        lines.appendChild(row);
+    }
+
+
+    /*
+    =========================================================
+    4. THÊM NVL THỦ CÔNG
+    =========================================================
+    */
+
+    function addBomLine() {
+
+        const lines = document.getElementById("lines");
+
+        // Xóa thông báo nếu đang có
+        const message = lines.querySelector(".bom-empty-message");
+
+        if (message) {
+            message.remove();
+        }
+
+        const row = document.createElement("div");
+
+        row.className = "bom-line line-row";
+
+        row.innerHTML = `
+        <div class="ceo-field">
+            <label>Nguyên vật liệu</label>
+
+            <select name="materialId"
+                    required
+                    class="form-control material-select">
+            </select>
+        </div>
+
+        <div class="ceo-field">
+            <label>Định mức</label>
+
+            <input name="quantity"
+                   type="number"
+                   min="1"
+                   step="1"
+                   required
+                   value="1"
+                   class="form-control">
+        </div>
+
+        <div class="ceo-field">
+            <label>Hao hụt (%)</label>
+
+            <input name="waste"
+                   type="number"
+                   min="0"
+                   max="100"
+                   step="0.01"
+                   required
+                   value="0"
+                   class="form-control">
+        </div>
+
+        <button type="button"
+                class="btn-line-remove"
+                onclick="removeBomLine(this)">
+
+            <i class="fas fa-trash-alt"></i>
+            Xóa
+
+        </button>
+    `;
+
+        // Lấy danh sách NVL từ template
+        const template =
+            document.getElementById("materialOptionsTemplate");
+
+        const select =
+            row.querySelector(".material-select");
+
+        const options =
+            template.content.cloneNode(true);
+
+        select.appendChild(options);
+
+        lines.appendChild(row);
+    }
+
+
+    /*
+    =========================================================
+    5. XÓA NVL
+    =========================================================
+    */
+
+    function removeBomLine(button) {
+
+        const lines =
+            document.getElementById("lines");
+
+
+        const rows =
+            lines.querySelectorAll(".bom-line");
+
+
+        /*
+        Cho phép xóa thoải mái.
+        Nếu xóa dòng cuối thì hiện thông báo.
+        */
+
+        button.closest(".bom-line").remove();
+
+
+        if (lines.querySelectorAll(".bom-line").length === 0) {
+
+            lines.innerHTML =
+                `
+            <div class="bom-empty-message">
+                Chưa có nguyên vật liệu.
+                Bấm "Thêm nguyên vật liệu" để thêm.
+            </div>
+            `;
+
+        }
+    }
+
+
+    /*
+    =========================================================
+    6. ESCAPE HTML
+    =========================================================
+    */
+
+    function escapeHtml(value) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent =
+            value ?? "";
+
+        return div.innerHTML;
+    }
+
+</script>
+
+</body>
+</html>

@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.demo.Service.BomService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +23,9 @@ public class SanphamController {
 
     @Autowired
     private SanphamService sanphamService;
+
+    @Autowired
+    private BomService bomService;
 
     @Autowired
     private ThuonghieuService thuonghieuservice;

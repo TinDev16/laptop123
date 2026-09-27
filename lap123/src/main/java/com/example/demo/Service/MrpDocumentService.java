@@ -183,28 +183,141 @@ public class MrpDocumentService {
                 "VALUES (?, ?, ?, ?, 'CHO_XAC_NHAN', ?)", orderId, employeeId(email), completed, defective, note);
     }
 
-    public List<Map<String, Object>> finishedIssues(String email, boolean manager) {
-        String sql = "SELECT p.*, p.mapxtp AS maphieu, p.ngaylap AS ngaytao, n.hoten, s.tensp, c.soluong FROM phieuxuat_thanhpham p " +
-                "JOIN nhanvien n ON n.manv = p.nguoilap JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
-                "JOIN sanpham s ON s.masp = c.masp ";
-        return manager ? jdbc.queryForList(sql + "ORDER BY p.mapxtp DESC") :
-                jdbc.queryForList(sql + "JOIN taikhoan t ON t.manv = p.nguoilap WHERE t.email = ? ORDER BY p.mapxtp DESC", email);
+    public List<Map<String, Object>> finishedIssues(
+            String email,
+            boolean manager) {
+
+        String sql =
+                "SELECT p.*, " +
+                        "p.mapxtp AS maphieu, " +
+                        "p.ngaylap AS ngaytao, " +
+                        "n.hoten, " +
+                        "s.tensp, " +
+                        "c.soluong, " +
+                        "c.mabom, " +
+                        "b.phienban " +
+                        "FROM phieuxuat_thanhpham p " +
+                        "JOIN nhanvien n ON n.manv = p.nguoilap " +
+                        "JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
+                        "JOIN sanpham s ON s.masp = c.masp " +
+                        "JOIN bom b ON b.mabom = c.mabom ";
+
+        return manager
+                ? jdbc.queryForList(sql + "ORDER BY p.mapxtp DESC")
+                : jdbc.queryForList(
+                sql +
+                "JOIN taikhoan t ON t.manv = p.nguoilap " +
+                "WHERE t.email = ? " +
+                "ORDER BY p.mapxtp DESC",
+                email
+        );
     }
 
-    public Map<String, Object> finishedIssue(long id, String email, boolean manager) {
-        String sql = "SELECT p.*, p.mapxtp AS maphieu, n.hoten, s.tensp, c.soluong FROM phieuxuat_thanhpham p " +
-                "JOIN nhanvien n ON n.manv = p.nguoilap JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
-                "JOIN sanpham s ON s.masp = c.masp ";
-        return manager ? one(sql + "WHERE p.mapxtp = ?", id) :
-                ownedOne(sql + "JOIN taikhoan t ON t.manv = p.nguoilap WHERE p.mapxtp = ? AND t.email = ?", id, email);
+    public Map<String, Object> finishedIssue(
+            long id,
+            String email,
+            boolean manager) {
+
+        String sql =
+                "SELECT p.*, " +
+                        "p.mapxtp AS maphieu, " +
+                        "n.hoten, " +
+                        "s.tensp, " +
+                        "c.soluong, " +
+                        "c.mabom, " +
+                        "b.phienban " +
+                        "FROM phieuxuat_thanhpham p " +
+                        "JOIN nhanvien n ON n.manv = p.nguoilap " +
+                        "JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
+                        "JOIN sanpham s ON s.masp = c.masp " +
+                        "JOIN bom b ON b.mabom = c.mabom ";
+
+        return manager
+                ? one(sql + "WHERE p.mapxtp = ?", id)
+                : ownedOne(
+                sql +
+                "JOIN taikhoan t ON t.manv = p.nguoilap " +
+                "WHERE p.mapxtp = ? AND t.email = ?",
+                id,
+                email
+        );
     }
 
     @Transactional
-    public long createFinishedIssue(String email, int productId, int quantity, String note) {
-        if (quantity <= 0) throw new IllegalArgumentException("Số lượng xuất phải lớn hơn 0.");
+    public long createFinishedIssue(
+            String email,
+            int productId,
+            int bomId,
+            int quantity,
+            String note) {
+
+        if (quantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Số lượng xuất phải lớn hơn 0."
+            );
+        }
+
         validateNote(note);
-        long id = insert("INSERT INTO phieuxuat_thanhpham (nguoilap, trangthai, ghichu) VALUES (?, 'CHO_DUYET', ?)", employeeId(email), note);
-        jdbc.update("INSERT INTO ct_phieuxuat_thanhpham (mapxtp, masp, soluong) VALUES (?, ?, ?)", id, productId, quantity);
+
+        // Kiểm tra BOM có thuộc đúng sản phẩm không
+        List<Map<String, Object>> bomRows = jdbc.queryForList(
+                "SELECT mabom, trangthai " +
+                        "FROM bom " +
+                        "WHERE mabom = ? AND masp = ?",
+                bomId,
+                productId
+        );
+
+        if (bomRows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "BOM không thuộc sản phẩm đã chọn."
+            );
+        }
+
+        String bomStatus =
+                String.valueOf(bomRows.get(0).get("trangthai"));
+
+        if (!"HIEU_LUC".equals(bomStatus)) {
+            throw new IllegalArgumentException(
+                    "Không thể xuất thành phẩm theo BOM đã ngừng sử dụng."
+            );
+        }
+
+        // Kiểm tra sản phẩm tồn tại
+        List<Map<String, Object>> productRows =
+                jdbc.queryForList(
+                        "SELECT masp " +
+                                "FROM sanpham " +
+                                "WHERE masp = ?",
+                        productId
+                );
+
+        if (productRows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Sản phẩm không tồn tại."
+            );
+        }
+
+        // Tạo phiếu xuất
+        long id = insert(
+                "INSERT INTO phieuxuat_thanhpham " +
+                        "(nguoilap, trangthai, ghichu) " +
+                        "VALUES (?, 'CHO_DUYET', ?)",
+                employeeId(email),
+                note
+        );
+
+        // Lưu sản phẩm + BOM + số lượng
+        jdbc.update(
+                "INSERT INTO ct_phieuxuat_thanhpham " +
+                        "(mapxtp, masp, mabom, soluong) " +
+                        "VALUES (?, ?, ?, ?)",
+                id,
+                productId,
+                bomId,
+                quantity
+        );
+
         return id;
     }
 

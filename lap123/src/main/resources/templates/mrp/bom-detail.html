@@ -2,7 +2,11 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chi tiết BOM</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
 <body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('bom')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết BOM', 'MRP / BOM')}"></div>
 <main class="content-body detail-page">
-<div class="page-header"><div><h1 class="page-title" th:text="${bom.tensp + ' / ' + bom.phienban}"></h1><p class="page-description">Định mức nguyên vật liệu áp dụng cho một đơn vị thành phẩm.</p></div><a class="btn btn-back" th:href="@{/bom}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
+<div class="page-header"><div><h1 class="page-title" th:text="${bom.tensp + ' / ' + bom.phienban}"></h1><p class="page-description">Định mức nguyên vật liệu áp dụng cho một đơn vị thành phẩm.</p></div>
+    <a class="btn btn-back"
+    th:href="${backUrl}">
+    <i class="fas fa-arrow-left"></i> Về danh sách
+</a></div>
 <p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
 <div class="content-card"><div class="content-card-body bom-summary">
 <div><span class="detail-label">Trạng thái</span><span class="status-pill" th:text="${bom.trangthai}"></span></div>

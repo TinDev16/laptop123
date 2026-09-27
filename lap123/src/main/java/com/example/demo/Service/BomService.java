@@ -34,12 +34,44 @@ public class BomService {
     }
 
     public List<Map<String, Object>> versions(int productId) {
+
         return jdbc.queryForList(
-                "SELECT mabom, phienban, trangthai " +
-                        "FROM bom " +
-                        "WHERE masp = ? " +
-                        "AND trangthai = 'HIEU_LUC' " +
-                        "ORDER BY mabom DESC",
+                "SELECT " +
+                        "    b.mabom, " +
+                        "    b.phienban, " +
+                        "    b.trangthai, " +
+
+                        /*
+                         * Tổng thành phẩm đã được quản lý xác nhận nhập kho
+                         * theo BOM.
+                         */
+                        "    COALESCE(( " +
+                        "        SELECT SUM(k.soluonghoanthanh) " +
+                        "        FROM yeucausanxuat y " +
+                        "        JOIN ketqua_sanxuat k " +
+                        "            ON k.maycsx = y.maycsx " +
+                        "        WHERE y.mabom = b.mabom " +
+                        "          AND k.trangthai = 'DA_NHAP_KHO' " +
+                        "    ), 0) " +
+
+                        /*
+                         * Trừ số lượng đã xuất thành phẩm theo chính BOM đó.
+                         * Chỉ DA_XUAT mới được tính.
+                         */
+                        "    - COALESCE(( " +
+                        "        SELECT SUM(c.soluong) " +
+                        "        FROM phieuxuat_thanhpham p " +
+                        "        JOIN ct_phieuxuat_thanhpham c " +
+                        "            ON c.mapxtp = p.mapxtp " +
+                        "        WHERE c.mabom = b.mabom " +
+                        "          AND p.trangthai = 'DA_XUAT' " +
+                        "    ), 0) " +
+
+                        "    AS soluong_thanhpham " +
+
+                        "FROM bom b " +
+                        "WHERE b.masp = ? " +
+                        "ORDER BY b.mabom DESC",
                 productId
         );
     }
@@ -54,9 +86,7 @@ public class BomService {
                         "c.tyle_haohut AS ty_le_hao_hut " +
                         "FROM bom_chitiet c " +
                         "JOIN nguyenvatlieu n ON n.manvl = c.manvl " +
-                        "JOIN bom b ON b.mabom = c.mabom " +
                         "WHERE c.mabom = ? " +
-                        "AND b.trangthai = 'HIEU_LUC' " +
                         "ORDER BY c.id",
                 bomId
         );

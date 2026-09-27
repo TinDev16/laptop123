@@ -211,15 +211,37 @@ public class MrpWorkflowController {
     }
 
     @PostMapping("/kho/xuat-thanh-pham")
-    public String createFinishedIssue(Authentication auth, @RequestParam int productId,
-                                      @RequestParam int quantity, @RequestParam(required = false) String note,
-                                      RedirectAttributes flash) {
+    public String createFinishedIssue(
+            Authentication auth,
+            @RequestParam int productId,
+            @RequestParam int bomId,
+            @RequestParam int quantity,
+            @RequestParam(required = false) String note,
+            RedirectAttributes flash) {
+
         try {
-            long id = documents.createFinishedIssue(auth.getName(), productId, quantity, note);
-            flash.addFlashAttribute("success", "Đã gửi đề nghị xuất thành phẩm.");
+            long id = documents.createFinishedIssue(
+                    auth.getName(),
+                    productId,
+                    bomId,
+                    quantity,
+                    note
+            );
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Đã gửi đề nghị xuất thành phẩm."
+            );
+
             return "redirect:/kho/xuat-thanh-pham/" + id;
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            flash.addFlashAttribute("error", exception.getMessage());
+
+            flash.addFlashAttribute(
+                    "error",
+                    exception.getMessage()
+            );
+
             return "redirect:/kho/xuat-thanh-pham/create";
         }
     }

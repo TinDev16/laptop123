@@ -20,8 +20,20 @@ public class MrpWarehouseService {
         String status = lockStatus("phieunhap_nvl", "mapn", receiptId);
         if ("DA_NHAP".equals(status)) throw new IllegalStateException("Phiếu nhập đã được xử lý trước đó.");
         requireStatus(status, "NHAP_NHAP");
-        List<Line> lines = jdbc.query("SELECT manvl, SUM(soluong), MAX(dongia) FROM ct_phieunhap_nvl WHERE mapn = ? GROUP BY manvl ORDER BY manvl",
-                (rs, row) -> new Line(rs.getLong(1), rs.getBigDecimal(2), rs.getBigDecimal(3)), receiptId);
+        List<Line> lines = jdbc.query(
+                "SELECT manvl, SUM(soluong), MAX(dongia) " +
+                        "FROM ct_phieunhap_nvl " +
+                        "WHERE mapn = ? " +
+                        "GROUP BY manvl " +
+                        "ORDER BY manvl",
+                (rs, row) -> new Line(
+                        rs.getLong(1),
+                        0L,
+                        rs.getBigDecimal(2),
+                        rs.getBigDecimal(3)
+                ),
+                receiptId
+        );
         requireLines(lines);
         Integer actor = jdbc.queryForObject("SELECT nguoilap FROM phieunhap_nvl WHERE mapn = ?", Integer.class, receiptId);
         for (Line line : lines) {
@@ -44,8 +56,20 @@ public class MrpWarehouseService {
         String status = lockStatus("phieuxuat_nvl", "mapx", issueId);
         if ("DA_XUAT".equals(status)) throw new IllegalStateException("Phiếu xuất đã được xử lý trước đó.");
         requireStatus(status, "CHO_DUYET");
-        List<Line> lines = jdbc.query("SELECT manvl, SUM(soluong) FROM ct_phieuxuat_nvl WHERE mapx = ? GROUP BY manvl ORDER BY manvl",
-                (rs, row) -> new Line(rs.getLong(1), rs.getBigDecimal(2), BigDecimal.ZERO), issueId);
+        List<Line> lines = jdbc.query(
+                "SELECT manvl, SUM(soluong) " +
+                        "FROM ct_phieuxuat_nvl " +
+                        "WHERE mapx = ? " +
+                        "GROUP BY manvl " +
+                        "ORDER BY manvl",
+                (rs, row) -> new Line(
+                        rs.getLong(1),
+                        0L,
+                        rs.getBigDecimal(2),
+                        BigDecimal.ZERO
+                ),
+                issueId
+        );
         requireLines(lines);
         List<StockChange> changes = new ArrayList<>();
         for (Line line : lines) {
@@ -102,8 +126,19 @@ public class MrpWarehouseService {
         int completed = order.completed() + result.quantity();
         jdbc.update("UPDATE yeucausanxuat SET soluonghoanthanh = ?, trangthai = ? WHERE maycsx = ?",
                 completed, completed == order.requested() ? "HOAN_THANH" : "DANG_SAN_XUAT", result.orderId());
-        history("NHAP_THANH_PHAM", "THANH_PHAM", new Line(order.productId(), quantity, BigDecimal.ZERO),
-                managerEmail == null ? null : employeeId(managerEmail), "ketqua_sanxuat", resultId);
+        history(
+                "NHAP_THANH_PHAM",
+                "THANH_PHAM",
+                new Line(
+                        order.productId(),
+                        0L,
+                        quantity,
+                        BigDecimal.ZERO
+                ),
+                managerEmail == null ? null : employeeId(managerEmail),
+                "ketqua_sanxuat",
+                resultId
+        );
         jdbc.update("UPDATE ketqua_sanxuat SET trangthai = 'DA_NHAP_KHO' WHERE makqsx = ?", resultId);
     }
 
@@ -114,27 +149,208 @@ public class MrpWarehouseService {
 
     @Transactional
     public void issueFinishedProducts(long issueId, String managerEmail) {
-        String status = lockStatus("phieuxuat_thanhpham", "mapxtp", issueId);
-        if ("DA_XUAT".equals(status)) throw new IllegalStateException("Phiếu xuất đã được xử lý trước đó.");
+
+        String status = lockStatus(
+                "phieuxuat_thanhpham",
+                "mapxtp",
+                issueId
+        );
+
+        if ("DA_XUAT".equals(status)) {
+            throw new IllegalStateException(
+                    "Phiếu xuất đã được xử lý trước đó."
+            );
+        }
+
         requireStatus(status, "CHO_DUYET");
-        List<Line> lines = jdbc.query("SELECT masp, SUM(soluong), MAX(dongia) FROM ct_phieuxuat_thanhpham WHERE mapxtp = ? GROUP BY masp ORDER BY masp",
-                (rs, row) -> new Line(rs.getLong(1), rs.getBigDecimal(2), rs.getBigDecimal(3)), issueId);
+
+        /*
+         * Lấy sản phẩm + BOM + số lượng trong phiếu.
+         *
+         * Group theo cả masp và mabom vì một sản phẩm có thể
+         * có nhiều phiên bản BOM.
+         */
+        List<Line> lines = jdbc.query(
+                "SELECT masp, mabom, SUM(soluong), MAX(dongia) " +
+                        "FROM ct_phieuxuat_thanhpham " +
+                        "WHERE mapxtp = ? " +
+                        "GROUP BY masp, mabom " +
+                        "ORDER BY masp, mabom",
+                (rs, row) -> new Line(
+                        rs.getLong(1),
+                        rs.getLong(2),
+                        rs.getBigDecimal(3),
+                        rs.getBigDecimal(4)
+                ),
+                issueId
+        );
+
         requireLines(lines);
+
         List<StockChange> changes = new ArrayList<>();
+
         for (Line line : lines) {
+
             requirePositive(line.quantity());
-            BigDecimal before = lockStock("sanpham", "masp", line.itemId());
-            if (before.compareTo(line.quantity()) < 0) {
-                throw new IllegalStateException("Không đủ thành phẩm. Tồn hiện tại: " + before + ". Số lượng yêu cầu: " + line.quantity() + ".");
+
+            /*
+             * Kiểm tra BOM có tồn tại và thuộc đúng sản phẩm.
+             */
+            Integer bomProduct = jdbc.query(
+                    "SELECT masp " +
+                            "FROM bom " +
+                            "WHERE mabom = ?",
+                    ps -> ps.setLong(1, line.bomId()),
+                    rs -> rs.next() ? rs.getInt("masp") : null
+            );
+
+            if (bomProduct == null) {
+                throw new IllegalStateException(
+                        "Không tìm thấy BOM " + line.bomId() + "."
+                );
             }
-            changes.add(new StockChange(line, before, before.subtract(line.quantity())));
+
+            if (bomProduct.longValue() != line.itemId()) {
+                throw new IllegalStateException(
+                        "BOM " + line.bomId()
+                                + " không thuộc sản phẩm " + line.itemId() + "."
+                );
+            }
+
+            /*
+             * Chỉ BOM đang hiệu lực mới được xuất.
+             */
+            String bomStatus = jdbc.query(
+                    "SELECT trangthai " +
+                            "FROM bom " +
+                            "WHERE mabom = ?",
+                    ps -> ps.setLong(1, line.bomId()),
+                    rs -> rs.next() ? rs.getString("trangthai") : null
+            );
+
+            if (!"HIEU_LUC".equals(bomStatus)) {
+                throw new IllegalStateException(
+                        "BOM " + line.bomId()
+                                + " đã ngừng sử dụng, không thể xuất thành phẩm."
+                );
+            }
+
+            /*
+             * Khóa dòng sản phẩm để tránh hai phiếu xuất
+             * cùng lúc làm sai tồn kho.
+             */
+            BigDecimal before = lockStock(
+                    "sanpham",
+                    "masp",
+                    line.itemId()
+            );
+
+            if (before.compareTo(line.quantity()) < 0) {
+                throw new IllegalStateException(
+                        "Không đủ thành phẩm. Tồn hiện tại: "
+                                + before
+                                + ". Số lượng yêu cầu: "
+                                + line.quantity()
+                                + "."
+                );
+            }
+
+            /*
+             * Tính số lượng thành phẩm còn lại của BOM:
+             *
+             * Đã nhập kho theo BOM
+             * -
+             * Đã xuất thành phẩm theo BOM
+             */
+            BigDecimal produced = jdbc.queryForObject(
+                    "SELECT COALESCE(SUM(k.soluonghoanthanh), 0) " +
+                            "FROM yeucausanxuat y " +
+                            "JOIN ketqua_sanxuat k " +
+                            "ON k.maycsx = y.maycsx " +
+                            "WHERE y.mabom = ? " +
+                            "AND k.trangthai = 'DA_NHAP_KHO'",
+                    BigDecimal.class,
+                    line.bomId()
+            );
+
+            BigDecimal exported = jdbc.queryForObject(
+                    "SELECT COALESCE(SUM(c.soluong), 0) " +
+                            "FROM phieuxuat_thanhpham p " +
+                            "JOIN ct_phieuxuat_thanhpham c " +
+                            "ON c.mapxtp = p.mapxtp " +
+                            "WHERE c.mabom = ? " +
+                            "AND p.trangthai = 'DA_XUAT'",
+                    BigDecimal.class,
+                    line.bomId()
+            );
+
+            BigDecimal bomAvailable =
+                    produced.subtract(exported);
+
+            if (bomAvailable.compareTo(line.quantity()) < 0) {
+                throw new IllegalStateException(
+                        "Không đủ thành phẩm theo BOM "
+                                + line.bomId()
+                                + ". Còn lại: "
+                                + bomAvailable
+                                + ". Số lượng yêu cầu: "
+                                + line.quantity()
+                                + "."
+                );
+            }
+
+            changes.add(
+                    new StockChange(
+                            line,
+                            before,
+                            before.subtract(line.quantity())
+                    )
+            );
         }
-        Integer actor = managerEmail == null ? null : employeeId(managerEmail);
+
+        Integer actor =
+                managerEmail == null
+                        ? null
+                        : employeeId(managerEmail);
+
+        /*
+         * Chỉ đến đây mới thực sự trừ tồn kho.
+         */
         for (StockChange change : changes) {
-            jdbc.update("UPDATE sanpham SET soluongton = ? WHERE masp = ?", change.after().intValueExact(), change.line().itemId());
-            history("XUAT_THANH_PHAM", "THANH_PHAM", change.line(), actor, "phieuxuat_thanhpham", issueId);
+
+            jdbc.update(
+                    "UPDATE sanpham " +
+                            "SET soluongton = ? " +
+                            "WHERE masp = ?",
+                    change.after().intValueExact(),
+                    change.line().itemId()
+            );
+
+            history(
+                    "XUAT_THANH_PHAM",
+                    "THANH_PHAM",
+                    change.line(),
+                    actor,
+                    "phieuxuat_thanhpham",
+                    issueId
+            );
         }
-        jdbc.update("UPDATE phieuxuat_thanhpham SET trangthai = 'DA_XUAT', nguoiduyet = ?, ngayduyet = CURRENT_TIMESTAMP WHERE mapxtp = ?", actor, issueId);
+
+        /*
+         * Phiếu được đánh dấu đã xuất.
+         *
+         * Các query BOM ở BomService sẽ dựa vào trạng thái DA_XUAT
+         * để trừ số lượng.
+         */
+        jdbc.update(
+                "UPDATE phieuxuat_thanhpham " +
+                        "SET trangthai = 'DA_XUAT', " +
+                        "nguoiduyet = ?, " +
+                        "ngayduyet = CURRENT_TIMESTAMP " +
+                        "WHERE mapxtp = ?",
+                actor,
+                issueId
+        );
     }
 
     @Transactional
@@ -188,7 +404,12 @@ public class MrpWarehouseService {
         if (reason == null || reason.isBlank() || reason.length() > 255) throw new IllegalArgumentException("Lý do từ chối phải có từ 1 đến 255 ký tự.");
     }
 
-    private record Line(long itemId, BigDecimal quantity, BigDecimal price) {}
+    private record Line(
+            long itemId,
+            long bomId,
+            BigDecimal quantity,
+            BigDecimal price
+    ) {}
     private record StockChange(Line line, BigDecimal before, BigDecimal after) {}
     private record ProductionResult(long orderId, int quantity) {}
     private record ProductionOrder(long productId, int requested, int completed) {}

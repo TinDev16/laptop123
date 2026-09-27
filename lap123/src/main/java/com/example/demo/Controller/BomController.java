@@ -62,7 +62,6 @@ public class BomController {
     @ResponseBody
     public List<Map<String, Object>> versions(
             @RequestParam int productId) {
-
         return service.versions(productId);
     }
 
@@ -75,7 +74,6 @@ public class BomController {
     @ResponseBody
     public List<Map<String, Object>> materialsByBom(
             @RequestParam long bomId) {
-
         return service.materialsByBom(bomId);
     }
 
@@ -141,6 +139,7 @@ public class BomController {
     @GetMapping("/{id}")
     public String detail(
             @PathVariable long id,
+            @RequestParam(required = false, defaultValue = "") String from,
             Model model) {
 
         model.addAttribute(
@@ -152,6 +151,19 @@ public class BomController {
                 "details",
                 service.details(id)
         );
+
+        String backUrl;
+
+        if ("sanpham".equalsIgnoreCase(from)) {
+            backUrl = "/sanpham";
+        } else {
+            backUrl = "/bom";
+        }
+
+        model.addAttribute("backUrl", backUrl);
+
+        System.out.println("DEBUG from = " + from);
+        System.out.println("DEBUG backUrl = " + backUrl);
 
         return "mrp/bom-detail";
     }

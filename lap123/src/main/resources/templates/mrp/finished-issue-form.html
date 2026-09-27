@@ -1,14 +1,275 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Đề nghị xuất thành phẩm</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('xuat-tp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Lập đề nghị xuất thành phẩm', 'Kho / Xuất thành phẩm')}"></div>
-<main class="content-body mrp-entry-page"><div class="page-header"><div><h1 class="page-title">Lập đề nghị xuất thành phẩm</h1><p class="page-description">Chọn sản phẩm và số lượng cần xuất từ kho.</p></div><a class="btn btn-outline" th:href="@{/kho/xuat-thanh-pham}">Về danh sách</a></div>
-<div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
-<form th:action="@{/kho/xuat-thanh-pham}" method="post" class="content-card ceo-form">
-<div class="content-card-header"><h2 class="content-card-title">Thông tin đề nghị</h2></div>
-<div class="content-card-body"><div class="ceo-form-grid">
-<div class="ceo-field ceo-field-full"><label for="productId">Sản phẩm <span class="ceo-required">*</span></label><select id="productId" name="productId" class="form-control" required><option value="" disabled selected>Chọn sản phẩm</option><option th:each="p : ${products}" th:value="${p.masp}" th:text="${p.tensp + ' · Tồn: ' + p.soluongton}"></option></select><small>Tồn kho hiện tại được hiển thị cạnh tên sản phẩm.</small></div>
-<div class="ceo-field"><label for="quantity">Số lượng xuất <span class="ceo-required">*</span></label><input id="quantity" name="quantity" type="number" min="1" required class="form-control" placeholder="Nhập số lượng"></div>
-<div class="ceo-field ceo-field-full"><label for="issueNote">Lý do / ghi chú</label><textarea id="issueNote" name="note" maxlength="255" rows="3" class="form-control" placeholder="Ví dụ: xuất theo đơn hàng hoặc điều chuyển"></textarea></div>
-</div><div class="ceo-form-actions"><button type="submit" class="btn btn-primary" th:disabled="${#lists.isEmpty(products)}">Gửi đề nghị</button></div></div></form>
-</main></div></div></body></html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Đề nghị xuất thành phẩm</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('xuat-tp')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Lập đề nghị xuất thành phẩm', 'Kho / Xuất thành phẩm')}"></div>
+
+        <main class="content-body mrp-entry-page">
+
+            <div class="page-header">
+
+                <div>
+                    <h1 class="page-title">
+                        Lập đề nghị xuất thành phẩm
+                    </h1>
+
+                    <p class="page-description">
+                        Chọn sản phẩm, BOM và số lượng cần xuất khỏi kho.
+                    </p>
+                </div>
+
+                <a class="btn btn-outline"
+                   th:href="@{/kho/xuat-thanh-pham}">
+                    Về danh sách
+                </a>
+
+            </div>
+
+            <div class="directory-alert directory-alert--error"
+                 th:if="${error}"
+                 th:text="${error}">
+            </div>
+
+            <form th:action="@{/kho/xuat-thanh-pham}"
+                  method="post"
+                  class="content-card ceo-form">
+
+                <div class="content-card-header">
+                    <h2 class="content-card-title">
+                        Thông tin đề nghị
+                    </h2>
+                </div>
+
+                <div class="content-card-body">
+
+                    <div class="ceo-form-grid">
+
+                        <!-- SẢN PHẨM -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="productId">
+                                Sản phẩm
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select id="productId"
+                                    name="productId"
+                                    class="form-control"
+                                    required>
+
+                                <option value=""
+                                        disabled
+                                        selected>
+                                    Chọn sản phẩm
+                                </option>
+
+                                <option th:each="p : ${products}"
+                                        th:value="${p.masp}"
+                                        th:text="${p.tensp + ' · Tồn: ' + p.soluongton}">
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- BOM -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="bomId">
+                                Phiên bản BOM
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select id="bomId"
+                                    name="bomId"
+                                    class="form-control"
+                                    required
+                                    disabled>
+
+                                <option value="">
+                                    Chọn sản phẩm trước
+                                </option>
+
+                            </select>
+
+                            <small>
+                                Chọn đúng BOM mà thành phẩm xuất kho được sản xuất theo.
+                            </small>
+
+                        </div>
+
+
+                        <!-- SỐ LƯỢNG -->
+
+                        <div class="ceo-field">
+
+                            <label for="quantity">
+                                Số lượng xuất
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <input id="quantity"
+                                   name="quantity"
+                                   type="number"
+                                   min="1"
+                                   required
+                                   class="form-control"
+                                   placeholder="Nhập số lượng">
+
+                        </div>
+
+
+                        <!-- GHI CHÚ -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="issueNote">
+                                Lý do / ghi chú
+                            </label>
+
+                            <textarea id="issueNote"
+                                      name="note"
+                                      maxlength="255"
+                                      rows="3"
+                                      class="form-control"
+                                      placeholder="Ví dụ: xuất theo đơn hàng hoặc điều chuyển"></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="ceo-form-actions">
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                th:disabled="${#lists.isEmpty(products)}">
+
+                            Gửi đề nghị
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const productSelect = document.getElementById("productId");
+    const bomSelect = document.getElementById("bomId");
+
+    productSelect.addEventListener("change", async function () {
+
+        const productId = this.value;
+
+        bomSelect.innerHTML =
+            '<option value="">Đang tải BOM...</option>';
+
+        bomSelect.disabled = true;
+
+        if (!productId) {
+            bomSelect.innerHTML =
+                '<option value="">Chọn sản phẩm trước</option>';
+
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    `/bom/versions?productId=${encodeURIComponent(productId)}`
+                );
+
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+
+            const versions = await response.json();
+
+            bomSelect.innerHTML =
+                '<option value="">Chọn phiên bản BOM</option>';
+
+            if (!versions.length) {
+
+                bomSelect.innerHTML =
+                    '<option value="">Sản phẩm chưa có BOM</option>';
+
+                return;
+            }
+
+            versions.forEach(version => {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = version.mabom;
+
+                option.textContent =
+                    `BOM ${version.phienban} - ${
+                        version.trangthai === "HIEU_LUC"
+                            ? "Hiệu lực"
+                            : "Ngừng sử dụng"
+                    }`;
+
+                /*
+                 * Chỉ cho phép xuất theo BOM đang hiệu lực.
+                 * BOM cũ vẫn có thể hiển thị nhưng không cho chọn.
+                 */
+
+                if (version.trangthai !== "HIEU_LUC") {
+                    option.disabled = true;
+                }
+
+                bomSelect.appendChild(option);
+
+            });
+
+            bomSelect.disabled = false;
+
+        } catch (error) {
+
+            console.error(error);
+
+            bomSelect.innerHTML =
+                '<option value="">Không tải được danh sách BOM</option>';
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

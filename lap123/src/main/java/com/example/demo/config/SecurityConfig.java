@@ -49,11 +49,31 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/san-xuat/yeu-cau").hasRole("QUAN_LY_KHO")
                 .requestMatchers(HttpMethod.POST, "/kho/xuat-nvl", "/san-xuat/ket-qua", "/kho/xuat-thanh-pham").hasRole("NHAN_VIEN")
                 .requestMatchers("/kho/xuat-nvl/create", "/san-xuat/ket-qua/create", "/kho/xuat-thanh-pham/create").hasRole("NHAN_VIEN")
-                .requestMatchers("/san-xuat/yeu-cau/create", "/bom", "/bom/**",
-                        "/nguyen-vat-lieu", "/nguyen-vat-lieu/**",
-                        "/kho/nhap-nvl", "/kho/nhap-nvl/**", "/kho/lich-su",
-                        "/baocao", "/baocao/**", "/nhanvien/**",
-                        "/sanpham/**", "/ncc/**", "/khachhang/**", "/thuonghieu/**").hasRole("QUAN_LY_KHO")
+                    .requestMatchers(
+                            HttpMethod.GET,
+                            "/bom/versions"
+                    ).hasAnyRole("QUAN_LY_KHO", "NHAN_VIEN")
+
+                    .requestMatchers(
+                            "/san-xuat/yeu-cau/create",
+                            "/bom",
+                            "/bom/create",
+                            "/bom/{id}",
+                            "/bom/{id}/disable",
+                            "/bom/materials-by-bom",
+                            "/nguyen-vat-lieu",
+                            "/nguyen-vat-lieu/**",
+                            "/kho/nhap-nvl",
+                            "/kho/nhap-nvl/**",
+                            "/kho/lich-su",
+                            "/baocao",
+                            "/baocao/**",
+                            "/nhanvien/**",
+                            "/sanpham/**",
+                            "/ncc/**",
+                            "/khachhang/**",
+                            "/thuonghieu/**"
+                    ).hasRole("QUAN_LY_KHO")
                 .requestMatchers("/kho/xuat-nvl", "/kho/xuat-nvl/**",
                         "/kho/xuat-thanh-pham", "/kho/xuat-thanh-pham/**",
                         "/san-xuat/yeu-cau", "/san-xuat/yeu-cau/**",

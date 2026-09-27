@@ -7,8 +7,25 @@
 <div class="content-card"><div class="content-card-body">
 <h2 class="ceo-section-title"><i class="fas fa-truck-loading"></i> Thông tin đề nghị</h2>
 <div class="ceo-detail-grid">
-<div><span class="detail-label">Sản phẩm</span><strong th:text="${issue.tensp}"></strong></div>
-<div><span class="detail-label">Số lượng xuất</span><strong data-number th:text="${issue.soluong}"></strong></div>
+    <div>
+        <span class="detail-label">Sản phẩm</span>
+        <strong th:text="${issue.tensp}"></strong>
+    </div>
+
+    <div>
+        <span class="detail-label">Phiên bản BOM</span>
+        <strong th:text="${'BOM ' + issue.phienban}"></strong>
+    </div>
+
+    <div>
+        <span class="detail-label">Mã BOM</span>
+        <strong th:text="${issue.mabom}"></strong>
+    </div>
+
+    <div>
+        <span class="detail-label">Số lượng xuất</span>
+        <strong data-number th:text="${issue.soluong}"></strong>
+    </div>
 <div><span class="detail-label">Người lập</span><strong th:text="${issue.hoten}"></strong></div>
 <div><span class="detail-label">Trạng thái</span><span class="status-pill" th:text="${issue.trangthai}"></span></div>
 <div class="ceo-detail-note" th:if="${issue.ghichu != null and !#strings.isEmpty(issue.ghichu)}"><span class="detail-label">Ghi chú</span><p th:text="${issue.ghichu}"></p></div>

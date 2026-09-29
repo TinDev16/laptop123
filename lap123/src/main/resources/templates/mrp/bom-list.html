@@ -6,7 +6,7 @@
   <div class="main-wrapper">
     <div th:replace="~{fragments/sidebar :: topbar('BOM / Định mức', 'MRP / BOM')}"></div>
     <main class="content-body">
-      <h1>BOM / Định mức</h1>
+      <h1>BOM</h1>
       <p><a class="btn btn-primary" th:href="@{/bom/create}">Tạo BOM</a></p>
       <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Định mức sản xuất</h2><span class="record-count" th:text="${#lists.size(boms) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table>
         <thead><tr><th>Mã</th><th>Sản phẩm</th><th>Phiên bản</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>

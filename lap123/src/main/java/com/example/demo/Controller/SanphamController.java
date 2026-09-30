@@ -77,9 +77,7 @@ public class SanphamController {
 
         existing.setTENSP(sanpham.getTENSP());
         existing.setXUATXU(sanpham.getXUATXU());
-        existing.setCHIP(sanpham.getCHIP());
         existing.setHEDIEUHANH(sanpham.getHEDIEUHANH());
-        existing.setKICHTHUOCMAN(sanpham.getKICHTHUOCMAN());
         existing.setThuonghieu(sanpham.getThuonghieu());
         existing.setTRANGTHAI(sanpham.getTRANGTHAI());
         existing.setGHICHU(sanpham.getGHICHU());

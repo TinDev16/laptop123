@@ -118,9 +118,25 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> assignedOrders(String email) {
-        return jdbc.queryForList("SELECT y.maycsx AS mayeucau, s.tensp, y.soluongyeucau, y.soluonghoanthanh FROM yeucausanxuat y " +
-                "JOIN sanpham s ON s.masp = y.masp JOIN taikhoan t ON t.manv = y.nguoiphutrach " +
-                "WHERE t.email = ? AND y.trangthai IN ('DA_GIAO', 'DANG_SAN_XUAT') ORDER BY y.maycsx DESC", email);
+        return jdbc.queryForList(
+                "SELECT " +
+                        "y.maycsx AS mayeucau, " +
+                        "y.masp, " +
+                        "y.mabom, " +
+                        "s.tensp, " +
+                        "b.phienban, " +
+                        "y.soluongyeucau, " +
+                        "y.soluonghoanthanh, " +
+                        "y.hanhoanthanh AS ngaydenhan " +
+                        "FROM yeucausanxuat y " +
+                        "JOIN sanpham s ON s.masp = y.masp " +
+                        "JOIN bom b ON b.mabom = y.mabom " +
+                        "JOIN taikhoan t ON t.manv = y.nguoiphutrach " +
+                        "WHERE t.email = ? " +
+                        "AND y.trangthai IN ('DA_GIAO', 'DANG_SAN_XUAT') " +
+                        "ORDER BY y.maycsx DESC",
+                email
+        );
     }
 
     public List<Map<String, Object>> bomRequestLines(long orderId, String email) {
@@ -153,19 +169,80 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> results(String email, boolean manager) {
-        String sql = "SELECT k.*, k.makqsx AS maketqua, k.maycsx AS mayeucau, s.tensp, n.hoten FROM ketqua_sanxuat k " +
-                "JOIN yeucausanxuat y ON y.maycsx = k.maycsx JOIN sanpham s ON s.masp = y.masp " +
-                "JOIN nhanvien n ON n.manv = k.nguoithuchien ";
-        return manager ? jdbc.queryForList(sql + "ORDER BY k.makqsx DESC") :
-                jdbc.queryForList(sql + "JOIN taikhoan t ON t.manv = k.nguoithuchien WHERE t.email = ? ORDER BY k.makqsx DESC", email);
+
+        String sql =
+                "SELECT " +
+                        "k.*, " +
+                        "k.makqsx AS maketqua, " +
+                        "k.maycsx AS mayeucau, " +
+                        "y.mabom, " +
+                        "s.tensp, " +
+                        "b.phienban, " +
+                        "n.hoten " +
+                        "FROM ketqua_sanxuat k " +
+                        "JOIN yeucausanxuat y " +
+                        "    ON y.maycsx = k.maycsx " +
+                        "JOIN sanpham s " +
+                        "    ON s.masp = y.masp " +
+                        "JOIN bom b " +
+                        "    ON b.mabom = y.mabom " +
+                        "JOIN nhanvien n " +
+                        "    ON n.manv = k.nguoithuchien ";
+
+        return manager
+                ? jdbc.queryForList(
+                sql +
+                "ORDER BY k.makqsx DESC"
+        )
+                : jdbc.queryForList(
+                sql +
+                "JOIN taikhoan t " +
+                "    ON t.manv = k.nguoithuchien " +
+                "WHERE t.email = ? " +
+                "ORDER BY k.makqsx DESC",
+                email
+        );
     }
 
-    public Map<String, Object> result(long id, String email, boolean manager) {
-        String sql = "SELECT k.*, k.makqsx AS maketqua, k.maycsx AS mayeucau, s.tensp, n.hoten FROM ketqua_sanxuat k " +
-                "JOIN yeucausanxuat y ON y.maycsx = k.maycsx JOIN sanpham s ON s.masp = y.masp " +
-                "JOIN nhanvien n ON n.manv = k.nguoithuchien ";
-        return manager ? one(sql + "WHERE k.makqsx = ?", id) :
-                ownedOne(sql + "JOIN taikhoan t ON t.manv = k.nguoithuchien WHERE k.makqsx = ? AND t.email = ?", id, email);
+    public Map<String, Object> result(
+            long id,
+            String email,
+            boolean manager) {
+
+        String sql =
+                "SELECT " +
+                        "k.*, " +
+                        "k.makqsx AS maketqua, " +
+                        "k.maycsx AS mayeucau, " +
+                        "y.mabom, " +
+                        "s.tensp, " +
+                        "b.phienban, " +
+                        "n.hoten " +
+                        "FROM ketqua_sanxuat k " +
+                        "JOIN yeucausanxuat y " +
+                        "    ON y.maycsx = k.maycsx " +
+                        "JOIN sanpham s " +
+                        "    ON s.masp = y.masp " +
+                        "JOIN bom b " +
+                        "    ON b.mabom = y.mabom " +
+                        "JOIN nhanvien n " +
+                        "    ON n.manv = k.nguoithuchien ";
+
+        return manager
+                ? one(
+                sql +
+                "WHERE k.makqsx = ?",
+                id
+        )
+                : ownedOne(
+                sql +
+                "JOIN taikhoan t " +
+                "    ON t.manv = k.nguoithuchien " +
+                "WHERE k.makqsx = ? " +
+                "AND t.email = ?",
+                id,
+                email
+        );
     }
 
     @Transactional

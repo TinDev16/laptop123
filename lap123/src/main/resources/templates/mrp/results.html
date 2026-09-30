@@ -1,6 +1,40 @@
 <!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Kết quả sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
 <div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Kết quả sản xuất', 'Sản xuất / Kết quả')}"></div><main class="content-body">
 <h1>Kết quả sản xuất</h1><p th:unless="${manager}"><a th:href="@{/san-xuat/ket-qua/create}" class="btn btn-primary">Ghi nhận kết quả</a></p>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Kết quả sản xuất</h2><span class="record-count" th:text="${#lists.size(results) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead><tr><th>Mã</th><th>Yêu cầu</th><th>Sản phẩm</th><th>Hoàn thành</th><th>Người lập</th><th>Trạng thái</th><th></th></tr></thead><tbody>
-<tr th:each="r : ${results}"><td th:text="${r.maketqua}"></td><td th:text="${r.mayeucau}"></td><td th:text="${r.tensp}"></td><td th:text="${r.soluonghoanthanh}"></td><td th:text="${r.hoten}"></td><td th:text="${r.trangthai}"></td><td><a th:href="@{/san-xuat/ket-qua/{id}(id=${r.maketqua})}">Xem</a></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(results)}"><td colspan="7">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div></main></div></div></body></html>
+<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Kết quả sản xuất</h2><span class="record-count" th:text="${#lists.size(results) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead>
+<tr>
+    <th>Mã</th>
+    <th>Yêu cầu</th>
+    <th>Sản phẩm</th>
+    <th>Phiên bản BOM</th>
+    <th>Mã BOM</th>
+    <th>Hoàn thành</th>
+    <th>Người lập</th>
+    <th>Trạng thái</th>
+    <th></th>
+</tr>
+</thead><tbody>
+<tr th:each="r : ${results}">
+    <td th:text="${r.maketqua}"></td>
+
+    <td th:text="${r.mayeucau}"></td>
+
+    <td th:text="${r.tensp}"></td>
+
+    <td th:text="${'BOM ' + r.phienban}"></td>
+
+    <td th:text="${r.mabom}"></td>
+
+    <td th:text="${r.soluonghoanthanh}"></td>
+
+    <td th:text="${r.hoten}"></td>
+
+    <td th:text="${r.trangthai}"></td>
+
+    <td>
+        <a th:href="@{/san-xuat/ket-qua/{id}(id=${r.maketqua})}">
+            Xem
+        </a>
+    </td>
+</tr>
+<tr class="empty-row" th:if="${#lists.isEmpty(results)}"><td colspan="9">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div></main></div></div></body></html>

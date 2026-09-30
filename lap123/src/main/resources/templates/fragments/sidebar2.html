@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<aside th:fragment="sidebar(activeTab)" class="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-laptop-code"></i><span>LAPTOP 123 - MRP</span></div>
+    <div class="sidebar-user" sec:authorize="isAuthenticated()"><div class="user-avatar"><i class="fas fa-user"></i></div><div class="user-info"><div class="user-name" sec:authentication="name"></div><div class="user-role" sec:authorize="hasRole('QUAN_LY_KHO')">Quản lý kho</div><div class="user-role" sec:authorize="hasRole('NHAN_VIEN')">Nhân viên</div></div></div>
+    <nav class="sidebar-menu" aria-label="Menu chính">
+        <a th:href="@{/dashboard}" class="menu-item" th:classappend="${activeTab == 'dashboard' ? 'active' : ''}"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+        <div sec:authorize="hasRole('QUAN_LY_KHO')">
+            <div class="menu-heading">KHO</div>
+            <a th:href="@{/nguyen-vat-lieu}" class="menu-item" th:classappend="${activeTab == 'nvl' ? 'active' : ''}"><i class="fas fa-cubes"></i><span>Nguyên vật liệu</span></a>
+            <a th:href="@{/kho/nhap-nvl}" class="menu-item" th:classappend="${activeTab == 'nhap-nvl' ? 'active' : ''}"><i class="fas fa-arrow-circle-down"></i><span>Nhập nguyên vật liệu</span></a>
+            <a th:href="@{/kho/xuat-nvl}" class="menu-item" th:classappend="${activeTab == 'xuat-nvl' ? 'active' : ''}"><i class="fas fa-clipboard-check"></i><span>Duyệt xuất NVL</span></a>
+            <a th:href="@{/sanpham}" class="menu-item" th:classappend="${activeTab == 'sanpham' ? 'active' : ''}"><i class="fas fa-laptop"></i><span>Thành phẩm</span></a>
+            <a th:href="@{/kho/xuat-thanh-pham}" class="menu-item" th:classappend="${activeTab == 'xuat-tp' ? 'active' : ''}"><i class="fas fa-truck"></i><span>Duyệt xuất thành phẩm</span></a>
+            <a th:href="@{/kho/lich-su}" class="menu-item" th:classappend="${activeTab == 'lich-su' ? 'active' : ''}"><i class="fas fa-history"></i><span>Lịch sử kho</span></a>
+            <div class="menu-heading">MRP</div>
+            <a th:href="@{/bom}" class="menu-item" th:classappend="${activeTab == 'bom' ? 'active' : ''}"><i class="fas fa-sitemap"></i><span>BOM</span></a>
+            <a th:href="@{/san-xuat/yeu-cau}" class="menu-item" th:classappend="${activeTab == 'mrp' ? 'active' : ''}"><i class="fas fa-tasks"></i><span>Yêu cầu sản xuất</span></a>
+            <a th:href="@{/san-xuat/ket-qua}" class="menu-item" th:classappend="${activeTab == 'ket-qua' ? 'active' : ''}"><i class="fas fa-check-circle"></i><span>Kết quả sản xuất</span></a>
+            <div class="menu-heading">ĐỐI TÁC</div>
+            <a th:href="@{/ncc}" class="menu-item" th:classappend="${activeTab == 'ncc' ? 'active' : ''}"><i class="fas fa-building"></i><span>Nhà cung cấp</span></a>
+            <a th:href="@{/khachhang}" class="menu-item" th:classappend="${activeTab == 'khachhang' ? 'active' : ''}"><i class="fas fa-users"></i><span>Khách hàng</span></a>
+            <a th:href="@{/thuonghieu}" class="menu-item" th:classappend="${activeTab == 'thuonghieu' ? 'active' : ''}"><i class="fas fa-tags"></i><span>Thương hiệu</span></a>
+            <div class="menu-heading">HỆ THỐNG</div>
+            <a th:href="@{/nhanvien}" class="menu-item" th:classappend="${activeTab == 'nhanvien' ? 'active' : ''}"><i class="fas fa-user-tie"></i><span>Nhân viên</span></a>
+            <a th:href="@{/quanlytaikhoan}" class="menu-item" th:classappend="${activeTab == 'taikhoan' ? 'active' : ''}"><i class="fas fa-user-shield"></i><span>Tài khoản</span></a>
+            <a th:href="@{/baocao}" class="menu-item" th:classappend="${activeTab == 'baocao' ? 'active' : ''}"><i class="fas fa-chart-line"></i><span>Báo cáo</span></a>
+        </div>
+        <div sec:authorize="hasRole('NHAN_VIEN')">
+            <div class="menu-heading">CÔNG VIỆC</div>
+            <a th:href="@{/san-xuat/yeu-cau}" class="menu-item" th:classappend="${activeTab == 'mrp' ? 'active' : ''}"><i class="fas fa-tasks"></i><span>Yêu cầu sản xuất</span></a>
+            <a th:href="@{/kho/xuat-nvl}" class="menu-item" th:classappend="${activeTab == 'xuat-nvl' ? 'active' : ''}"><i class="fas fa-cubes"></i><span>Đề nghị xuất NVL</span></a>
+            <a th:href="@{/san-xuat/ket-qua}" class="menu-item" th:classappend="${activeTab == 'ket-qua' ? 'active' : ''}"><i class="fas fa-check-circle"></i><span>Kết quả sản xuất</span></a>
+            <a th:href="@{/kho/xuat-thanh-pham}" class="menu-item" th:classappend="${activeTab == 'xuat-tp' ? 'active' : ''}"><i class="fas fa-truck"></i><span>Đề nghị xuất thành phẩm</span></a>
+            <div class="menu-heading">TÀI KHOẢN</div>
+            <a th:href="@{/tai-khoan/ca-nhan}" class="menu-item" th:classappend="${activeTab == 'ca-nhan' ? 'active' : ''}"><i class="fas fa-user"></i><span>Thông tin cá nhân</span></a>
+        </div>
+    </nav>
+    <script th:src="@{/number-format.js}" defer></script>
+    <script th:src="@{/status-format.js(v='20260923-1')}" defer></script>
+    <script th:src="@{/sidebar.js}" defer></script>
+    <link rel="stylesheet" th:href="@{/css/list-controls.css}">
+    <script th:src="@{/js/list-controls2.js}" defer></script>
+    <div class="sidebar-footer" sec:authorize="isAuthenticated()"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-danger" style="width:100%">Đăng xuất</button></form></div>
+</aside>
+<header th:fragment="topbar(pageTitle, breadcrumb)" class="topbar"><div class="topbar-left"><div><div class="topbar-title" th:text="${pageTitle}"></div><div class="topbar-breadcrumb"><i class="fas fa-home"></i> / <span th:text="${breadcrumb}"></span></div></div></div><div class="topbar-right"><span th:text="${#calendars.format(#calendars.createNow(), 'dd/MM/yyyy')}"></span></div></header>
+</html>

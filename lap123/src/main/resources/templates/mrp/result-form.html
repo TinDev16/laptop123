@@ -1,29 +1,806 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ghi kết quả sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Ghi kết quả sản xuất', 'Sản xuất / Kết quả')}"></div>
-<main class="content-body mrp-entry-page">
-<div class="page-header"><div><h1 class="page-title">Ghi kết quả sản xuất</h1><p class="page-description">Ghi nhận số lượng hoàn thành theo yêu cầu được phân công.</p></div><a class="btn btn-outline" th:href="@{/san-xuat/ket-qua}">Về danh sách</a></div>
-<div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
-<section class="content-card"><div class="content-card-header"><h2 class="content-card-title">Yêu cầu của tôi</h2><span class="record-count" th:text="${#lists.size(orders) + ' yêu cầu'}"></span></div>
-<div class="table-container"><table><thead><tr><th>Yêu cầu</th><th>Sản phẩm</th><th>Số lượng yêu cầu</th><th>Đã hoàn thành</th><th>Còn lại</th></tr></thead><tbody>
-<tr th:each="o : ${orders}"><td th:text="${o.mayeucau}"></td><td th:text="${o.tensp}"></td><td th:text="${o.soluongyeucau}"></td><td th:text="${o.soluonghoanthanh}"></td><td th:text="${o.soluongyeucau - o.soluonghoanthanh}"></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(orders)}"><td colspan="5">Bạn chưa có yêu cầu đang thực hiện.</td></tr></tbody></table></div></section>
-<form th:action="@{/san-xuat/ket-qua}" method="post" class="content-card ceo-form">
-<div class="content-card-header"><h2 class="content-card-title">Thông tin kết quả</h2></div>
-<div class="content-card-body"><div class="ceo-form-grid">
-<div class="ceo-field ceo-field-full"><label for="orderId">Yêu cầu sản xuất <span class="ceo-required">*</span></label><select id="orderId" name="orderId" class="form-control" required><option value="" disabled selected>Chọn yêu cầu sản xuất</option><option th:each="o : ${orders}" th:value="${o.mayeucau}" th:text="${'#' + o.mayeucau + ' - ' + o.tensp + ' (' + o.soluonghoanthanh + '/' + o.soluongyeucau + ')'}"></option></select><small>Chỉ hiển thị yêu cầu đã phân công cho bạn.</small></div>
-    <div class="ceo-field ceo-field-full">
-        <label for="completed">
-            Số lượng hoàn thành lần này <span class="ceo-required">*</span>
-        </label>
-        <input id="completed"
-               name="completed"
-               type="number"
-               min="1"
-               required
-               class="form-control"
-               placeholder="Nhập số lượng hoàn thành">
-    </div><div class="ceo-field ceo-field-full"><label for="note">Ghi chú</label><textarea id="note" name="note" maxlength="255" rows="3" class="form-control" placeholder="Mô tả tình trạng sản xuất nếu cần"></textarea></div>
-</div><div class="ceo-form-actions"><button type="submit" class="btn btn-primary" th:disabled="${#lists.isEmpty(orders)}">Gửi kết quả</button></div></div></form>
-</main></div></div></body></html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Ghi kết quả sản xuất</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Ghi kết quả sản xuất', 'Sản xuất / Kết quả')}"></div>
+
+        <main class="content-body mrp-entry-page">
+
+            <!-- HEADER -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Ghi kết quả sản xuất</h1>
+                    <p class="page-description">
+                        Ghi nhận số lượng hoàn thành theo yêu cầu được phân công.
+                    </p>
+                </div>
+
+                <a class="btn btn-outline"
+                   th:href="@{/san-xuat/ket-qua}">
+                    Về danh sách
+                </a>
+            </div>
+
+
+            <!-- ERROR -->
+            <div class="directory-alert directory-alert--error"
+                 th:if="${error}"
+                 th:text="${error}">
+            </div>
+
+
+            <!-- ===================================================== -->
+            <!-- DANH SÁCH YÊU CẦU -->
+            <!-- ===================================================== -->
+
+            <section class="content-card">
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+                        Yêu cầu của tôi
+                    </h2>
+
+                    <span class="record-count"
+                          th:text="${#lists.size(orders) + ' yêu cầu'}">
+                    </span>
+
+                </div>
+
+
+                <!-- TÌM KIẾM -->
+                <div class="content-card-body">
+
+                    <div class="ceo-field">
+
+                        <label for="searchOrders">
+                            Tìm kiếm
+                        </label>
+
+                        <input
+                                type="text"
+                                id="searchOrders"
+                                class="form-control"
+                                placeholder="Nhập từ khóa (có hoặc không dấu)...">
+
+                    </div>
+
+                </div>
+
+
+                <!-- BẢNG -->
+                <div class="table-container">
+
+                    <table id="ordersTable">
+
+                        <thead>
+                        <tr>
+                            <th>Yêu cầu</th>
+                            <th>Sản phẩm</th>
+                            <th>Phiên bản BOM</th>
+                            <th>Mã BOM</th>
+                            <th>Số lượng yêu cầu</th>
+                            <th>Đã hoàn thành</th>
+                            <th>Còn lại</th>
+                            <th>Ngày đến hạn</th>
+                        </tr>
+                        </thead>
+
+
+                        <tbody>
+
+                        <tr th:each="o : ${orders}"
+                            class="order-row">
+
+                            <td th:text="${o.mayeucau}">
+                            </td>
+
+                            <td th:text="${o.tensp}">
+                            </td>
+
+                            <td th:text="${'BOM ' + o.phienban}">
+                            </td>
+
+                            <td th:text="${o.mabom}">
+                            </td>
+
+                            <td th:text="${o.soluongyeucau}">
+                            </td>
+
+                            <td th:text="${o.soluonghoanthanh}">
+                            </td>
+
+                            <td th:text="${o.soluongyeucau - o.soluonghoanthanh}">
+                            </td>
+
+                            <td th:text="${o.ngaydenhan != null
+                                ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy')
+                                : '-'}"></td>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- Không có yêu cầu -->
+                        <tr class="empty-row"
+                            th:if="${#lists.isEmpty(orders)}">
+
+                            <td colspan="8">
+                                Bạn chưa có yêu cầu đang thực hiện.
+                            </td>
+
+                        </tr>
+
+
+                        <!-- Không tìm thấy -->
+                        <tr id="noSearchResult"
+                            style="display:none;">
+
+                            <td colspan="8">
+                                Không có dữ liệu phù hợp.
+                            </td>
+
+                        </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- ===================================================== -->
+            <!-- FORM GHI KẾT QUẢ -->
+            <!-- ===================================================== -->
+
+            <form
+                    th:action="@{/san-xuat/ket-qua}"
+                    method="post"
+                    class="content-card ceo-form">
+
+
+
+                <div class="content-card-body">
+
+                    <!-- BỘ LỌC -->
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 6px 0;">
+                            Lọc yêu cầu sản xuất
+                        </h3>
+
+                        <p style="margin: 0;">
+                            Tùy chọn bộ lọc để tìm nhanh yêu cầu sản xuất cần ghi kết quả.
+                        </p>
+                    </div>
+
+                    <div class="ceo-form-grid">
+
+
+                        <!-- ================================================= -->
+                        <!-- BỘ LỌC SẢN PHẨM -->
+                        <!-- ================================================= -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="productFilter">
+                                Sản phẩm
+                            </label>
+
+                            <select
+                                    id="productFilter"
+                                    class="form-control">
+
+                                <option value="">
+                                    -- Tất cả sản phẩm --
+                                </option>
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- ================================================= -->
+                        <!-- BỘ LỌC BOM -->
+                        <!-- ================================================= -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="bomFilter">
+                                Phiên bản sản phẩm
+                            </label>
+
+                            <select
+                                    id="bomFilter"
+                                    class="form-control"
+                                    disabled>
+
+                                <option value="">
+                                    -- Tất cả phiên bản --
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- ================================================= -->
+                        <!-- YÊU CẦU SẢN XUẤT -->
+                        <!-- ================================================= -->
+
+                        <h2 class="content-card-title">
+                            Thông tin kết quả
+                        </h2>
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="orderId">
+
+                                Yêu cầu sản xuất
+
+                                <span class="ceo-required">
+                                    *
+                                </span>
+
+                            </label>
+
+
+                            <select
+                                    id="orderId"
+                                    name="orderId"
+                                    class="form-control"
+                                    required>
+
+                                <option value=""
+                                        disabled
+                                        selected>
+
+                                    Chọn yêu cầu sản xuất
+
+                                </option>
+
+
+                                <option
+                                        th:each="o : ${orders}"
+
+                                        th:value="${o.mayeucau}"
+
+                                        th:attr="
+                                            data-masp=${o.masp},
+                                            data-mabom=${o.mabom},
+                                            data-phienban=${o.phienban},
+                                            data-tensp=${o.tensp}
+                                        "
+
+                                        th:text="${'#' + o.mayeucau
+                                            + ' - ' + o.tensp
+                                            + ' - BOM ' + o.phienban
+                                            + ' (Mã BOM: ' + o.mabom + ')'
+                                            + ' (' + o.soluonghoanthanh
+                                            + '/' + o.soluongyeucau + ')'}">
+
+                                </option>
+
+                            </select>
+
+
+                            <small>
+                                Chỉ hiển thị yêu cầu đã phân công cho bạn.
+                            </small>
+
+                        </div>
+
+
+
+                        <!-- ================================================= -->
+                        <!-- SỐ LƯỢNG -->
+                        <!-- ================================================= -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="completed">
+
+                                Số lượng hoàn thành lần này
+
+                                <span class="ceo-required">
+                                    *
+                                </span>
+
+                            </label>
+
+
+                            <input
+                                    id="completed"
+                                    name="completed"
+                                    type="number"
+                                    min="1"
+                                    required
+                                    class="form-control"
+                                    placeholder="Nhập số lượng hoàn thành">
+
+                        </div>
+
+
+
+                        <!-- ================================================= -->
+                        <!-- GHI CHÚ -->
+                        <!-- ================================================= -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="note">
+                                Ghi chú
+                            </label>
+
+                            <textarea
+                                    id="note"
+                                    name="note"
+                                    maxlength="255"
+                                    rows="3"
+                                    class="form-control"
+                                    placeholder="Mô tả tình trạng sản xuất nếu cần">
+                            </textarea>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- BUTTON -->
+                    <div class="ceo-form-actions">
+
+                        <button
+                                type="submit"
+                                class="btn btn-primary"
+                                th:disabled="${#lists.isEmpty(orders)}">
+
+                            Gửi kết quả
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+
+</div>
+
+
+
+<!-- ========================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================================================= -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+
+        /* =========================================================
+           ELEMENTS
+           ========================================================= */
+
+        const searchInput =
+            document.getElementById("searchOrders");
+
+        const ordersTable =
+            document.getElementById("ordersTable");
+
+        const noSearchResult =
+            document.getElementById("noSearchResult");
+
+        const productFilter =
+            document.getElementById("productFilter");
+
+        const bomFilter =
+            document.getElementById("bomFilter");
+
+        const orderSelect =
+            document.getElementById("orderId");
+
+
+        if (!ordersTable || !orderSelect) {
+            return;
+        }
+
+
+
+        /* =========================================================
+           CHUẨN HÓA TIẾNG VIỆT
+           Cho phép:
+           Lenovo
+           lenovo
+           LENOVO
+           Lenovo LOQ
+           Lenovo có dấu...
+           ========================================================= */
+
+        function normalizeText(text) {
+
+            return text
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .trim();
+
+        }
+
+
+
+        /* =========================================================
+           1. TÌM KIẾM BẢNG YÊU CẦU
+           ========================================================= */
+
+        if (searchInput) {
+
+            searchInput.addEventListener("input", function () {
+
+                const keyword =
+                    normalizeText(this.value);
+
+                const rows =
+                    ordersTable.querySelectorAll(
+                        "tbody tr.order-row"
+                    );
+
+                let found = 0;
+
+
+                rows.forEach(function (row) {
+
+                    const rowText =
+                        normalizeText(row.textContent);
+
+                    if (
+                        keyword === "" ||
+                        rowText.includes(keyword)
+                    ) {
+
+                        row.style.display = "";
+                        found++;
+
+                    } else {
+
+                        row.style.display = "none";
+
+                    }
+
+                });
+
+
+                /*
+                 * Chỉ hiện "Không có dữ liệu phù hợp"
+                 * khi có dữ liệu ban đầu nhưng
+                 * không dòng nào match.
+                 */
+
+                if (noSearchResult) {
+
+                    noSearchResult.style.display =
+                        found === 0 && keyword !== ""
+                            ? ""
+                            : "none";
+
+                }
+
+            });
+
+        }
+
+
+
+        /* =========================================================
+           2. LẤY TOÀN BỘ OPTION YÊU CẦU
+           ========================================================= */
+
+        const allOptions = Array.from(
+            orderSelect.querySelectorAll(
+                "option[data-masp]"
+            )
+        );
+
+
+
+        /* =========================================================
+           3. TẠO DANH SÁCH SẢN PHẨM KHÔNG TRÙNG
+           ========================================================= */
+
+        function loadProducts() {
+
+            if (!productFilter) {
+                return;
+            }
+
+
+            productFilter.innerHTML =
+                '<option value="">Tất cả sản phẩm</option>';
+
+
+            const products = new Map();
+
+
+            allOptions.forEach(function (option) {
+
+                const masp =
+                    option.dataset.masp;
+
+                const tensp =
+                    option.dataset.tensp;
+
+
+                if (
+                    masp &&
+                    tensp &&
+                    !products.has(masp)
+                ) {
+
+                    products.set(
+                        masp,
+                        tensp
+                    );
+
+                }
+
+            });
+
+
+            products.forEach(function (name, id) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = id;
+                option.textContent = name;
+
+                productFilter.appendChild(option);
+
+            });
+
+        }
+
+
+
+        /* =========================================================
+           4. LOAD PHIÊN BẢN BOM
+           Theo sản phẩm
+           ========================================================= */
+
+        function loadBomVersions() {
+
+            if (!bomFilter || !productFilter) {
+                return;
+            }
+
+            const productId = productFilter.value;
+
+            // Chưa chọn sản phẩm
+            if (!productId) {
+
+                bomFilter.innerHTML =
+                    '<option value="">-- Tất cả phiên bản --</option>';
+
+                bomFilter.disabled = true;
+
+                return;
+            }
+
+            // Đã chọn sản phẩm
+            bomFilter.innerHTML =
+                '<option value="">-- Tất cả phiên bản --</option>';
+
+            const versions = new Map();
+
+            allOptions.forEach(function (option) {
+
+                if (option.dataset.masp !== productId) {
+                    return;
+                }
+
+                const bomId =
+                    option.dataset.mabom;
+
+                const version =
+                    option.dataset.phienban;
+
+                if (
+                    bomId &&
+                    version &&
+                    !versions.has(bomId)
+                ) {
+
+                    versions.set(
+                        bomId,
+                        version
+                    );
+
+                }
+
+            });
+
+            versions.forEach(function (version, bomId) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = bomId;
+
+                option.textContent =
+                    "BOM " + version;
+
+                bomFilter.appendChild(option);
+
+            });
+
+            bomFilter.disabled = false;
+        }
+
+
+
+        /* =========================================================
+           5. LỌC YÊU CẦU SẢN XUẤT
+           Theo:
+           - Sản phẩm
+           - BOM
+           ========================================================= */
+
+        function filterOrders() {
+
+            const productId =
+                productFilter.value;
+
+            const bomId =
+                bomFilter.value;
+
+
+            const currentValue =
+                orderSelect.value;
+
+
+            orderSelect.innerHTML =
+                '<option value="" disabled selected>' +
+                'Chọn yêu cầu sản xuất' +
+                '</option>';
+
+
+            let foundCurrent = false;
+
+
+            allOptions.forEach(function (option) {
+
+                const matchProduct =
+                    productId === "" ||
+                    option.dataset.masp === productId;
+
+
+                const matchBom =
+                    bomId === "" ||
+                    option.dataset.mabom === bomId;
+
+
+                if (
+                    matchProduct &&
+                    matchBom
+                ) {
+
+                    const cloned =
+                        option.cloneNode(true);
+
+
+                    orderSelect.appendChild(
+                        cloned
+                    );
+
+
+                    if (
+                        cloned.value === currentValue
+                    ) {
+
+                        foundCurrent = true;
+
+                    }
+
+                }
+
+            });
+
+
+            if (foundCurrent) {
+
+                orderSelect.value =
+                    currentValue;
+
+            }
+
+        }
+
+
+
+        /* =========================================================
+           6. KHI ĐỔI SẢN PHẨM
+           ========================================================= */
+
+        productFilter.addEventListener(
+            "change",
+            function () {
+
+                // Reset BOM
+                loadBomVersions();
+
+                // Reset yêu cầu sản xuất
+                orderSelect.value = "";
+
+                filterOrders();
+
+            }
+        );
+
+
+
+        /* =========================================================
+           7. KHI ĐỔI PHIÊN BẢN BOM
+           ========================================================= */
+
+        if (bomFilter) {
+
+            bomFilter.addEventListener(
+                "change",
+                function () {
+
+                    filterOrders();
+
+                }
+            );
+
+        }
+
+
+
+        /* =========================================================
+           8. KHỞI TẠO
+           ========================================================= */
+
+        loadProducts();
+
+        bomFilter.innerHTML =
+            '<option value="">-- Chọn phiên bản sản phẩm --</option>';
+
+        bomFilter.disabled = true;
+
+        orderSelect.value = "";
+
+        filterOrders();
+
+    });
+
+</script>
+
+</body>
+</html>

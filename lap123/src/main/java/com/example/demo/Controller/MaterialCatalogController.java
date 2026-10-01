@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/nguyen-vat-lieu")
 public class MaterialCatalogController {
+
     private final MaterialCatalogService service;
 
     public MaterialCatalogController(MaterialCatalogService service) {
@@ -30,31 +31,53 @@ public class MaterialCatalogController {
 
     @GetMapping("/create")
     public String createForm(Model model) {
-        model.addAttribute("suppliers", service.suppliers());
         return "mrp/material-form";
     }
 
     @GetMapping("/{id}")
     public String editForm(@PathVariable long id, Model model) {
         model.addAttribute("material", service.get(id));
-        model.addAttribute("suppliers", service.suppliers());
         return "mrp/material-form";
     }
 
     @PostMapping
-    public String save(@RequestParam(required = false) Long id, @RequestParam String code,
-                       @RequestParam String name, @RequestParam(required = false) Integer supplierId,
-                       @RequestParam String unit, @RequestParam BigDecimal price,
-                       @RequestParam int minimum, @RequestParam int leadDays,
-                       @RequestParam String status, @RequestParam(required = false) String note,
-                       RedirectAttributes flash) {
+    public String save(
+            @RequestParam(required = false) Long id,
+            @RequestParam String code,
+            @RequestParam String name,
+            @RequestParam String unit,
+            @RequestParam BigDecimal price,
+            @RequestParam int minimum,
+            @RequestParam String status,
+            @RequestParam(required = false) String note,
+            RedirectAttributes flash) {
+
         try {
-            service.save(id, code, name, supplierId, unit, price, minimum, leadDays, status, note);
+            service.save(
+                    id,
+                    code,
+                    name,
+                    unit,
+                    price,
+                    minimum,
+                    status,
+                    note
+            );
+
             flash.addFlashAttribute("success", "Đã lưu nguyên vật liệu.");
             return "redirect:/nguyen-vat-lieu";
+
         } catch (IllegalArgumentException | DataAccessException exception) {
-            flash.addFlashAttribute("error", exception instanceof DataAccessException ? "Không lưu được NVL. Kiểm tra mã NVL và nhà cung cấp." : exception.getMessage());
-            return id == null ? "redirect:/nguyen-vat-lieu/create" : "redirect:/nguyen-vat-lieu/" + id;
+
+            String message = exception instanceof DataAccessException
+                    ? "Không lưu được NVL. Kiểm tra mã NVL."
+                    : exception.getMessage();
+
+            flash.addFlashAttribute("error", message);
+
+            return id == null
+                    ? "redirect:/nguyen-vat-lieu/create"
+                    : "redirect:/nguyen-vat-lieu/" + id;
         }
     }
 }

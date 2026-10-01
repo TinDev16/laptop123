@@ -3,6 +3,7 @@ package com.example.demo.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,16 +17,35 @@ public class MrpWarehouseService {
     }
 
     @Transactional
-    public void completeMaterialReceipt(long receiptId) {
-        String status = lockStatus("phieunhap_nvl", "mapn", receiptId);
-        if ("DA_NHAP".equals(status)) throw new IllegalStateException("Phiếu nhập đã được xử lý trước đó.");
+    public void completeMaterialReceipt(
+            long receiptId,
+            String managerEmail) {
+
+        String status = lockStatus(
+                "phieunhap_nvl",
+                "mapn",
+                receiptId
+        );
+
+        if ("DA_NHAP".equals(status)) {
+            throw new IllegalStateException(
+                    "Phiếu nhập đã được xử lý trước đó."
+            );
+        }
+
         requireStatus(status, "NHAP_NHAP");
+
         List<Line> lines = jdbc.query(
-                "SELECT manvl, SUM(soluong), MAX(dongia) " +
-                        "FROM ct_phieunhap_nvl " +
-                        "WHERE mapn = ? " +
-                        "GROUP BY manvl " +
-                        "ORDER BY manvl",
+                """
+                SELECT
+                    manvl,
+                    SUM(soluong),
+                    MAX(dongia)
+                FROM ct_phieunhap_nvl
+                WHERE mapn = ?
+                GROUP BY manvl
+                ORDER BY manvl
+                """,
                 (rs, row) -> new Line(
                         rs.getLong(1),
                         0L,
@@ -34,16 +54,59 @@ public class MrpWarehouseService {
                 ),
                 receiptId
         );
+
         requireLines(lines);
-        Integer actor = jdbc.queryForObject("SELECT nguoilap FROM phieunhap_nvl WHERE mapn = ?", Integer.class, receiptId);
+
+        // =====================================================
+        // KIỂM TRA LẠI TRẠNG THÁI NVL + LOẠI NVL
+        // NGAY TẠI THỜI ĐIỂM DUYỆT
+        // =====================================================
+
+        validateActiveMaterialsForApproval(lines);
+
+        Integer actor = employeeId(managerEmail);
+
+        // =====================================================
+        // KHÓA TỒN KHO + CỘNG TỒN
+        // =====================================================
+
         for (Line line : lines) {
+
             requirePositive(line.quantity());
-            BigDecimal before = lockStock("nguyenvatlieu", "manvl", line.itemId());
-            BigDecimal after = before.add(line.quantity());
-            jdbc.update("UPDATE nguyenvatlieu SET soluongton = ? WHERE manvl = ?", after, line.itemId());
-            history("NHAP_NVL", "NVL", line, actor, "phieunhap_nvl", receiptId);
+
+            BigDecimal before = lockStock(
+                    "nguyenvatlieu",
+                    "manvl",
+                    line.itemId()
+            );
+
+            BigDecimal after =
+                    before.add(line.quantity());
+
+            jdbc.update(
+                    "UPDATE nguyenvatlieu " +
+                            "SET soluongton = ? " +
+                            "WHERE manvl = ?",
+                    after,
+                    line.itemId()
+            );
+
+            history(
+                    "NHAP_NVL",
+                    "NVL",
+                    line,
+                    actor,
+                    "phieunhap_nvl",
+                    receiptId
+            );
         }
-        jdbc.update("UPDATE phieunhap_nvl SET trangthai = 'DA_NHAP' WHERE mapn = ?", receiptId);
+
+        jdbc.update(
+                "UPDATE phieunhap_nvl " +
+                        "SET trangthai = 'DA_NHAP' " +
+                        "WHERE mapn = ?",
+                receiptId
+        );
     }
 
     @Transactional
@@ -71,6 +134,7 @@ public class MrpWarehouseService {
                 issueId
         );
         requireLines(lines);
+        validateActiveMaterialsForApproval(lines);
         List<StockChange> changes = new ArrayList<>();
         for (Line line : lines) {
             requirePositive(line.quantity());
@@ -360,6 +424,82 @@ public class MrpWarehouseService {
         requireReason(reason);
         jdbc.update("UPDATE phieuxuat_thanhpham SET trangthai = 'TU_CHOI', lydo = ?, nguoiduyet = ?, ngayduyet = CURRENT_TIMESTAMP WHERE mapxtp = ?",
                 reason.trim(), employeeId(managerEmail), issueId);
+    }
+
+    private void validateActiveMaterialsForApproval(
+            List<Line> lines) {
+
+        String sql =
+                """
+                SELECT
+                    n.tennvl,
+                    n.trangthai AS nvl_trangthai,
+                    l.tenloai,
+                    l.trangthai AS loai_trangthai
+                FROM nguyenvatlieu n
+                JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+                WHERE n.manvl = ?
+                """;
+
+        for (Line line : lines) {
+
+            List<Map<String, Object>> rows =
+                    jdbc.queryForList(
+                            sql,
+                            line.itemId()
+                    );
+
+            if (rows.isEmpty()) {
+                throw new IllegalStateException(
+                        "Nguyên vật liệu không tồn tại: "
+                                + line.itemId()
+                );
+            }
+
+            Map<String, Object> row =
+                    rows.get(0);
+
+            int materialStatus =
+                    ((Number) row.get(
+                            "nvl_trangthai"
+                    )).intValue();
+
+            int typeStatus =
+                    ((Number) row.get(
+                            "loai_trangthai"
+                    )).intValue();
+
+            String materialName =
+                    String.valueOf(
+                            row.get("tennvl")
+                    );
+
+            String typeName =
+                    String.valueOf(
+                            row.get("tenloai")
+                    );
+
+            // NVL đã ngừng
+            if (materialStatus != 1) {
+                throw new IllegalStateException(
+                        "Không thể duyệt phiếu. " +
+                                "Nguyên vật liệu \"" +
+                                materialName +
+                                "\" đã ngừng sử dụng."
+                );
+            }
+
+            // Loại NVL đã ngừng
+            if (typeStatus != 1) {
+                throw new IllegalStateException(
+                        "Không thể duyệt phiếu. " +
+                                "Loại nguyên vật liệu \"" +
+                                typeName +
+                                "\" đã ngừng sử dụng."
+                );
+            }
+        }
     }
 
     private int employeeId(String email) {

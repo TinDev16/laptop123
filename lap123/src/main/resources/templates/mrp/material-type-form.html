@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Sửa loại nguyên vật liệu</title>
+
+    <link rel="stylesheet"
+          th:href="@{/style.css(v='20261001-2')}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar('nvl')}"></div>
+
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Sửa loại nguyên vật liệu', 'Kho / NVL / Loại NVL')}"></div>
+
+        <main class="content-body">
+
+            <h1>Sửa loại nguyên vật liệu</h1>
+
+            <!-- QUAY LẠI -->
+
+            <p>
+                <a th:href="@{/nguyen-vat-lieu/loai}"
+                   class="btn btn-primary">
+                    Quay lại
+                </a>
+            </p>
+
+
+            <!-- FORM -->
+
+            <div class="content-card">
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+                        Chỉnh sửa loại nguyên vật liệu
+                    </h2>
+
+                </div>
+
+
+                <div style="padding:20px;">
+
+                    <form method="post"
+                          th:action="@{/nguyen-vat-lieu/loai/update}">
+
+                        <!-- MÃ LOẠI: CHỈ HIỂN THỊ -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Mã loại
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   th:value="${type.maloai}"
+                                   readonly>
+
+                            <!-- Gửi ID về server -->
+                            <input type="hidden"
+                                   name="id"
+                                   th:value="${type.maloai}">
+
+                        </div>
+
+
+                        <!-- TÊN LOẠI -->
+
+                        <div class="form-group"
+                             style="margin-top:20px;">
+
+                            <label for="name">
+                                Tên loại nguyên vật liệu
+                            </label>
+
+                            <input type="text"
+                                   id="name"
+                                   name="name"
+                                   class="form-control"
+                                   maxlength="255"
+                                   required
+                                   th:value="${type.tenloai}">
+
+                        </div>
+
+
+                        <!-- TRẠNG THÁI -->
+
+                        <div class="form-group"
+                             style="margin-top:20px;">
+
+                            <label for="status">
+                                Trạng thái
+                            </label>
+
+                            <select id="status"
+                                    name="status"
+                                    class="form-control"
+                                    required>
+
+                                <option value="1"
+                                        th:selected="${type.trangthai == 1}">
+                                    Hoạt động
+                                </option>
+
+                                <option value="0"
+                                        th:selected="${type.trangthai == 0}">
+                                    Ngừng sử dụng
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- NÚT -->
+
+                        <div style="margin-top:24px;">
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Lưu thay đổi
+                            </button>
+
+                            <a th:href="@{/nguyen-vat-lieu/loai}"
+                               class="btn btn-secondary"
+                               style="margin-left:8px;">
+                                Hủy
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

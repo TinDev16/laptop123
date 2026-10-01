@@ -27,7 +27,9 @@
         <main class="content-body mrp-entry-page material-form-page">
 
             <div class="page-header">
+
                 <div>
+
                     <h1 class="page-title"
                         th:text="${material == null ? 'Thêm nguyên vật liệu' : 'Sửa nguyên vật liệu'}">
                     </h1>
@@ -35,41 +37,58 @@
                     <p class="page-description">
                         Cập nhật thông tin danh mục phục vụ kế hoạch mua hàng và sản xuất.
                     </p>
+
                 </div>
 
                 <a class="btn btn-outline"
                    th:href="@{/nguyen-vat-lieu}">
                     Về danh sách
                 </a>
+
             </div>
+
+
+            <!-- THÔNG BÁO LỖI -->
 
             <div class="directory-alert directory-alert--error"
                  th:if="${error}"
                  th:text="${error}">
             </div>
 
+
             <form th:action="@{/nguyen-vat-lieu}"
                   method="post"
                   class="content-card ceo-form">
 
+
                 <!-- ID khi sửa -->
+
                 <input th:if="${material != null}"
                        type="hidden"
                        name="id"
                        th:value="${material.manvl}">
 
+
                 <div class="content-card-header">
+
                     <h2 class="content-card-title">
                         Thông tin nguyên vật liệu
                     </h2>
+
                 </div>
+
 
                 <div class="content-card-body">
 
                     <div class="ceo-form-grid">
 
-                        <!-- Mã NVL -->
+
+                        <!-- ========================= -->
+                        <!-- MÃ NVL -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field">
+
                             <label for="code">
                                 Mã NVL
                                 <span class="ceo-required">*</span>
@@ -87,10 +106,16 @@
                             <small>
                                 Mã duy nhất để nhận diện vật liệu.
                             </small>
+
                         </div>
 
-                        <!-- Tên NVL -->
+
+                        <!-- ========================= -->
+                        <!-- TÊN NVL -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field">
+
                             <label for="name">
                                 Tên nguyên vật liệu
                                 <span class="ceo-required">*</span>
@@ -104,10 +129,72 @@
                                    th:value="${material?.tennvl}"
                                    class="form-control"
                                    placeholder="Nhập tên nguyên vật liệu">
+
                         </div>
 
-                        <!-- Đơn vị tính -->
+
+                        <!-- ========================= -->
+                        <!-- LOẠI NVL -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field">
+
+                            <label for="typeId">
+                                Loại nguyên vật liệu
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select id="typeId"
+                                    name="typeId"
+                                    required
+                                    class="form-control">
+
+                                <option value="">
+                                    -- Chọn loại nguyên vật liệu --
+                                </option>
+
+
+                                <!--
+                                    Khi TẠO mới:
+                                    types chỉ chứa loại đang hoạt động.
+
+                                    Khi SỬA:
+                                    types chứa:
+                                    - Loại đang hoạt động
+                                    - Loại hiện tại của NVL,
+                                      kể cả khi loại đó đã ngừng.
+                                -->
+
+                                <option th:each="type : ${types}"
+                                        th:value="${type.maloai}"
+                                        th:selected="${material != null and material.maloai == type.maloai}"
+                                        th:text="${type.trangthai == 1
+                                                ? type.tenloai
+                                                : type.tenloai + ' - Ngừng sử dụng'}">
+                                </option>
+
+                            </select>
+
+
+                            <small th:if="${material == null}">
+                                Chỉ có thể chọn loại nguyên vật liệu đang hoạt động.
+                            </small>
+
+
+                            <small th:if="${material != null}">
+                                Nếu loại hiện tại đã ngừng sử dụng,
+                                loại đó vẫn được giữ để bảo toàn dữ liệu cũ.
+                            </small>
+
+                        </div>
+
+
+                        <!-- ========================= -->
+                        <!-- ĐƠN VỊ TÍNH -->
+                        <!-- ========================= -->
+
+                        <div class="ceo-field">
+
                             <label for="unit">
                                 Đơn vị tính
                                 <span class="ceo-required">*</span>
@@ -121,10 +208,16 @@
                                    th:value="${material?.donvitinh}"
                                    class="form-control"
                                    placeholder="Ví dụ: cái, bộ, kg">
+
                         </div>
 
-                        <!-- Đơn giá nhập -->
+
+                        <!-- ========================= -->
+                        <!-- ĐƠN GIÁ NHẬP -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field">
+
                             <label for="price">
                                 Đơn giá nhập
                                 <span class="ceo-required">*</span>
@@ -144,10 +237,16 @@
                                 Đơn giá tham khảo cho một đơn vị vật liệu.
                                 Giá thực tế được lưu tại chi tiết phiếu nhập.
                             </small>
+
                         </div>
 
-                        <!-- Tồn tối thiểu -->
+
+                        <!-- ========================= -->
+                        <!-- TỒN TỐI THIỂU -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field">
+
                             <label for="minimum">
                                 Tồn kho tối thiểu
                                 <span class="ceo-required">*</span>
@@ -161,10 +260,15 @@
                                    th:value="${material == null ? 0 : material.ton_toithieu}"
                                    class="form-control"
                                    inputmode="numeric">
+
                         </div>
 
-                        <!-- Trạng thái -->
-                        <!-- Chỉ hiện khi SỬA NVL -->
+
+                        <!-- ========================= -->
+                        <!-- TRẠNG THÁI NVL -->
+                        <!-- CHỈ HIỆN KHI SỬA -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field"
                              th:if="${material != null}">
 
@@ -190,14 +294,24 @@
 
                         </div>
 
-                        <!-- Khi TẠO mới: gửi trạng thái mặc định HOAT_DONG -->
+
+                        <!-- ========================= -->
+                        <!-- TẠO MỚI
+                             MẶC ĐỊNH HOẠT ĐỘNG -->
+                        <!-- ========================= -->
+
                         <input th:if="${material == null}"
                                type="hidden"
                                name="status"
                                value="HOAT_DONG">
 
-                        <!-- Ghi chú -->
+
+                        <!-- ========================= -->
+                        <!-- GHI CHÚ -->
+                        <!-- ========================= -->
+
                         <div class="ceo-field ceo-field-full">
+
                             <label for="note">
                                 Ghi chú
                             </label>
@@ -210,14 +324,25 @@
                                       placeholder="Thông tin thêm về vật liệu"
                                       th:text="${material?.ghichu}">
                             </textarea>
+
                         </div>
 
                     </div>
 
+
+                    <!-- GHI CHÚ NGHIỆP VỤ -->
+
                     <p class="material-form-hint">
-                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+
+                        <i class="fas fa-circle-info"
+                           aria-hidden="true"></i>
+
                         Tồn kho thực tế chỉ thay đổi qua phiếu nhập và phiếu xuất.
+
                     </p>
+
+
+                    <!-- NÚT -->
 
                     <div class="ceo-form-actions">
 

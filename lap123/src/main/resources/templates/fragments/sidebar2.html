@@ -7,6 +7,12 @@
         <a th:href="@{/dashboard}" class="menu-item" th:classappend="${activeTab == 'dashboard' ? 'active' : ''}"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
         <div sec:authorize="hasRole('QUAN_LY_KHO')">
             <div class="menu-heading">KHO</div>
+            <a th:href="@{/nguyen-vat-lieu/loai}"
+               class="menu-item"
+               th:classappend="${activeTab == 'loai-nvl' ? 'active' : ''}">
+                <i class="fas fa-layer-group"></i>
+                <span>Loại nguyên vật liệu</span>
+            </a>
             <a th:href="@{/nguyen-vat-lieu}" class="menu-item" th:classappend="${activeTab == 'nvl' ? 'active' : ''}"><i class="fas fa-cubes"></i><span>Nguyên vật liệu</span></a>
             <a th:href="@{/kho/nhap-nvl}" class="menu-item" th:classappend="${activeTab == 'nhap-nvl' ? 'active' : ''}"><i class="fas fa-arrow-circle-down"></i><span>Nhập nguyên vật liệu</span></a>
             <a th:href="@{/kho/xuat-nvl}" class="menu-item" th:classappend="${activeTab == 'xuat-nvl' ? 'active' : ''}"><i class="fas fa-clipboard-check"></i><span>Duyệt xuất NVL</span></a>

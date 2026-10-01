@@ -33,11 +33,17 @@
                style="color:#15803d">
             </p>
 
+            <!-- NÚT THAO TÁC -->
             <p>
+
+                <!-- Thêm NVL -->
                 <a th:href="@{/nguyen-vat-lieu/create}"
                    class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
                     Thêm NVL
                 </a>
+
+
             </p>
 
 
@@ -65,6 +71,7 @@
                         <tr>
                             <th>Mã</th>
                             <th>Tên</th>
+                            <th>Loại</th>
                             <th>Đơn vị</th>
                             <th>Tồn</th>
                             <th>Tồn tối thiểu</th>
@@ -85,6 +92,12 @@
 
                             <!-- Tên -->
                             <td th:text="${m.tennvl}">
+                            </td>
+
+                            <!-- Loại -->
+                            <td th:text="${m.tenloai != null
+                                ? m.tenloai
+                                : 'Chưa phân loại'}">
                             </td>
 
                             <!-- Đơn vị -->
@@ -147,10 +160,13 @@
 
                         </tr>
 
+
+                        <!-- Không có dữ liệu -->
+
                         <tr class="empty-row"
                             th:if="${#lists.isEmpty(materials)}">
 
-                            <td colspan="8">
+                            <td colspan="9">
                                 Chưa có dữ liệu để hiển thị.
                             </td>
 

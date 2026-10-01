@@ -32,7 +32,24 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> materials() {
-        return jdbc.queryForList("SELECT manvl, manvl_code, tennvl, donvitinh, dongianhap, soluongton, ton_toithieu FROM nguyenvatlieu WHERE trangthai = 1 ORDER BY tennvl");
+        return jdbc.queryForList(
+                """
+                SELECT
+                    n.manvl,
+                    n.manvl_code,
+                    n.tennvl,
+                    n.donvitinh,
+                    n.dongianhap,
+                    n.soluongton,
+                    n.ton_toithieu
+                FROM nguyenvatlieu n
+                JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+                WHERE n.trangthai = 1
+                  AND l.trangthai = 1
+                ORDER BY n.tennvl
+                """
+        );
     }
 
     public List<Map<String, Object>> products() {
@@ -58,6 +75,7 @@ public class MrpDocumentService {
     public long createReceipt(String email, int supplierId, String note, List<Long> materialIds,
                               List<Integer> quantities, List<BigDecimal> prices) {
         validateLines(materialIds, quantities);
+        validateActiveMaterials(materialIds);
         validateNote(note);
         if (prices == null || prices.size() != materialIds.size() || prices.stream().anyMatch(p -> p == null || p.signum() < 0)) {
             throw new IllegalArgumentException("Đơn giá nhập không hợp lệ.");
@@ -139,13 +157,48 @@ public class MrpDocumentService {
         );
     }
 
-    public List<Map<String, Object>> bomRequestLines(long orderId, String email) {
+    public List<Map<String, Object>> bomRequestLines(
+            long orderId,
+            String email) {
+
         orderOwned(orderId, email);
-        return jdbc.queryForList("SELECT c.manvl, n.manvl_code, n.tennvl, n.donvitinh, n.soluongton, " +
-                "c.soluong_dinhmuc, c.tyle_haohut, CEIL((y.soluongyeucau - y.soluonghoanthanh) * c.soluong_dinhmuc * " +
-                "(1 + c.tyle_haohut / 100)) AS nhu_cau FROM yeucausanxuat y " +
-                "JOIN bom_chitiet c ON c.mabom = y.mabom JOIN nguyenvatlieu n ON n.manvl = c.manvl " +
-                "WHERE y.maycsx = ? ORDER BY n.tennvl", orderId);
+
+        return jdbc.queryForList(
+                """
+                SELECT
+                    c.manvl,
+                    n.manvl_code,
+                    n.tennvl,
+                    n.donvitinh,
+                    n.soluongton,
+                    n.trangthai AS nvl_trangthai,
+                    l.trangthai AS loai_trangthai,
+                    c.soluong_dinhmuc,
+                    c.tyle_haohut,
+    
+                    CEIL(
+                        (y.soluongyeucau - y.soluonghoanthanh)
+                        * c.soluong_dinhmuc
+                        * (1 + c.tyle_haohut / 100)
+                    ) AS nhu_cau
+    
+                FROM yeucausanxuat y
+    
+                JOIN bom_chitiet c
+                    ON c.mabom = y.mabom
+    
+                JOIN nguyenvatlieu n
+                    ON n.manvl = c.manvl
+    
+                JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+    
+                WHERE y.maycsx = ?
+    
+                ORDER BY n.tennvl
+                """,
+                orderId
+        );
     }
 
     @Transactional
@@ -159,6 +212,7 @@ public class MrpDocumentService {
         Set<Long> allowed = new HashSet<>();
         for (Map<String, Object> line : bomRequestLines(orderId, email)) allowed.add(((Number) line.get("manvl")).longValue());
         if (!allowed.containsAll(materialIds)) throw new IllegalArgumentException("NVL đề nghị không thuộc BOM của yêu cầu.");
+        validateActiveMaterials(materialIds);
         long id = insert("INSERT INTO phieuxuat_nvl (maycsx, nguoilap, trangthai, ghichu) VALUES (?, ?, 'CHO_DUYET', ?)",
                 orderId, employeeId(email), note);
         for (int i = 0; i < materialIds.size(); i++) {
@@ -444,5 +498,65 @@ public class MrpDocumentService {
 
     private void validateNote(String note) {
         if (note != null && note.length() > 255) throw new IllegalArgumentException("Ghi chú tối đa 255 ký tự.");
+    }
+
+    private void validateActiveMaterials(List<Long> materialIds) {
+
+        if (materialIds == null || materialIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Phiếu phải có ít nhất một nguyên vật liệu."
+            );
+        }
+
+        String sql =
+                """
+                SELECT
+                    n.manvl,
+                    n.tennvl,
+                    n.trangthai AS nvl_trangthai,
+                    l.trangthai AS loai_trangthai
+                FROM nguyenvatlieu n
+                JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+                WHERE n.manvl = ?
+                """;
+
+        for (Long materialId : materialIds) {
+
+            List<Map<String, Object>> rows =
+                    jdbc.queryForList(sql, materialId);
+
+            if (rows.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Nguyên vật liệu không tồn tại: " + materialId
+                );
+            }
+
+            Map<String, Object> row = rows.get(0);
+
+            int materialStatus =
+                    ((Number) row.get("nvl_trangthai")).intValue();
+
+            int typeStatus =
+                    ((Number) row.get("loai_trangthai")).intValue();
+
+            String materialName =
+                    String.valueOf(row.get("tennvl"));
+
+            if (materialStatus != 1) {
+                throw new IllegalArgumentException(
+                        "Nguyên vật liệu \"" + materialName
+                                + "\" đã ngừng sử dụng, không thể tạo nghiệp vụ mới."
+                );
+            }
+
+            if (typeStatus != 1) {
+                throw new IllegalArgumentException(
+                        "Loại của nguyên vật liệu \""
+                                + materialName
+                                + "\" đã ngừng sử dụng, không thể tạo nghiệp vụ mới."
+                );
+            }
+        }
     }
 }

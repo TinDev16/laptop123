@@ -68,13 +68,29 @@ public class MrpWorkflowController {
     }
 
     @PostMapping("/kho/nhap-nvl/{id}/confirm")
-    public String confirmReceipt(@PathVariable long id, RedirectAttributes flash) {
+    public String confirmReceipt(
+            @PathVariable long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        requireManager(auth);
+
         try {
-            warehouse.completeMaterialReceipt(id);
-            flash.addFlashAttribute("success", "Nhập nguyên vật liệu thành công.");
+            warehouse.completeMaterialReceipt(id, auth.getName());
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Nhập nguyên vật liệu thành công."
+            );
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            flash.addFlashAttribute("error", exception.getMessage());
+
+            flash.addFlashAttribute(
+                    "error",
+                    exception.getMessage()
+            );
         }
+
         return "redirect:/kho/nhap-nvl/" + id;
     }
 

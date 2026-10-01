@@ -105,11 +105,30 @@ public class ProductionOrderService {
 
     public List<Map<String, Object>> activeBoms() {
         return jdbc.queryForList(
-                "SELECT b.mabom, b.phienban, s.tensp " +
-                        "FROM bom b " +
-                        "JOIN sanpham s ON s.masp = b.masp " +
-                        "WHERE b.trangthai = 'HIEU_LUC' " +
-                        "ORDER BY s.tensp"
+                """
+                SELECT
+                    b.mabom,
+                    b.phienban,
+                    s.tensp
+                FROM bom b
+                JOIN sanpham s
+                    ON s.masp = b.masp
+                WHERE b.trangthai = 'HIEU_LUC'
+                  AND NOT EXISTS (
+                        SELECT 1
+                        FROM bom_chitiet bc
+                        JOIN nguyenvatlieu n
+                            ON n.manvl = bc.manvl
+                        JOIN loai_nguyen_vat_lieu l
+                            ON l.maloai = n.maloai
+                        WHERE bc.mabom = b.mabom
+                          AND (
+                                n.trangthai <> 1
+                                OR l.trangthai <> 1
+                          )
+                  )
+                ORDER BY s.tensp
+                """
         );
     }
 
@@ -160,15 +179,32 @@ public class ProductionOrderService {
         }
 
         List<Integer> productIds = jdbc.query(
-                "SELECT masp FROM bom " +
-                        "WHERE mabom = ? AND trangthai = 'HIEU_LUC'",
+                """
+                SELECT b.masp
+                FROM bom b
+                WHERE b.mabom = ?
+                  AND b.trangthai = 'HIEU_LUC'
+                  AND NOT EXISTS (
+                        SELECT 1
+                        FROM bom_chitiet bc
+                        JOIN nguyenvatlieu n
+                            ON n.manvl = bc.manvl
+                        JOIN loai_nguyen_vat_lieu l
+                            ON l.maloai = n.maloai
+                        WHERE bc.mabom = b.mabom
+                          AND (
+                                n.trangthai <> 1
+                                OR l.trangthai <> 1
+                          )
+                  )
+                """,
                 (rs, row) -> rs.getInt(1),
                 bomId
         );
 
         if (productIds.isEmpty()) {
             throw new IllegalArgumentException(
-                    "BOM không hiệu lực hoặc không tồn tại."
+                    "BOM không hiệu lực, không tồn tại hoặc có nguyên vật liệu đã ngừng sử dụng."
             );
         }
 

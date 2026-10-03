@@ -52,55 +52,125 @@ public class BomService {
                     n.manvl,
                     n.manvl_code,
                     n.tennvl,
-                    n.donvitinh
+                    n.donvitinh,
+                    l.maloai,
+                    l.tenloai
                 FROM nguyenvatlieu n
                 JOIN loai_nguyen_vat_lieu l
                     ON l.maloai = n.maloai
                 WHERE n.trangthai = 1
                   AND l.trangthai = 1
-                ORDER BY n.tennvl
+                ORDER BY l.tenloai, n.tennvl
                 """
         );
+    }
+
+    public Map<String, List<Map<String, Object>>> groupMaterialsByType(
+            List<Map<String, Object>> materials) {
+
+        Map<String, List<Map<String, Object>>> groups =
+                new java.util.LinkedHashMap<>();
+
+        for (Map<String, Object> material : materials) {
+
+            String typeName =
+                    material.get("tenloai") != null
+                            ? material.get("tenloai").toString()
+                            : "Chưa phân loại";
+
+            groups
+                    .computeIfAbsent(
+                            typeName,
+                            key -> new java.util.ArrayList<>()
+                    )
+                    .add(material);
+        }
+
+        return groups;
     }
 
     public List<Map<String, Object>> versions(int productId) {
 
         return jdbc.queryForList(
-                "SELECT " +
-                        "    b.mabom, " +
-                        "    b.phienban, " +
-                        "    b.trangthai, " +
-
-                        /*
-                         * Tổng thành phẩm đã được quản lý xác nhận nhập kho
-                         * theo BOM.
-                         */
-                        "    COALESCE(( " +
-                        "        SELECT SUM(k.soluonghoanthanh) " +
-                        "        FROM yeucausanxuat y " +
-                        "        JOIN ketqua_sanxuat k " +
-                        "            ON k.maycsx = y.maycsx " +
-                        "        WHERE y.mabom = b.mabom " +
-                        "          AND k.trangthai = 'DA_NHAP_KHO' " +
-                        "    ), 0) " +
-
-                        /*
-                         * Trừ số lượng đã xuất thành phẩm theo chính BOM đó.
-                         */
-                        "    - COALESCE(( " +
-                        "        SELECT SUM(c.soluong) " +
-                        "        FROM phieuxuat_thanhpham p " +
-                        "        JOIN ct_phieuxuat_thanhpham c " +
-                        "            ON c.mapxtp = p.mapxtp " +
-                        "        WHERE c.mabom = b.mabom " +
-                        "          AND p.trangthai = 'DA_XUAT' " +
-                        "    ), 0) " +
-
-                        "    AS soluong_thanhpham " +
-
-                        "FROM bom b " +
-                        "WHERE b.masp = ? " +
-                        "ORDER BY b.mabom DESC",
+                """
+                SELECT
+                    b.mabom,
+                    b.phienban,
+                    b.trangthai,
+    
+                    /*
+                     * Tổng thành phẩm đã được quản lý xác nhận nhập kho
+                     * theo BOM.
+                     */
+                    COALESCE((
+                        SELECT SUM(k.soluonghoanthanh)
+                        FROM yeucausanxuat y
+                        JOIN ketqua_sanxuat k
+                            ON k.maycsx = y.maycsx
+                        WHERE y.mabom = b.mabom
+                          AND k.trangthai = 'DA_NHAP_KHO'
+                    ), 0)
+    
+                    -
+    
+                    /*
+                     * Trừ số lượng đã xuất thành phẩm
+                     * theo chính BOM đó.
+                     */
+                    COALESCE((
+                        SELECT SUM(c.soluong)
+                        FROM phieuxuat_thanhpham p
+                        JOIN ct_phieuxuat_thanhpham c
+                            ON c.mapxtp = p.mapxtp
+                        WHERE c.mabom = b.mabom
+                          AND p.trangthai = 'DA_XUAT'
+                    ), 0)
+    
+                    AS soluong_thanhpham,
+    
+                    /*
+                     * =====================================================
+                     * TÍNH GIÁ NGUYÊN VẬT LIỆU CỦA BOM
+                     *
+                     * Nếu cùng một NVL xuất hiện nhiều dòng:
+                     *
+                     *   Tổng định mức = SUM(soluong_dinhmuc)
+                     *
+                     * Sau đó:
+                     *
+                     *   Tổng định mức × đơn giá nhập
+                     *
+                     * Cuối cùng cộng tất cả NVL.
+                     *
+                     * dongianhap = đơn giá nhập hiện tại của NVL.
+                     * =====================================================
+                     */
+                    COALESCE((
+                        SELECT SUM(
+                            material_total.total_quantity
+                            * material_total.dongianhap
+                        )
+                        FROM (
+                            SELECT
+                                c.manvl,
+                                SUM(c.soluong_dinhmuc) AS total_quantity,
+                                n.dongianhap
+                            FROM bom_chitiet c
+                            JOIN nguyenvatlieu n
+                                ON n.manvl = c.manvl
+                            WHERE c.mabom = b.mabom
+                            GROUP BY
+                                c.manvl,
+                                n.dongianhap
+                        ) material_total
+                    ), 0) AS tong_gia_nvl
+    
+                FROM bom b
+    
+                WHERE b.masp = ?
+    
+                ORDER BY b.mabom DESC
+                """,
                 productId
         );
     }
@@ -134,13 +204,23 @@ public class BomService {
 
     public List<Map<String, Object>> details(long id) {
         return jdbc.queryForList(
-                "SELECT c.manvl, n.manvl_code, n.tennvl, n.donvitinh, " +
-                        "c.soluong_dinhmuc, " +
-                        "c.tyle_haohut AS ty_le_hao_hut " +
-                        "FROM bom_chitiet c " +
-                        "JOIN nguyenvatlieu n ON n.manvl = c.manvl " +
-                        "WHERE c.mabom = ? " +
-                        "ORDER BY c.id",
+                """
+                SELECT
+                    c.manvl,
+                    n.manvl_code,
+                    n.tennvl,
+                    l.tenloai,
+                    n.donvitinh,
+                    c.soluong_dinhmuc,
+                    c.tyle_haohut AS ty_le_hao_hut
+                FROM bom_chitiet c
+                JOIN nguyenvatlieu n
+                    ON n.manvl = c.manvl
+                LEFT JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+                WHERE c.mabom = ?
+                ORDER BY c.id
+                """,
                 id
         );
     }

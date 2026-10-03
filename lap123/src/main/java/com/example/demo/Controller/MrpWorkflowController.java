@@ -40,8 +40,24 @@ public class MrpWorkflowController {
 
     @GetMapping("/kho/nhap-nvl/create")
     public String receiptForm(Model model) {
-        model.addAttribute("suppliers", documents.suppliers());
-        model.addAttribute("materials", documents.materials());
+
+        var materials = documents.materials();
+
+        model.addAttribute(
+                "suppliers",
+                documents.suppliers()
+        );
+
+        model.addAttribute(
+                "materials",
+                materials
+        );
+
+        model.addAttribute(
+                "materialGroups",
+                documents.groupMaterialsByType(materials)
+        );
+
         return "mrp/receipt-form";
     }
 

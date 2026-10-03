@@ -12,6 +12,30 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet">
+
+    <style>
+        .material-category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 12px;
+        }
+
+        .material-category-title {
+            margin-left: 11px;
+        }
+
+        .material-category-count {
+            margin-left: auto;
+            margin-right: 20px;
+        }
+
+        .inventory-empty {
+            color: #dc2626;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
@@ -57,126 +81,184 @@
 
                     <span class="record-count"
                           th:text="${#lists.size(materials) + ' bản ghi'}">
-                        0 bản ghi
-                    </span>
+            0 bản ghi
+        </span>
 
                 </div>
 
-                <div class="table-container">
 
-                    <table>
+                <!-- =============================== -->
+                <!-- DANH SÁCH THEO TỪNG LOẠI NVL -->
+                <!-- =============================== -->
 
-                        <thead>
+                <!-- =============================== -->
+                <!-- DANH SÁCH NVL THEO TỪNG LOẠI -->
+                <!-- =============================== -->
 
-                        <tr>
-                            <th>Mã</th>
-                            <th>Tên</th>
-                            <th>Loại</th>
-                            <th>Đơn vị</th>
-                            <th>Tồn</th>
-                            <th>Tồn tối thiểu</th>
-                            <th>Giá nhập</th>
-                            <th>Trạng thái</th>
-                            <th></th>
-                        </tr>
+                <div th:if="${!#maps.isEmpty(materialGroups)}"
+                     class="material-category-list">
 
-                        </thead>
+                    <div th:each="group : ${materialGroups}"
+                         class="material-category-group">
 
-                        <tbody>
+                        <!-- =============================== -->
+                        <!-- HEADER LOẠI -->
+                        <!-- =============================== -->
 
-                        <tr th:each="m : ${materials}">
+                        <div class="material-category-header">
 
-                            <!-- Mã -->
-                            <td th:text="${m.manvl_code}">
-                            </td>
+                            <div class="material-category-title">
 
-                            <!-- Tên -->
-                            <td th:text="${m.tennvl}">
-                            </td>
+                                <i class="fas fa-layer-group"></i>
 
-                            <!-- Loại -->
-                            <td th:text="${m.tenloai != null
-                                ? m.tenloai
-                                : 'Chưa phân loại'}">
-                            </td>
+                                <span>
+    Loại <span th:text="${group.key}">nguyên vật liệu</span>
+</span>
 
-                            <!-- Đơn vị -->
-                            <td th:text="${m.donvitinh}">
-                            </td>
+                            </div>
 
-                            <!-- Tồn -->
-                            <td>
+                            <span class="material-category-count"
+                                  th:text="${#lists.size(group.value) + ' NVL'}">
+        0 NVL
+    </span>
 
-                                <div class="material-stock-cell">
-
-                                    <span data-number
-                                          th:text="${m.soluongton}">
-                                    </span>
-
-                                    <small
-                                            th:if="${m.soluongton <= m.ton_toithieu}"
-                                            class="inventory-warning">
-                                        Sắp hết
-                                    </small>
-
-                                </div>
-
-                            </td>
-
-                            <!-- Tồn tối thiểu -->
-                            <td data-number
-                                th:text="${m.ton_toithieu}">
-                            </td>
-
-                            <!-- Giá nhập -->
-                            <td data-number
-                                th:text="${m.dongianhap}">
-                            </td>
-
-                            <!-- Trạng thái -->
-                            <td>
-
-                                <span
-                                        class="status-badge material-lifecycle-status"
-                                        th:classappend="${m.trangthai == 1
-                                            ? ' status-success material-lifecycle-status--active'
-                                            : ' status-neutral'}"
-                                        th:data-status="${m.trangthai == 1
-                                            ? 'HOAT_DONG'
-                                            : 'NGUNG_SU_DUNG'}"
-                                        th:text="${m.trangthai_label}">
-                                </span>
-
-                            </td>
-
-                            <!-- Thao tác -->
-                            <td>
-
-                                <a th:href="@{/nguyen-vat-lieu/{id}(id=${m.manvl})}">
-                                    Sửa
-                                </a>
-
-                            </td>
-
-                        </tr>
+                        </div>
 
 
-                        <!-- Không có dữ liệu -->
+                        <!-- =============================== -->
+                        <!-- BẢNG NVL -->
+                        <!-- =============================== -->
 
-                        <tr class="empty-row"
-                            th:if="${#lists.isEmpty(materials)}">
+                        <div class="table-container material-category-table">
 
-                            <td colspan="9">
-                                Chưa có dữ liệu để hiển thị.
-                            </td>
+                            <table>
 
-                        </tr>
+                                <thead>
 
-                        </tbody>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Tên</th>
+                                    <th>Đơn vị</th>
+                                    <th>Tồn</th>
+                                    <th>Tồn tối thiểu</th>
+                                    <th>Giá nhập</th>
+                                    <th>Trạng thái</th>
+                                    <th></th>
+                                </tr>
 
-                    </table>
+                                </thead>
+
+
+                                <tbody>
+
+                                <tr th:each="m : ${group.value}">
+
+                                    <!-- Mã -->
+                                    <td th:text="${m.manvl_code}">
+                                    </td>
+
+
+                                    <!-- Tên -->
+                                    <td th:text="${m.tennvl}">
+                                    </td>
+
+
+                                    <!-- Đơn vị -->
+                                    <td th:text="${m.donvitinh}">
+                                    </td>
+
+
+                                    <!-- Tồn -->
+                                    <td>
+
+                                        <div class="material-stock-cell">
+
+        <span data-number
+              th:text="${m.soluongton}">
+        </span>
+
+                                            <!-- Hết NVL -->
+                                            <small
+                                                    th:if="${m.soluongton == 0}"
+                                                    class="inventory-warning inventory-empty">
+                                                Hết
+                                            </small>
+
+                                            <!-- Sắp hết -->
+                                            <small
+                                                    th:if="${m.soluongton > 0 and m.soluongton <= m.ton_toithieu}"
+                                                    class="inventory-warning">
+                                                Sắp hết
+                                            </small>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Tồn tối thiểu -->
+                                    <td data-number
+                                        th:text="${m.ton_toithieu}">
+                                    </td>
+
+
+                                    <!-- Giá nhập -->
+                                    <td data-number
+                                        th:text="${m.dongianhap}">
+                                    </td>
+
+
+                                    <!-- Trạng thái -->
+                                    <td>
+
+                        <span
+                                class="status-badge material-lifecycle-status"
+                                th:classappend="${m.trangthai == 1
+                                    ? ' status-success material-lifecycle-status--active'
+                                    : ' status-neutral'}"
+                                th:data-status="${m.trangthai == 1
+                                    ? 'HOAT_DONG'
+                                    : 'NGUNG_SU_DUNG'}"
+                                th:text="${m.trangthai_label}">
+                        </span>
+
+                                    </td>
+
+
+                                    <!-- Thao tác -->
+                                    <td>
+
+                                        <a th:href="@{/nguyen-vat-lieu/{id}(id=${m.manvl})}">
+                                            Sửa
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
 
                 </div>
+
+
+                <!-- =============================== -->
+                <!-- KHÔNG CÓ DỮ LIỆU -->
+                <!-- =============================== -->
+
+                <div th:if="${#maps.isEmpty(materialGroups)}"
+                     class="material-empty-state">
+
+                    Chưa có dữ liệu để hiển thị.
+
+                </div>
+
+
 
             </div>
 

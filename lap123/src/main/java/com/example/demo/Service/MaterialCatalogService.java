@@ -37,11 +37,39 @@ public class MaterialCatalogService {
                     ON l.maloai = n.maloai
                 WHERE n.tennvl LIKE ?
                    OR n.manvl_code LIKE ?
-                ORDER BY n.manvl DESC
+                ORDER BY
+                    CASE WHEN l.tenloai IS NULL THEN 1 ELSE 0 END,
+                    l.tenloai ASC,
+                    n.tennvl ASC,
+                    n.manvl DESC
                 """,
                 "%" + keyword + "%",
                 "%" + keyword + "%"
         );
+    }
+
+    public Map<String, List<Map<String, Object>>> groupByType(
+            List<Map<String, Object>> materials) {
+
+        Map<String, List<Map<String, Object>>> groups =
+                new java.util.LinkedHashMap<>();
+
+        for (Map<String, Object> material : materials) {
+
+            String typeName =
+                    material.get("tenloai") != null
+                            ? material.get("tenloai").toString()
+                            : "Chưa phân loại";
+
+            groups
+                    .computeIfAbsent(
+                            typeName,
+                            key -> new java.util.ArrayList<>()
+                    )
+                    .add(material);
+        }
+
+        return groups;
     }
 
     // =========================

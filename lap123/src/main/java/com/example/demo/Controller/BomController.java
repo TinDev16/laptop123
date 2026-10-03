@@ -46,8 +46,23 @@ public class BomController {
 
     @GetMapping("/create")
     public String createForm(Model model) {
-        model.addAttribute("products", service.products());
-        model.addAttribute("materials", service.materials());
+
+        var materials = service.materials();
+
+        model.addAttribute(
+                "products",
+                service.products()
+        );
+
+        model.addAttribute(
+                "materials",
+                materials
+        );
+
+        model.addAttribute(
+                "materialGroups",
+                service.groupMaterialsByType(materials)
+        );
 
         return "mrp/bom-form";
     }

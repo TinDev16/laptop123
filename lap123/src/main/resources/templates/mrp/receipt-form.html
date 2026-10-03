@@ -1,34 +1,937 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tạo phiếu nhập NVL</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div><div class="main-wrapper">
-<div th:replace="~{fragments/sidebar :: topbar('Tạo phiếu nhập NVL', 'Kho / Nhập NVL')}"></div>
-<main class="content-body mrp-entry-page">
-<div class="page-header"><div><h1 class="page-title">Tạo phiếu nhập nguyên vật liệu</h1><p class="page-description">Ghi nhận lô vật tư, số lượng và đơn giá từ nhà cung cấp.</p></div><a class="btn btn-back" th:href="@{/kho/nhap-nvl}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
-<p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
-<form th:action="@{/kho/nhap-nvl}" method="post" class="content-card ceo-form-card">
-<div class="content-card-body">
-<h2 class="ceo-section-title"><i class="fas fa-file-invoice"></i> Thông tin phiếu nhập</h2>
-<div class="ceo-form-grid">
-<div class="ceo-field"><label for="supplierId">Nhà cung cấp <span class="ceo-required">*</span></label><select id="supplierId" name="supplierId" required class="form-control"><option value="">-- Chọn nhà cung cấp --</option><option th:each="s : ${suppliers}" th:value="${s.mancc}" th:text="${s.tenncc}"></option></select></div>
-<div class="ceo-field ceo-field-full"><label for="receiptNote">Ghi chú</label><textarea id="receiptNote" name="note" maxlength="255" rows="3" class="form-control" placeholder="Số hóa đơn, điều kiện giao nhận hoặc ghi chú nội bộ"></textarea></div>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Tạo phiếu nhập NVL</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet">
+    <style>
+        /* =========================================
+   CHỌN NVL - PHIẾU NHẬP
+   ========================================= */
+
+        .material-select-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .material-selected-count {
+            margin-left: 15px;
+            color: #64748b;
+        }
+
+        .material-type-section {
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .material-type-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .material-type-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .material-type-count {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .material-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .material-select-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .material-select-table th,
+        .material-select-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .material-select-table th {
+            background: #fafafa;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .material-select-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .material-check-col {
+            width: 48px;
+            text-align: center !important;
+        }
+
+        .material-checkbox,
+        .type-checkbox {
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+        }
+
+        .material-row {
+            transition: background 0.15s ease;
+        }
+
+        .material-row.material-selected {
+            background: #f0fdf4;
+        }
+
+        .material-row:hover {
+            background: #f8fafc;
+        }
+
+        .material-row.material-selected:hover {
+            background: #ecfdf5;
+        }
+
+
+        /* =========================================
+           +/- SỐ LƯỢNG
+           ========================================= */
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .quantity-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+
+        .quantity-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .material-quantity {
+            width: 75px;
+            height: 32px;
+            text-align: center;
+        }
+
+
+        /* =========================================
+           ĐƠN GIÁ
+           ========================================= */
+
+        .price-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .material-price {
+            width: 130px;
+            height: 32px;
+        }
+
+        .price-control span {
+            font-size: 13px;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+
+        /* =========================================
+           MOBILE
+           ========================================= */
+
+        @media (max-width: 768px) {
+
+            .material-select-toolbar {
+                align-items: flex-start;
+                gap: 12px;
+                flex-direction: column;
+            }
+
+            .material-table-wrapper {
+                overflow-x: auto;
+            }
+
+            .material-select-table {
+                min-width: 900px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Tạo phiếu nhập NVL', 'Kho / Nhập NVL')}"></div>
+
+        <main class="content-body mrp-entry-page">
+
+            <!-- HEADER -->
+            <div class="page-header">
+
+                <div>
+                    <h1 class="page-title">
+                        Tạo phiếu nhập nguyên vật liệu
+                    </h1>
+
+                    <p class="page-description">
+                        Chọn các nguyên vật liệu cần nhập, sau đó nhập số lượng và đơn giá.
+                    </p>
+                </div>
+
+                <a
+                        class="btn btn-back"
+                        th:href="@{/kho/nhap-nvl}">
+                    <i class="fas fa-arrow-left"></i>
+                    Về danh sách
+                </a>
+
+            </div>
+
+            <!-- ERROR -->
+            <p
+                    th:if="${error}"
+                    th:text="${error}"
+                    class="alert alert-danger">
+            </p>
+
+
+            <form
+                    th:action="@{/kho/nhap-nvl}"
+                    method="post"
+                    class="content-card ceo-form-card"
+                    id="receipt-form">
+
+                <div class="content-card-body">
+
+                    <!-- ============================= -->
+                    <!-- THÔNG TIN PHIẾU -->
+                    <!-- ============================= -->
+
+                    <h2 class="ceo-section-title">
+                        <i class="fas fa-file-invoice"></i>
+                        Thông tin phiếu nhập
+                    </h2>
+
+                    <div class="ceo-form-grid">
+
+                        <div class="ceo-field">
+
+                            <label for="supplierId">
+                                Nhà cung cấp
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select
+                                    id="supplierId"
+                                    name="supplierId"
+                                    required
+                                    class="form-control">
+
+                                <option value="">
+                                    -- Chọn nhà cung cấp --
+                                </option>
+
+                                <option
+                                        th:each="s : ${suppliers}"
+                                        th:value="${s.mancc}"
+                                        th:text="${s.tenncc}">
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="receiptNote">
+                                Ghi chú
+                            </label>
+
+                            <textarea
+                                    id="receiptNote"
+                                    name="note"
+                                    maxlength="255"
+                                    rows="3"
+                                    class="form-control"
+                                    placeholder="Số hóa đơn, điều kiện giao nhận hoặc ghi chú nội bộ">
+                            </textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ============================= -->
+                    <!-- CHỌN NGUYÊN VẬT LIỆU -->
+                    <!-- ============================= -->
+
+                    <h2 class="ceo-section-title">
+                        <i class="fas fa-boxes"></i>
+                        Chọn nguyên vật liệu nhập
+                    </h2>
+
+
+                    <div class="material-select-toolbar">
+
+                        <div>
+                            <strong>
+                                Danh sách nguyên vật liệu
+                            </strong>
+
+                            <span class="material-selected-count">
+                                Đã chọn:
+                                <strong id="selected-count">0</strong>
+                            </span>
+                        </div>
+
+                        <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="toggleAllMaterials()">
+
+                            <i class="fas fa-check-double"></i>
+
+                            <span id="toggle-all-text">
+                                Chọn tất cả
+                            </span>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- ============================= -->
+                    <!-- DANH SÁCH THEO LOẠI -->
+                    <!-- ============================= -->
+
+                    <div id="material-list">
+
+                        <div
+                                th:each="typeEntry : ${materialGroups}"
+                                class="material-type-section">
+
+                            <div class="material-type-header">
+
+                                <div class="material-type-title">
+
+                                    <i class="fas fa-layer-group"></i>
+
+                                    <span>
+                                        Loại
+                                        <span th:text="${typeEntry.key}">
+                                            Nguyên vật liệu
+                                        </span>
+                                    </span>
+
+                                </div>
+
+                                <span class="material-type-count"
+                                      th:text="${#lists.size(typeEntry.value) + ' NVL'}">
+                                    0 NVL
+                                </span>
+
+                            </div>
+
+
+                            <div class="material-table-wrapper">
+
+                                <table class="material-select-table">
+
+                                    <thead>
+
+                                    <tr>
+
+                                        <th class="material-check-col">
+                                            <input
+                                                    type="checkbox"
+                                                    class="type-checkbox"
+                                                    onchange="toggleType(this)">
+                                        </th>
+
+                                        <th>Mã NVL</th>
+
+                                        <th>Tên nguyên vật liệu</th>
+
+                                        <th>ĐVT</th>
+
+                                        <th>Tồn kho</th>
+
+                                        <th>Số lượng nhập</th>
+
+                                        <th>Đơn giá</th>
+
+                                    </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                    <tr
+                                            th:each="m : ${typeEntry.value}"
+                                            class="material-row"
+                                            data-material-row>
+
+                                        <!-- CHECKBOX -->
+                                        <td class="material-check-col">
+
+                                            <input
+                                                    type="checkbox"
+                                                    class="material-checkbox"
+                                                    name="selectedMaterial"
+                                                    th:value="${m.manvl}"
+                                                    onchange="toggleMaterial(this)">
+
+                                        </td>
+
+
+                                        <!-- MÃ -->
+                                        <td>
+
+                                            <strong
+                                                    th:text="${m.manvl_code}">
+                                                NVL001
+                                            </strong>
+
+                                        </td>
+
+
+                                        <!-- TÊN -->
+                                        <td>
+
+                                            <span
+                                                    th:text="${m.tennvl}">
+                                                RAM
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- ĐVT -->
+                                        <td
+                                                th:text="${m.donvitinh}">
+                                            Cái
+                                        </td>
+
+
+                                        <!-- TỒN -->
+                                        <td>
+
+                                            <span
+                                                    data-number
+                                                    th:text="${m.soluongton}">
+                                                0
+                                            </span>
+
+                                        </td>
+
+
+                                        <!-- SỐ LƯỢNG -->
+                                        <td>
+
+                                            <div class="quantity-control">
+
+                                                <button
+                                                        type="button"
+                                                        class="quantity-btn"
+                                                        onclick="changeQuantity(this, -1)"
+                                                        disabled>
+
+                                                    <i class="fas fa-minus"></i>
+
+                                                </button>
+
+
+                                                <input
+                                                        type="number"
+                                                        class="material-quantity"
+                                                        name="quantity"
+                                                        value="1"
+                                                        min="1"
+                                                        disabled
+                                                        required
+                                                        onchange="updateTotal()">
+
+
+                                                <button
+                                                        type="button"
+                                                        class="quantity-btn"
+                                                        onclick="changeQuantity(this, 1)"
+                                                        disabled>
+
+                                                    <i class="fas fa-plus"></i>
+
+                                                </button>
+
+                                            </div>
+
+                                        </td>
+
+
+                                        <!-- ĐƠN GIÁ -->
+                                        <td>
+
+                                            <div class="price-control">
+
+                                                <input
+                                                        type="number"
+                                                        class="material-price"
+                                                        name="price"
+                                                        min="0"
+                                                        step="0.01"
+                                                        th:value="${m.dongianhap != null ? m.dongianhap : 0}"
+                                                        disabled
+                                                        required>
+
+                                                <span>VNĐ</span>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ============================= -->
+                    <!-- TỔNG -->
+                    <!-- ============================= -->
+
+                    <div class="form-summary">
+
+                        <span>
+                            Tổng tiền dự kiến:
+                        </span>
+
+                        <strong id="total">
+                            0
+                        </strong>
+
+                        <span>
+                            VNĐ
+                        </span>
+
+                    </div>
+
+
+                    <!-- ============================= -->
+                    <!-- ACTION -->
+                    <!-- ============================= -->
+
+                    <div class="ceo-form-actions">
+
+                        <a
+                                class="btn btn-back"
+                                th:href="@{/kho/nhap-nvl}">
+
+                            <i class="fas fa-arrow-left"></i>
+                            Trở lại
+
+                        </a>
+
+
+                        <button
+                                type="submit"
+                                class="btn btn-primary">
+
+                            <i class="fas fa-save"></i>
+                            Lưu phiếu nhập
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+
 </div>
-<h2 class="ceo-section-title"><i class="fas fa-boxes"></i> Chi tiết nguyên vật liệu</h2>
-<div id="receipt-lines" class="line-editor"><div class="receipt-line line-row">
-<div class="ceo-field"><label>Nguyên vật liệu</label><select name="materialId" class="form-control" required><option th:each="m : ${materials}" th:value="${m.manvl}" th:text="${m.manvl_code + ' - ' + m.tennvl}"></option></select></div>
-<div class="ceo-field"><label>Số lượng</label><input name="quantity" type="number" min="1" value="1" required class="form-control"></div>
-<div class="ceo-field"><label>Đơn giá</label><input name="price" type="number" min="0" step="0.01" value="0" required class="form-control"></div>
-<button type="button" class="btn-line-remove" onclick="removeReceiptLine(this)"><i class="fas fa-trash-alt"></i> Xóa</button>
-</div></div>
-<button type="button" class="btn btn-line-add" onclick="addReceiptLine()"><i class="fas fa-plus"></i> Thêm dòng vật tư</button>
-<div class="form-summary"><span>Tổng tiền dự kiến:</span><strong id="total">0</strong><span>VNĐ</span></div>
-<div class="ceo-form-actions"><a class="btn btn-back" th:href="@{/kho/nhap-nvl}"><i class="fas fa-arrow-left"></i> Trở lại</a><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu phiếu nhập</button></div>
-</div></form>
-</main></div></div>
+
+
 <script>
-function total(){let sum=0;document.querySelectorAll('.receipt-line').forEach(row=>{sum+=(Lap123Number.parse(row.querySelector('[name=quantity]').value)||0)*(Lap123Number.parse(row.querySelector('[name=price]').value)||0)});document.getElementById('total').textContent=sum.toLocaleString('vi-VN')}
-function addReceiptLine(){const source=document.querySelector('.receipt-line');const clone=source.cloneNode(true);clone.querySelector('[name=quantity]').value='1';clone.querySelector('[name=price]').value='0';document.getElementById('receipt-lines').appendChild(clone);total()}
-function removeReceiptLine(button){if(document.querySelectorAll('.receipt-line').length>1){button.closest('.receipt-line').remove();total()}}
-document.getElementById('receipt-lines').addEventListener('input', total);
-total();
-</script></body></html>
+
+    /* ==========================================
+       LẤY CÁC DÒNG ĐƯỢC CHỌN
+       ========================================== */
+
+    function selectedRows() {
+
+        return Array.from(
+            document.querySelectorAll(
+                '.material-row[data-selected="true"]'
+            )
+        );
+
+    }
+
+
+    /* ==========================================
+       CHỌN / BỎ CHỌN 1 NVL
+       ========================================== */
+
+    function toggleMaterial(checkbox) {
+
+        const row = checkbox.closest('.material-row');
+
+        const quantity =
+            row.querySelector('.material-quantity');
+
+        const price =
+            row.querySelector('.material-price');
+
+        const buttons =
+            row.querySelectorAll('.quantity-btn');
+
+
+        if (checkbox.checked) {
+
+            row.dataset.selected = 'true';
+
+            row.classList.add('material-selected');
+
+            quantity.disabled = false;
+            price.disabled = false;
+
+            buttons.forEach(button => {
+                button.disabled = false;
+            });
+
+        } else {
+
+            row.dataset.selected = 'false';
+
+            row.classList.remove('material-selected');
+
+            quantity.disabled = true;
+            price.disabled = true;
+
+            buttons.forEach(button => {
+                button.disabled = true;
+            });
+
+        }
+
+        updateSelectedCount();
+        updateTotal();
+
+    }
+
+
+    /* ==========================================
+       TĂNG / GIẢM SỐ LƯỢNG
+       ========================================== */
+
+    function changeQuantity(button, amount) {
+
+        const row =
+            button.closest('.material-row');
+
+        const input =
+            row.querySelector('.material-quantity');
+
+        let value =
+            parseInt(input.value || '1', 10);
+
+        value += amount;
+
+        if (value < 1) {
+            value = 1;
+        }
+
+        input.value = value;
+
+        updateTotal();
+
+    }
+
+
+    /* ==========================================
+       CHỌN TOÀN BỘ TRONG 1 LOẠI
+       ========================================== */
+
+    function toggleType(typeCheckbox) {
+
+        const section =
+            typeCheckbox.closest('.material-type-section');
+
+        const checkboxes =
+            section.querySelectorAll('.material-checkbox');
+
+        checkboxes.forEach(checkbox => {
+
+            checkbox.checked =
+                typeCheckbox.checked;
+
+            toggleMaterial(checkbox);
+
+        });
+
+    }
+
+
+    /* ==========================================
+       CHỌN TẤT CẢ
+       ========================================== */
+
+    function toggleAllMaterials() {
+
+        const checkboxes =
+            document.querySelectorAll(
+                '.material-checkbox'
+            );
+
+        const allSelected =
+            Array.from(checkboxes)
+                .every(checkbox => checkbox.checked);
+
+
+        checkboxes.forEach(checkbox => {
+
+            checkbox.checked = !allSelected;
+
+            toggleMaterial(checkbox);
+
+        });
+
+
+        updateTypeCheckboxes();
+
+        document.getElementById('toggle-all-text').textContent =
+            allSelected
+                ? 'Chọn tất cả'
+                : 'Bỏ chọn tất cả';
+
+    }
+
+
+    /* ==========================================
+       CẬP NHẬT CHECKBOX LOẠI
+       ========================================== */
+
+    function updateTypeCheckboxes() {
+
+        document
+            .querySelectorAll('.material-type-section')
+            .forEach(section => {
+
+                const items =
+                    section.querySelectorAll('.material-checkbox');
+
+                const checked =
+                    section.querySelectorAll(
+                        '.material-checkbox:checked'
+                    );
+
+                const typeCheckbox =
+                    section.querySelector('.type-checkbox');
+
+                if (typeCheckbox) {
+
+                    typeCheckbox.checked =
+                        items.length > 0 &&
+                        checked.length === items.length;
+
+                    typeCheckbox.indeterminate =
+                        checked.length > 0 &&
+                        checked.length < items.length;
+
+                }
+
+            });
+
+    }
+
+
+    /* ==========================================
+       ĐẾM NVL ĐÃ CHỌN
+       ========================================== */
+
+    function updateSelectedCount() {
+
+        const count =
+            document.querySelectorAll(
+                '.material-checkbox:checked'
+            ).length;
+
+        document.getElementById(
+            'selected-count'
+        ).textContent = count;
+
+        updateTypeCheckboxes();
+
+    }
+
+
+    /* ==========================================
+       TÍNH TỔNG TIỀN
+       ========================================== */
+
+    function updateTotal() {
+
+        let total = 0;
+
+        selectedRows().forEach(row => {
+
+            const quantity =
+                parseFloat(
+                    row.querySelector(
+                        '.material-quantity'
+                    ).value
+                ) || 0;
+
+            const price =
+                parseFloat(
+                    row.querySelector(
+                        '.material-price'
+                    ).value
+                ) || 0;
+
+            total += quantity * price;
+
+        });
+
+        document.getElementById(
+            'total'
+        ).textContent =
+            total.toLocaleString('vi-VN');
+
+    }
+
+
+    /* ==========================================
+       KHÔNG CHO SUBMIT NẾU CHƯA CHỌN NVL
+       ========================================== */
+
+    document
+        .getElementById('receipt-form')
+        .addEventListener('submit', function(event) {
+
+            const selected =
+                document.querySelectorAll(
+                    '.material-checkbox:checked'
+                );
+
+            if (selected.length === 0) {
+
+                event.preventDefault();
+
+                alert(
+                    'Vui lòng chọn ít nhất một nguyên vật liệu.'
+                );
+
+                return;
+            }
+
+
+            /*
+             * Checkbox chỉ dùng để chọn.
+             *
+             * Backend cần nhận:
+             * materialId
+             * quantity
+             * price
+             *
+             * Vì vậy trước khi submit,
+             * đổi name của checkbox thành materialId.
+             */
+
+            selected.forEach(checkbox => {
+
+                checkbox.name = 'materialId';
+
+            });
+
+
+            /*
+             * Các dòng không được chọn:
+             * disable quantity/price nên browser
+             * sẽ không gửi lên.
+             */
+
+        });
+
+
+    /* ==========================================
+       INPUT THAY ĐỔI → TÍNH LẠI
+       ========================================== */
+
+    document
+        .getElementById('material-list')
+        .addEventListener('input', function() {
+
+            updateTotal();
+
+        });
+
+
+    /* ==========================================
+       KHỞI TẠO
+       ========================================== */
+
+    updateSelectedCount();
+    updateTotal();
+
+</script>
+
+</body>
+</html>

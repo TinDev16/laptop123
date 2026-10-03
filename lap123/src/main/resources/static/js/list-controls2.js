@@ -406,25 +406,6 @@
                     : '';
 
 
-            /* ==========================================================
-               SUMMARY
-               ========================================================== */
-
-            summary.textContent =
-                `${
-                    matched.length
-                        ? (page - 1) * PAGE_SIZE + 1
-                        : 0
-                }–${
-                    Math.min(
-                        page * PAGE_SIZE,
-                        matched.length
-                    )
-                } / ${
-                    matched.length
-                } dòng (tổng ${
-                    rows.length
-                }) · Tối đa 10 dòng/trang`;
 
 
             /* ==========================================================

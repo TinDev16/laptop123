@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.LinkedHashMap;
 
 @Service
 public class MrpDocumentService {
@@ -41,13 +42,15 @@ public class MrpDocumentService {
                     n.donvitinh,
                     n.dongianhap,
                     n.soluongton,
-                    n.ton_toithieu
+                    n.ton_toithieu,
+                    l.maloai,
+                    l.tenloai
                 FROM nguyenvatlieu n
                 JOIN loai_nguyen_vat_lieu l
                     ON l.maloai = n.maloai
                 WHERE n.trangthai = 1
                   AND l.trangthai = 1
-                ORDER BY n.tennvl
+                ORDER BY l.tenloai, n.tennvl
                 """
         );
     }
@@ -67,8 +70,24 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> receiptLines(long id) {
-        return jdbc.queryForList("SELECT c.*, n.manvl_code, n.tennvl, n.donvitinh FROM ct_phieunhap_nvl c " +
-                "JOIN nguyenvatlieu n ON n.manvl = c.manvl WHERE c.mapn = ? ORDER BY c.id", id);
+        return jdbc.queryForList(
+                """
+                SELECT
+                    c.*,
+                    n.manvl_code,
+                    n.tennvl,
+                    n.donvitinh,
+                    l.tenloai
+                FROM ct_phieunhap_nvl c
+                JOIN nguyenvatlieu n
+                    ON n.manvl = c.manvl
+                LEFT JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+                WHERE c.mapn = ?
+                ORDER BY c.id
+                """,
+                id
+        );
     }
 
     @Transactional
@@ -131,8 +150,24 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> materialIssueLines(long id) {
-        return jdbc.queryForList("SELECT c.*, n.manvl_code, n.tennvl, n.donvitinh FROM ct_phieuxuat_nvl c " +
-                "JOIN nguyenvatlieu n ON n.manvl = c.manvl WHERE c.mapx = ? ORDER BY c.id", id);
+        return jdbc.queryForList(
+                """
+                SELECT
+                    c.*,
+                    n.manvl_code,
+                    n.tennvl,
+                    n.donvitinh,
+                    l.tenloai
+                FROM ct_phieuxuat_nvl c
+                JOIN nguyenvatlieu n
+                    ON n.manvl = c.manvl
+                LEFT JOIN loai_nguyen_vat_lieu l
+                    ON l.maloai = n.maloai
+                WHERE c.mapx = ?
+                ORDER BY c.id
+                """,
+                id
+        );
     }
 
     public List<Map<String, Object>> assignedOrders(String email) {
@@ -498,6 +533,30 @@ public class MrpDocumentService {
 
     private void validateNote(String note) {
         if (note != null && note.length() > 255) throw new IllegalArgumentException("Ghi chú tối đa 255 ký tự.");
+    }
+
+    public Map<String, List<Map<String, Object>>> groupMaterialsByType(
+            List<Map<String, Object>> materials) {
+
+        Map<String, List<Map<String, Object>>> groups =
+                new LinkedHashMap<>();
+
+        for (Map<String, Object> material : materials) {
+
+            String typeName =
+                    material.get("tenloai") != null
+                            ? material.get("tenloai").toString()
+                            : "Chưa phân loại";
+
+            groups
+                    .computeIfAbsent(
+                            typeName,
+                            key -> new java.util.ArrayList<>()
+                    )
+                    .add(material);
+        }
+
+        return groups;
     }
 
     private void validateActiveMaterials(List<Long> materialIds) {

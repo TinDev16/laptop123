@@ -12,7 +12,39 @@
 <form th:action="@{/kho/nhap-nvl/{id}/confirm(id=${receipt.maphieu})}" method="post" onsubmit="return confirm('Xác nhận nhập kho?')"><button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Xác nhận nhập kho</button></form>
 <form th:action="@{/kho/nhap-nvl/{id}/delete(id=${receipt.maphieu})}" method="post" onsubmit="return confirm('Xóa phiếu nhập bản nháp này?')"><button type="submit" class="btn btn-delete-draft"><i class="fas fa-trash-alt"></i> Xóa bản nháp</button></form>
 </div></div></div>
-<div class="content-card"><div class="table-container"><table class="table"><thead><tr><th>Mã NVL</th><th>Tên NVL</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead><tbody>
-<tr th:each="l : ${lines}"><td th:text="${l.manvl_code}"></td><td th:text="${l.tennvl}"></td><td data-number th:text="${l.soluong}"></td><td><span data-number th:text="${l.dongia}"></span> VNĐ</td><td><span data-number th:text="${l.thanhtien}"></span> VNĐ</td></tr>
-</tbody></table></div></div>
+<div class="content-card"><div class="table-container"><table class="table"><thead>
+<tr>
+    <th>Mã NVL</th>
+    <th>Tên NVL</th>
+    <th>Loại</th>
+    <th>Số lượng</th>
+    <th>Đơn giá</th>
+    <th>Thành tiền</th>
+</tr>
+</thead><tbody>
+<tr th:each="l : ${lines}">
+    <td th:text="${l.manvl_code}"></td>
+
+    <td th:text="${l.tennvl}"></td>
+
+    <td th:text="${l.tenloai != null ? l.tenloai : 'Chưa phân loại'}"></td>
+
+    <td data-number
+        th:text="${l.soluong}">
+    </td>
+
+    <td>
+        <span data-number
+              th:text="${l.dongia}">
+        </span>
+        VNĐ
+    </td>
+
+    <td>
+        <span data-number
+              th:text="${l.thanhtien}">
+        </span>
+        VNĐ
+    </td>
+</tr></tbody></table></div></div>
 </main></div></div></body></html>

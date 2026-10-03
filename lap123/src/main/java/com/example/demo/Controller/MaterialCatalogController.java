@@ -33,7 +33,15 @@ public class MaterialCatalogController {
             @RequestParam(defaultValue = "") String q,
             Model model) {
 
-        model.addAttribute("materials", service.list(q));
+        var materials = service.list(q);
+
+        model.addAttribute("materials", materials);
+
+        model.addAttribute(
+                "materialGroups",
+                service.groupByType(materials)
+        );
+
         model.addAttribute("q", q);
 
         return "mrp/materials";

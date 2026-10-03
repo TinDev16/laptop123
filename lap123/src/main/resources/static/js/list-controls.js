@@ -68,7 +68,6 @@
             });
             empty.hidden = matched.length > 0;
             empty.style.display = empty.hidden ? 'none' : '';
-            summary.textContent = `${matched.length ? (page - 1) * PAGE_SIZE + 1 : 0}–${Math.min(page * PAGE_SIZE, matched.length)} / ${matched.length} dòng (tổng ${rows.length}) · Tối đa 10 dòng/trang`;
             pageSelect.replaceChildren();
             for (let number = 1; number <= pages; number++) pageSelect.add(new Option(`${number} / ${pages}`, number));
             pageSelect.value = String(page);

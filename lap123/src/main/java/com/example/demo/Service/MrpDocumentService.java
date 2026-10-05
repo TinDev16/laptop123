@@ -172,64 +172,169 @@ public class MrpDocumentService {
 
     public List<Map<String, Object>> assignedOrders(String email) {
         return jdbc.queryForList(
-                "SELECT " +
-                        "y.maycsx AS mayeucau, " +
-                        "y.masp, " +
-                        "y.mabom, " +
-                        "s.tensp, " +
-                        "b.phienban, " +
-                        "y.soluongyeucau, " +
-                        "y.soluonghoanthanh, " +
-                        "y.hanhoanthanh AS ngaydenhan " +
-                        "FROM yeucausanxuat y " +
-                        "JOIN sanpham s ON s.masp = y.masp " +
-                        "JOIN bom b ON b.mabom = y.mabom " +
-                        "JOIN taikhoan t ON t.manv = y.nguoiphutrach " +
-                        "WHERE t.email = ? " +
-                        "AND y.trangthai IN ('DA_GIAO', 'DANG_SAN_XUAT') " +
-                        "ORDER BY y.maycsx DESC",
+                """
+                SELECT
+                    y.maycsx AS mayeucau,
+                    y.masp,
+                    y.mabom,
+                    s.tensp,
+                    b.phienban,
+                    y.soluongyeucau,
+                    LEAST(y.soluongyeucau, y.soluonghoanthanh + COALESCE(g.daghi, 0)) AS soluonghoanthanh,
+                    y.hanhoanthanh AS ngaydenhan,
+                    COALESCE(g.daghi, 0) AS soluong_daghi_nhan,
+                    COALESCE(p.dagui, 0) AS soluong_da_gui,
+                    GREATEST(
+                        COALESCE(g.daghi, 0) - COALESCE(p.dagui, 0),
+                        0
+                    ) AS soluong_co_the_gui,
+                    GREATEST(
+                        y.soluongyeucau - y.soluonghoanthanh - COALESCE(g.daghi, 0),
+                        0
+                    ) AS soluong_con_lai
+                FROM yeucausanxuat y
+                JOIN sanpham s ON s.masp = y.masp
+                JOIN bom b ON b.mabom = y.mabom
+                JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                LEFT JOIN (
+                    SELECT maycsx, SUM(soluong) AS daghi
+                    FROM ghi_nhan_san_xuat
+                    GROUP BY maycsx
+                ) g ON g.maycsx = y.maycsx
+                LEFT JOIN (
+                    SELECT maycsx, SUM(soluonghoanthanh) AS dagui
+                    FROM ketqua_sanxuat
+                    WHERE trangthai = 'CHO_XAC_NHAN'
+                    GROUP BY maycsx
+                ) p ON p.maycsx = y.maycsx
+                WHERE t.email = ?
+                  AND y.trangthai <> 'HUY'
+                  AND (
+                      y.soluonghoanthanh + COALESCE(g.daghi, 0) < y.soluongyeucau
+                      OR COALESCE(g.daghi, 0) > COALESCE(p.dagui, 0)
+                  )
+                ORDER BY y.maycsx DESC
+                """,
                 email
         );
     }
 
-    public List<Map<String, Object>> bomRequestLines(
-            long orderId,
-            String email) {
-
-        orderOwned(orderId, email);
-
+    public List<Map<String, Object>> customers() {
         return jdbc.queryForList(
                 """
                 SELECT
-                    c.manvl,
-                    n.manvl_code,
-                    n.tennvl,
-                    n.donvitinh,
-                    n.soluongton,
-                    n.trangthai AS nvl_trangthai,
-                    l.trangthai AS loai_trangthai,
-                    c.soluong_dinhmuc,
-                    c.tyle_haohut,
-    
-                    CEIL(
-                        (y.soluongyeucau - y.soluonghoanthanh)
-                        * c.soluong_dinhmuc
-                        * (1 + c.tyle_haohut / 100)
-                    ) AS nhu_cau
-    
-                FROM yeucausanxuat y
-    
-                JOIN bom_chitiet c
-                    ON c.mabom = y.mabom
-    
-                JOIN nguyenvatlieu n
+                    makh,
+                    hoten,
+                    sdt,
+                    email,
+                    diachi
+                FROM khachhang
+                ORDER BY hoten
+                """
+        );
+    }
+
+    public Map<String, Object> finishedBomPrice(int bomId) {
+
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                """
+                SELECT
+                    b.mabom,
+                    b.masp,
+                    b.phienban,
+                    b.trangthai,
+                    COALESCE(
+                        SUM(
+                            c.soluong_dinhmuc
+                            * (1 + c.tyle_haohut / 100)
+                            * n.dongianhap
+                        ),
+                        0
+                    ) AS tong_gia_bom
+                FROM bom b
+                LEFT JOIN bom_chitiet c
+                    ON c.mabom = b.mabom
+                LEFT JOIN nguyenvatlieu n
                     ON n.manvl = c.manvl
-    
-                JOIN loai_nguyen_vat_lieu l
-                    ON l.maloai = n.maloai
-    
+                WHERE b.mabom = ?
+                GROUP BY
+                    b.mabom,
+                    b.masp,
+                    b.phienban,
+                    b.trangthai
+                """,
+                bomId
+        );
+
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy BOM."
+            );
+        }
+
+        Map<String, Object> result = rows.get(0);
+
+        if (!"HIEU_LUC".equals(
+                String.valueOf(result.get("trangthai")))) {
+
+            throw new IllegalArgumentException(
+                    "BOM đã ngừng sử dụng."
+            );
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> bomRequestLines(long orderId, String email) {
+        orderOwned(orderId, email);
+        return jdbc.queryForList(
+                """
+                    SELECT
+                        c.manvl,
+                        n.manvl_code,
+                        n.tennvl,
+                        n.donvitinh,
+                        COALESCE(k.soluongton, 0) AS soluongton,
+                        n.trangthai AS nvl_trangthai,
+                        l.trangthai AS loai_trangthai,
+                        c.soluong_dinhmuc,
+                        c.tyle_haohut,
+                    
+                        CEIL(
+                            GREATEST(
+                                y.soluongyeucau
+                                - y.soluonghoanthanh
+                                - COALESCE(g.daghi, 0),
+                                0
+                            )
+                            * c.soluong_dinhmuc
+                            * (1 + c.tyle_haohut / 100)
+                        ) AS nhu_cau,
+                    
+                        GREATEST(
+                            CEIL(
+                                GREATEST(
+                                    y.soluongyeucau
+                                    - y.soluonghoanthanh
+                                    - COALESCE(g.daghi, 0),
+                                    0
+                                )
+                                * c.soluong_dinhmuc
+                                * (1 + c.tyle_haohut / 100)
+                            ) - COALESCE(k.soluongton, 0),
+                            0
+                        ) AS thieu_hut
+                FROM yeucausanxuat y
+                JOIN bom_chitiet c ON c.mabom = y.mabom
+                JOIN nguyenvatlieu n ON n.manvl = c.manvl
+                JOIN loai_nguyen_vat_lieu l ON l.maloai = n.maloai
+                LEFT JOIN kho_nvl_san_xuat k ON k.manvl = n.manvl
+                LEFT JOIN (
+                    SELECT maycsx, SUM(soluong) AS daghi
+                    FROM ghi_nhan_san_xuat
+                    GROUP BY maycsx
+                ) g ON g.maycsx = y.maycsx
                 WHERE y.maycsx = ?
-    
                 ORDER BY n.tennvl
                 """,
                 orderId
@@ -250,9 +355,18 @@ public class MrpDocumentService {
         validateActiveMaterials(materialIds);
         long id = insert("INSERT INTO phieuxuat_nvl (maycsx, nguoilap, trangthai, ghichu) VALUES (?, ?, 'CHO_DUYET', ?)",
                 orderId, employeeId(email), note);
+        Map<Long, Integer> maxByMaterial = new java.util.HashMap<>();
+        for (Map<String, Object> line : bomRequestLines(orderId, email)) {
+            maxByMaterial.put(((Number) line.get("manvl")).longValue(), ((Number) line.get("thieu_hut")).intValue());
+        }
         for (int i = 0; i < materialIds.size(); i++) {
-            jdbc.update("INSERT INTO ct_phieuxuat_nvl (mapx, manvl, soluong) VALUES (?, ?, ?)",
-                    id, materialIds.get(i), quantities.get(i));
+            long materialId = materialIds.get(i);
+            int quantity = quantities.get(i);
+            int max = maxByMaterial.getOrDefault(materialId, 0);
+            if (quantity > max) {
+                throw new IllegalArgumentException("Số lượng đề nghị của NVL " + materialId + " vượt quá nhu cầu còn thiếu (" + max + ").");
+            }
+            jdbc.update("INSERT INTO ct_phieuxuat_nvl (mapx, manvl, soluong) VALUES (?, ?, ?)", id, materialId, quantity);
         }
         return id;
     }
@@ -336,17 +450,59 @@ public class MrpDocumentService {
 
     @Transactional
     public long createResult(String email, long orderId, int completed, int defective, String note) {
-        if (completed <= 0 || defective < 0) throw new IllegalArgumentException("Số lượng hoàn thành phải lớn hơn 0 và số lỗi không được âm.");
+        if (completed <= 0) throw new IllegalArgumentException("Số lượng gửi kết quả phải lớn hơn 0.");
+        if (defective < 0) throw new IllegalArgumentException("Số lượng lỗi không được âm.");
         validateNote(note);
+
         Map<String, Object> order = orderOwnedForUpdate(orderId, email);
-        if ("HUY".equals(order.get("trangthai")) || "HOAN_THANH".equals(order.get("trangthai"))) {
-            throw new IllegalArgumentException("Yêu cầu sản xuất đã kết thúc.");
+        String status = String.valueOf(order.get("trangthai"));
+        if ("HUY".equals(status)) throw new IllegalArgumentException("Yêu cầu sản xuất đã bị hủy.");
+        if ("HOAN_THANH".equals(status)) throw new IllegalArgumentException("Yêu cầu sản xuất đã hoàn thành.");
+
+        int requested = ((Number) order.get("soluongyeucau")).intValue();
+        int confirmed = ((Number) order.get("soluonghoanthanh")).intValue();
+
+        Integer recorded = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluong),0) FROM ghi_nhan_san_xuat WHERE maycsx = ?",
+                Integer.class, orderId);
+        if (recorded == null) recorded = 0;
+
+        Integer pending = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluonghoanthanh),0) FROM ketqua_sanxuat WHERE maycsx = ? AND trangthai = 'CHO_XAC_NHAN'",
+                Integer.class, orderId);
+        if (pending == null) pending = 0;
+
+        int availableRecorded = recorded - pending;
+        int remainingOrder = requested - confirmed - pending;
+        if (availableRecorded <= 0) {
+            throw new IllegalStateException("Chưa có thành phẩm chưa gửi kết quả cho yêu cầu này.");
         }
-        int remaining = ((Number) order.get("soluongyeucau")).intValue() - ((Number) order.get("soluonghoanthanh")).intValue();
-        Integer pending = jdbc.queryForObject("SELECT COALESCE(SUM(soluonghoanthanh), 0) FROM ketqua_sanxuat WHERE maycsx = ? AND trangthai = 'CHO_XAC_NHAN'", Integer.class, orderId);
-        if (completed > remaining - pending) throw new IllegalArgumentException("Số lượng hoàn thành vượt quá số lượng còn lại của yêu cầu sản xuất.");
-        return insert("INSERT INTO ketqua_sanxuat (maycsx, nguoithuchien, soluonghoanthanh, soluongloi, trangthai, ghichu) " +
-                "VALUES (?, ?, ?, ?, 'CHO_XAC_NHAN', ?)", orderId, employeeId(email), completed, defective, note);
+        if (completed > availableRecorded) {
+            throw new IllegalArgumentException("Số lượng gửi kết quả (" + completed + ") vượt quá số lượng đã ghi nhận chưa gửi (" + availableRecorded + ").");
+        }
+        if (completed > remainingOrder) {
+            throw new IllegalArgumentException("Số lượng gửi kết quả vượt quá số lượng còn lại của YCSX (" + Math.max(remainingOrder,0) + ").");
+        }
+
+        long productId = ((Number) order.get("masp")).longValue();
+        long bomId = ((Number) order.get("mabom")).longValue();
+
+        Number stockNumber = jdbc.queryForObject(
+                "SELECT COALESCE(soluongton,0) FROM kho_thanhpham_san_xuat WHERE masp = ? AND mabom = ? FOR UPDATE",
+                Number.class, productId, bomId);
+        int stock = stockNumber == null ? 0 : stockNumber.intValue();
+        if (completed > stock) {
+            throw new IllegalStateException("Kho thành phẩm sản xuất hiện chỉ còn " + stock + " sản phẩm khả dụng.");
+        }
+
+        return insert(
+                """
+                INSERT INTO ketqua_sanxuat
+                (maycsx, nguoithuchien, soluonghoanthanh, soluongloi, trangthai, ghichu)
+                VALUES (?, ?, ?, ?, 'CHO_XAC_NHAN', ?)
+                """,
+                orderId, employeeId(email), completed, defective, note
+        );
     }
 
     public List<Map<String, Object>> finishedIssues(
@@ -391,19 +547,31 @@ public class MrpDocumentService {
                         "s.tensp, " +
                         "c.soluong, " +
                         "c.mabom, " +
-                        "b.phienban " +
+                        "c.dongia, " +
+                        "CAST(c.gia_da_fix AS UNSIGNED) AS gia_da_fix, " +
+                        "c.thanhtien, " +
+                        "b.phienban, " +
+                        "kh.hoten AS nguoinhan, " +
+                        "kh.sdt AS sdt_nguoinhan, " +
+                        "kh.email AS email_nguoinhan " +
                         "FROM phieuxuat_thanhpham p " +
                         "JOIN nhanvien n ON n.manv = p.nguoilap " +
                         "JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
                         "JOIN sanpham s ON s.masp = c.masp " +
-                        "JOIN bom b ON b.mabom = c.mabom ";
+                        "JOIN bom b ON b.mabom = c.mabom " +
+                        "LEFT JOIN khachhang kh ON kh.makh = p.makh ";
 
         return manager
-                ? one(sql + "WHERE p.mapxtp = ?", id)
+                ? one(
+                sql + "WHERE p.mapxtp = ?",
+                id
+        )
                 : ownedOne(
                 sql +
-                "JOIN taikhoan t ON t.manv = p.nguoilap " +
-                "WHERE p.mapxtp = ? AND t.email = ?",
+                "JOIN taikhoan t " +
+                "ON t.manv = p.nguoilap " +
+                "WHERE p.mapxtp = ? " +
+                "AND t.email = ?",
                 id,
                 email
         );
@@ -415,6 +583,10 @@ public class MrpDocumentService {
             int productId,
             int bomId,
             int quantity,
+            int customerId,
+            String address,
+            BigDecimal unitPrice,
+            boolean priceFixed,
             String note) {
 
         if (quantity <= 0) {
@@ -423,13 +595,62 @@ public class MrpDocumentService {
             );
         }
 
+        if (customerId <= 0) {
+            throw new IllegalArgumentException(
+                    "Vui lòng chọn người nhận."
+            );
+        }
+
+        if (address == null || address.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Vui lòng nhập địa chỉ giao hàng."
+            );
+        }
+
+        if (address.length() > 255) {
+            throw new IllegalArgumentException(
+                    "Địa chỉ không được vượt quá 255 ký tự."
+            );
+        }
+
+        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "Đơn giá không hợp lệ."
+            );
+        }
+
         validateNote(note);
 
-        // Kiểm tra BOM có thuộc đúng sản phẩm không
+        // =========================
+        // Kiểm tra khách hàng
+        // =========================
+
+        List<Map<String, Object>> customerRows = jdbc.queryForList(
+                """
+                SELECT makh, hoten
+                FROM khachhang
+                WHERE makh = ?
+                """,
+                customerId
+        );
+
+        if (customerRows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Người nhận không tồn tại."
+            );
+        }
+
+        // =========================
+        // Kiểm tra BOM
+        // =========================
+
         List<Map<String, Object>> bomRows = jdbc.queryForList(
-                "SELECT mabom, trangthai " +
-                        "FROM bom " +
-                        "WHERE mabom = ? AND masp = ?",
+                """
+                SELECT mabom, masp, trangthai
+                FROM bom
+                WHERE mabom = ?
+                  AND masp = ?
+                """,
                 bomId,
                 productId
         );
@@ -440,8 +661,9 @@ public class MrpDocumentService {
             );
         }
 
-        String bomStatus =
-                String.valueOf(bomRows.get(0).get("trangthai"));
+        String bomStatus = String.valueOf(
+                bomRows.get(0).get("trangthai")
+        );
 
         if (!"HIEU_LUC".equals(bomStatus)) {
             throw new IllegalArgumentException(
@@ -449,14 +671,18 @@ public class MrpDocumentService {
             );
         }
 
-        // Kiểm tra sản phẩm tồn tại
-        List<Map<String, Object>> productRows =
-                jdbc.queryForList(
-                        "SELECT masp " +
-                                "FROM sanpham " +
-                                "WHERE masp = ?",
-                        productId
-                );
+        // =========================
+        // Kiểm tra sản phẩm
+        // =========================
+
+        List<Map<String, Object>> productRows = jdbc.queryForList(
+                """
+                SELECT masp
+                FROM sanpham
+                WHERE masp = ?
+                """,
+                productId
+        );
 
         if (productRows.isEmpty()) {
             throw new IllegalArgumentException(
@@ -464,24 +690,53 @@ public class MrpDocumentService {
             );
         }
 
-        // Tạo phiếu xuất
+        // =========================
+        // Tạo phiếu
+        // =========================
+
         long id = insert(
-                "INSERT INTO phieuxuat_thanhpham " +
-                        "(nguoilap, trangthai, ghichu) " +
-                        "VALUES (?, 'CHO_DUYET', ?)",
+                """
+                INSERT INTO phieuxuat_thanhpham
+                    (
+                        makh,
+                        diachi_giaohang,
+                        nguoilap,
+                        trangthai,
+                        ghichu
+                    )
+                VALUES
+                    (?, ?, ?, 'CHO_DUYET', ?)
+                """,
+                customerId,
+                address.trim(),
                 employeeId(email),
                 note
         );
 
-        // Lưu sản phẩm + BOM + số lượng
+        // =========================
+        // Tạo chi tiết phiếu
+        // =========================
+
         jdbc.update(
-                "INSERT INTO ct_phieuxuat_thanhpham " +
-                        "(mapxtp, masp, mabom, soluong) " +
-                        "VALUES (?, ?, ?, ?)",
+                """
+                INSERT INTO ct_phieuxuat_thanhpham
+                    (
+                        mapxtp,
+                        masp,
+                        mabom,
+                        soluong,
+                        dongia,
+                        gia_da_fix
+                    )
+                VALUES
+                    (?, ?, ?, ?, ?, ?)
+                """,
                 id,
                 productId,
                 bomId,
-                quantity
+                quantity,
+                unitPrice,
+                priceFixed ? 1 : 0
         );
 
         return id;

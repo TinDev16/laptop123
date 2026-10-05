@@ -354,6 +354,10 @@ public class MaterialCatalogService {
     // LƯU NGUYÊN VẬT LIỆU
     // =========================
 
+// =========================
+// LƯU NGUYÊN VẬT LIỆU
+// =========================
+
     @Transactional
     public void save(
             Long id,
@@ -493,29 +497,19 @@ public class MaterialCatalogService {
         int statusValue =
                 "HOAT_DONG".equals(status) ? 1 : 0;
 
-        // =========================
-        // THÊM MỚI
-        // =========================
+        // =====================================================
+        // THÊM MỚI NVL
+        // =====================================================
 
         if (id == null) {
 
-            jdbc.update(
-                    """
-                    INSERT INTO nguyenvatlieu
-                    (
-                        manvl_code,
-                        tennvl,
-                        maloai,
-                        donvitinh,
-                        dongianhap,
-                        soluongton,
-                        ton_toithieu,
-                        lead_time_ngay,
-                        trangthai,
-                        ghichu
-                    )
-                    VALUES (?, ?, ?, ?, ?, 0, ?, 0, ?, ?)
-                    """,
+            /*
+             * Bước 1:
+             * Tạo NVL ở kho chính.
+             *
+             * soluongton = 0
+             */
+            long newMaterialId = insertMaterial(
                     code.trim(),
                     name.trim(),
                     typeId,
@@ -526,11 +520,42 @@ public class MaterialCatalogService {
                     note
             );
 
+            /*
+             * Bước 2:
+             * Tạo dòng tương ứng trong kho NVL sản xuất.
+             *
+             * soluongton = 0
+             *
+             * id và ngaycapnhat:
+             * database tự sinh.
+             */
+            int inserted = jdbc.update(
+                    """
+                    INSERT INTO kho_nvl_san_xuat
+                    (
+                        manvl,
+                        soluongton
+                    )
+                    VALUES
+                    (
+                        ?,
+                        0
+                    )
+                    """,
+                    newMaterialId
+            );
+
+            if (inserted != 1) {
+                throw new IllegalStateException(
+                        "Không thể tạo tồn kho nguyên vật liệu nơi sản xuất."
+                );
+            }
+
         }
 
-        // =========================
-        // CẬP NHẬT
-        // =========================
+        // =====================================================
+        // CẬP NHẬT NVL
+        // =====================================================
 
         else {
 
@@ -564,6 +589,76 @@ public class MaterialCatalogService {
                         "Không tìm thấy nguyên vật liệu."
                 );
             }
+
+            /*
+             * Khi sửa NVL:
+             *
+             * KHÔNG reset soluongton kho sản xuất.
+             * KHÔNG tạo thêm dòng kho sản xuất.
+             *
+             * Chỉ cập nhật thông tin trong nguyenvatlieu.
+             */
         }
+    }
+
+    private long insertMaterial(
+            String code,
+            String name,
+            Integer typeId,
+            String unit,
+            BigDecimal price,
+            int minimum,
+            int statusValue,
+            String note) {
+
+        org.springframework.jdbc.support.GeneratedKeyHolder keyHolder =
+                new org.springframework.jdbc.support.GeneratedKeyHolder();
+
+        jdbc.update(connection -> {
+
+            java.sql.PreparedStatement ps =
+                    connection.prepareStatement(
+                            """
+                            INSERT INTO nguyenvatlieu
+                            (
+                                manvl_code,
+                                tennvl,
+                                maloai,
+                                donvitinh,
+                                dongianhap,
+                                soluongton,
+                                ton_toithieu,
+                                lead_time_ngay,
+                                trangthai,
+                                ghichu
+                            )
+                            VALUES
+                            (?, ?, ?, ?, ?, 0, ?, 0, ?, ?)
+                            """,
+                            java.sql.Statement.RETURN_GENERATED_KEYS
+                    );
+
+            ps.setString(1, code);
+            ps.setString(2, name);
+            ps.setInt(3, typeId);
+            ps.setString(4, unit);
+            ps.setBigDecimal(5, price);
+            ps.setInt(6, minimum);
+            ps.setInt(7, statusValue);
+            ps.setString(8, note);
+
+            return ps;
+
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+
+        if (key == null) {
+            throw new IllegalStateException(
+                    "Không lấy được mã nguyên vật liệu vừa tạo."
+            );
+        }
+
+        return key.longValue();
     }
 }

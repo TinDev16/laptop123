@@ -146,8 +146,20 @@
             <span th:if="${sanpham.TRANGTHAI == 1}" class="badge badge-closed">Ngừng bán</span>
         </div>
         <div class="actions">
-            <a th:href="@{/sanpham}" class="btn btn-outline">
+            <a th:if="${from == 'kho-san-xuat'}"
+               th:href="@{/kho-san-xuat/thanh-pham}"
+               class="btn btn-outline">
+
                 <i class="fas fa-arrow-left"></i> Quay lại
+
+            </a>
+
+            <a th:unless="${from == 'kho-san-xuat'}"
+               th:href="@{/sanpham}"
+               class="btn btn-outline">
+
+                <i class="fas fa-arrow-left"></i> Quay lại
+
             </a>
         </div>
     </div>

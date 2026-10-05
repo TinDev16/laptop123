@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Kho NVL nơi sản xuất</title>
+
+    <link rel="stylesheet"
+          th:href="@{/style.css(v='20261004-2')}">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        .material-category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 12px;
+        }
+
+        .material-category-title {
+            margin-left: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .material-category-count {
+            margin-left: auto;
+            margin-right: 20px;
+        }
+
+        .inventory-empty {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .production-stock-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .production-stock-value {
+            font-weight: 600;
+        }
+
+        .production-stock-unit {
+            color: #6b7280;
+            font-size: 12px;
+            margin-left: 3px;
+        }
+
+        .material-category-table {
+            margin-top: 0;
+        }
+
+        .production-status-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 20px;
+        }
+
+        .production-status-label {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .warehouse-note {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="app-container">
+
+
+    <!-- SIDEBAR -->
+
+    <div th:replace="~{fragments/sidebar :: sidebar('kho-nvl-san-xuat')}"></div>
+
+
+    <div class="main-wrapper">
+
+
+        <!-- TOPBAR -->
+
+        <div th:replace="~{fragments/sidebar :: topbar(
+            'Kho NVL nơi sản xuất',
+            'Kho / Kho NVL nơi sản xuất'
+        )}"></div>
+
+
+        <main class="content-body">
+
+
+            <!-- TIÊU ĐỀ -->
+
+            <h1>
+
+                <i class="fas fa-warehouse"></i>
+
+                Kho NVL nơi sản xuất
+
+            </h1>
+
+
+            <p>
+
+                Theo dõi số lượng nguyên vật liệu
+                tại kho nơi sản xuất.
+
+            </p>
+
+
+            <!-- CONTENT CARD -->
+
+            <div class="content-card">
+
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+
+                        Danh mục nguyên vật liệu
+
+                    </h2>
+
+
+                    <span class="record-count"
+                          th:text="${#lists.size(materials) + ' bản ghi'}">
+
+                        0 bản ghi
+
+                    </span>
+
+                </div>
+
+
+                <!-- ====================================== -->
+                <!-- DANH SÁCH THEO TỪNG LOẠI NVL -->
+                <!-- ====================================== -->
+
+                <div th:if="${!#lists.isEmpty(materials)}"
+                     class="material-category-list">
+
+
+                    <!-- ====================================== -->
+                    <!-- NHÓM THEO LOẠI -->
+                    <!-- ====================================== -->
+
+                    <div th:each="group : ${materialGroups}"
+                         class="material-category-group">
+
+
+                        <!-- ====================================== -->
+                        <!-- HEADER LOẠI NVL -->
+                        <!-- ====================================== -->
+
+                        <div class="material-category-header">
+
+
+                            <div class="material-category-title">
+
+                                <i class="fas fa-layer-group"></i>
+
+                                <span>
+
+                                    Loại
+                                    <span th:text="${group.key}">
+                                        nguyên vật liệu
+                                    </span>
+
+                                </span>
+
+
+                                <!-- TRẠNG THÁI LOẠI -->
+
+                                <div class="production-status-group">
+
+                                    <span class="production-status-label">
+                                        Trạng thái:
+                                    </span>
+
+                                    <span
+                                            class="status-badge"
+                                            th:classappend="${
+                                                group.value[0].trangthai_loai == 1
+                                                    ? ' status-active'
+                                                    : ' status-inactive'
+                                            }"
+                                            th:text="${
+                                                group.value[0].trangthai_loai == 1
+                                                    ? 'Hoạt động'
+                                                    : 'Ngừng sử dụng'
+                                            }">
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- SỐ LƯỢNG NVL -->
+
+                            <span class="material-category-count"
+                                  th:text="${#lists.size(group.value) + ' NVL'}">
+
+                                0 NVL
+
+                            </span>
+
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- BẢNG NVL -->
+                        <!-- ====================================== -->
+
+                        <div class="table-container material-category-table">
+
+
+                            <table>
+
+
+                                <thead>
+
+                                <tr>
+
+                                    <th>Mã</th>
+
+                                    <th>Tên</th>
+
+                                    <th>Đơn vị</th>
+
+                                    <th>Tồn kho nơi sản xuất</th>
+
+                                    <th>Tồn tối thiểu</th>
+
+                                    <th>Giá nhập</th>
+
+                                    <th>Trạng thái NVL</th>
+
+                                </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+
+                                <tr th:each="m : ${group.value}">
+
+
+                                    <!-- MÃ -->
+
+                                    <td th:text="${m.manvl_code}">
+
+                                    </td>
+
+
+                                    <!-- TÊN -->
+
+                                    <td th:text="${m.tennvl}">
+
+                                    </td>
+
+
+                                    <!-- ĐƠN VỊ -->
+
+                                    <td th:text="${m.donvitinh}">
+
+                                    </td>
+
+
+                                    <!-- TỒN KHO NƠI SẢN XUẤT -->
+
+                                    <td>
+
+                                        <div class="production-stock-cell">
+
+
+                                            <div>
+
+                                                <span
+                                                        class="production-stock-value"
+                                                        data-number
+                                                        th:text="${m.soluongton}">
+
+                                                    0
+
+                                                </span>
+
+                                                <span
+                                                        class="production-stock-unit"
+                                                        th:text="${m.donvitinh}">
+
+                                                    Cái
+
+                                                </span>
+
+                                            </div>
+
+
+                                            <!-- HẾT -->
+
+                                            <small
+                                                    th:if="${m.soluongton == 0}"
+                                                    class="inventory-warning inventory-empty">
+
+                                                Hết
+
+                                            </small>
+
+
+                                            <!-- SẮP HẾT -->
+
+                                            <small
+                                                    th:if="${m.soluongton > 0 and m.soluongton <= m.ton_toithieu}"
+                                                    class="inventory-warning">
+
+                                                Sắp hết
+
+                                            </small>
+
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- TỒN TỐI THIỂU -->
+
+                                    <td
+                                            data-number
+                                            th:text="${m.ton_toithieu}">
+
+                                        0
+
+                                    </td>
+
+
+                                    <!-- GIÁ NHẬP -->
+
+                                    <td
+                                            data-number
+                                            th:text="${m.dongianhap}">
+
+                                        0
+
+                                    </td>
+
+
+                                    <!-- TRẠNG THÁI NVL -->
+
+                                    <td>
+
+                                        <span
+                                                class="status-badge"
+                                                th:classappend="${
+                                                    m.trangthai_nvl == 1
+                                                        ? ' status-active'
+                                                        : ' status-inactive'
+                                                }"
+                                                th:text="${
+                                                    m.trangthai_nvl == 1
+                                                        ? 'Hoạt động'
+                                                        : 'Ngừng sử dụng'
+                                                }">
+
+                                        </span>
+
+                                    </td>
+
+
+                                </tr>
+
+
+                                </tbody>
+
+                            </table>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ====================================== -->
+                <!-- KHÔNG CÓ DỮ LIỆU -->
+                <!-- ====================================== -->
+
+                <div th:if="${#lists.isEmpty(materials)}"
+                     class="material-empty-state">
+
+                    <i class="fas fa-box-open"></i>
+
+                    Chưa có nguyên vật liệu tại kho sản xuất.
+
+                </div>
+
+
+                <!-- GHI CHÚ -->
+
+                <div class="warehouse-note">
+
+                    <i class="fas fa-info-circle"></i>
+
+                    Trang này chỉ dùng để theo dõi tồn kho NVL
+                    tại nơi sản xuất.
+                    Không thực hiện thêm, sửa hoặc ngừng sử dụng NVL tại đây.
+
+                </div>
+
+
+            </div>
+
+
+        </main>
+
+
+    </div>
+
+</div>
+
+
+<script th:src="@{/number-format.js}"
+        defer>
+</script>
+
+
+</body>
+
+</html>

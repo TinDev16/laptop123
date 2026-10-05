@@ -4,17 +4,24 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MrpWarehouseService {
+
     private final JdbcTemplate jdbc;
 
     public MrpWarehouseService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
+
+    // =====================================================
+    // NHẬP NGUYÊN VẬT LIỆU
+    // Nhà cung cấp -> Kho NVL trung tâm
+    // =====================================================
 
     @Transactional
     public void completeMaterialReceipt(
@@ -84,9 +91,11 @@ public class MrpWarehouseService {
                     before.add(line.quantity());
 
             jdbc.update(
-                    "UPDATE nguyenvatlieu " +
-                            "SET soluongton = ? " +
-                            "WHERE manvl = ?",
+                    """
+                    UPDATE nguyenvatlieu
+                    SET soluongton = ?
+                    WHERE manvl = ?
+                    """,
                     after,
                     line.itemId()
             );
@@ -102,12 +111,25 @@ public class MrpWarehouseService {
         }
 
         jdbc.update(
-                "UPDATE phieunhap_nvl " +
-                        "SET trangthai = 'DA_NHAP' " +
-                        "WHERE mapn = ?",
+                """
+                UPDATE phieunhap_nvl
+                SET trangthai = 'DA_NHAP'
+                WHERE mapn = ?
+                """,
                 receiptId
         );
     }
+
+
+    // =====================================================
+    // XUẤT NGUYÊN VẬT LIỆU
+    //
+    // Kho NVL trung tâm
+    //        |
+    //        | xuất
+    //        v
+    // Kho NVL sản xuất
+    // =====================================================
 
     @Transactional
     public void issueMaterials(long issueId) {
@@ -115,16 +137,43 @@ public class MrpWarehouseService {
     }
 
     @Transactional
-    public void issueMaterials(long issueId, String managerEmail) {
-        String status = lockStatus("phieuxuat_nvl", "mapx", issueId);
-        if ("DA_XUAT".equals(status)) throw new IllegalStateException("Phiếu xuất đã được xử lý trước đó.");
+    public void issueMaterials(
+            long issueId,
+            String managerEmail) {
+
+        // =====================================================
+        // 1. KHÓA PHIẾU XUẤT
+        // =====================================================
+
+        String status = lockStatus(
+                "phieuxuat_nvl",
+                "mapx",
+                issueId
+        );
+
+        if ("DA_XUAT".equals(status)) {
+            throw new IllegalStateException(
+                    "Phiếu xuất đã được xử lý trước đó."
+            );
+        }
+
         requireStatus(status, "CHO_DUYET");
+
+
+        // =====================================================
+        // 2. LẤY CHI TIẾT PHIẾU
+        // =====================================================
+
         List<Line> lines = jdbc.query(
-                "SELECT manvl, SUM(soluong) " +
-                        "FROM ct_phieuxuat_nvl " +
-                        "WHERE mapx = ? " +
-                        "GROUP BY manvl " +
-                        "ORDER BY manvl",
+                """
+                SELECT
+                    manvl,
+                    SUM(soluong)
+                FROM ct_phieuxuat_nvl
+                WHERE mapx = ?
+                GROUP BY manvl
+                ORDER BY manvl
+                """,
                 (rs, row) -> new Line(
                         rs.getLong(1),
                         0L,
@@ -133,34 +182,232 @@ public class MrpWarehouseService {
                 ),
                 issueId
         );
+
         requireLines(lines);
+
+
+        // =====================================================
+        // 3. KIỂM TRA LẠI TRẠNG THÁI NVL + LOẠI NVL
+        // NGAY TẠI THỜI ĐIỂM DUYỆT
+        // =====================================================
+
         validateActiveMaterialsForApproval(lines);
-        List<StockChange> changes = new ArrayList<>();
+
+
+        // =====================================================
+        // 4. KIỂM TRA TỒN KHO
+        //
+        // Đồng thời khóa:
+        // - Kho NVL trung tâm
+        // - Kho NVL sản xuất
+        // =====================================================
+
+        List<MaterialStockChange> changes =
+                new ArrayList<>();
+
         for (Line line : lines) {
+
             requirePositive(line.quantity());
-            BigDecimal before = lockStock("nguyenvatlieu", "manvl", line.itemId());
-            if (before.compareTo(line.quantity()) < 0) {
-                String name = jdbc.queryForObject("SELECT tennvl FROM nguyenvatlieu WHERE manvl = ?", String.class, line.itemId());
-                throw new IllegalStateException("Không đủ nguyên vật liệu " + name + ". Tồn hiện tại: " + before + ". Số lượng yêu cầu: " + line.quantity() + ".");
+
+            // -------------------------------------------------
+            // Khóa tồn kho NVL trung tâm
+            // -------------------------------------------------
+
+            BigDecimal centralBefore = lockStock(
+                    "nguyenvatlieu",
+                    "manvl",
+                    line.itemId()
+            );
+
+
+            // -------------------------------------------------
+            // Kiểm tra tồn kho trung tâm
+            // -------------------------------------------------
+
+            if (centralBefore.compareTo(line.quantity()) < 0) {
+
+                String name = jdbc.queryForObject(
+                        """
+                        SELECT tennvl
+                        FROM nguyenvatlieu
+                        WHERE manvl = ?
+                        """,
+                        String.class,
+                        line.itemId()
+                );
+
+                throw new IllegalStateException(
+                        "Không đủ nguyên vật liệu "
+                                + name
+                                + ". Tồn hiện tại: "
+                                + centralBefore
+                                + ". Số lượng yêu cầu: "
+                                + line.quantity()
+                                + "."
+                );
             }
-            changes.add(new StockChange(line, before, before.subtract(line.quantity())));
+
+
+            // -------------------------------------------------
+            // Khóa tồn kho NVL sản xuất
+            // -------------------------------------------------
+
+            BigDecimal productionBefore = lockStock(
+                    "kho_nvl_san_xuat",
+                    "manvl",
+                    line.itemId()
+            );
+
+
+            // -------------------------------------------------
+            // Tính tồn sau khi chuyển kho
+            // -------------------------------------------------
+
+            BigDecimal centralAfter =
+                    centralBefore.subtract(line.quantity());
+
+            BigDecimal productionAfter =
+                    productionBefore.add(line.quantity());
+
+
+            changes.add(
+                    new MaterialStockChange(
+                            line,
+                            centralAfter,
+                            productionAfter
+                    )
+            );
         }
-        Integer actor = managerEmail == null ? null : employeeId(managerEmail);
-        for (StockChange change : changes) {
-            jdbc.update("UPDATE nguyenvatlieu SET soluongton = ? WHERE manvl = ?", change.after(), change.line().itemId());
-            history("XUAT_NVL", "NVL", change.line(), actor, "phieuxuat_nvl", issueId);
+
+
+        // =====================================================
+        // 5. NGƯỜI DUYỆT
+        // =====================================================
+
+        Integer actor =
+                managerEmail == null
+                        ? null
+                        : employeeId(managerEmail);
+
+
+        // =====================================================
+        // 6. THỰC HIỆN CHUYỂN KHO
+        //
+        // Kho trung tâm:
+        //     - quantity
+        //
+        // Kho sản xuất:
+        //     + quantity
+        // =====================================================
+
+        for (MaterialStockChange change : changes) {
+
+            // -------------------------------------------------
+            // Trừ kho NVL trung tâm
+            // -------------------------------------------------
+
+            jdbc.update(
+                    """
+                    UPDATE nguyenvatlieu
+                    SET soluongton = ?
+                    WHERE manvl = ?
+                    """,
+                    change.afterCentral(),
+                    change.line().itemId()
+            );
+
+
+            // -------------------------------------------------
+            // Cộng kho NVL sản xuất
+            // -------------------------------------------------
+
+            jdbc.update(
+                    """
+                    UPDATE kho_nvl_san_xuat
+                    SET soluongton = ?
+                    WHERE manvl = ?
+                    """,
+                    change.afterProduction(),
+                    change.line().itemId()
+            );
+
+
+            // -------------------------------------------------
+            // Ghi lịch sử kho
+            // -------------------------------------------------
+
+            history(
+                    "XUAT_NVL",
+                    "NVL",
+                    change.line(),
+                    actor,
+                    "phieuxuat_nvl",
+                    issueId
+            );
         }
-        jdbc.update("UPDATE phieuxuat_nvl SET trangthai = 'DA_XUAT', nguoiduyet = ?, ngayduyet = CURRENT_TIMESTAMP WHERE mapx = ?", actor, issueId);
+
+
+        // =====================================================
+        // 7. ĐÁNH DẤU PHIẾU ĐÃ XUẤT
+        // =====================================================
+
+        jdbc.update(
+                """
+                UPDATE phieuxuat_nvl
+                SET
+                    trangthai = 'DA_XUAT',
+                    nguoiduyet = ?,
+                    ngayduyet = CURRENT_TIMESTAMP
+                WHERE mapx = ?
+                """,
+                actor,
+                issueId
+        );
     }
 
+
+    // =====================================================
+    // TỪ CHỐI PHIẾU XUẤT NVL
+    // =====================================================
+
     @Transactional
-    public void rejectMaterialIssue(long issueId, String reason, String managerEmail) {
-        String status = lockStatus("phieuxuat_nvl", "mapx", issueId);
+    public void rejectMaterialIssue(
+            long issueId,
+            String reason,
+            String managerEmail) {
+
+        String status = lockStatus(
+                "phieuxuat_nvl",
+                "mapx",
+                issueId
+        );
+
         requireStatus(status, "CHO_DUYET");
+
         requireReason(reason);
-        jdbc.update("UPDATE phieuxuat_nvl SET trangthai = 'TU_CHOI', lydo = ?, nguoiduyet = ?, ngayduyet = CURRENT_TIMESTAMP WHERE mapx = ?",
-                reason.trim(), employeeId(managerEmail), issueId);
+
+        jdbc.update(
+                """
+                UPDATE phieuxuat_nvl
+                SET
+                    trangthai = 'TU_CHOI',
+                    lydo = ?,
+                    nguoiduyet = ?,
+                    ngayduyet = CURRENT_TIMESTAMP
+                WHERE mapx = ?
+                """,
+                reason.trim(),
+                employeeId(managerEmail),
+                issueId
+        );
     }
+
+
+    // =====================================================
+    // XÁC NHẬN KẾT QUẢ SẢN XUẤT
+    //
+    // Sản xuất -> Kho thành phẩm
+    // =====================================================
 
     @Transactional
     public void confirmProduction(long resultId) {
@@ -172,47 +419,83 @@ public class MrpWarehouseService {
         String status = lockStatus("ketqua_sanxuat", "makqsx", resultId);
         if ("DA_NHAP_KHO".equals(status)) throw new IllegalStateException("Kết quả đã được xác nhận trước đó.");
         requireStatus(status, "CHO_XAC_NHAN");
+
         ProductionResult result = jdbc.queryForObject(
                 "SELECT maycsx, soluonghoanthanh FROM ketqua_sanxuat WHERE makqsx = ?",
                 (rs, row) -> new ProductionResult(rs.getLong(1), rs.getInt(2)), resultId);
         if (result == null) throw new IllegalArgumentException("Không tìm thấy kết quả sản xuất.");
         if (result.quantity() <= 0) throw new IllegalArgumentException("Số lượng hoàn thành phải lớn hơn 0.");
+
         ProductionOrder order = jdbc.queryForObject(
-                "SELECT masp, soluongyeucau, soluonghoanthanh FROM yeucausanxuat WHERE maycsx = ? FOR UPDATE",
-                (rs, row) -> new ProductionOrder(rs.getLong(1), rs.getInt(2), rs.getInt(3)), result.orderId());
-        if (order == null || order.completed() + result.quantity() > order.requested()) {
+                "SELECT masp, mabom, soluongyeucau, soluonghoanthanh FROM yeucausanxuat WHERE maycsx = ? FOR UPDATE",
+                (rs, row) -> new ProductionOrder(rs.getLong(1), rs.getLong(2), rs.getInt(3), rs.getInt(4)),
+                result.orderId());
+        if (order == null) throw new IllegalArgumentException("Không tìm thấy yêu cầu sản xuất.");
+        if (order.completed() + result.quantity() > order.requested()) {
             throw new IllegalStateException("Số lượng hoàn thành vượt quá số lượng còn lại của yêu cầu sản xuất.");
         }
-        BigDecimal before = lockStock("sanpham", "masp", order.productId());
+
+        Integer recorded = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluong),0) FROM ghi_nhan_san_xuat WHERE maycsx = ?",
+                Integer.class, result.orderId());
+        if (recorded == null) recorded = 0;
+        Integer pendingOther = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluonghoanthanh),0) FROM ketqua_sanxuat WHERE maycsx = ? AND trangthai = 'CHO_XAC_NHAN' AND makqsx <> ?",
+                Integer.class, result.orderId(), resultId);
+        if (pendingOther == null) pendingOther = 0;
+        int unsubmitted = recorded - pendingOther;
+        if (result.quantity() > unsubmitted) {
+            throw new IllegalStateException("Kết quả xác nhận vượt quá số lượng đã ghi nhận chưa gửi của YCSX.");
+        }
+
+        BigDecimal before = lockStock("kho_thanhpham_san_xuat", "masp", order.productId(), "mabom", order.bomId());
         BigDecimal quantity = BigDecimal.valueOf(result.quantity());
-        BigDecimal after = before.add(quantity);
-        jdbc.update("UPDATE sanpham SET soluongton = ? WHERE masp = ?", after.intValueExact(), order.productId());
+        if (before.compareTo(quantity) < 0) {
+            throw new IllegalStateException("Kho thành phẩm sản xuất không đủ số lượng để xác nhận.");
+        }
+        BigDecimal after = before.subtract(quantity);
+        jdbc.update("UPDATE kho_thanhpham_san_xuat SET soluongton = ? WHERE masp = ? AND mabom = ?", after, order.productId(), order.bomId());
+
+        BigDecimal centralBefore = lockStock("sanpham", "masp", order.productId());
+        BigDecimal centralAfter = centralBefore.add(quantity);
+        jdbc.update("UPDATE sanpham SET soluongton = ? WHERE masp = ?", centralAfter, order.productId());
+
         int completed = order.completed() + result.quantity();
         jdbc.update("UPDATE yeucausanxuat SET soluonghoanthanh = ?, trangthai = ? WHERE maycsx = ?",
-                completed, completed == order.requested() ? "HOAN_THANH" : "DANG_SAN_XUAT", result.orderId());
-        history(
-                "NHAP_THANH_PHAM",
-                "THANH_PHAM",
-                new Line(
-                        order.productId(),
-                        0L,
-                        quantity,
-                        BigDecimal.ZERO
-                ),
-                managerEmail == null ? null : employeeId(managerEmail),
-                "ketqua_sanxuat",
-                resultId
-        );
+                completed, completed >= order.requested() ? "HOAN_THANH" : "DANG_SAN_XUAT", result.orderId());
+
+        consumeRecordedProduction(result.orderId(), result.quantity());
+
+        history("NHAP_THANH_PHAM", "THANH_PHAM",
+                new Line(order.productId(), order.bomId(), quantity, BigDecimal.ZERO),
+                managerEmail == null ? null : employeeId(managerEmail), "ketqua_sanxuat", resultId);
+
         jdbc.update("UPDATE ketqua_sanxuat SET trangthai = 'DA_NHAP_KHO' WHERE makqsx = ?", resultId);
     }
 
-    @Transactional
-    public void issueFinishedProducts(long issueId) {
-        issueFinishedProducts(issueId, null);
+    private void consumeRecordedProduction(long orderId, int quantity) {
+        int remaining = quantity;
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT id, soluong FROM ghi_nhan_san_xuat WHERE maycsx = ? ORDER BY id FOR UPDATE", orderId);
+        for (Map<String, Object> row : rows) {
+            if (remaining <= 0) break;
+            long id = ((Number) row.get("id")).longValue();
+            int q = ((Number) row.get("soluong")).intValue();
+            if (q <= remaining) {
+                jdbc.update("DELETE FROM ghi_nhan_san_xuat WHERE id = ?", id);
+                remaining -= q;
+            } else {
+                jdbc.update("UPDATE ghi_nhan_san_xuat SET soluong = soluong - ? WHERE id = ?", remaining, id);
+                remaining = 0;
+            }
+        }
+        if (remaining > 0) throw new IllegalStateException("Không thể đối soát số lượng đã ghi nhận sản xuất.");
     }
 
     @Transactional
-    public void issueFinishedProducts(long issueId, String managerEmail) {
+    public void issueFinishedProducts(
+            long issueId,
+            String managerEmail) {
 
         String status = lockStatus(
                 "phieuxuat_thanhpham",
@@ -226,20 +509,31 @@ public class MrpWarehouseService {
             );
         }
 
-        requireStatus(status, "CHO_DUYET");
+        requireStatus(
+                status,
+                "CHO_DUYET"
+        );
+
 
         /*
          * Lấy sản phẩm + BOM + số lượng trong phiếu.
          *
-         * Group theo cả masp và mabom vì một sản phẩm có thể
-         * có nhiều phiên bản BOM.
+         * Group theo cả masp và mabom vì một sản phẩm
+         * có thể có nhiều phiên bản BOM.
          */
+
         List<Line> lines = jdbc.query(
-                "SELECT masp, mabom, SUM(soluong), MAX(dongia) " +
-                        "FROM ct_phieuxuat_thanhpham " +
-                        "WHERE mapxtp = ? " +
-                        "GROUP BY masp, mabom " +
-                        "ORDER BY masp, mabom",
+                """
+                SELECT
+                    masp,
+                    mabom,
+                    SUM(soluong),
+                    MAX(dongia)
+                FROM ct_phieuxuat_thanhpham
+                WHERE mapxtp = ?
+                GROUP BY masp, mabom
+                ORDER BY masp, mabom
+                """,
                 (rs, row) -> new Line(
                         rs.getLong(1),
                         rs.getLong(2),
@@ -251,58 +545,89 @@ public class MrpWarehouseService {
 
         requireLines(lines);
 
-        List<StockChange> changes = new ArrayList<>();
+        List<StockChange> changes =
+                new ArrayList<>();
+
 
         for (Line line : lines) {
 
             requirePositive(line.quantity());
 
-            /*
-             * Kiểm tra BOM có tồn tại và thuộc đúng sản phẩm.
-             */
+
+            // =================================================
+            // KIỂM TRA BOM
+            // =================================================
+
             Integer bomProduct = jdbc.query(
-                    "SELECT masp " +
-                            "FROM bom " +
-                            "WHERE mabom = ?",
-                    ps -> ps.setLong(1, line.bomId()),
-                    rs -> rs.next() ? rs.getInt("masp") : null
+                    """
+                    SELECT masp
+                    FROM bom
+                    WHERE mabom = ?
+                    """,
+                    ps -> ps.setLong(
+                            1,
+                            line.bomId()
+                    ),
+                    rs -> rs.next()
+                            ? rs.getInt("masp")
+                            : null
             );
 
             if (bomProduct == null) {
                 throw new IllegalStateException(
-                        "Không tìm thấy BOM " + line.bomId() + "."
+                        "Không tìm thấy BOM "
+                                + line.bomId()
+                                + "."
                 );
             }
 
-            if (bomProduct.longValue() != line.itemId()) {
+            if (bomProduct.longValue()
+                    != line.itemId()) {
+
                 throw new IllegalStateException(
-                        "BOM " + line.bomId()
-                                + " không thuộc sản phẩm " + line.itemId() + "."
+                        "BOM "
+                                + line.bomId()
+                                + " không thuộc sản phẩm "
+                                + line.itemId()
+                                + "."
                 );
             }
 
-            /*
-             * Chỉ BOM đang hiệu lực mới được xuất.
-             */
+
+            // =================================================
+            // KIỂM TRA BOM CÒN HIỆU LỰC
+            // =================================================
+
             String bomStatus = jdbc.query(
-                    "SELECT trangthai " +
-                            "FROM bom " +
-                            "WHERE mabom = ?",
-                    ps -> ps.setLong(1, line.bomId()),
-                    rs -> rs.next() ? rs.getString("trangthai") : null
+                    """
+                    SELECT trangthai
+                    FROM bom
+                    WHERE mabom = ?
+                    """,
+                    ps -> ps.setLong(
+                            1,
+                            line.bomId()
+                    ),
+                    rs -> rs.next()
+                            ? rs.getString("trangthai")
+                            : null
             );
 
             if (!"HIEU_LUC".equals(bomStatus)) {
+
                 throw new IllegalStateException(
-                        "BOM " + line.bomId()
-                                + " đã ngừng sử dụng, không thể xuất thành phẩm."
+                        "BOM "
+                                + line.bomId()
+                                + " đã ngừng sử dụng, "
+                                + "không thể xuất thành phẩm."
                 );
             }
 
-            /*
-             * Khóa dòng sản phẩm để tránh hai phiếu xuất
-             * cùng lúc làm sai tồn kho.
-             */
+
+            // =================================================
+            // KHÓA TỒN KHO THÀNH PHẨM
+            // =================================================
+
             BigDecimal before = lockStock(
                     "sanpham",
                     "masp",
@@ -310,8 +635,10 @@ public class MrpWarehouseService {
             );
 
             if (before.compareTo(line.quantity()) < 0) {
+
                 throw new IllegalStateException(
-                        "Không đủ thành phẩm. Tồn hiện tại: "
+                        "Không đủ thành phẩm. "
+                                + "Tồn hiện tại: "
                                 + before
                                 + ". Số lượng yêu cầu: "
                                 + line.quantity()
@@ -319,39 +646,59 @@ public class MrpWarehouseService {
                 );
             }
 
-            /*
-             * Tính số lượng thành phẩm còn lại của BOM:
-             *
-             * Đã nhập kho theo BOM
-             * -
-             * Đã xuất thành phẩm theo BOM
-             */
-            BigDecimal produced = jdbc.queryForObject(
-                    "SELECT COALESCE(SUM(k.soluonghoanthanh), 0) " +
-                            "FROM yeucausanxuat y " +
-                            "JOIN ketqua_sanxuat k " +
-                            "ON k.maycsx = y.maycsx " +
-                            "WHERE y.mabom = ? " +
-                            "AND k.trangthai = 'DA_NHAP_KHO'",
-                    BigDecimal.class,
-                    line.bomId()
-            );
 
-            BigDecimal exported = jdbc.queryForObject(
-                    "SELECT COALESCE(SUM(c.soluong), 0) " +
-                            "FROM phieuxuat_thanhpham p " +
-                            "JOIN ct_phieuxuat_thanhpham c " +
-                            "ON c.mapxtp = p.mapxtp " +
-                            "WHERE c.mabom = ? " +
-                            "AND p.trangthai = 'DA_XUAT'",
-                    BigDecimal.class,
-                    line.bomId()
-            );
+            // =================================================
+            // TÍNH THÀNH PHẨM ĐÃ SẢN XUẤT THEO BOM
+            // =================================================
+
+            BigDecimal produced =
+                    jdbc.queryForObject(
+                            """
+                            SELECT
+                                COALESCE(
+                                    SUM(k.soluonghoanthanh),
+                                    0
+                                )
+                            FROM yeucausanxuat y
+                            JOIN ketqua_sanxuat k
+                                ON k.maycsx = y.maycsx
+                            WHERE y.mabom = ?
+                              AND k.trangthai = 'DA_NHAP_KHO'
+                            """,
+                            BigDecimal.class,
+                            line.bomId()
+                    );
+
+
+            // =================================================
+            // TÍNH THÀNH PHẨM ĐÃ XUẤT THEO BOM
+            // =================================================
+
+            BigDecimal exported =
+                    jdbc.queryForObject(
+                            """
+                            SELECT
+                                COALESCE(
+                                    SUM(c.soluong),
+                                    0
+                                )
+                            FROM phieuxuat_thanhpham p
+                            JOIN ct_phieuxuat_thanhpham c
+                                ON c.mapxtp = p.mapxtp
+                            WHERE c.mabom = ?
+                              AND p.trangthai = 'DA_XUAT'
+                            """,
+                            BigDecimal.class,
+                            line.bomId()
+                    );
+
 
             BigDecimal bomAvailable =
                     produced.subtract(exported);
 
-            if (bomAvailable.compareTo(line.quantity()) < 0) {
+            if (bomAvailable.compareTo(
+                    line.quantity()) < 0) {
+
                 throw new IllegalStateException(
                         "Không đủ thành phẩm theo BOM "
                                 + line.bomId()
@@ -363,29 +710,37 @@ public class MrpWarehouseService {
                 );
             }
 
+
             changes.add(
                     new StockChange(
                             line,
                             before,
-                            before.subtract(line.quantity())
+                            before.subtract(
+                                    line.quantity()
+                            )
                     )
             );
         }
+
 
         Integer actor =
                 managerEmail == null
                         ? null
                         : employeeId(managerEmail);
 
-        /*
-         * Chỉ đến đây mới thực sự trừ tồn kho.
-         */
+
+        // =====================================================
+        // THỰC SỰ TRỪ TỒN KHO THÀNH PHẨM
+        // =====================================================
+
         for (StockChange change : changes) {
 
             jdbc.update(
-                    "UPDATE sanpham " +
-                            "SET soluongton = ? " +
-                            "WHERE masp = ?",
+                    """
+                    UPDATE sanpham
+                    SET soluongton = ?
+                    WHERE masp = ?
+                    """,
                     change.after().intValueExact(),
                     change.line().itemId()
             );
@@ -400,31 +755,70 @@ public class MrpWarehouseService {
             );
         }
 
-        /*
-         * Phiếu được đánh dấu đã xuất.
-         *
-         * Các query BOM ở BomService sẽ dựa vào trạng thái DA_XUAT
-         * để trừ số lượng.
-         */
+
+        // =====================================================
+        // ĐÁNH DẤU PHIẾU ĐÃ XUẤT
+        // =====================================================
+
         jdbc.update(
-                "UPDATE phieuxuat_thanhpham " +
-                        "SET trangthai = 'DA_XUAT', " +
-                        "nguoiduyet = ?, " +
-                        "ngayduyet = CURRENT_TIMESTAMP " +
-                        "WHERE mapxtp = ?",
+                """
+                UPDATE phieuxuat_thanhpham
+                SET
+                    trangthai = 'DA_XUAT',
+                    nguoiduyet = ?,
+                    ngayduyet = CURRENT_TIMESTAMP
+                WHERE mapxtp = ?
+                """,
                 actor,
                 issueId
         );
     }
 
+
+    // =====================================================
+    // TỪ CHỐI PHIẾU XUẤT THÀNH PHẨM
+    // =====================================================
+
     @Transactional
-    public void rejectFinishedIssue(long issueId, String reason, String managerEmail) {
-        String status = lockStatus("phieuxuat_thanhpham", "mapxtp", issueId);
-        requireStatus(status, "CHO_DUYET");
+    public void rejectFinishedIssue(
+            long issueId,
+            String reason,
+            String managerEmail) {
+
+        String status = lockStatus(
+                "phieuxuat_thanhpham",
+                "mapxtp",
+                issueId
+        );
+
+        requireStatus(
+                status,
+                "CHO_DUYET"
+        );
+
         requireReason(reason);
-        jdbc.update("UPDATE phieuxuat_thanhpham SET trangthai = 'TU_CHOI', lydo = ?, nguoiduyet = ?, ngayduyet = CURRENT_TIMESTAMP WHERE mapxtp = ?",
-                reason.trim(), employeeId(managerEmail), issueId);
+
+        jdbc.update(
+                """
+                UPDATE phieuxuat_thanhpham
+                SET
+                    trangthai = 'TU_CHOI',
+                    lydo = ?,
+                    nguoiduyet = ?,
+                    ngayduyet = CURRENT_TIMESTAMP
+                WHERE mapxtp = ?
+                """,
+                reason.trim(),
+                employeeId(managerEmail),
+                issueId
+        );
     }
+
+
+    // =====================================================
+    // KIỂM TRA TRẠNG THÁI NVL + LOẠI NVL
+    // TẠI THỜI ĐIỂM DUYỆT
+    // =====================================================
 
     private void validateActiveMaterialsForApproval(
             List<Line> lines) {
@@ -451,6 +845,7 @@ public class MrpWarehouseService {
                     );
 
             if (rows.isEmpty()) {
+
                 throw new IllegalStateException(
                         "Nguyên vật liệu không tồn tại: "
                                 + line.itemId()
@@ -480,69 +875,231 @@ public class MrpWarehouseService {
                             row.get("tenloai")
                     );
 
+
+            // -------------------------------------------------
             // NVL đã ngừng
+            // -------------------------------------------------
+
             if (materialStatus != 1) {
+
                 throw new IllegalStateException(
-                        "Không thể duyệt phiếu. " +
-                                "Nguyên vật liệu \"" +
-                                materialName +
-                                "\" đã ngừng sử dụng."
+                        "Không thể duyệt phiếu. "
+                                + "Nguyên vật liệu \""
+                                + materialName
+                                + "\" đã ngừng sử dụng."
                 );
             }
 
+
+            // -------------------------------------------------
             // Loại NVL đã ngừng
+            // -------------------------------------------------
+
             if (typeStatus != 1) {
+
                 throw new IllegalStateException(
-                        "Không thể duyệt phiếu. " +
-                                "Loại nguyên vật liệu \"" +
-                                typeName +
-                                "\" đã ngừng sử dụng."
+                        "Không thể duyệt phiếu. "
+                                + "Loại nguyên vật liệu \""
+                                + typeName
+                                + "\" đã ngừng sử dụng."
                 );
             }
         }
     }
 
+
+    // =====================================================
+    // LẤY MÃ NHÂN VIÊN TỪ EMAIL
+    // =====================================================
+
     private int employeeId(String email) {
-        Integer id = jdbc.queryForObject("SELECT manv FROM taikhoan WHERE email = ?", Integer.class, email);
-        if (id == null) throw new IllegalStateException("Tài khoản chưa liên kết với nhân viên.");
+
+        Integer id = jdbc.queryForObject(
+                """
+                SELECT manv
+                FROM taikhoan
+                WHERE email = ?
+                """,
+                Integer.class,
+                email
+        );
+
+        if (id == null) {
+            throw new IllegalStateException(
+                    "Tài khoản chưa liên kết với nhân viên."
+            );
+        }
+
         return id;
     }
 
-    private String lockStatus(String table, String key, long id) {
-        List<String> values = jdbc.query("SELECT trangthai FROM " + table + " WHERE " + key + " = ? FOR UPDATE",
-                (rs, row) -> rs.getString(1), id);
-        if (values.isEmpty()) throw new IllegalArgumentException("Không tìm thấy chứng từ: " + id);
+
+    // =====================================================
+    // KHÓA TRẠNG THÁI CHỨNG TỪ
+    // =====================================================
+
+    private String lockStatus(
+            String table,
+            String key,
+            long id) {
+
+        List<String> values =
+                jdbc.query(
+                        "SELECT trangthai FROM "
+                                + table
+                                + " WHERE "
+                                + key
+                                + " = ? FOR UPDATE",
+                        (rs, row) ->
+                                rs.getString(1),
+                        id
+                );
+
+        if (values.isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Không tìm thấy chứng từ: "
+                            + id
+            );
+        }
+
         return values.get(0);
     }
+
+
+    // =====================================================
+    // KHÓA TỒN KHO
+    // =====================================================
 
     private BigDecimal lockStock(String table, String key, long id) {
-        List<BigDecimal> values = jdbc.query("SELECT COALESCE(soluongton, 0) FROM " + table + " WHERE " + key + " = ? FOR UPDATE",
-                (rs, row) -> rs.getBigDecimal(1), id);
+        List<Number> values = jdbc.query(
+                "SELECT COALESCE(soluongton, 0) FROM " + table + " WHERE " + key + " = ? FOR UPDATE",
+                (rs, row) -> (Number) rs.getObject(1), id);
         if (values.isEmpty()) throw new IllegalArgumentException("Không tìm thấy hàng hóa: " + id);
-        return values.get(0);
+        return values.get(0) == null ? BigDecimal.ZERO : new BigDecimal(values.get(0).toString());
     }
 
-    private void history(String type, String kind, Line line, Integer actor, String sourceTable, long documentId) {
-        jdbc.update("INSERT INTO lich_su_kho (loai_hang, ma_hang, loai_giaodich, soluong, don_gia, nguoi_thuchien, bang_tham_chieu, ma_tham_chieu) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                kind, line.itemId(), type, line.quantity(), line.price(), actor, sourceTable, documentId);
+    private BigDecimal lockStock(String table, String key1, long id1, String key2, long id2) {
+        List<Number> values = jdbc.query(
+                "SELECT COALESCE(soluongton, 0) FROM " + table + " WHERE " + key1 + " = ? AND " + key2 + " = ? FOR UPDATE",
+                (rs, row) -> (Number) rs.getObject(1), id1, id2);
+        if (values.isEmpty()) throw new IllegalArgumentException("Không tìm thấy tồn kho sản xuất.");
+        return values.get(0) == null ? BigDecimal.ZERO : new BigDecimal(values.get(0).toString());
     }
 
-    private void requireStatus(String actual, String expected) {
-        if (!expected.equals(actual)) throw new IllegalStateException("Chứng từ không ở trạng thái " + expected + ".");
+
+    // =====================================================
+    // GHI LỊCH SỬ KHO
+    // =====================================================
+
+    private void history(
+            String type,
+            String kind,
+            Line line,
+            Integer actor,
+            String sourceTable,
+            long documentId) {
+
+        jdbc.update(
+                """
+                INSERT INTO lich_su_kho
+                (
+                    loai_hang,
+                    ma_hang,
+                    loai_giaodich,
+                    soluong,
+                    don_gia,
+                    nguoi_thuchien,
+                    bang_tham_chieu,
+                    ma_tham_chieu
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                kind,
+                line.itemId(),
+                type,
+                line.quantity(),
+                line.price(),
+                actor,
+                sourceTable,
+                documentId
+        );
     }
 
-    private void requirePositive(BigDecimal quantity) {
-        if (quantity == null || quantity.signum() <= 0) throw new IllegalArgumentException("Số lượng phải lớn hơn 0.");
+
+    // =====================================================
+    // VALIDATE STATUS
+    // =====================================================
+
+    private void requireStatus(
+            String actual,
+            String expected) {
+
+        if (!expected.equals(actual)) {
+
+            throw new IllegalStateException(
+                    "Chứng từ không ở trạng thái "
+                            + expected
+                            + "."
+            );
+        }
     }
 
-    private void requireLines(List<Line> lines) {
-        if (lines.isEmpty()) throw new IllegalArgumentException("Phiếu phải có ít nhất một dòng chi tiết.");
+
+    // =====================================================
+    // VALIDATE SỐ LƯỢNG
+    // =====================================================
+
+    private void requirePositive(
+            BigDecimal quantity) {
+
+        if (quantity == null
+                || quantity.signum() <= 0) {
+
+            throw new IllegalArgumentException(
+                    "Số lượng phải lớn hơn 0."
+            );
+        }
     }
 
-    private void requireReason(String reason) {
-        if (reason == null || reason.isBlank() || reason.length() > 255) throw new IllegalArgumentException("Lý do từ chối phải có từ 1 đến 255 ký tự.");
+
+    // =====================================================
+    // VALIDATE CHI TIẾT PHIẾU
+    // =====================================================
+
+    private void requireLines(
+            List<Line> lines) {
+
+        if (lines.isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Phiếu phải có ít nhất một dòng chi tiết."
+            );
+        }
     }
+
+
+    // =====================================================
+    // VALIDATE LÝ DO TỪ CHỐI
+    // =====================================================
+
+    private void requireReason(
+            String reason) {
+
+        if (reason == null
+                || reason.isBlank()
+                || reason.length() > 255) {
+
+            throw new IllegalArgumentException(
+                    "Lý do từ chối phải có từ 1 đến 255 ký tự."
+            );
+        }
+    }
+
+
+    // =====================================================
+    // RECORDS
+    // =====================================================
 
     private record Line(
             long itemId,
@@ -550,7 +1107,37 @@ public class MrpWarehouseService {
             BigDecimal quantity,
             BigDecimal price
     ) {}
-    private record StockChange(Line line, BigDecimal before, BigDecimal after) {}
-    private record ProductionResult(long orderId, int quantity) {}
-    private record ProductionOrder(long productId, int requested, int completed) {}
+
+
+    // Dùng riêng cho luồng:
+    // Kho NVL trung tâm -> Kho NVL sản xuất
+
+    private record MaterialStockChange(
+            Line line,
+            BigDecimal afterCentral,
+            BigDecimal afterProduction
+    ) {}
+
+
+    // Dùng cho xuất thành phẩm
+
+    private record StockChange(
+            Line line,
+            BigDecimal before,
+            BigDecimal after
+    ) {}
+
+
+    private record ProductionResult(
+            long orderId,
+            int quantity
+    ) {}
+
+
+    private record ProductionOrder(
+            long productId,
+            long bomId,
+            int requested,
+            int completed
+    ) {}
 }

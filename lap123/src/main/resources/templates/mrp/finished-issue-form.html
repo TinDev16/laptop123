@@ -25,6 +25,10 @@
 
         <main class="content-body mrp-entry-page">
 
+            <!-- =========================
+                 HEADER
+            ========================== -->
+
             <div class="page-header">
 
                 <div>
@@ -33,7 +37,7 @@
                     </h1>
 
                     <p class="page-description">
-                        Chọn sản phẩm, BOM và số lượng cần xuất khỏi kho.
+                        Chọn sản phẩm, BOM, người nhận và thông tin xuất kho.
                     </p>
                 </div>
 
@@ -44,26 +48,43 @@
 
             </div>
 
+
+            <!-- =========================
+                 ERROR
+            ========================== -->
+
             <div class="directory-alert directory-alert--error"
                  th:if="${error}"
                  th:text="${error}">
             </div>
 
+
+            <!-- =========================
+                 FORM
+            ========================== -->
+
             <form th:action="@{/kho/xuat-thanh-pham}"
                   method="post"
-                  class="content-card ceo-form">
+                  class="content-card ceo-form"
+                  id="finishedIssueForm">
 
                 <div class="content-card-header">
+
                     <h2 class="content-card-title">
                         Thông tin đề nghị
                     </h2>
+
                 </div>
+
 
                 <div class="content-card-body">
 
                     <div class="ceo-form-grid">
 
-                        <!-- SẢN PHẨM -->
+
+                        <!-- =========================
+                             SẢN PHẨM
+                        ========================== -->
 
                         <div class="ceo-field ceo-field-full">
 
@@ -93,7 +114,9 @@
                         </div>
 
 
-                        <!-- BOM -->
+                        <!-- =========================
+                             BOM
+                        ========================== -->
 
                         <div class="ceo-field ceo-field-full">
 
@@ -121,7 +144,75 @@
                         </div>
 
 
-                        <!-- SỐ LƯỢNG -->
+                        <!-- =========================
+                             NGƯỜI NHẬN
+                        ========================== -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="customerId">
+                                Người nhận
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select id="customerId"
+                                    name="customerId"
+                                    class="form-control"
+                                    required>
+
+                                <option value=""
+                                        disabled
+                                        selected>
+                                    Chọn người nhận
+                                </option>
+
+                                <option th:each="customer : ${customers}"
+                                        th:value="${customer.makh}"
+                                        th:text="${customer.hoten + (
+                                            customer.sdt != null
+                                                ? ' · ' + customer.sdt
+                                                : ''
+                                        )}">
+                                </option>
+
+                            </select>
+
+                            <small>
+                                Người nhận được lấy từ danh sách khách hàng.
+                            </small>
+
+                        </div>
+
+
+                        <!-- =========================
+                             ĐỊA CHỈ
+                        ========================== -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="address">
+                                Địa chỉ giao hàng
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <input id="address"
+                                   name="address"
+                                   type="text"
+                                   maxlength="255"
+                                   class="form-control"
+                                   required
+                                   placeholder="Địa chỉ giao hàng">
+
+                            <small id="addressHint">
+                                Địa chỉ sẽ được lấy từ thông tin khách hàng và có thể chỉnh sửa.
+                            </small>
+
+                        </div>
+
+
+                        <!-- =========================
+                             SỐ LƯỢNG
+                        ========================== -->
 
                         <div class="ceo-field">
 
@@ -134,6 +225,7 @@
                                    name="quantity"
                                    type="number"
                                    min="1"
+                                   step="1"
                                    required
                                    class="form-control"
                                    placeholder="Nhập số lượng">
@@ -141,7 +233,103 @@
                         </div>
 
 
-                        <!-- GHI CHÚ -->
+                        <!-- =========================
+                             ĐƠN GIÁ
+                        ========================== -->
+
+                        <div class="ceo-field">
+
+                            <label for="unitPrice">
+                                Đơn giá
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <div style="
+                                display: flex;
+                                gap: 8px;
+                                align-items: center;
+                            ">
+
+                                <input id="unitPrice"
+                                       name="unitPrice"
+                                       type="text"
+                                       inputmode="numeric"
+                                       required
+                                       class="form-control"
+                                       placeholder="Giá BOM"
+                                       disabled>
+
+                                <span id="priceStatus"
+                                      style="
+                                          white-space: nowrap;
+                                          padding: 7px 10px;
+                                          border-radius: 6px;
+                                          background: #f3f4f6;
+                                          color: #6b7280;
+                                          font-size: 13px;
+                                      ">
+                                    Chưa có giá
+                                </span>
+
+                            </div>
+
+                            <small>
+                                Giá mặc định được tính từ BOM.
+                                Có thể chỉnh sửa nếu cần.
+                            </small>
+
+                        </div>
+
+
+                        <!-- =========================
+                             KHÔI PHỤC GIÁ BOM
+                        ========================== -->
+
+                        <div class="ceo-field ceo-field-full"
+                             id="restorePriceWrapper"
+                             style="display: none;">
+
+                            <button type="button"
+                                    id="restorePriceBtn"
+                                    class="btn btn-outline">
+
+                                <i class="fa-solid fa-rotate-left"></i>
+                                Khôi phục giá BOM
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- =========================
+                             THÀNH TIỀN
+                        ========================== -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label>
+                                Thành tiền
+                            </label>
+
+                            <div id="totalAmount"
+                                 style="
+                                     font-size: 24px;
+                                     font-weight: 700;
+                                     padding: 12px 0;
+                                 ">
+                                0 VNĐ
+                            </div>
+
+                            <small>
+                                Thành tiền = Đơn giá × Số lượng.
+                            </small>
+
+                        </div>
+
+
+                        <!-- =========================
+                             GHI CHÚ
+                        ========================== -->
 
                         <div class="ceo-field ceo-field-full">
 
@@ -158,15 +346,32 @@
 
                         </div>
 
+
                     </div>
 
+
+                    <!-- =========================
+                         HIDDEN PRICE FIX
+                    ========================== -->
+
+                    <input type="hidden"
+                           id="priceFixed"
+                           name="priceFixed"
+                           value="false">
+
+
+                    <!-- =========================
+                         ACTIONS
+                    ========================== -->
 
                     <div class="ceo-form-actions">
 
                         <button type="submit"
                                 class="btn btn-primary"
+                                id="submitButton"
                                 th:disabled="${#lists.isEmpty(products)}">
 
+                            <i class="fa-solid fa-paper-plane"></i>
                             Gửi đề nghị
 
                         </button>
@@ -184,90 +389,879 @@
 </div>
 
 
-<script>
+<script th:inline="javascript">
 
-    const productSelect = document.getElementById("productId");
-    const bomSelect = document.getElementById("bomId");
+    /* =====================================================
+       ELEMENTS
+    ====================================================== */
 
-    productSelect.addEventListener("change", async function () {
+    const productSelect =
+        document.getElementById("productId");
 
-        const productId = this.value;
+    const bomSelect =
+        document.getElementById("bomId");
 
-        bomSelect.innerHTML =
-            '<option value="">Đang tải BOM...</option>';
+    const customerSelect =
+        document.getElementById("customerId");
 
-        bomSelect.disabled = true;
+    const addressInput =
+        document.getElementById("address");
 
-        if (!productId) {
-            bomSelect.innerHTML =
-                '<option value="">Chọn sản phẩm trước</option>';
+    const quantityInput =
+        document.getElementById("quantity");
+
+    const unitPriceInput =
+        document.getElementById("unitPrice");
+
+    const priceFixedInput =
+        document.getElementById("priceFixed");
+
+    const priceStatus =
+        document.getElementById("priceStatus");
+
+    const totalAmount =
+        document.getElementById("totalAmount");
+
+    const restorePriceWrapper =
+        document.getElementById("restorePriceWrapper");
+
+    const restorePriceBtn =
+        document.getElementById("restorePriceBtn");
+
+    const finishedIssueForm =
+        document.getElementById("finishedIssueForm");
+
+    const addressHint =
+        document.getElementById("addressHint");
+
+
+    /* =====================================================
+       CUSTOMER DATA
+    ====================================================== */
+
+    const customers =
+        /*[[${customers}]]*/ [];
+
+
+    /* =====================================================
+       STATE
+    ====================================================== */
+
+    let bomPrice = null;
+
+    let priceFixed = false;
+
+    let addressManuallyEdited = false;
+
+    let changingPriceAutomatically = false;
+
+
+    /* =====================================================
+       PARSE MONEY
+    ====================================================== */
+
+    function parseVietnameseMoney(value) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return 0;
+        }
+
+        /*
+         * Giá trong form dùng dấu "." làm phân cách
+         * hàng nghìn.
+         *
+         * Ví dụ:
+         * 6.303.041 -> 6303041
+         * 350.000   -> 350000
+         * 6303041   -> 6303041
+         */
+
+        let text =
+            String(value)
+                .trim()
+                .replace(/\s/g, "");
+
+
+        /*
+         * Nếu có cả dấu "." và ","
+         * thì xử lý theo kiểu Việt Nam:
+         *
+         * 6.303.041,50
+         * -> 6303041.50
+         */
+
+        if (
+            text.includes(".") &&
+            text.includes(",")
+        ) {
+
+            text =
+                text
+                    .replace(/\./g, "")
+                    .replace(",", ".");
+
+        } else {
+
+            /*
+             * Nếu chỉ có dấu "."
+             * thì coi là dấu phân cách hàng nghìn.
+             *
+             * 6.303.041 -> 6303041
+             */
+
+            text =
+                text.replace(/\./g, "");
+
+            /*
+             * Nếu chỉ có dấu ","
+             * thì coi là phần thập phân.
+             *
+             * Ví dụ:
+             * 350000,50 -> 350000.50
+             */
+
+            text =
+                text.replace(",", ".");
+        }
+
+
+        const number =
+            Number(text);
+
+
+        return Number.isFinite(number)
+            ? number
+            : 0;
+    }
+
+
+    /* =====================================================
+       FORMAT MONEY
+    ====================================================== */
+
+    function formatMoney(value) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            Number.isNaN(Number(value))
+        ) {
+            return "0 VNĐ";
+        }
+
+        return Number(value).toLocaleString(
+            "vi-VN",
+            {
+                maximumFractionDigits: 2
+            }
+        ) + " VNĐ";
+    }
+
+
+    /* =====================================================
+       FORMAT INPUT PRICE
+    ====================================================== */
+
+    function formatPriceInput(value) {
+
+        const number =
+            Number(value);
+
+        if (
+            !Number.isFinite(number)
+        ) {
+            return "";
+        }
+
+        return number.toLocaleString(
+            "vi-VN",
+            {
+                maximumFractionDigits: 2
+            }
+        );
+    }
+
+
+    /* =====================================================
+       UPDATE TOTAL
+    ====================================================== */
+
+    function updateTotal() {
+
+        const quantity =
+            Number(quantityInput.value) || 0;
+
+        const price =
+            parseVietnameseMoney(
+                unitPriceInput.value
+            );
+
+
+        if (
+            quantity <= 0 ||
+            price < 0
+        ) {
+
+            totalAmount.textContent =
+                "0 VNĐ";
 
             return;
         }
 
-        try {
 
-            const response =
-                await fetch(
-                    `/bom/versions?productId=${encodeURIComponent(productId)}`
+        const total =
+            quantity * price;
+
+
+        totalAmount.textContent =
+            formatMoney(total);
+    }
+
+
+    /* =====================================================
+       PRICE STATUS
+    ====================================================== */
+
+    function setPriceStatus(fixed) {
+
+        priceFixed =
+            fixed;
+
+        priceFixedInput.value =
+            fixed
+                ? "true"
+                : "false";
+
+
+        if (fixed) {
+
+            priceStatus.textContent =
+                "Đã fix";
+
+            priceStatus.style.background =
+                "#fff7ed";
+
+            priceStatus.style.color =
+                "#c2410c";
+
+            restorePriceWrapper.style.display =
+                "block";
+
+        } else {
+
+            priceStatus.textContent =
+                "Theo BOM";
+
+            priceStatus.style.background =
+                "#ecfdf5";
+
+            priceStatus.style.color =
+                "#047857";
+
+            restorePriceWrapper.style.display =
+                "none";
+        }
+    }
+
+
+    /* =====================================================
+       CUSTOMER CHANGE
+    ====================================================== */
+
+    customerSelect.addEventListener(
+        "change",
+        function () {
+
+            const customerId =
+                Number(this.value);
+
+
+            const customer =
+                customers.find(
+                    item =>
+                        Number(item.makh) === customerId
                 );
 
-            if (!response.ok) {
-                throw new Error("HTTP " + response.status);
+
+            if (!customer) {
+                return;
             }
 
-            const versions = await response.json();
+
+            /*
+             * Nếu người dùng chưa tự sửa địa chỉ
+             * thì lấy địa chỉ từ khách hàng.
+             */
+
+            if (!addressManuallyEdited) {
+
+                addressInput.value =
+                    customer.diachi || "";
+
+
+                addressHint.textContent =
+                    "Địa chỉ được lấy từ thông tin khách hàng. Có thể chỉnh sửa.";
+            }
+        }
+    );
+
+
+    /* =====================================================
+       ADDRESS CHANGE
+    ====================================================== */
+
+    addressInput.addEventListener(
+        "input",
+        function () {
+
+            addressManuallyEdited =
+                true;
+
+
+            addressHint.textContent =
+                "Địa chỉ đang được nhập/chỉnh sửa thủ công.";
+        }
+    );
+
+
+    /* =====================================================
+       PRODUCT CHANGE
+    ====================================================== */
+
+    productSelect.addEventListener(
+        "change",
+        async function () {
+
+            const productId =
+                this.value;
+
+
+            /* Reset BOM */
 
             bomSelect.innerHTML =
-                '<option value="">Chọn phiên bản BOM</option>';
+                '<option value="">Đang tải BOM...</option>';
 
-            if (!versions.length) {
+            bomSelect.disabled =
+                true;
+
+
+            /* Reset giá */
+
+            bomPrice =
+                null;
+
+            changingPriceAutomatically =
+                true;
+
+            unitPriceInput.value =
+                "";
+
+            unitPriceInput.disabled =
+                true;
+
+            changingPriceAutomatically =
+                false;
+
+
+            setPriceStatus(false);
+
+
+            totalAmount.textContent =
+                "0 VNĐ";
+
+
+            if (!productId) {
 
                 bomSelect.innerHTML =
-                    '<option value="">Sản phẩm chưa có BOM</option>';
+                    '<option value="">Chọn sản phẩm trước</option>';
 
                 return;
             }
 
-            versions.forEach(version => {
 
-                const option =
-                    document.createElement("option");
+            try {
 
-                option.value = version.mabom;
+                const response =
+                    await fetch(
+                        `/bom/versions?productId=${encodeURIComponent(productId)}`
+                    );
 
-                option.textContent =
-                    `BOM ${version.phienban} - ${
-                        version.trangthai === "HIEU_LUC"
-                            ? "Hiệu lực"
-                            : "Ngừng sử dụng"
-                    }`;
 
-                /*
-                 * Chỉ cho phép xuất theo BOM đang hiệu lực.
-                 * BOM cũ vẫn có thể hiển thị nhưng không cho chọn.
-                 */
+                if (!response.ok) {
 
-                if (version.trangthai !== "HIEU_LUC") {
-                    option.disabled = true;
+                    throw new Error(
+                        "HTTP " + response.status
+                    );
                 }
 
-                bomSelect.appendChild(option);
 
-            });
+                const versions =
+                    await response.json();
 
-            bomSelect.disabled = false;
 
-        } catch (error) {
+                bomSelect.innerHTML =
+                    '<option value="">Chọn phiên bản BOM</option>';
 
-            console.error(error);
 
-            bomSelect.innerHTML =
-                '<option value="">Không tải được danh sách BOM</option>';
+                if (!versions.length) {
 
+                    bomSelect.innerHTML =
+                        '<option value="">Sản phẩm chưa có BOM</option>';
+
+                    return;
+                }
+
+
+                versions.forEach(
+                    version => {
+
+                        const option =
+                            document.createElement("option");
+
+
+                        option.value =
+                            version.mabom;
+
+
+                        option.textContent =
+                            `BOM ${version.phienban} - ${
+                                version.trangthai === "HIEU_LUC"
+                                    ? "Hiệu lực"
+                                    : "Ngừng sử dụng"
+                            }`;
+
+
+                        /*
+                         * Chỉ cho phép chọn BOM hiệu lực.
+                         */
+
+                        if (
+                            version.trangthai !==
+                            "HIEU_LUC"
+                        ) {
+
+                            option.disabled =
+                                true;
+                        }
+
+
+                        bomSelect.appendChild(
+                            option
+                        );
+                    }
+                );
+
+
+                bomSelect.disabled =
+                    false;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                bomSelect.innerHTML =
+                    '<option value="">Không tải được danh sách BOM</option>';
+            }
+        }
+    );
+
+
+    /* =====================================================
+       BOM CHANGE
+    ====================================================== */
+
+    bomSelect.addEventListener(
+        "change",
+        async function () {
+
+            const bomId =
+                this.value;
+
+
+            /* Reset giá */
+
+            bomPrice =
+                null;
+
+            changingPriceAutomatically =
+                true;
+
+            unitPriceInput.value =
+                "";
+
+            unitPriceInput.disabled =
+                true;
+
+            changingPriceAutomatically =
+                false;
+
+
+            setPriceStatus(false);
+
+
+            totalAmount.textContent =
+                "0 VNĐ";
+
+
+            if (!bomId) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/kho/xuat-thanh-pham/bom-price?bomId=${encodeURIComponent(bomId)}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "HTTP " + response.status
+                    );
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                /*
+                 * Lấy giá BOM.
+                 */
+
+                bomPrice =
+                    Number(
+                        data.tong_gia_bom || 0
+                    );
+
+
+                /*
+                 * Hiển thị giá BOM với dấu "."
+                 *
+                 * 6630301
+                 * ->
+                 * 6.630.301
+                 */
+
+                changingPriceAutomatically =
+                    true;
+
+
+                unitPriceInput.value =
+                    formatPriceInput(
+                        bomPrice
+                    );
+
+
+                unitPriceInput.disabled =
+                    false;
+
+
+                changingPriceAutomatically =
+                    false;
+
+
+                setPriceStatus(false);
+
+
+                /*
+                 * Tính thành tiền ngay khi
+                 * lấy được giá BOM.
+                 */
+
+                updateTotal();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                unitPriceInput.value =
+                    "";
+
+                unitPriceInput.disabled =
+                    true;
+
+
+                bomPrice =
+                    null;
+
+
+                setPriceStatus(false);
+
+
+                totalAmount.textContent =
+                    "0 VNĐ";
+
+
+                alert(
+                    "Không thể lấy giá của BOM."
+                );
+            }
+        }
+    );
+
+
+    /* =====================================================
+       MANUAL PRICE CHANGE
+    ====================================================== */
+
+    function handlePriceChange() {
+
+        /*
+         * Nếu người dùng tự sửa giá
+         * thì đánh dấu "Đã fix".
+         */
+
+        if (
+            !changingPriceAutomatically
+        ) {
+
+            setPriceStatus(true);
         }
 
-    });
+
+        /*
+         * Tính lại thành tiền ngay lập tức.
+         */
+
+        updateTotal();
+    }
+
+
+    unitPriceInput.addEventListener(
+        "input",
+        handlePriceChange
+    );
+
+
+    unitPriceInput.addEventListener(
+        "change",
+        handlePriceChange
+    );
+
+
+    /* =====================================================
+       QUANTITY CHANGE
+    ====================================================== */
+
+    quantityInput.addEventListener(
+        "input",
+        updateTotal
+    );
+
+
+    quantityInput.addEventListener(
+        "change",
+        updateTotal
+    );
+
+
+    /* =====================================================
+       RESTORE BOM PRICE
+    ====================================================== */
+
+    restorePriceBtn.addEventListener(
+        "click",
+        function () {
+
+            if (
+                bomPrice === null
+            ) {
+                return;
+            }
+
+
+            changingPriceAutomatically =
+                true;
+
+
+            unitPriceInput.value =
+                formatPriceInput(
+                    bomPrice
+                );
+
+
+            changingPriceAutomatically =
+                false;
+
+
+            setPriceStatus(false);
+
+
+            updateTotal();
+        }
+    );
+
+
+    /* =====================================================
+       FORM SUBMIT VALIDATION
+    ====================================================== */
+
+    finishedIssueForm.addEventListener(
+        "submit",
+        function (event) {
+
+            const productId =
+                productSelect.value;
+
+
+            const bomId =
+                bomSelect.value;
+
+
+            const customerId =
+                customerSelect.value;
+
+
+            const address =
+                addressInput.value.trim();
+
+
+            const quantity =
+                Number(
+                    quantityInput.value
+                );
+
+
+            const unitPrice =
+                parseVietnameseMoney(
+                    unitPriceInput.value
+                );
+
+
+            /* Product */
+
+            if (!productId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Vui lòng chọn sản phẩm."
+                );
+
+                return;
+            }
+
+
+            /* BOM */
+
+            if (!bomId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Vui lòng chọn BOM."
+                );
+
+                return;
+            }
+
+
+            /* Customer */
+
+            if (!customerId) {
+
+                event.preventDefault();
+
+                alert(
+                    "Vui lòng chọn người nhận."
+                );
+
+                return;
+            }
+
+
+            /* Address */
+
+            if (!address) {
+
+                event.preventDefault();
+
+                alert(
+                    "Vui lòng nhập địa chỉ giao hàng."
+                );
+
+                addressInput.focus();
+
+                return;
+            }
+
+
+            /* Quantity */
+
+            if (
+                !Number.isInteger(quantity) ||
+                quantity <= 0
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Số lượng xuất phải lớn hơn 0."
+                );
+
+                quantityInput.focus();
+
+                return;
+            }
+
+
+            /* Unit price */
+
+            if (
+                !Number.isFinite(unitPrice) ||
+                unitPrice < 0
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Đơn giá không hợp lệ."
+                );
+
+                unitPriceInput.focus();
+
+                return;
+            }
+
+
+            /*
+             * QUAN TRỌNG:
+             *
+             * Giao diện:
+             * 6.303.041
+             *
+             * Trước khi submit:
+             * 6303041
+             *
+             * Để Spring BigDecimal nhận đúng.
+             */
+
+            unitPriceInput.value =
+                unitPrice.toString();
+
+
+            /*
+             * Đảm bảo hidden input đúng trạng thái.
+             */
+
+            priceFixedInput.value =
+                priceFixed
+                    ? "true"
+                    : "false";
+        }
+    );
 
 </script>
 

@@ -169,7 +169,9 @@ public class BomController {
 
         String backUrl;
 
-        if ("sanpham".equalsIgnoreCase(from)) {
+        if ("kho-san-xuat".equalsIgnoreCase(from)) {
+            backUrl = "/kho-san-xuat/thanh-pham";
+        } else if ("sanpham".equalsIgnoreCase(from)) {
             backUrl = "/sanpham";
         } else {
             backUrl = "/bom";

@@ -1,0 +1,2169 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Ghi nhận - nhập kho sản xuất</title>
+
+
+    <!-- =========================================================
+         FONT AWESOME
+         ========================================================= -->
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+
+    <!-- =========================================================
+         CSS CHUNG CỦA PROJECT
+         ========================================================= -->
+
+    <link rel="stylesheet"
+          th:href="@{/style.css}">
+
+
+    <!-- =========================================================
+         CSS RIÊNG TRANG GHI NHẬN SẢN XUẤT
+         ========================================================= -->
+
+    <style>
+
+        /* =========================================================
+           PAGE
+           ========================================================= */
+
+        .production-page {
+
+            max-width: 1100px;
+
+            margin: 0 auto;
+
+            padding: 25px;
+
+        }
+
+
+        /* =========================================================
+           HEADER
+           ========================================================= */
+
+        .production-page .page-header {
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .production-page .page-header h1 {
+
+            margin: 0;
+
+            font-size: 25px;
+
+            font-weight: 700;
+
+        }
+
+
+        .production-page .page-header p {
+
+            margin-top: 8px;
+
+            color: #777;
+
+        }
+
+
+        /* =========================================================
+           CARD
+           ========================================================= */
+
+        .production-page .card {
+
+            background: #fff;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            margin-bottom: 20px;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+
+        }
+
+
+        .production-page .card-title {
+
+            font-size: 18px;
+
+            font-weight: 700;
+
+            margin-bottom: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+        }
+
+
+        /* =========================================================
+           FORM
+           ========================================================= */
+
+        .production-page .form-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 20px;
+
+        }
+
+
+        .production-page .form-group {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+
+        }
+
+
+        .production-page .form-group.full {
+
+            grid-column: 1 / -1;
+
+        }
+
+
+        .production-page .form-group label {
+
+            font-weight: 600;
+
+        }
+
+
+        .production-page .form-control {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 11px 13px;
+
+            border: 1px solid #d8d8d8;
+
+            border-radius: 7px;
+
+            font-size: 14px;
+
+            background: #fff;
+
+        }
+
+
+        .production-page .form-control:focus {
+
+            outline: none;
+
+            border-color: #2563eb;
+
+        }
+
+
+        .production-page .form-control[readonly],
+
+        .production-page .form-control:disabled {
+
+            background: #f5f5f5;
+
+            cursor: not-allowed;
+
+        }
+
+
+        /* =========================================================
+           SUMMARY
+           ========================================================= */
+
+        .production-page .summary-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 15px;
+
+        }
+
+
+        .production-page .summary-box {
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 9px;
+
+            padding: 17px;
+
+            background: #fafafa;
+
+        }
+
+
+        .production-page .summary-label {
+
+            color: #666;
+
+            font-size: 13px;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .production-page .summary-value {
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =========================================================
+           MATERIAL TABLE
+           ========================================================= */
+
+        .production-page .material-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+        }
+
+
+        .production-page .material-table th,
+        .production-page .material-table td {
+
+            padding: 13px 12px;
+
+            border-bottom: 1px solid #eee;
+
+            text-align: left;
+
+        }
+
+
+        .production-page .material-table th {
+
+            background: #f7f7f7;
+
+            font-weight: 700;
+
+        }
+
+
+        .production-page .material-table td.number,
+        .production-page .material-table th.number {
+
+            text-align: right;
+
+        }
+
+
+        /* =========================================================
+           STOCK STATUS
+           ========================================================= */
+
+        .production-page .stock-ok {
+
+            color: #16803c;
+
+            font-weight: 600;
+
+        }
+
+
+        .production-page .stock-warning {
+
+            color: #d97706;
+
+            font-weight: 600;
+
+        }
+
+
+        .production-page .stock-danger {
+
+            color: #dc2626;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =========================================================
+           BUTTON AREA
+           ========================================================= */
+
+        .production-page .action-area {
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+
+            margin-top: 25px;
+
+        }
+
+
+        .production-page .btn {
+
+            border: none;
+
+            border-radius: 7px;
+
+            padding: 11px 20px;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .production-page .btn-primary {
+
+            background: #2563eb;
+
+            color: white;
+
+        }
+
+
+        .production-page .btn-primary:hover {
+
+            background: #1d4ed8;
+
+        }
+
+
+        .production-page .btn-primary:disabled {
+
+            background: #9ca3af;
+
+            cursor: not-allowed;
+
+        }
+
+
+        .production-page .btn-secondary {
+
+            background: #e5e7eb;
+
+            color: #333;
+
+        }
+
+
+        .production-page .btn-secondary:hover {
+
+            background: #d1d5db;
+
+        }
+
+
+        /* =========================================================
+           ALERT
+           ========================================================= */
+
+        .production-page .alert {
+
+            padding: 13px 16px;
+
+            border-radius: 7px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .production-page .alert-success {
+
+            background: #dcfce7;
+
+            color: #166534;
+
+        }
+
+
+        .production-page .alert-error {
+
+            background: #fee2e2;
+
+            color: #991b1b;
+
+        }
+
+
+        /* =========================================================
+           EMPTY MATERIAL
+           ========================================================= */
+
+        .production-page .empty-material {
+
+            text-align: center;
+
+            color: #777;
+
+            padding: 30px;
+
+        }
+
+
+        /* =========================================================
+           REQUIRED
+           ========================================================= */
+
+        .production-page .required {
+
+            color: #dc2626;
+
+        }
+
+
+        /* =========================================================
+           MOBILE
+           ========================================================= */
+
+        @media (max-width: 768px) {
+
+            .production-page .form-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .production-page .summary-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .production-page .material-table {
+
+                font-size: 13px;
+
+            }
+
+
+            .production-page .material-table th,
+            .production-page .material-table td {
+
+                padding: 9px 7px;
+
+            }
+
+
+            .production-page {
+
+                padding: 15px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =============================================================
+     APP CONTAINER
+     ============================================================= -->
+
+<div class="app-container">
+
+
+    <!-- =========================================================
+         SIDEBAR
+         ========================================================= -->
+
+    <div th:replace="~{fragments/sidebar :: sidebar('ghi-nhan-san-xuat')}"></div>
+
+
+    <!-- =========================================================
+         MAIN WRAPPER
+         ========================================================= -->
+
+    <div class="main-wrapper">
+
+
+        <!-- =====================================================
+             TOPBAR
+             ===================================================== -->
+
+        <div th:replace="~{fragments/sidebar :: topbar(
+                'Ghi nhận - nhập kho sản xuất',
+                'Ghi nhận sản xuất'
+        )}"></div>
+
+
+        <!-- =====================================================
+             MAIN CONTENT
+             ===================================================== -->
+
+        <main class="content-body">
+
+
+            <div class="production-page">
+
+
+                <!-- =================================================
+                     HEADER
+                     ================================================= -->
+
+                <div class="page-header">
+
+                    <h1>
+
+                        <i class="fas fa-industry"></i>
+
+                        Ghi nhận - nhập kho sản xuất
+
+                    </h1>
+
+
+                    <p>
+
+                        Ghi nhận số lượng thành phẩm đã sản xuất
+                        và cập nhật tồn kho sản xuất.
+
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     THÔNG BÁO
+                     ================================================= -->
+
+                <div th:if="${success}"
+                     class="alert alert-success"
+                     th:text="${success}">
+                </div>
+
+
+                <div th:if="${error}"
+                     class="alert alert-error"
+                     th:text="${error}">
+                </div>
+
+
+                <!-- =================================================
+                     FORM
+                     ================================================= -->
+
+                <form th:action="@{/san-xuat/ghi-nhan}"
+                      method="post"
+                      id="productionForm">
+
+
+                    <!-- =================================================
+                         THÔNG TIN SẢN XUẤT
+                         ================================================= -->
+
+                    <div class="card">
+
+
+                        <div class="card-title">
+
+                            <i class="fas fa-file-alt"></i>
+
+                            Thông tin sản xuất
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+
+                            <!-- =================================================
+                                 YÊU CẦU SẢN XUẤT
+                                 ================================================= -->
+
+                            <div class="form-group full">
+
+                                <label for="orderId">
+
+                                    Yêu cầu sản xuất
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <select id="orderId"
+                                        name="orderId"
+                                        class="form-control"
+                                        required>
+
+                                    <option value="">
+
+                                        -- Chọn yêu cầu sản xuất --
+
+                                    </option>
+
+
+                                    <option th:each="order : ${orders}"
+                                            th:value="${order.maycsx}"
+                                            th:text="${'YCSX-' + order.maycsx
+                                                + ' - ' + order.tenSp
+                                                + ' - Còn lại: '
+                                                + (order.soluongyeucau - order.soluonghoanthanh)}">
+
+                                    </option>
+
+                                </select>
+
+
+                                <small style="color:#777;">
+
+                                    Chọn yêu cầu sản xuất để hệ thống
+                                    tự động lấy BOM.
+
+                                </small>
+
+                            </div>
+
+
+                            <!-- =================================================
+                                 BOM
+                                 ================================================= -->
+
+                            <div class="form-group full">
+
+                                <label for="bomIdDisplay">
+
+                                    BOM
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <!--
+                                    BOM chỉ dùng để hiển thị.
+                                    Không submit trực tiếp.
+                                -->
+
+                                <select id="bomIdDisplay"
+                                        class="form-control"
+                                        disabled>
+
+                                    <option value="">
+
+                                        -- Chọn yêu cầu sản xuất trước --
+
+                                    </option>
+
+                                </select>
+
+
+                                <!--
+                                    BOM thực sự gửi lên Controller.
+                                -->
+
+                                <input type="hidden"
+                                       id="bomId"
+                                       name="bomId"
+                                       value="">
+
+
+                                <small style="color:#777;">
+
+                                    BOM được tự động lấy theo
+                                    yêu cầu sản xuất.
+
+                                </small>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         TIẾN ĐỘ SẢN XUẤT
+                         ================================================= -->
+
+                    <div class="card">
+
+
+                        <div class="card-title">
+
+                            <i class="fas fa-chart-bar"></i>
+
+                            Tiến độ sản xuất
+
+                        </div>
+
+
+                        <div class="summary-grid">
+
+
+                            <!-- YÊU CẦU -->
+
+                            <div class="summary-box">
+
+                                <div class="summary-label">
+
+                                    Số lượng yêu cầu
+
+                                </div>
+
+
+                                <div class="summary-value"
+                                     id="requestedQuantity">
+
+                                    0
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ĐÃ SẢN XUẤT -->
+
+                            <div class="summary-box">
+
+                                <div class="summary-label">
+
+                                    Đã sản xuất
+
+                                </div>
+
+
+                                <div class="summary-value"
+                                     id="completedQuantity">
+
+                                    0
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- CÒN LẠI -->
+
+                            <div class="summary-box">
+
+                                <div class="summary-label">
+
+                                    Còn có thể sản xuất
+
+                                </div>
+
+
+                                <div class="summary-value"
+                                     id="remainingQuantity">
+
+                                    0
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         SỐ LƯỢNG GHI NHẬN
+                         ================================================= -->
+
+                    <div class="card">
+
+
+                        <div class="card-title">
+
+                            <i class="fas fa-box-open"></i>
+
+                            Số lượng ghi nhận
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="quantity">
+
+                                Số lượng đã sản xuất
+
+                                <span class="required">*</span>
+
+                            </label>
+
+
+                            <input type="number"
+                                   id="quantity"
+                                   name="quantity"
+                                   class="form-control"
+                                   min="1"
+                                   step="1"
+                                   required
+                                   disabled
+                                   placeholder="Chọn yêu cầu sản xuất trước">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         NGUYÊN VẬT LIỆU
+                         ================================================= -->
+
+                    <div class="card">
+
+
+                        <div class="card-title">
+
+                            <i class="fas fa-cubes"></i>
+
+                            Nguyên vật liệu sẽ sử dụng
+
+                        </div>
+
+
+                        <div style="overflow-x:auto;">
+
+                            <table class="material-table">
+
+                                <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Nguyên vật liệu
+                                    </th>
+
+                                    <th class="number">
+                                        Định mức
+                                    </th>
+
+                                    <th class="number">
+                                        Hao hụt
+                                    </th>
+
+                                    <th class="number">
+                                        Cần dùng
+                                    </th>
+
+                                    <th class="number">
+                                        Tồn kho SX
+                                    </th>
+
+                                    <th class="number">
+                                        Sau khi dùng
+                                    </th>
+
+                                </tr>
+
+                                </thead>
+
+
+                                <tbody id="materialTableBody">
+
+                                <tr>
+
+                                    <td colspan="6"
+                                        class="empty-material">
+
+                                        Chọn yêu cầu sản xuất
+                                        để xem nguyên vật liệu.
+
+                                    </td>
+
+                                </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         BUTTON
+                         ================================================= -->
+
+                    <div class="action-area">
+
+
+                        <a th:href="@{/san-xuat/ghi-nhan}"
+                           class="btn btn-secondary">
+
+                            <i class="fas fa-rotate-left"></i>
+
+                            Hủy
+
+                        </a>
+
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                id="submitButton"
+                                disabled>
+
+                            <i class="fas fa-check"></i>
+
+                            Ghi nhận sản xuất
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
+
+            </div>
+
+
+        </main>
+
+
+    </div>
+
+
+</div>
+
+
+<!-- =============================================================
+     JAVASCRIPT
+     ============================================================= -->
+
+<script th:inline="javascript">
+
+    /* =============================================================
+       ELEMENTS
+       ============================================================= */
+
+    const orderSelect =
+        document.getElementById('orderId');
+
+
+    const bomSelect =
+        document.getElementById('bomIdDisplay');
+
+
+    const bomIdInput =
+        document.getElementById('bomId');
+
+
+    const quantityInput =
+        document.getElementById('quantity');
+
+
+    const requestedQuantity =
+        document.getElementById('requestedQuantity');
+
+
+    const completedQuantity =
+        document.getElementById('completedQuantity');
+
+
+    const remainingQuantity =
+        document.getElementById('remainingQuantity');
+
+
+    const materialTableBody =
+        document.getElementById('materialTableBody');
+
+
+    const submitButton =
+        document.getElementById('submitButton');
+
+
+    /* =============================================================
+       DATA FROM CONTROLLER
+       ============================================================= */
+
+    const orders =
+        /*[[${orders}]]*/ [];
+
+
+    /*
+     * Danh sách NVL của BOM hiện tại.
+     */
+
+    let materials = [];
+
+
+    /*
+     * ID request để tránh request cũ
+     * ghi đè request mới.
+     */
+
+    let materialRequestId = 0;
+
+
+    /* =============================================================
+       NUMBER
+       ============================================================= */
+
+    function number(value) {
+
+        const n =
+            Number(value);
+
+
+        return Number.isFinite(n)
+            ? n
+            : 0;
+    }
+
+
+    /* =============================================================
+       FORMAT NUMBER
+       ============================================================= */
+
+    function formatNumber(value) {
+
+        return number(value).toLocaleString(
+            'vi-VN',
+            {
+                maximumFractionDigits: 2
+            }
+        );
+    }
+
+
+    /* =============================================================
+       GET SELECTED ORDER
+       ============================================================= */
+
+    function getSelectedOrder() {
+
+        const id =
+            Number(orderSelect.value);
+
+
+        if (!id) {
+
+            return null;
+        }
+
+
+        return orders.find(
+            order =>
+                Number(order.maycsx) === id
+        ) || null;
+    }
+
+
+    /* =============================================================
+       UPDATE SUMMARY
+       ============================================================= */
+
+    function updateSummary() {
+
+        const order =
+            getSelectedOrder();
+
+
+        if (!order) {
+
+            requestedQuantity.textContent =
+                '0';
+
+
+            completedQuantity.textContent =
+                '0';
+
+
+            remainingQuantity.textContent =
+                '0';
+
+
+            quantityInput.value =
+                '';
+
+
+            quantityInput.removeAttribute(
+                'max'
+            );
+
+
+            quantityInput.disabled =
+                true;
+
+
+            return;
+        }
+
+
+        const requested =
+            number(
+                order.soluongyeucau
+            );
+
+
+        const completed =
+            number(
+                order.soluonghoanthanh
+            );
+
+
+        const remaining =
+            Math.max(
+                requested - completed,
+                0
+            );
+
+
+        requestedQuantity.textContent =
+            formatNumber(
+                requested
+            );
+
+
+        completedQuantity.textContent =
+            formatNumber(
+                completed
+            );
+
+
+        remainingQuantity.textContent =
+            formatNumber(
+                remaining
+            );
+
+
+        quantityInput.max =
+            remaining;
+
+
+        quantityInput.disabled =
+            remaining <= 0;
+
+
+        if (remaining <= 0) {
+
+            quantityInput.value =
+                '';
+
+        }
+
+
+        if (
+            quantityInput.value &&
+            number(quantityInput.value) > remaining
+        ) {
+
+            quantityInput.value =
+                remaining;
+        }
+    }
+
+
+    /* =============================================================
+       UPDATE BOM
+       ============================================================= */
+
+    function updateBomFromOrder() {
+
+        const order =
+            getSelectedOrder();
+
+
+        /*
+         * Reset.
+         */
+
+        bomSelect.innerHTML =
+            '';
+
+        bomIdInput.value =
+            '';
+
+
+        /*
+         * Chưa chọn yêu cầu.
+         */
+
+        if (!order) {
+
+            const option =
+                document.createElement(
+                    'option'
+                );
+
+
+            option.value =
+                '';
+
+
+            option.textContent =
+                '-- Chọn yêu cầu sản xuất trước --';
+
+
+            bomSelect.appendChild(
+                option
+            );
+
+
+            bomSelect.disabled =
+                true;
+
+
+            return;
+        }
+
+
+        /*
+         * BOM được lấy trực tiếp
+         * từ yêu cầu sản xuất.
+         */
+
+        const bomId =
+            Number(
+                order.mabom
+            );
+
+
+        /*
+         * Yêu cầu chưa có BOM.
+         */
+
+        if (!bomId) {
+
+            const option =
+                document.createElement(
+                    'option'
+                );
+
+
+            option.value =
+                '';
+
+
+            option.textContent =
+                '-- Yêu cầu chưa có BOM --';
+
+
+            bomSelect.appendChild(
+                option
+            );
+
+
+            bomSelect.disabled =
+                true;
+
+
+            return;
+        }
+
+
+        /*
+         * Hiển thị BOM.
+         */
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+
+        option.value =
+            bomId;
+
+
+        option.textContent =
+            'BOM ' +
+            (
+                order.phienban
+                    ? order.phienban
+                    : bomId
+            );
+
+
+        option.selected =
+            true;
+
+
+        bomSelect.appendChild(
+            option
+        );
+
+
+        /*
+         * Không cho nhân viên thay đổi BOM.
+         */
+
+        bomSelect.disabled =
+            true;
+
+
+        /*
+         * Hidden input là giá trị
+         * thực sự gửi lên Controller.
+         */
+
+        bomIdInput.value =
+            bomId;
+    }
+
+
+    /* =============================================================
+       LOAD MATERIALS
+       ============================================================= */
+
+    async function loadMaterials() {
+
+        const order =
+            getSelectedOrder();
+
+
+        /*
+         * Reset.
+         */
+
+        materials = [];
+
+
+        materialTableBody.innerHTML =
+            '';
+
+
+        /*
+         * Chưa chọn yêu cầu.
+         */
+
+        if (!order) {
+
+            materialTableBody.innerHTML = `
+
+                <tr>
+
+                    <td colspan="6"
+                        class="empty-material">
+
+                        Chọn yêu cầu sản xuất
+                        để xem nguyên vật liệu.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+
+            return;
+        }
+
+
+        /*
+         * Lấy BOM từ yêu cầu.
+         */
+
+        const bomId =
+            Number(
+                order.mabom
+            );
+
+
+        if (!bomId) {
+
+            materialTableBody.innerHTML = `
+
+                <tr>
+
+                    <td colspan="6"
+                        class="empty-material">
+
+                        Yêu cầu sản xuất chưa có BOM.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+
+            return;
+        }
+
+
+        /*
+         * ID request hiện tại.
+         */
+
+        const requestId =
+            ++materialRequestId;
+
+
+        materialTableBody.innerHTML = `
+
+            <tr>
+
+                <td colspan="6"
+                    class="empty-material">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    Đang tải nguyên vật liệu...
+
+                </td>
+
+            </tr>
+
+        `;
+
+
+        try {
+
+            const response =
+                await fetch(
+                    '/san-xuat/ghi-nhan/materials?bomId='
+                    + encodeURIComponent(bomId),
+                    {
+                        method: 'GET',
+
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    'HTTP ' +
+                    response.status
+                );
+            }
+
+
+            const data =
+                await response.json();
+
+
+            /*
+             * Nếu request cũ thì bỏ.
+             */
+
+            if (
+                requestId !== materialRequestId
+            ) {
+
+                return;
+            }
+
+
+            materials =
+                Array.isArray(data)
+                    ? data
+                    : [];
+
+
+            renderMaterials();
+
+
+        } catch (error) {
+
+            console.error(
+                'Lỗi tải nguyên vật liệu:',
+                error
+            );
+
+
+            materialTableBody.innerHTML = `
+
+                <tr>
+
+                    <td colspan="6"
+                        class="empty-material"
+                        style="color:#dc2626;">
+
+                        Không thể tải danh sách
+                        nguyên vật liệu.
+
+                    </td>
+
+                </tr>
+
+            `;
+        }
+    }
+
+
+    /* =============================================================
+       CALCULATE REQUIRED MATERIAL
+       ============================================================= */
+
+    function calculateRequired(
+        quantity,
+        baseQuantity,
+        waste
+    ) {
+
+        return Math.ceil(
+            quantity
+            * baseQuantity
+            * (
+                1
+                + waste / 100
+            )
+        );
+    }
+
+
+    /* =============================================================
+       RENDER MATERIALS
+       ============================================================= */
+
+    function renderMaterials() {
+
+        materialTableBody.innerHTML =
+            '';
+
+
+        if (!materials.length) {
+
+            materialTableBody.innerHTML = `
+
+                <tr>
+
+                    <td colspan="6"
+                        class="empty-material">
+
+                        BOM này chưa có nguyên vật liệu.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+
+            return;
+        }
+
+
+        const quantity =
+            number(
+                quantityInput.value
+            );
+
+
+        materials.forEach(
+            line => {
+
+                const baseQuantity =
+                    number(
+                        line.soluong_dinhmuc
+                    );
+
+
+                const waste =
+                    number(
+                        line.tyle_haohut
+                    );
+
+
+                const stock =
+                    number(
+                        line.soluongton
+                    );
+
+
+                /*
+                 * Cần dùng:
+                 *
+                 * CEIL(
+                 *     quantity
+                 *     × định mức
+                 *     × (1 + hao hụt / 100)
+                 * )
+                 */
+
+                const required =
+                    calculateRequired(
+                        quantity,
+                        baseQuantity,
+                        waste
+                    );
+
+
+                const after =
+                    stock - required;
+
+
+                /*
+                 * Xác định trạng thái tồn kho.
+                 */
+
+                let stockClass =
+                    'stock-ok';
+
+
+                if (after < 0) {
+
+                    stockClass =
+                        'stock-danger';
+
+                } else if (
+                    after < required
+                ) {
+
+                    stockClass =
+                        'stock-warning';
+                }
+
+
+                const row =
+                    document.createElement(
+                        'tr'
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+
+                        ${escapeHtml(
+                    line.tennvl || ''
+                )}
+
+                    </td>
+
+
+                    <td class="number">
+
+                        ${formatNumber(
+                    baseQuantity
+                )}
+
+                    </td>
+
+
+                    <td class="number">
+
+                        ${formatNumber(
+                    waste
+                )}%
+
+                    </td>
+
+
+                    <td class="number">
+
+                        ${formatNumber(
+                    required
+                )}
+
+                    </td>
+
+
+                    <td class="number">
+
+                        ${formatNumber(
+                    stock
+                )}
+
+                    </td>
+
+
+                    <td class="number ${stockClass}">
+
+                        ${formatNumber(
+                    after
+                )}
+
+                    </td>
+
+                `;
+
+
+                materialTableBody.appendChild(
+                    row
+                );
+
+            }
+        );
+    }
+
+
+    /* =============================================================
+       ESCAPE HTML
+       ============================================================= */
+
+    function escapeHtml(value) {
+
+        return String(value)
+
+            .replace(
+                /&/g,
+                '&amp;'
+            )
+
+            .replace(
+                /</g,
+                '&lt;'
+            )
+
+            .replace(
+                />/g,
+                '&gt;'
+            )
+
+            .replace(
+                /"/g,
+                '&quot;'
+            )
+
+            .replace(
+                /'/g,
+                '&#039;'
+            );
+    }
+
+
+    /* =============================================================
+       UPDATE SUBMIT BUTTON
+       ============================================================= */
+
+    function updateSubmitButton() {
+
+        const order =
+            getSelectedOrder();
+
+
+        const quantity =
+            number(
+                quantityInput.value
+            );
+
+
+        const remaining =
+            order
+                ? Math.max(
+                    number(
+                        order.soluongyeucau
+                    )
+                    -
+                    number(
+                        order.soluonghoanthanh
+                    ),
+                    0
+                )
+                : 0;
+
+
+        submitButton.disabled =
+            !order
+            || !bomIdInput.value
+            || quantity <= 0
+            || quantity > remaining;
+    }
+
+
+    /* =============================================================
+       ORDER CHANGE
+       ============================================================= */
+
+    orderSelect.addEventListener(
+        'change',
+        async function () {
+
+            /*
+             * Reset quantity trước.
+             */
+
+            quantityInput.value =
+                '';
+
+
+            /*
+             * Cập nhật thông tin.
+             */
+
+            updateSummary();
+
+
+            updateBomFromOrder();
+
+
+            /*
+             * Tải NVL theo BOM.
+             */
+
+            await loadMaterials();
+
+
+            /*
+             * Render lại.
+             */
+
+            renderMaterials();
+
+
+            /*
+             * Cập nhật nút submit.
+             */
+
+            updateSubmitButton();
+        }
+    );
+
+
+    /* =============================================================
+       QUANTITY CHANGE
+       ============================================================= */
+
+    quantityInput.addEventListener(
+        'input',
+        function () {
+
+            const order =
+                getSelectedOrder();
+
+
+            if (!order) {
+
+                updateSubmitButton();
+
+                return;
+            }
+
+
+            const remaining =
+                Math.max(
+                    number(
+                        order.soluongyeucau
+                    )
+                    -
+                    number(
+                        order.soluonghoanthanh
+                    ),
+                    0
+                );
+
+
+            let quantity =
+                number(
+                    quantityInput.value
+                );
+
+
+            /*
+             * Không cho vượt số lượng còn lại.
+             */
+
+            if (
+                quantity > remaining
+            ) {
+
+                quantity =
+                    remaining;
+
+
+                quantityInput.value =
+                    remaining;
+            }
+
+
+            /*
+             * Cập nhật bảng NVL.
+             */
+
+            renderMaterials();
+
+
+            /*
+             * Cập nhật nút.
+             */
+
+            updateSubmitButton();
+        }
+    );
+
+
+    /* =============================================================
+       FORM SUBMIT
+       ============================================================= */
+
+    document
+        .getElementById('productionForm')
+        .addEventListener(
+            'submit',
+            function (event) {
+
+                const order =
+                    getSelectedOrder();
+
+
+                /*
+                 * Chưa chọn yêu cầu.
+                 */
+
+                if (!order) {
+
+                    event.preventDefault();
+
+
+                    alert(
+                        'Vui lòng chọn yêu cầu sản xuất.'
+                    );
+
+
+                    return;
+                }
+
+
+                /*
+                 * Kiểm tra BOM.
+                 */
+
+                if (!bomIdInput.value) {
+
+                    event.preventDefault();
+
+
+                    alert(
+                        'Yêu cầu sản xuất chưa có BOM.'
+                    );
+
+
+                    return;
+                }
+
+
+                const quantity =
+                    number(
+                        quantityInput.value
+                    );
+
+
+                const requested =
+                    number(
+                        order.soluongyeucau
+                    );
+
+
+                const completed =
+                    number(
+                        order.soluonghoanthanh
+                    );
+
+
+                const remaining =
+                    requested - completed;
+
+
+                /*
+                 * Kiểm tra số lượng.
+                 */
+
+                if (quantity <= 0) {
+
+                    event.preventDefault();
+
+
+                    alert(
+                        'Số lượng ghi nhận phải lớn hơn 0.'
+                    );
+
+
+                    return;
+                }
+
+
+                /*
+                 * Không vượt quá số lượng còn lại.
+                 */
+
+                if (
+                    quantity > remaining
+                ) {
+
+                    event.preventDefault();
+
+
+                    alert(
+                        'Số lượng ghi nhận không được vượt quá số lượng còn lại.'
+                    );
+
+
+                    return;
+                }
+
+
+                /*
+                 * Kiểm tra tồn kho phía giao diện.
+                 *
+                 * Đây chỉ là UX.
+                 *
+                 * Kiểm tra chính thức nằm
+                 * trong Service + Transaction.
+                 */
+
+                const insufficientMaterials =
+                    materials.filter(
+                        line => {
+
+                            const baseQuantity =
+                                number(
+                                    line.soluong_dinhmuc
+                                );
+
+
+                            const waste =
+                                number(
+                                    line.tyle_haohut
+                                );
+
+
+                            const stock =
+                                number(
+                                    line.soluongton
+                                );
+
+
+                            const required =
+                                calculateRequired(
+                                    quantity,
+                                    baseQuantity,
+                                    waste
+                                );
+
+
+                            return stock < required;
+                        }
+                    );
+
+
+                if (
+                    insufficientMaterials.length > 0
+                ) {
+
+                    event.preventDefault();
+
+
+                    const names =
+                        insufficientMaterials
+                            .map(
+                                line =>
+                                    line.tennvl
+                            )
+                            .join(', ');
+
+
+                    alert(
+                        'Không đủ tồn kho sản xuất cho NVL: '
+                        + names
+                    );
+
+
+                    return;
+                }
+
+
+                /*
+                 * Xác nhận.
+                 */
+
+                if (
+                    !confirm(
+                        'Xác nhận ghi nhận '
+                        + quantity
+                        + ' sản phẩm vào kho sản xuất?'
+                    )
+                ) {
+
+                    event.preventDefault();
+
+
+                    return;
+                }
+
+
+                /*
+                 * Disable để tránh double click.
+                 */
+
+                submitButton.disabled =
+                    true;
+
+
+                submitButton.innerHTML = `
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    Đang ghi nhận...
+
+                `;
+            }
+        );
+
+
+    /* =============================================================
+       INITIALIZE
+       ============================================================= */
+
+    updateSummary();
+
+    updateBomFromOrder();
+
+    renderMaterials();
+
+    updateSubmitButton();
+
+</script>
+
+
+</body>
+
+</html>

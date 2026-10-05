@@ -350,6 +350,39 @@ public class BomService {
             );
         }
 
+// =====================================================
+// TẠO DÒNG KHO THÀNH PHẨM SẢN XUẤT
+//
+// Mỗi BOM có một dòng tồn kho riêng.
+// Khi mới tạo BOM:
+// soluongton = 0
+// =====================================================
+
+        int inserted = jdbc.update(
+                """
+                INSERT INTO kho_thanhpham_san_xuat
+                (
+                    masp,
+                    mabom,
+                    soluongton
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    0
+                )
+                """,
+                productId,
+                id
+        );
+
+        if (inserted != 1) {
+            throw new IllegalStateException(
+                    "Không thể tạo kho thành phẩm sản xuất cho BOM."
+            );
+        }
+
         return id;
     }
 

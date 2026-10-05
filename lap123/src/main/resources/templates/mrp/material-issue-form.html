@@ -92,13 +92,14 @@
                         data-number th:text="${l.soluongton}"></span>
                 </td>
                 <td class="numeric-column">
-                  <span class="shortage-value"
-                        th:classappend="${l.nhu_cau > l.soluongton ? ' shortage-value--alert' : ' shortage-value--ok'}"
-                        data-number th:text="${l.nhu_cau > l.soluongton ? l.nhu_cau - l.soluongton : 0}"></span>
+                      <span class="shortage-value"
+                            th:classappend="${l.thieu_hut > 0 ? ' shortage-value--alert' : ' shortage-value--ok'}"
+                            data-number
+                            th:text="${l.thieu_hut}"></span>
                 </td>
                 <td class="quantity-column">
                   <input type="hidden" name="materialId" th:value="${l.manvl}">
-                  <input name="quantity" type="number" min="1" required th:value="${l.nhu_cau}"
+                  <input name="quantity" type="number" min="0" required th:value="${l.thieu_hut}"
                          class="form-control issue-quantity-input" aria-label="Số lượng đề nghị">
                 </td>
               </tr>

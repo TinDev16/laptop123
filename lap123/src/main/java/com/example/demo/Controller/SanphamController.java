@@ -87,8 +87,18 @@ public class SanphamController {
     }
 
     @GetMapping("/view-sanpham/{id}")
-    public String viewSanpham(@PathVariable("id") int id, Model model) {
-        model.addAttribute("sanpham", sanphamService.getSanphamById(id));
+    public String viewSanpham(
+            @PathVariable("id") int id,
+            @RequestParam(value = "from", required = false, defaultValue = "") String from,
+            Model model) {
+
+        model.addAttribute(
+                "sanpham",
+                sanphamService.getSanphamById(id)
+        );
+
+        model.addAttribute("from", from);
+
         return "sanpham/detail";
     }
 

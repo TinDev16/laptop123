@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.math.BigDecimal;
+import java.util.Map;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class MrpWorkflowController {
@@ -239,7 +242,15 @@ public class MrpWorkflowController {
     @GetMapping("/kho/xuat-thanh-pham/create")
     public String finishedIssueForm(Model model) {
         model.addAttribute("products", documents.products());
+        model.addAttribute("customers", documents.customers());
         return "mrp/finished-issue-form";
+    }
+
+    @GetMapping("/kho/xuat-thanh-pham/bom-price")
+    @ResponseBody
+    public Map<String, Object> finishedBomPrice(
+            @RequestParam int bomId) {
+        return documents.finishedBomPrice(bomId);
     }
 
     @PostMapping("/kho/xuat-thanh-pham")
@@ -248,6 +259,10 @@ public class MrpWorkflowController {
             @RequestParam int productId,
             @RequestParam int bomId,
             @RequestParam int quantity,
+            @RequestParam int customerId,
+            @RequestParam String address,
+            @RequestParam BigDecimal unitPrice,
+            @RequestParam(defaultValue = "false") boolean priceFixed,
             @RequestParam(required = false) String note,
             RedirectAttributes flash) {
 
@@ -257,6 +272,10 @@ public class MrpWorkflowController {
                     productId,
                     bomId,
                     quantity,
+                    customerId,
+                    address,
+                    unitPrice,
+                    priceFixed,
                     note
             );
 

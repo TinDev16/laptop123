@@ -5,6 +5,25 @@
   <div class="sidebar-user" sec:authorize="isAuthenticated()"><div class="user-avatar"><i class="fas fa-user"></i></div><div class="user-info"><div class="user-name" sec:authentication="name"></div><div class="user-role" sec:authorize="hasRole('QUAN_LY_KHO')">Quản lý kho</div><div class="user-role" sec:authorize="hasRole('NHAN_VIEN')">Nhân viên</div></div></div>
   <nav class="sidebar-menu" aria-label="Menu chính">
     <a th:href="@{/dashboard}" class="menu-item" th:classappend="${activeTab == 'dashboard' ? 'active' : ''}"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+    <div sec:authorize="hasAnyRole('QUAN_LY_KHO', 'NHAN_VIEN')">
+
+      <div class="menu-heading">KHO SẢN XUẤT</div>
+
+      <a th:href="@{/kho-san-xuat/nvl}"
+         class="menu-item"
+         th:classappend="${activeTab == 'kho-nvl-san-xuat' ? 'active' : ''}">
+        <i class="fas fa-warehouse"></i>
+        <span>Kho NVL nơi sản xuất</span>
+      </a>
+
+      <a th:href="@{/kho-san-xuat/thanh-pham}"
+         class="menu-item"
+         th:classappend="${activeTab == 'kho-thanh-pham-san-xuat' ? 'active' : ''}">
+        <i class="fas fa-boxes"></i>
+        <span>Kho thành phẩm nơi sản xuất</span>
+      </a>
+
+    </div>
     <div sec:authorize="hasRole('QUAN_LY_KHO')">
       <div class="menu-heading">KHO</div>
       <a th:href="@{/nguyen-vat-lieu/loai}"
@@ -17,6 +36,7 @@
       <a th:href="@{/kho/nhap-nvl}" class="menu-item" th:classappend="${activeTab == 'nhap-nvl' ? 'active' : ''}"><i class="fas fa-arrow-circle-down"></i><span>Nhập nguyên vật liệu</span></a>
       <a th:href="@{/kho/xuat-nvl}" class="menu-item" th:classappend="${activeTab == 'xuat-nvl' ? 'active' : ''}"><i class="fas fa-clipboard-check"></i><span>Duyệt xuất NVL</span></a>
       <a th:href="@{/sanpham}" class="menu-item" th:classappend="${activeTab == 'sanpham' ? 'active' : ''}"><i class="fas fa-laptop"></i><span>Thành phẩm</span></a>
+
       <a th:href="@{/kho/xuat-thanh-pham}" class="menu-item" th:classappend="${activeTab == 'xuat-tp' ? 'active' : ''}"><i class="fas fa-truck"></i><span>Duyệt xuất thành phẩm</span></a>
       <a th:href="@{/kho/lich-su}" class="menu-item" th:classappend="${activeTab == 'lich-su' ? 'active' : ''}"><i class="fas fa-history"></i><span>Lịch sử kho</span></a>
       <div class="menu-heading">MRP</div>
@@ -35,6 +55,12 @@
     <div sec:authorize="hasRole('NHAN_VIEN')">
       <div class="menu-heading">CÔNG VIỆC</div>
       <a th:href="@{/san-xuat/yeu-cau}" class="menu-item" th:classappend="${activeTab == 'mrp' ? 'active' : ''}"><i class="fas fa-tasks"></i><span>Yêu cầu sản xuất</span></a>
+      <a th:href="@{/san-xuat/ghi-nhan}"
+         class="menu-item"
+         th:classappend="${activeTab == 'ghi-nhan-san-xuat' ? 'active' : ''}">
+        <i class="fas fa-industry"></i>
+        <span>Ghi nhận - nhập kho sản xuất</span>
+      </a>
       <a th:href="@{/kho/xuat-nvl}" class="menu-item" th:classappend="${activeTab == 'xuat-nvl' ? 'active' : ''}"><i class="fas fa-cubes"></i><span>Đề nghị xuất NVL</span></a>
       <a th:href="@{/san-xuat/ket-qua}" class="menu-item" th:classappend="${activeTab == 'ket-qua' ? 'active' : ''}"><i class="fas fa-check-circle"></i><span>Kết quả sản xuất</span></a>
       <a th:href="@{/kho/xuat-thanh-pham}" class="menu-item" th:classappend="${activeTab == 'xuat-tp' ? 'active' : ''}"><i class="fas fa-truck"></i><span>Đề nghị xuất thành phẩm</span></a>

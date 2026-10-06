@@ -23,6 +23,14 @@
                 <span>Kho thành phẩm nơi sản xuất</span>
             </a>
 
+            <a th:href="@{/kho-san-xuat/lich-su}"
+               class="menu-item"
+               th:classappend="${activeTab == 'lich-su-kho-san-xuat' ? 'active' : ''}"
+               sec:authorize="hasRole('NHAN_VIEN')">
+                <i class="fas fa-history"></i>
+                <span>Lịch sử kho sản xuất</span>
+            </a>
+
         </div>
         <div sec:authorize="hasRole('QUAN_LY_KHO')">
             <div class="menu-heading">KHO</div>

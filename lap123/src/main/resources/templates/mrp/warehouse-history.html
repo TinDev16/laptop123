@@ -1,9 +1,269 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Lịch sử kho</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('lich-su')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Lịch sử kho', 'Kho / Lịch sử')}"></div><main class="content-body">
-<h1>Lịch sử kho</h1><form th:action="@{/kho/lich-su}" method="get" style="display:flex;gap:0.5rem;flex-wrap:wrap">
-<select name="kind"><option value="">Mọi loại hàng</option><option value="NVL" th:selected="${kind == 'NVL'}">NVL</option><option value="THANH_PHAM" th:selected="${kind == 'THANH_PHAM'}">Thành phẩm</option></select>
-<select name="type"><option value="">Mọi giao dịch</option><option value="NHAP_NVL" th:selected="${type == 'NHAP_NVL'}">Nhập NVL</option><option value="XUAT_NVL" th:selected="${type == 'XUAT_NVL'}">Xuất NVL</option><option value="NHAP_THANH_PHAM" th:selected="${type == 'NHAP_THANH_PHAM'}">Nhập thành phẩm</option><option value="XUAT_THANH_PHAM" th:selected="${type == 'XUAT_THANH_PHAM'}">Xuất thành phẩm</option></select>
-<input type="date" name="from" th:value="${from}"><input type="date" name="to" th:value="${to}"><button type="submit">Lọc</button></form>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Giao dịch kho</h2><span class="record-count" th:text="${#lists.size(rows) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead><tr><th>Thời gian</th><th>Loại hàng</th><th>Mã</th><th>Tên</th><th>Giao dịch</th><th>Số lượng</th><th>Đơn giá</th><th>Người thực hiện</th><th>Chứng từ</th><th>Ghi chú</th></tr></thead><tbody>
-<tr th:each="r : ${rows}"><td th:text="${r.ngay_giao_dich}"></td><td th:text="${r.loai_hang}"></td><td th:text="${r.ma_hang}"></td><td th:text="${r.tenhang}"></td><td th:text="${r.loai_giao_dich}"></td><td data-number th:text="${r.so_luong}"></td><td data-number th:text="${r.dongia}"></td><td th:text="${r.nguoithuchien}"></td><td th:text="${r.ma_chung_tu}"></td><td th:text="${r.ghichu}"></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(rows)}"><td colspan="10">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div></main></div></div></body></html>
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Lịch sử kho</title>
+
+    <link rel="stylesheet"
+          th:href="@{/style.css}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+
+<body>
+
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('lich-su')}"></div>
+
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Lịch sử kho', 'Kho / Lịch sử')}"></div>
+
+
+        <main class="content-body">
+
+            <h1>Lịch sử kho</h1>
+
+
+            <!-- =================================================
+                 BỘ LỌC
+                 ================================================= -->
+
+            <form th:action="@{/kho/lich-su}"
+                  method="get"
+                  style="display:flex;gap:0.5rem;flex-wrap:wrap">
+
+                <select name="kind">
+
+                    <option value="">
+                        Mọi loại hàng
+                    </option>
+
+                    <option value="NVL"
+                            th:selected="${kind == 'NVL'}">
+                        NVL
+                    </option>
+
+                    <option value="THANH_PHAM"
+                            th:selected="${kind == 'THANH_PHAM'}">
+                        Thành phẩm
+                    </option>
+
+                </select>
+
+
+                <select name="type">
+
+                    <option value="">
+                        Mọi giao dịch
+                    </option>
+
+                    <option value="NHAP_NVL"
+                            th:selected="${type == 'NHAP_NVL'}">
+                        Nhập NVL
+                    </option>
+
+                    <option value="XUAT_NVL"
+                            th:selected="${type == 'XUAT_NVL'}">
+                        Xuất NVL
+                    </option>
+
+                    <option value="NHAP_THANH_PHAM"
+                            th:selected="${type == 'NHAP_THANH_PHAM'}">
+                        Nhập thành phẩm
+                    </option>
+
+                    <option value="XUAT_THANH_PHAM"
+                            th:selected="${type == 'XUAT_THANH_PHAM'}">
+                        Xuất thành phẩm
+                    </option>
+
+                </select>
+
+
+                <input type="date"
+                       name="from"
+                       th:value="${from}">
+
+
+                <input type="date"
+                       name="to"
+                       th:value="${to}">
+
+
+                <button type="submit">
+                    <i class="fas fa-filter"></i>
+                    Lọc
+                </button>
+
+            </form>
+
+
+            <!-- =================================================
+                 BẢNG DANH SÁCH CHỨNG TỪ
+                 ================================================= -->
+
+            <div class="content-card">
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+                        Giao dịch kho
+                    </h2>
+
+                    <span class="record-count"
+                          th:text="${#lists.size(rows) + ' chứng từ'}">
+                        0 chứng từ
+                    </span>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                Thời gian
+                            </th>
+
+                            <th>
+                                Loại hàng
+                            </th>
+
+                            <th>
+                                Giao dịch
+                            </th>
+
+                            <th>
+                                Chứng từ
+                            </th>
+
+                            <th>
+                                Số dòng
+                            </th>
+
+                            <th>
+                                Tổng số lượng
+                            </th>
+
+                            <th>
+                                Người thực hiện
+                            </th>
+
+                            <th>
+                                Chi tiết
+                            </th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        <!-- =====================================
+                             MỖI ROW = 1 CHỨNG TỪ
+                             ===================================== -->
+
+                        <tr th:each="r : ${rows}">
+
+                            <td th:text="${r.ngay_giao_dich}">
+                                -
+                            </td>
+
+
+                            <td th:text="${r.loai_hang}">
+                                -
+                            </td>
+
+
+                            <td th:text="${r.loai_giao_dich}">
+                                -
+                            </td>
+
+
+                            <td th:text="${r.ma_chung_tu}">
+                                -
+                            </td>
+
+
+                            <td data-number
+                                th:text="${r.so_dong}">
+                                0
+                            </td>
+
+
+                            <td data-number
+                                th:text="${r.tong_so_luong}">
+                                0
+                            </td>
+
+
+                            <td th:text="${r.nguoithuchien}">
+                                -
+                            </td>
+
+
+                            <td>
+
+                                <a th:href="@{/kho/lich-su/chi-tiet(
+                                    sourceTable=${r.bang_tham_chieu},
+                                    documentId=${r.ma_chung_tu}
+                                )}"
+                                   class="btn">
+
+                                    <i class="fas fa-eye"></i>
+
+                                    Chi tiết
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- =====================================
+                             KHÔNG CÓ DỮ LIỆU
+                             ===================================== -->
+
+                        <tr class="empty-row"
+                            th:if="${#lists.isEmpty(rows)}">
+
+                            <td colspan="8">
+
+                                Chưa có dữ liệu để hiển thị.
+
+                            </td>
+
+                        </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

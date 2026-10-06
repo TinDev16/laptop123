@@ -1,32 +1,367 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tạo yêu cầu sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Tạo yêu cầu sản xuất', 'MRP / Sản xuất')}"></div>
-<main class="content-body mrp-entry-page"><div class="page-header"><div><h1 class="page-title">Tạo yêu cầu sản xuất</h1><p class="page-description">Chọn BOM hiệu lực, giao người phụ trách và xác định hạn hoàn thành.</p></div><a class="btn btn-back" th:href="@{/san-xuat/yeu-cau}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
-<p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
-<form method="post" th:action="@{/san-xuat/yeu-cau}" class="content-card ceo-form-card"><div class="content-card-body">
-<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}">
-<h2 class="ceo-section-title"><i class="fas fa-clipboard-list"></i> Thông tin giao việc</h2>
-<div class="ceo-form-grid">
-<div class="ceo-field ceo-field-full"><label for="bomId">Thành phẩm / BOM <span class="ceo-required">*</span></label><select id="bomId" name="bomId" required class="form-control"><option value="">-- Chọn BOM sản xuất --</option><option th:each="bom : ${boms}" th:value="${bom.mabom}" th:text="${bom.tensp + ' / ' + bom.phienban}"></option></select></div>
-<div class="ceo-field"><label for="employeeId">Nhân viên phụ trách <span class="ceo-required">*</span></label><select id="employeeId" name="employeeId" required class="form-control"><option value="">-- Chọn nhân viên --</option><option th:each="employee : ${employees}" th:value="${employee.manv}" th:text="${employee.hoten}"></option></select></div>
-<div class="ceo-field"><label for="quantity">Số lượng cần sản xuất <span class="ceo-required">*</span></label><input id="quantity" name="quantity" type="number" min="1" required class="form-control" placeholder="Nhập số lượng"></div>
-<div class="ceo-field"><label for="deadline">Hạn hoàn thành <span class="ceo-required">*</span></label><input id="deadline"
-                                                                                                              name="deadline"
-                                                                                                              type="date"
-                                                                                                              required
-                                                                                                              class="form-control"></div>
-<div class="ceo-field ceo-field-full"><label for="orderNote">Ghi chú</label><textarea id="orderNote" name="note" maxlength="255" rows="3" class="form-control" placeholder="Yêu cầu kỹ thuật hoặc ưu tiên sản xuất"></textarea></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Tạo yêu cầu sản xuất</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+    >
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Tạo yêu cầu sản xuất', 'MRP / Sản xuất')}"></div>
+
+        <main class="content-body mrp-entry-page">
+
+            <div class="page-header">
+
+                <div>
+                    <h1 class="page-title">
+                        Tạo yêu cầu sản xuất
+                    </h1>
+
+                    <p class="page-description">
+                        Chọn BOM hiệu lực, giao người phụ trách và xác định hạn hoàn thành.
+                    </p>
+                </div>
+
+                <a
+                        class="btn btn-back"
+                        th:href="@{/san-xuat/yeu-cau}"
+                >
+                    <i class="fas fa-arrow-left"></i>
+                    Về danh sách
+                </a>
+
+            </div>
+
+
+            <!-- THÔNG BÁO LỖI -->
+
+            <p
+                    th:if="${error}"
+                    th:text="${error}"
+                    class="alert alert-danger">
+            </p>
+
+
+            <!-- FORM -->
+
+            <form
+                    method="post"
+                    th:action="@{/san-xuat/yeu-cau}"
+                    class="content-card ceo-form-card"
+                    id="productionOrderForm"
+            >
+
+                <div class="content-card-body">
+
+                    <input
+                            type="hidden"
+                            th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}"
+                            th:if="${_csrf != null}"
+                    >
+
+
+                    <h2 class="ceo-section-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        Thông tin giao việc
+                    </h2>
+
+
+                    <div class="ceo-form-grid">
+
+
+                        <!-- BOM -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="bomId">
+                                Thành phẩm / BOM
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select
+                                    id="bomId"
+                                    name="bomId"
+                                    required
+                                    class="form-control"
+                            >
+
+                                <option value="">
+                                    -- Chọn BOM sản xuất --
+                                </option>
+
+                                <option
+                                        th:each="bom : ${boms}"
+                                        th:value="${bom.mabom}"
+                                        th:text="${bom.tensp + ' / ' + bom.phienban}"
+                                ></option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- NHÂN VIÊN -->
+
+                        <div class="ceo-field">
+
+                            <label for="employeeId">
+                                Nhân viên phụ trách
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <select
+                                    id="employeeId"
+                                    name="employeeId"
+                                    required
+                                    class="form-control"
+                            >
+
+                                <option value="">
+                                    -- Chọn nhân viên --
+                                </option>
+
+                                <option
+                                        th:each="employee : ${employees}"
+                                        th:value="${employee.manv}"
+                                        th:text="${employee.hoten}"
+                                ></option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- SỐ LƯỢNG -->
+
+                        <div class="ceo-field">
+
+                            <label for="quantity">
+                                Số lượng cần sản xuất
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <input
+                                    id="quantity"
+                                    name="quantity"
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    required
+                                    class="form-control"
+                                    placeholder="Nhập số lượng"
+                            >
+
+                        </div>
+
+
+                        <!-- DEADLINE -->
+
+                        <div class="ceo-field">
+
+                            <label for="deadline">
+                                Hạn hoàn thành
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <input
+                                    id="deadline"
+                                    name="deadline"
+                                    type="date"
+                                    required
+                                    class="form-control"
+                                    autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <!-- GHI CHÚ -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="orderNote">
+                                Ghi chú
+                            </label>
+
+                            <textarea
+                                    id="orderNote"
+                                    name="note"
+                                    maxlength="255"
+                                    rows="3"
+                                    class="form-control"
+                                    placeholder="Yêu cầu kỹ thuật hoặc ưu tiên sản xuất"
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ACTION -->
+
+                    <div class="ceo-form-actions">
+
+                        <a
+                                class="btn btn-back"
+                                th:href="@{/san-xuat/yeu-cau}"
+                        >
+                            <i class="fas fa-arrow-left"></i>
+                            Trở lại
+                        </a>
+
+                        <button
+                                type="submit"
+                                class="btn btn-primary"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                            Giao việc
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+
 </div>
-<div class="ceo-form-actions"><a class="btn btn-back" th:href="@{/san-xuat/yeu-cau}"><i class="fas fa-arrow-left"></i> Trở lại</a><button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Giao việc</button></div>
-</div></form></main></div></div>
+
+
 <script>
-    const deadlineInput = document.getElementById("deadline");
+    (function () {
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
+        const deadlineInput =
+            document.getElementById("deadline");
 
-    deadlineInput.min = `${yyyy}-${mm}-${dd}`;
+        if (!deadlineInput) {
+            return;
+        }
+
+        /*
+         * Lấy ngày hiện tại theo local time của trình duyệt.
+         *
+         * Không dùng toISOString() vì UTC có thể làm lệch ngày
+         * ở một số múi giờ.
+         */
+
+        const today = new Date();
+
+        const year = today.getFullYear();
+
+        const month = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const day = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        const todayString =
+            year + "-" + month + "-" + day;
+
+
+        /*
+         * Không cho chọn ngày trước hôm nay.
+         */
+
+        deadlineInput.min = todayString;
+
+
+        /*
+         * Nếu input chưa có giá trị thì mặc định hôm nay.
+         *
+         * Quan trọng:
+         * value luôn có dạng YYYY-MM-DD
+         */
+
+        if (!deadlineInput.value) {
+            deadlineInput.value = todayString;
+        }
+
+
+        /*
+         * Chặn dữ liệu date bị sai trước khi submit.
+         */
+
+        const form =
+            document.getElementById("productionOrderForm");
+
+        if (form) {
+
+            form.addEventListener("submit", function (event) {
+
+                const value =
+                    deadlineInput.value;
+
+                /*
+                 * LocalDate của Spring phải nhận:
+                 * YYYY-MM-DD
+                 */
+
+                const validDate =
+                    /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+                if (!validDate) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Hạn hoàn thành không hợp lệ. " +
+                        "Vui lòng chọn lại ngày."
+                    );
+
+                    deadlineInput.focus();
+
+                    return;
+                }
+
+
+                /*
+                 * Không cho submit năm có số chữ số khác 4.
+                 */
+
+                const yearPart =
+                    value.substring(0, 4);
+
+                if (!/^\d{4}$/.test(yearPart)) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Năm của hạn hoàn thành không hợp lệ."
+                    );
+
+                    deadlineInput.focus();
+
+                    return;
+                }
+
+            });
+
+        }
+
+    })();
 </script>
-</body></html>
+
+</body>
+</html>

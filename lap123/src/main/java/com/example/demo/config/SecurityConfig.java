@@ -159,6 +159,19 @@ public class SecurityConfig {
                                 "NHAN_VIEN"
                         )
 
+                        /*
+                         * =========================================================
+                         * LỊCH SỬ KHO SẢN XUẤT
+                         *
+                         * Chỉ NHÂN VIÊN được truy cập.
+                         * QUẢN LÝ KHO không được truy cập.
+                         * =========================================================
+                         */
+                        .requestMatchers(
+                                "/kho-san-xuat/lich-su",
+                                "/kho-san-xuat/lich-su/**"
+                        ).hasRole("NHAN_VIEN")
+
 
                         /*
                          * =========================================================

@@ -342,32 +342,237 @@ public class MrpDocumentService {
     }
 
     @Transactional
-    public long createMaterialIssue(String email, long orderId, String note, List<Long> materialIds, List<Integer> quantities) {
-        validateLines(materialIds, quantities);
+    public long createMaterialIssue(
+            String email,
+            long orderId,
+            String note,
+            List<Long> materialIds,
+            List<Integer> quantities) {
+
+        // =====================================================
+        // KIỂM TRA INPUT GỐC
+        // =====================================================
+
+        if (materialIds == null
+                || quantities == null
+                || materialIds.size() != quantities.size()
+                || materialIds.isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Phiếu phải có ít nhất một dòng chi tiết."
+            );
+        }
+
         validateNote(note);
-        Map<String, Object> order = orderOwned(orderId, email);
-        if ("HOAN_THANH".equals(order.get("trangthai")) || "HUY".equals(order.get("trangthai"))) {
-            throw new IllegalArgumentException("Yêu cầu sản xuất đã kết thúc.");
+
+        Map<String, Object> order =
+                orderOwned(orderId, email);
+
+        if ("HOAN_THANH".equals(order.get("trangthai"))
+                || "HUY".equals(order.get("trangthai"))) {
+
+            throw new IllegalArgumentException(
+                    "Yêu cầu sản xuất đã kết thúc."
+            );
         }
-        Set<Long> allowed = new HashSet<>();
-        for (Map<String, Object> line : bomRequestLines(orderId, email)) allowed.add(((Number) line.get("manvl")).longValue());
-        if (!allowed.containsAll(materialIds)) throw new IllegalArgumentException("NVL đề nghị không thuộc BOM của yêu cầu.");
-        validateActiveMaterials(materialIds);
-        long id = insert("INSERT INTO phieuxuat_nvl (maycsx, nguoilap, trangthai, ghichu) VALUES (?, ?, 'CHO_DUYET', ?)",
-                orderId, employeeId(email), note);
-        Map<Long, Integer> maxByMaterial = new java.util.HashMap<>();
-        for (Map<String, Object> line : bomRequestLines(orderId, email)) {
-            maxByMaterial.put(((Number) line.get("manvl")).longValue(), ((Number) line.get("thieu_hut")).intValue());
-        }
+
+        // =====================================================
+        // LỌC CÁC DÒNG CÓ SỐ LƯỢNG = 0
+        //
+        // 0 nghĩa là:
+        // Tồn hiện tại >= nhu cầu
+        // => Không cần xuất
+        // => Không tạo chi tiết phiếu
+        // =====================================================
+
+        List<Long> validMaterialIds =
+                new java.util.ArrayList<>();
+
+        List<Integer> validQuantities =
+                new java.util.ArrayList<>();
+
         for (int i = 0; i < materialIds.size(); i++) {
-            long materialId = materialIds.get(i);
-            int quantity = quantities.get(i);
-            int max = maxByMaterial.getOrDefault(materialId, 0);
-            if (quantity > max) {
-                throw new IllegalArgumentException("Số lượng đề nghị của NVL " + materialId + " vượt quá nhu cầu còn thiếu (" + max + ").");
+
+            Long materialId = materialIds.get(i);
+            Integer quantity = quantities.get(i);
+
+            if (materialId == null) {
+                throw new IllegalArgumentException(
+                        "Nguyên vật liệu không hợp lệ."
+                );
             }
-            jdbc.update("INSERT INTO ct_phieuxuat_nvl (mapx, manvl, soluong) VALUES (?, ?, ?)", id, materialId, quantity);
+
+            if (quantity == null) {
+                throw new IllegalArgumentException(
+                        "Số lượng đề nghị không hợp lệ."
+                );
+            }
+
+            // -------------------------------------------------
+            // SL = 0 -> bỏ qua dòng
+            // -------------------------------------------------
+
+            if (quantity == 0) {
+                continue;
+            }
+
+            // -------------------------------------------------
+            // SL âm -> lỗi
+            // -------------------------------------------------
+
+            if (quantity < 0) {
+                throw new IllegalArgumentException(
+                        "Số lượng đề nghị không được âm."
+                );
+            }
+
+            validMaterialIds.add(materialId);
+            validQuantities.add(quantity);
         }
+
+        // =====================================================
+        // SAU KHI BỎ CÁC DÒNG = 0
+        // NẾU KHÔNG CÒN NVL NÀO -> KHÔNG CẦN LẬP PHIẾU
+        // =====================================================
+
+        if (validMaterialIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không có nguyên vật liệu nào cần xuất."
+            );
+        }
+
+        // =====================================================
+        // KIỂM TRA NVL TRÙNG + SỐ LƯỢNG
+        // Chỉ validate những dòng thực sự được tạo phiếu
+        // =====================================================
+
+        validateLines(
+                validMaterialIds,
+                validQuantities
+        );
+
+        // =====================================================
+        // KIỂM TRA NVL CÓ THUỘC BOM KHÔNG
+        // =====================================================
+
+        Set<Long> allowed = new HashSet<>();
+
+        for (Map<String, Object> line :
+                bomRequestLines(orderId, email)) {
+
+            allowed.add(
+                    ((Number) line.get("manvl"))
+                            .longValue()
+            );
+        }
+
+        if (!allowed.containsAll(validMaterialIds)) {
+
+            throw new IllegalArgumentException(
+                    "NVL đề nghị không thuộc BOM của yêu cầu."
+            );
+        }
+
+        // =====================================================
+        // KIỂM TRA NVL + LOẠI NVL ĐANG HOẠT ĐỘNG
+        // =====================================================
+
+        validateActiveMaterials(
+                validMaterialIds
+        );
+
+        // =====================================================
+        // LẤY NHU CẦU THIẾU HỤT HIỆN TẠI
+        // =====================================================
+
+        Map<Long, Integer> maxByMaterial =
+                new java.util.HashMap<>();
+
+        for (Map<String, Object> line :
+                bomRequestLines(orderId, email)) {
+
+            maxByMaterial.put(
+                    ((Number) line.get("manvl"))
+                            .longValue(),
+                    ((Number) line.get("thieu_hut"))
+                            .intValue()
+            );
+        }
+
+        // =====================================================
+        // KIỂM TRA SỐ LƯỢNG ĐỀ NGHỊ
+        // =====================================================
+
+        for (int i = 0;
+             i < validMaterialIds.size();
+             i++) {
+
+            long materialId =
+                    validMaterialIds.get(i);
+
+            int quantity =
+                    validQuantities.get(i);
+
+            int max =
+                    maxByMaterial.getOrDefault(
+                            materialId,
+                            0
+                    );
+
+        }
+
+        // =====================================================
+        // TẠO PHIẾU
+        // =====================================================
+
+        long id = insert(
+                """
+                INSERT INTO phieuxuat_nvl
+                    (
+                        maycsx,
+                        nguoilap,
+                        trangthai,
+                        ghichu
+                    )
+                VALUES
+                    (
+                        ?,
+                        ?,
+                        'CHO_DUYET',
+                        ?
+                    )
+                """,
+                orderId,
+                employeeId(email),
+                note
+        );
+
+        // =====================================================
+        // TẠO CHI TIẾT PHIẾU
+        // Chỉ insert quantity > 0
+        // =====================================================
+
+        for (int i = 0;
+             i < validMaterialIds.size();
+             i++) {
+
+            jdbc.update(
+                    """
+                    INSERT INTO ct_phieuxuat_nvl
+                        (
+                            mapx,
+                            manvl,
+                            soluong
+                        )
+                    VALUES
+                        (?, ?, ?)
+                    """,
+                    id,
+                    validMaterialIds.get(i),
+                    validQuantities.get(i)
+            );
+        }
+
         return id;
     }
 

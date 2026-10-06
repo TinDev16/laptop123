@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Chi tiết lịch sử kho sản xuất</title>
+
+    <link rel="stylesheet"
+          th:href="@{/style.css}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+</head>
+
+
+<body>
+
+<div class="app-container">
+
+
+    <!-- =================================================
+         SIDEBAR
+         ================================================= -->
+
+    <div th:replace="~{fragments/sidebar :: sidebar('lich-su-kho-san-xuat')}"></div>
+
+
+    <!-- =================================================
+         MAIN WRAPPER
+         ================================================= -->
+
+    <div class="main-wrapper">
+
+
+        <!-- =================================================
+             TOPBAR
+             ================================================= -->
+
+        <div th:replace="~{fragments/sidebar :: topbar(
+            'Chi tiết lịch sử kho sản xuất',
+            'Kho sản xuất / Lịch sử / Chi tiết'
+        )}">
+        </div>
+
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+
+        <main class="content-body">
+
+
+            <!-- =================================================
+                 TIÊU ĐỀ
+                 ================================================= -->
+
+            <h1>
+
+                Chi tiết chứng từ
+
+                <span th:text="${documentId}">
+                    -
+                </span>
+
+            </h1>
+
+
+            <!-- =================================================
+                 THÔNG TIN CHỨNG TỪ
+                 ================================================= -->
+
+            <div class="content-card">
+
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+
+                        Thông tin chứng từ
+
+                    </h2>
+
+                </div>
+
+
+                <div style="padding:1rem;">
+
+
+                    <!-- Mã chứng từ -->
+
+                    <p>
+
+                        <strong>
+                            Mã chứng từ:
+                        </strong>
+
+                        <span th:text="${documentId}">
+                            -
+                        </span>
+
+                    </p>
+
+
+                    <!-- Bảng chứng từ -->
+
+                    <p>
+
+                        <strong>
+                            Bảng chứng từ:
+                        </strong>
+
+                        <span th:text="${sourceTable}">
+                            -
+                        </span>
+
+                    </p>
+
+
+                    <!-- Thời gian -->
+
+                    <p>
+
+                        <strong>
+                            Thời gian:
+                        </strong>
+
+                        <span
+                                th:if="${documentInfo != null}"
+                                th:text="${documentInfo['thoi_gian']}">
+                            -
+                        </span>
+
+                        <span
+                                th:unless="${documentInfo != null}">
+                            -
+                        </span>
+
+                    </p>
+
+
+                    <!-- Người thực hiện -->
+
+                    <p>
+
+                        <strong>
+                            Người thực hiện:
+                        </strong>
+
+                        <span
+                                th:if="${rows != null and !rows.isEmpty()}"
+                                th:text="${rows[0]['nguoithuchien']}">
+                            -
+                        </span>
+
+                        <span
+                                th:unless="${rows != null and !rows.isEmpty()}">
+                            -
+                        </span>
+
+                    </p>
+
+
+                    <!-- Số dòng giao dịch -->
+
+                    <p>
+
+                        <strong>
+                            Số dòng giao dịch:
+                        </strong>
+
+                        <span
+                                th:text="${rows != null ? rows.size() : 0}">
+                            0
+                        </span>
+
+                    </p>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CHI TIẾT GIAO DỊCH
+                 ================================================= -->
+
+            <div class="content-card">
+
+
+                <div class="content-card-header">
+
+
+                    <h2 class="content-card-title">
+
+                        Chi tiết giao dịch
+
+                    </h2>
+
+
+                    <span class="record-count"
+                          th:text="${rows != null ? rows.size() + ' dòng' : '0 dòng'}">
+
+                        0 dòng
+
+                    </span>
+
+
+                </div>
+
+
+                <div class="table-container">
+
+
+                    <table>
+
+
+                        <thead>
+
+                        <tr>
+
+
+                            <th>
+                                STT
+                            </th>
+
+
+                            <th>
+                                Kho
+                            </th>
+
+
+                            <th>
+                                Loại hàng
+                            </th>
+
+
+                            <th>
+                                Mã hàng
+                            </th>
+
+
+                            <th>
+                                Tên hàng
+                            </th>
+
+
+                            <th>
+                                Giao dịch
+                            </th>
+
+
+                            <th>
+                                Số lượng
+                            </th>
+
+
+                            <th>
+                                Tồn trước
+                            </th>
+
+
+                            <th>
+                                Tồn sau
+                            </th>
+
+
+                            <th>
+                                Ghi chú
+                            </th>
+
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                        <!-- =================================================
+                             CÓ DỮ LIỆU
+                             ================================================= -->
+
+                        <tr th:each="row, stat : ${rows}">
+
+
+                            <!-- STT -->
+
+                            <td
+                                    th:text="${stat.count}">
+
+                                1
+
+                            </td>
+
+
+                            <!-- KHO -->
+
+                            <td>
+
+
+                                <span
+                                        th:if="${row['loai_kho'] == 'NVL_SAN_XUAT'}">
+
+                                    Kho NVL sản xuất
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_kho'] == 'THANH_PHAM_SAN_XUAT'}">
+
+                                    Kho thành phẩm sản xuất
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_kho'] != 'NVL_SAN_XUAT'
+                                        and row['loai_kho'] != 'THANH_PHAM_SAN_XUAT'}"
+                                        th:text="${row['loai_kho']}">
+
+                                    -
+
+                                </span>
+
+
+                            </td>
+
+
+                            <!-- LOẠI HÀNG -->
+
+                            <td>
+
+
+                                <span
+                                        th:if="${row['loai_hang'] == 'NVL'}">
+
+                                    Nguyên vật liệu
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_hang'] == 'THANH_PHAM'}">
+
+                                    Thành phẩm
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_hang'] != 'NVL'
+                                        and row['loai_hang'] != 'THANH_PHAM'}"
+                                        th:text="${row['loai_hang']}">
+
+                                    -
+
+                                </span>
+
+
+                            </td>
+
+
+                            <!-- MÃ HÀNG -->
+
+                            <td
+                                    th:text="${row['ma_hang']}">
+
+                                -
+
+                            </td>
+
+
+                            <!-- TÊN HÀNG -->
+
+                            <td
+                                    th:text="${row['tenhang']}">
+
+                                -
+
+                            </td>
+
+
+                            <!-- GIAO DỊCH -->
+
+                            <td>
+
+
+                                <span
+                                        th:if="${row['loai_giao_dich'] == 'NHAP_NVL_SAN_XUAT'}">
+
+                                    Nhập NVL
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_giao_dich'] == 'XUAT_NVL_SAN_XUAT'}">
+
+                                    Xuất NVL
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_giao_dich'] == 'NHAP_THANH_PHAM_SAN_XUAT'}">
+
+                                    Nhập thành phẩm
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_giao_dich'] == 'XUAT_THANH_PHAM_SAN_XUAT'}">
+
+                                    Xuất thành phẩm
+
+                                </span>
+
+
+                                <span
+                                        th:if="${row['loai_giao_dich'] != 'NHAP_NVL_SAN_XUAT'
+                                        and row['loai_giao_dich'] != 'XUAT_NVL_SAN_XUAT'
+                                        and row['loai_giao_dich'] != 'NHAP_THANH_PHAM_SAN_XUAT'
+                                        and row['loai_giao_dich'] != 'XUAT_THANH_PHAM_SAN_XUAT'}"
+                                        th:text="${row['loai_giao_dich']}">
+
+                                    -
+
+                                </span>
+
+
+                            </td>
+
+
+                            <!-- SỐ LƯỢNG -->
+
+                            <td
+                                    data-number
+                                    th:text="${row['soluong']}">
+
+                                0
+
+                            </td>
+
+
+                            <!-- TỒN TRƯỚC -->
+
+                            <td
+                                    data-number
+                                    th:text="${row['ton_truoc']}">
+
+                                0
+
+                            </td>
+
+
+                            <!-- TỒN SAU -->
+
+                            <td
+                                    data-number
+                                    th:text="${row['ton_sau']}">
+
+                                0
+
+                            </td>
+
+
+                            <!-- GHI CHÚ -->
+
+                            <td
+                                    th:text="${row['ghichu'] != null
+                                    ? row['ghichu']
+                                    : '-'}">
+
+                                -
+
+                            </td>
+
+
+                        </tr>
+
+
+                        <!-- =================================================
+                             KHÔNG CÓ DỮ LIỆU
+                             ================================================= -->
+
+                        <tr
+                                class="empty-row"
+                                th:if="${rows == null or rows.isEmpty()}">
+
+
+                            <td colspan="10">
+
+                                Không có chi tiết giao dịch.
+
+                            </td>
+
+
+                        </tr>
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =================================================
+                 QUAY LẠI LỊCH SỬ
+                 ================================================= -->
+
+            <div style="margin-top:1rem;">
+
+
+                <a
+                        th:href="@{/kho-san-xuat/lich-su}"
+                        class="btn">
+
+
+                    <i class="fas fa-arrow-left"></i>
+
+
+                    Quay lại lịch sử
+
+
+                </a>
+
+
+            </div>
+
+
+        </main>
+
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>

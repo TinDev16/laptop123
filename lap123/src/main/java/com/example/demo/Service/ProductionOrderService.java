@@ -25,7 +25,11 @@ public class ProductionOrderService {
     // DANH SÁCH YÊU CẦU SẢN XUẤT
     // =========================================================
 
-    public List<Map<String, Object>> list(String email, boolean manager) {
+    public List<Map<String, Object>> list(
+            String email,
+            boolean manager,
+            String search
+    ) {
         String sql = "SELECT y.maycsx AS mayeucau, y.soluongyeucau, " +
                 "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
                 "y.trangthai, s.tensp, n.hoten " +
@@ -48,6 +52,20 @@ public class ProductionOrderService {
 
         for (Map<String, Object> row : rows) {
             addOverdueInfo(row);
+        }
+
+        if (search != null &&
+                search.trim().equalsIgnoreCase("quá hạn")) {
+
+            rows.removeIf(row -> {
+                Object value = row.get("overdueDays");
+
+                if (!(value instanceof Number)) {
+                    return true;
+                }
+
+                return ((Number) value).longValue() <= 0;
+            });
         }
 
         return rows;

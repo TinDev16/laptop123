@@ -48,7 +48,12 @@ public class ProductionOrderController {
     @GetMapping
     public String list(
             Authentication auth,
-            Model model
+            Model model,
+            @RequestParam(
+                    required = false,
+                    defaultValue = ""
+            )
+            String search
     ) {
         boolean isManager = manager(auth);
 
@@ -56,13 +61,19 @@ public class ProductionOrderController {
                 "orders",
                 service.list(
                         auth.getName(),
-                        isManager
+                        isManager,
+                        search
                 )
         );
 
         model.addAttribute(
                 "manager",
                 isManager
+        );
+
+        model.addAttribute(
+                "search",
+                search
         );
 
         return "mrp/orders";

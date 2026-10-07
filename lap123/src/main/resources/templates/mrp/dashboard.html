@@ -1,56 +1,573 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Tổng quan điều hành | Laptop 123</title>
+
   <link rel="stylesheet" th:href="@{/style.css}">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
+
+  <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+</head>
+
 <body>
+
 <div class="app-container">
+
+  <!-- SIDEBAR -->
   <div th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></div>
+
   <div class="main-wrapper">
+
+    <!-- TOPBAR -->
     <div th:replace="~{fragments/sidebar :: topbar('Tổng quan điều hành', 'Tổng quan')}"></div>
+
     <main class="content-body">
+
+      <!-- PAGE HEADER -->
       <div class="page-header">
+
         <div>
-          <h1 class="page-title" th:text="${manager ? 'Tổng quan vận hành' : 'Công việc của tôi'}">Tổng quan vận hành</h1>
-          <p class="page-description" th:text="${manager ? 'Theo dõi tồn kho, sản xuất và các việc đang chờ xử lý.' : 'Theo dõi tiến độ các yêu cầu sản xuất được giao.'}"></p>
+
+          <h1
+                  class="page-title"
+                  th:text="${manager ? 'Tổng quan vận hành' : 'Công việc của tôi'}">
+            Tổng quan vận hành
+          </h1>
+
+          <p
+                  class="page-description"
+                  th:text="${manager
+                    ? 'Theo dõi tồn kho, sản xuất và các việc đang chờ xử lý.'
+                    : 'Theo dõi tiến độ các yêu cầu sản xuất được giao.'}">
+          </p>
+
         </div>
-        <div class="page-actions" th:if="${manager}"><a class="btn btn-primary" th:href="@{/baocao}">Xem báo cáo</a></div>
+
+        <div
+                class="page-actions"
+                th:if="${manager}">
+
+          <a
+                  class="btn btn-primary"
+                  th:href="@{/baocao}">
+            Xem báo cáo
+          </a>
+
+        </div>
+
       </div>
-      <div class="kpi-grid" th:if="${manager}">
-        <a class="kpi-card kpi-link" th:href="@{/nguyen-vat-lieu}"><div><div class="kpi-title">Nguyên vật liệu</div><div class="kpi-value" th:text="${materials}">0</div><div class="kpi-sub">Danh mục đang quản lý</div></div><span class="kpi-icon blue">NVL</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/nguyen-vat-lieu}"><div><div class="kpi-title">Sắp hết hàng</div><div class="kpi-value" th:text="${lowStock}">0</div><div class="kpi-sub">Cần kiểm tra tồn tối thiểu</div></div><span class="kpi-icon red">!</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/sanpham}"><div><div class="kpi-title">Thành phẩm tồn</div><div class="kpi-value" th:text="${finishedStock}">0</div><div class="kpi-sub">Số lượng hiện có</div></div><span class="kpi-icon green">TP</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/san-xuat/yeu-cau}"><div><div class="kpi-title">Đang sản xuất</div><div class="kpi-value" th:text="${activeOrders}">0</div><div class="kpi-sub">Yêu cầu đang thực hiện</div></div><span class="kpi-icon purple">SX</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/kho/xuat-nvl}"><div><div class="kpi-title">Phiếu NVL chờ duyệt</div><div class="kpi-value" th:text="${pendingMaterials}">0</div><div class="kpi-sub">Cần phê duyệt</div></div><span class="kpi-icon orange">NVL</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/san-xuat/ket-qua}"><div><div class="kpi-title">Kết quả chờ xác nhận</div><div class="kpi-value" th:text="${pendingResults}">0</div><div class="kpi-sub">Cần xác nhận nhập kho</div></div><span class="kpi-icon orange">KQ</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/kho/xuat-thanh-pham}"><div><div class="kpi-title">Phiếu TP chờ duyệt</div><div class="kpi-value" th:text="${pendingProducts}">0</div><div class="kpi-sub">Cần phê duyệt</div></div><span class="kpi-icon orange">TP</span></a>
+
+
+      <!-- ===================================================== -->
+      <!-- KPI QUẢN LÝ -->
+      <!-- ===================================================== -->
+
+      <div
+              class="kpi-grid"
+              th:if="${manager}">
+
+        <!-- NGUYÊN VẬT LIỆU -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/nguyen-vat-lieu}">
+
+          <div>
+
+            <div class="kpi-title">
+              Nguyên vật liệu
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${materials}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Danh mục đang quản lý
+            </div>
+
+          </div>
+
+          <span class="kpi-icon blue">
+            NVL
+          </span>
+
+        </a>
+
+
+        <!-- SẮP HẾT HÀNG -->
+        <a class="kpi-card kpi-link"
+           th:href="@{/nguyen-vat-lieu(search='hết')}">
+
+          <div>
+            <div class="kpi-title">Sắp hết hàng</div>
+
+            <div class="kpi-value"
+                 th:text="${lowStock}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Cần nhập thêm
+            </div>
+          </div>
+
+          <span class="kpi-icon orange">!</span>
+
+        </a>
+
+
+        <!-- THÀNH PHẨM TỒN -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/sanpham}">
+
+          <div>
+
+            <div class="kpi-title">
+              Thành phẩm tồn
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${finishedStock}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Số lượng hiện có
+            </div>
+
+          </div>
+
+          <span class="kpi-icon green">
+            TP
+          </span>
+
+        </a>
+
+
+        <!-- ĐANG SẢN XUẤT -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/yeu-cau}">
+
+          <div>
+
+            <div class="kpi-title">
+              Đang sản xuất
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${activeOrders}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Yêu cầu đang thực hiện
+            </div>
+
+          </div>
+
+          <span class="kpi-icon purple">
+            SX
+          </span>
+
+        </a>
+
+
+        <!-- ================================================= -->
+        <!-- YÊU CẦU QUÁ HẠN -->
+        <!-- ================================================= -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/yeu-cau(search='quá hạn')}">
+
+          <div>
+
+            <div class="kpi-title">
+              Yêu cầu quá hạn
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${overdueOrders}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Cần xử lý ngay
+            </div>
+
+          </div>
+
+          <span class="kpi-icon red">
+            !
+          </span>
+
+        </a>
+
+
+        <!-- PHIẾU NVL CHỜ DUYỆT -->
+        <a class="kpi-card kpi-link"
+           th:href="@{/kho/xuat-nvl(search='chờ duyệt')}">
+
+          <div>
+            <div class="kpi-title">Phiếu NVL chờ duyệt</div>
+
+            <div class="kpi-value"
+                 th:text="${pendingMaterialIssues}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Chờ quản lý xử lý
+            </div>
+          </div>
+
+          <span class="kpi-icon orange">!</span>
+
+        </a>
+
+
+        <!-- KẾT QUẢ CHỜ XÁC NHẬN -->
+        <a class="kpi-card kpi-link"
+           th:href="@{/san-xuat/ket-qua(search='chờ xác nhận')}">
+
+          <div>
+            <div class="kpi-title">Kết quả chờ xác nhận</div>
+
+            <div class="kpi-value"
+                 th:text="${pendingResults}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Chờ xác nhận
+            </div>
+          </div>
+
+          <span class="kpi-icon orange">!</span>
+
+        </a>
+
+
+        <!-- PHIẾU TP CHỜ DUYỆT -->
+        <a class="kpi-card kpi-link"
+           th:href="@{/kho/xuat-thanh-pham(search='chờ duyệt')}">
+
+          <div>
+            <div class="kpi-title">Phiếu thành phẩm chờ duyệt</div>
+
+            <div class="kpi-value"
+                 th:text="${pendingFinishedProductIssues}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Chờ quản lý xử lý
+            </div>
+          </div>
+
+          <span class="kpi-icon orange">!</span>
+
+        </a>
+
       </div>
-      <div class="kpi-grid" th:unless="${manager}">
-        <a class="kpi-card kpi-link" th:href="@{/san-xuat/yeu-cau}"><div><div class="kpi-title">Yêu cầu được giao</div><div class="kpi-value" th:text="${assignedCount}">0</div></div><span class="kpi-icon blue">YC</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/san-xuat/yeu-cau}"><div><div class="kpi-title">Đang thực hiện</div><div class="kpi-value" th:text="${activeCount}">0</div></div><span class="kpi-icon purple">SX</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/kho/xuat-nvl}"><div><div class="kpi-title">Phiếu NVL chờ duyệt</div><div class="kpi-value" th:text="${pendingMaterialCount}">0</div></div><span class="kpi-icon orange">NVL</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/san-xuat/ket-qua}"><div><div class="kpi-title">Kết quả chờ xác nhận</div><div class="kpi-value" th:text="${pendingResultCount}">0</div></div><span class="kpi-icon orange">KQ</span></a>
-        <a class="kpi-card kpi-link" th:href="@{/san-xuat/yeu-cau}"><div><div class="kpi-title">Đã hoàn thành</div><div class="kpi-value" th:text="${completedCount}">0</div></div><span class="kpi-icon green">✓</span></a>
-      </div>      <section class="content-card">
-        <div class="content-card-header"><h2 class="content-card-title" th:text="${manager ? 'Yêu cầu sản xuất gần đây' : 'Yêu cầu được giao'}">Yêu cầu sản xuất</h2><a class="table-link" th:href="@{/san-xuat/yeu-cau}">Xem tất cả</a></div>
-        <div class="table-container"><table>
-          <thead><tr><th>Mã</th><th>Sản phẩm</th><th>Yêu cầu</th><th>Hoàn thành</th><th>Tiến độ</th><th>Nhân viên</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead>
-          <tbody>
-            <tr th:each="order : ${orders}">
-              <td th:text="${order.mayeucau}"></td><td th:text="${order.tensp}"></td>
-              <td th:text="${order.soluongyeucau}"></td><td th:text="${order.soluonghoanthanh}"></td>
-              <td><div class="progress-cell"><progress th:value="${order.soluonghoanthanh}" th:max="${order.soluongyeucau > 0 ? order.soluongyeucau : 1}"></progress><span th:text="${order.soluongyeucau > 0 ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%' : '0%'}"></span></div></td>
-              <td th:text="${order.hoten}"></td><td><span class="status-pill" th:text="${order.trangthai}"></span></td>
-              <td><a th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}">Xem</a></td>
+
+
+      <!-- ===================================================== -->
+      <!-- KPI NHÂN VIÊN -->
+      <!-- ===================================================== -->
+
+      <div
+              class="kpi-grid"
+              th:unless="${manager}">
+
+        <!-- YÊU CẦU ĐƯỢC GIAO -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/yeu-cau}">
+
+          <div>
+
+            <div class="kpi-title">
+              Yêu cầu được giao
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${assignedCount}">
+              0
+            </div>
+
+          </div>
+
+          <span class="kpi-icon blue">
+            YC
+          </span>
+
+        </a>
+
+
+        <!-- ĐANG THỰC HIỆN -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/yeu-cau}">
+
+          <div>
+
+            <div class="kpi-title">
+              Đang thực hiện
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${activeCount}">
+              0
+            </div>
+
+          </div>
+
+          <span class="kpi-icon purple">
+            SX
+          </span>
+
+        </a>
+
+
+        <!-- PHIẾU NVL CHỜ DUYỆT -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/kho/xuat-nvl}">
+
+          <div>
+
+            <div class="kpi-title">
+              Phiếu NVL chờ duyệt
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${pendingMaterialCount}">
+              0
+            </div>
+
+          </div>
+
+          <span class="kpi-icon orange">
+            NVL
+          </span>
+
+        </a>
+
+
+        <!-- KẾT QUẢ CHỜ XÁC NHẬN -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/ket-qua}">
+
+          <div>
+
+            <div class="kpi-title">
+              Kết quả chờ xác nhận
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${pendingResultCount}">
+              0
+            </div>
+
+          </div>
+
+          <span class="kpi-icon orange">
+            KQ
+          </span>
+
+        </a>
+
+
+        <!-- ĐÃ HOÀN THÀNH -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/yeu-cau}">
+
+          <div>
+
+            <div class="kpi-title">
+              Đã hoàn thành
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${completedCount}">
+              0
+            </div>
+
+          </div>
+
+          <span class="kpi-icon green">
+            ✓
+          </span>
+
+        </a>
+
+      </div>
+
+
+      <!-- ===================================================== -->
+      <!-- YÊU CẦU SẢN XUẤT GẦN ĐÂY -->
+      <!-- ===================================================== -->
+
+      <section class="content-card">
+
+        <div class="content-card-header">
+
+          <h2
+                  class="content-card-title"
+                  th:text="${manager
+                    ? 'Yêu cầu sản xuất gần đây'
+                    : 'Yêu cầu được giao'}">
+            Yêu cầu sản xuất
+          </h2>
+
+          <a
+                  class="table-link"
+                  th:href="@{/san-xuat/yeu-cau}">
+            Xem tất cả
+          </a>
+
+        </div>
+
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+
+            <tr>
+
+              <th>Mã</th>
+
+              <th>Sản phẩm</th>
+
+              <th>Yêu cầu</th>
+
+              <th>Hoàn thành</th>
+
+              <th>Tiến độ</th>
+
+              <th>Nhân viên</th>
+
+              <th>Trạng thái</th>
+
+              <th>Chi tiết</th>
+
             </tr>
-            <tr class="empty-row" th:if="${#lists.isEmpty(orders)}"><td colspan="8">Chưa có yêu cầu sản xuất nào.</td></tr>
-          </tbody>
-        </table></div>
+
+            </thead>
+
+
+            <tbody>
+
+            <tr
+                    th:each="order : ${orders}">
+
+              <td
+                      th:text="${order.mayeucau}">
+              </td>
+
+              <td
+                      th:text="${order.tensp}">
+              </td>
+
+              <td
+                      th:text="${order.soluongyeucau}">
+              </td>
+
+              <td
+                      th:text="${order.soluonghoanthanh}">
+              </td>
+
+              <td>
+
+                <div class="progress-cell">
+
+                  <progress
+                          th:value="${order.soluonghoanthanh}"
+                          th:max="${order.soluongyeucau > 0
+                            ? order.soluongyeucau
+                            : 1}">
+                  </progress>
+
+                  <span
+                          th:text="${order.soluongyeucau > 0
+                            ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%'
+                            : '0%'}">
+                  </span>
+
+                </div>
+
+              </td>
+
+              <td
+                      th:text="${order.hoten}">
+              </td>
+
+              <td>
+
+                <span
+                        class="status-pill"
+                        th:text="${order.trangthai}">
+                </span>
+
+              </td>
+
+              <td>
+
+                <a
+                        th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}">
+                  Xem
+                </a>
+
+              </td>
+
+            </tr>
+
+
+            <!-- KHÔNG CÓ DỮ LIỆU -->
+            <tr
+                    class="empty-row"
+                    th:if="${#lists.isEmpty(orders)}">
+
+              <td colspan="8">
+                Chưa có yêu cầu sản xuất nào.
+              </td>
+
+            </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
       </section>
+
     </main>
+
   </div>
+
 </div>
+
 </body>
 </html>

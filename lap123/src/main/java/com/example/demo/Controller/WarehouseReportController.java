@@ -130,9 +130,6 @@ public class WarehouseReportController {
 
     @GetMapping("/baocao")
     public String report(
-            @RequestParam(defaultValue = "month")
-            String period,
-
             @RequestParam(required = false)
             Integer month,
 
@@ -141,14 +138,6 @@ public class WarehouseReportController {
 
             @RequestParam(required = false)
             Integer year,
-
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate from,
-
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate to,
 
             @RequestParam(defaultValue = "")
             String type,
@@ -162,80 +151,107 @@ public class WarehouseReportController {
                         ? today.getYear()
                         : year;
 
-        if (from == null || to == null) {
+        LocalDate from;
+        LocalDate to;
 
-            if ("year".equals(period)) {
+        // =====================================================
+        // ƯU TIÊN THÁNG
+        //
+        // Có tháng -> lấy tháng đó.
+        // Năm có thì lấy năm đã nhập.
+        // Không có năm -> lấy năm hiện tại.
+        //
+        // Nếu vừa có tháng + quý -> vẫn ưu tiên tháng.
+        // =====================================================
 
-                from = LocalDate.of(
-                        selectedYear,
-                        1,
-                        1
+        if (month != null) {
+
+            if (month < 1 || month > 12) {
+                throw new IllegalArgumentException(
+                        "Tháng không hợp lệ."
                 );
-
-                to = LocalDate.of(
-                        selectedYear,
-                        12,
-                        31
-                );
-
-            } else if ("quarter".equals(period)) {
-
-                int selectedQuarter =
-                        quarter == null
-                                ? (today.getMonthValue() - 1) / 3 + 1
-                                : quarter;
-
-                if (selectedQuarter < 1
-                        || selectedQuarter > 4) {
-
-                    throw new IllegalArgumentException(
-                            "Quý không hợp lệ."
-                    );
-                }
-
-                from = LocalDate.of(
-                        selectedYear,
-                        (selectedQuarter - 1) * 3 + 1,
-                        1
-                );
-
-                to = from
-                        .plusMonths(3)
-                        .minusDays(1);
-
-            } else {
-
-                int selectedMonth =
-                        month == null
-                                ? today.getMonthValue()
-                                : month;
-
-                if (selectedMonth < 1
-                        || selectedMonth > 12) {
-
-                    throw new IllegalArgumentException(
-                            "Tháng không hợp lệ."
-                    );
-                }
-
-                from = LocalDate.of(
-                        selectedYear,
-                        selectedMonth,
-                        1
-                );
-
-                to = from
-                        .plusMonths(1)
-                        .minusDays(1);
             }
+
+            from = LocalDate.of(
+                    selectedYear,
+                    month,
+                    1
+            );
+
+            to = from
+                    .plusMonths(1)
+                    .minusDays(1);
         }
 
-        if (to.isBefore(from)) {
+        // =====================================================
+        // KHÔNG CÓ THÁNG -> XÉT QUÝ
+        //
+        // Có quý -> lấy quý đó.
+        // Năm có thì lấy năm đã nhập.
+        // Không có năm -> lấy năm hiện tại.
+        // =====================================================
 
-            throw new IllegalArgumentException(
-                    "Ngày kết thúc phải sau ngày bắt đầu."
+        else if (quarter != null) {
+
+            if (quarter < 1 || quarter > 4) {
+                throw new IllegalArgumentException(
+                        "Quý không hợp lệ."
+                );
+            }
+
+            from = LocalDate.of(
+                    selectedYear,
+                    (quarter - 1) * 3 + 1,
+                    1
+            );
+
+            to = from
+                    .plusMonths(3)
+                    .minusDays(1);
+        }
+
+        // =====================================================
+        // KHÔNG CÓ THÁNG, KHÔNG CÓ QUÝ
+        //
+        // Có năm -> lấy cả năm đó.
+        // Không có gì -> mặc định tháng hiện tại.
+        // =====================================================
+
+        else if (year != null) {
+
+            from = LocalDate.of(
+                    year,
+                    1,
+                    1
+            );
+
+            to = LocalDate.of(
+                    year,
+                    12,
+                    31
             );
         }
+
+        else {
+
+            // Mặc định khi mở trang:
+            // tháng hiện tại + năm hiện tại
+
+            from = LocalDate.of(
+                    today.getYear(),
+                    today.getMonthValue(),
+                    1
+            );
+
+            to = from
+                    .plusMonths(1)
+                    .minusDays(1);
+        }
+
+
+        // =====================================================
+        // VALIDATE LOẠI GIAO DỊCH
+        // =====================================================
 
         if (!type.isBlank()
                 && !REPORT_TRANSACTION_TYPES.contains(type)) {
@@ -245,17 +261,65 @@ public class WarehouseReportController {
             );
         }
 
-        Map<String, BigDecimal> totals =
-                service.totals(from, to);
 
-        model.addAttribute("from", from);
-        model.addAttribute("to", to);
-        model.addAttribute("period", period);
-        model.addAttribute("totals", totals);
+        // =====================================================
+        // LẤY DỮ LIỆU
+        // =====================================================
+
+        Map<String, BigDecimal> totals =
+                service.totals(
+                        from,
+                        to
+                );
+
+        Map<String, BigDecimal> currentStock =
+                service.stockAt(to);
+
+
+        // =====================================================
+        // GỬI SANG VIEW
+        // =====================================================
+
+        model.addAttribute(
+                "from",
+                from
+        );
+
+        model.addAttribute(
+                "to",
+                to
+        );
+
+        model.addAttribute(
+                "month",
+                month
+        );
+
+        model.addAttribute(
+                "quarter",
+                quarter
+        );
+
+        model.addAttribute(
+                "year",
+                year
+        );
+
+        model.addAttribute(
+                "totals",
+                totals
+        );
+
+        model.addAttribute(
+                "currentStock",
+                currentStock
+        );
+
         model.addAttribute(
                 "selectedType",
                 type
         );
+
         model.addAttribute(
                 "showDetails",
                 !type.isBlank()

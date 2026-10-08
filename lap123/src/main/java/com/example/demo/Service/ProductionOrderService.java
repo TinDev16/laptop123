@@ -154,14 +154,31 @@ public class ProductionOrderService {
     // NHÂN VIÊN
     // =========================================================
 
+// =========================================================
+// NHÂN VIÊN PHỤ TRÁCH
+// Chỉ hiển thị nhân viên:
+// 1. Đang làm việc
+// 2. Có tài khoản
+// 3. Tài khoản chưa bị khóa
+// 4. Có vai trò NHAN_VIEN
+// =========================================================
+
     public List<Map<String, Object>> employees() {
         return jdbc.queryForList(
-                "SELECT DISTINCT n.manv, n.hoten " +
-                        "FROM nhanvien n " +
-                        "JOIN taikhoan t ON t.manv = n.manv " +
-                        "JOIN vaitro v ON v.vaitro_id = t.vaitro_id " +
-                        "WHERE v.ma_vaitro = 'NHAN_VIEN' " +
-                        "ORDER BY n.hoten"
+                """
+                SELECT DISTINCT
+                    n.manv,
+                    n.hoten
+                FROM nhanvien n
+                JOIN taikhoan t
+                    ON t.manv = n.manv
+                JOIN vaitro v
+                    ON v.vaitro_id = t.vaitro_id
+                WHERE n.trangthai = 0
+                  AND t.locked = false
+                  AND v.ma_vaitro = 'NHAN_VIEN'
+                ORDER BY n.hoten
+                """
         );
     }
 
@@ -235,6 +252,29 @@ public class ProductionOrderService {
         if (creator == null) {
             throw new IllegalArgumentException(
                     "Tài khoản quản lý chưa liên kết với nhân viên."
+            );
+        }
+
+        Integer employeeCount = jdbc.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM nhanvien n
+                JOIN taikhoan t
+                    ON t.manv = n.manv
+                JOIN vaitro v
+                    ON v.vaitro_id = t.vaitro_id
+                WHERE n.manv = ?
+                  AND n.trangthai = 0
+                  AND t.locked = false
+                  AND v.ma_vaitro = 'NHAN_VIEN'
+                """,
+                Integer.class,
+                employeeId
+        );
+
+        if (employeeCount == null || employeeCount == 0) {
+            throw new IllegalArgumentException(
+                    "Nhân viên phụ trách không còn hoạt động hoặc tài khoản đã bị khóa."
             );
         }
 

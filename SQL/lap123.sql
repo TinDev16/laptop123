@@ -686,7 +686,7 @@ CREATE TABLE `nhanvien` (
 
 LOCK TABLES `nhanvien` WRITE;
 /*!40000 ALTER TABLE `nhanvien` DISABLE KEYS */;
-INSERT INTO `nhanvien` VALUES (1,'Nguyễn Văn Quản Lý','Nam','1995-01-09 17:00:00.000000','0900000001','quanly@lap123.local','2025-12-31 17:00:00.000000',0,''),(2,'Trần Văn Nhân Viên','Nam','2003-05-19 17:00:00.000000','0900000002','nhanvien@lap123.local','2025-12-31 17:00:00.000000',0,''),(6,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434',NULL,'2321-12-11 17:00:00.000000',0,''),(7,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212',NULL,'2032-12-11 17:00:00.000000',1,'gà'),(8,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313',NULL,'2002-12-10 17:00:00.000000',1,'k'),(9,'Quản trị viên a',NULL,NULL,NULL,NULL,NULL,1,NULL),(10,'Nguyễn VĂN s','Nam','2012-02-05 17:00:00.000000','012345689',NULL,NULL,0,NULL);
+INSERT INTO `nhanvien` VALUES (1,'Nguyễn Văn Quản Lý','Nam','1995-01-09 17:00:00.000000','0900000001','quanly@lap123.local','2025-12-31 17:00:00.000000',1,'gà'),(2,'Trần Văn Nhân Viên','Khác','2003-05-19 17:00:00.000000','0900000002','nhanvien@lap123.local','2025-12-31 17:00:00.000000',0,'f'),(6,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434',NULL,'2321-12-11 17:00:00.000000',1,'gà'),(7,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212',NULL,'2032-12-11 17:00:00.000000',1,'gà'),(8,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313',NULL,'2002-12-10 17:00:00.000000',1,'k'),(9,'Quản trị viên a','Nam',NULL,'',NULL,NULL,0,''),(10,'Nguyễn VĂN s','Nam','2012-02-05 17:00:00.000000','012345689',NULL,NULL,0,'quá gà');
 /*!40000 ALTER TABLE `nhanvien` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -966,7 +966,7 @@ CREATE TABLE `taikhoan` (
 
 LOCK TABLES `taikhoan` WRITE;
 /*!40000 ALTER TABLE `taikhoan` DISABLE KEYS */;
-INSERT INTO `taikhoan` VALUES (1,1,1,'quanly@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_MANAGER',1,NULL,_binary ''),(2,2,2,'nhanvien@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_EMPLOYEE',1,NULL,_binary ''),(6,6,1,'admin@mail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(7,7,1,'chien@gmail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(8,8,2,'df@gmial.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(9,9,1,'a','$2a$10$in3KlNF0odwSm8Q6O3Ee9O6sLzkeAKT0pb1y.kwpVGy6fTCXkgaia',1,NULL,_binary '\0'),(10,10,2,'N','$2a$10$X7ygq7e5PkNFFLw4Wkyi8ec/uz4KuOHXunXbQB0a7HhOmFYmIDi1W',1,NULL,_binary '\0');
+INSERT INTO `taikhoan` VALUES (1,1,2,'quanly@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_MANAGER',1,NULL,_binary ''),(2,2,2,'nhanvien@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_EMPLOYEE',1,NULL,_binary '\0'),(6,6,1,'admin@mail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(7,7,1,'chien@gmail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(8,8,2,'df@gmial.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(9,9,1,'a','$2a$10$in3KlNF0odwSm8Q6O3Ee9O6sLzkeAKT0pb1y.kwpVGy6fTCXkgaia',1,NULL,_binary '\0'),(10,10,2,'N','$2a$10$X7ygq7e5PkNFFLw4Wkyi8ec/uz4KuOHXunXbQB0a7HhOmFYmIDi1W',1,NULL,_binary '\0');
 /*!40000 ALTER TABLE `taikhoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1011,7 +1011,7 @@ CREATE TABLE `vaitro` (
   `ten` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`vaitro_id`),
   UNIQUE KEY `ma_vaitro` (`ma_vaitro`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1020,7 +1020,7 @@ CREATE TABLE `vaitro` (
 
 LOCK TABLES `vaitro` WRITE;
 /*!40000 ALTER TABLE `vaitro` DISABLE KEYS */;
-INSERT INTO `vaitro` VALUES (1,'QUAN_LY_KHO','Người quản lý kho',NULL),(2,'NHAN_VIEN','Nhân viên sản xuất / kho',NULL);
+INSERT INTO `vaitro` VALUES (1,'QUAN_LY_KHO','Người quản lý kho',NULL),(2,'NHAN_VIEN','Nhân viên sản xuất / kho',NULL),(5,'ADMIN','ADMIN','Administrator');
 /*!40000 ALTER TABLE `vaitro` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1059,7 +1059,7 @@ CREATE TABLE `yeucausanxuat` (
   CONSTRAINT `ck_ycsx_sl` CHECK ((`soluongyeucau` > 0)),
   CONSTRAINT `ck_ycsx_slht` CHECK (((`soluonghoanthanh` >= 0) and (`soluonghoanthanh` <= `soluongyeucau`))),
   CONSTRAINT `ck_ycsx_trangthai` CHECK ((`trangthai` in (_utf8mb4'MOI_TAO',_utf8mb4'DA_GIAO',_utf8mb4'DANG_SAN_XUAT',_utf8mb4'HOAN_THANH',_utf8mb4'HUY')))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1068,7 +1068,7 @@ CREATE TABLE `yeucausanxuat` (
 
 LOCK TABLES `yeucausanxuat` WRITE;
 /*!40000 ALTER TABLE `yeucausanxuat` DISABLE KEYS */;
-INSERT INTO `yeucausanxuat` VALUES (1,1,1,3,3,9,10,'2026-10-07 17:15:56','2026-10-07','HOAN_THANH','',NULL,NULL);
+INSERT INTO `yeucausanxuat` VALUES (1,1,1,3,3,9,10,'2026-10-07 17:15:56','2026-10-07','HOAN_THANH','',NULL,NULL),(2,1,1,4,0,9,10,'2026-10-08 11:05:07','2026-10-08','DA_GIAO','',NULL,NULL),(3,1,1,3,0,9,2,'2026-10-08 11:05:48','2026-10-08','DA_GIAO','',NULL,NULL);
 /*!40000 ALTER TABLE `yeucausanxuat` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -1081,4 +1081,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-07 17:41:36
+-- Dump completed on 2026-10-08 11:09:01

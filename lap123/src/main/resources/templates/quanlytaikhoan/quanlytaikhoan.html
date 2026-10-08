@@ -1,30 +1,586 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản lý tài khoản</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('taikhoan')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Quản lý tài khoản', 'Hệ thống / Tài khoản')}"></div>
-<main class="content-body account-page">
-<div class="page-header"><div><h1 class="page-title">Tài khoản hệ thống</h1><p class="page-description">Theo dõi quyền truy cập và trạng thái tài khoản.</p></div><a class="btn btn-primary" th:href="@{/quanlytaikhoan/themtaikhoanquantri}"><i class="fas fa-plus" aria-hidden="true"></i> Tạo tài khoản</a></div>
-<div class="directory-alert directory-alert--success" th:if="${success}" th:text="${success}"></div><div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
-<div class="search-filters"><div class="search-input"><i class="fas fa-search" aria-hidden="true"></i><input id="account-search" type="search" placeholder="Tìm theo tài khoản hoặc tên nhân viên..." aria-label="Tìm tài khoản" oninput="filterAccounts()"></div></div>
-<section class="content-card"><div class="content-card-header"><h2 class="content-card-title">Danh sách tài khoản</h2><span class="record-count" th:text="${#lists.size(listTaiKhoan) + ' tài khoản'}"></span></div>
-<div class="table-container"><table><thead><tr><th>Tài khoản</th><th>Nhân viên</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
-<tr class="account-row" th:each="tk : ${listTaiKhoan}"><td th:text="${tk.email}"></td><td th:text="${tk.nhanvien != null ? tk.nhanvien.HOTEN : 'Chưa liên kết'}"></td>
-<td><form class="account-role-form" th:if="${tk.email != #authentication.name}" th:action="@{/quanlytaikhoan/doi-vai-tro}" method="post"><input type="hidden" name="id" th:value="${tk.taikhoan_id}"><select name="roleCode" class="form-control" th:aria-label="${'Vai trò của ' + tk.email}"><option value="QUAN_LY_KHO" th:selected="${tk.vaitro != null and tk.vaitro.ten == 'QUAN_LY_KHO'}">Quản lý kho</option><option value="NHAN_VIEN" th:selected="${tk.vaitro != null and tk.vaitro.ten == 'NHAN_VIEN'}">Nhân viên</option></select><button type="submit" class="btn btn-outline">Lưu</button></form><span th:if="${tk.email == #authentication.name}" th:text="${tk.vaitro.ten == 'QUAN_LY_KHO' ? 'Quản lý kho' : 'Nhân viên'}"></span></td>
-<td><span class="status-pill" th:classappend="${tk.locked ? ' account-status-locked' : ' account-status-active'}" th:text="${tk.locked ? 'Đã khóa' : 'Hoạt động'}"></span></td>
-<td><form th:if="${tk.email != #authentication.name}" th:action="@{/quanlytaikhoan/khoa}" method="post"><input type="hidden" name="id" th:value="${tk.taikhoan_id}"><input type="hidden" name="locked" th:value="${!tk.locked}"><button type="submit" class="btn btn-outline" th:text="${tk.locked ? 'Mở khóa' : 'Khóa'}"></button></form></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(listTaiKhoan)}"><td colspan="5">Chưa có tài khoản.</td></tr>
-<tr id="account-search-empty" class="empty-row" hidden><td colspan="5">Không có tài khoản phù hợp.</td></tr>
-</tbody></table></div></section></main></div></div>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1">
+
+    <title>Quản lý tài khoản</title>
+
+    <link
+            rel="stylesheet"
+            th:href="@{/style.css}">
+
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet">
+
+</head>
+
+
+<body>
+
+<div class="app-container">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <div
+            th:replace="~{fragments/sidebar :: sidebar('taikhoan')}">
+    </div>
+
+
+    <div class="main-wrapper">
+
+
+        <!-- =====================================================
+             TOPBAR
+        ====================================================== -->
+
+        <div
+                th:replace="~{fragments/sidebar :: topbar('Quản lý tài khoản', 'Hệ thống / Tài khoản')}">
+        </div>
+
+
+        <main class="content-body account-page">
+
+
+            <!-- =================================================
+                 PAGE HEADER
+            ================================================== -->
+
+            <div class="page-header">
+
+                <div>
+
+                    <h1 class="page-title">
+                        Tài khoản hệ thống
+                    </h1>
+
+                    <p class="page-description">
+                        Theo dõi quyền truy cập và trạng thái tài khoản.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ALERT
+            ================================================== -->
+
+            <div
+                    class="directory-alert directory-alert--success"
+                    th:if="${success}"
+                    th:text="${success}">
+            </div>
+
+
+            <div
+                    class="directory-alert directory-alert--error"
+                    th:if="${error}"
+                    th:text="${error}">
+            </div>
+
+
+            <!-- =================================================
+                 SEARCH
+            ================================================== -->
+
+            <div class="search-filters">
+
+                <div class="search-input">
+
+                    <i
+                            class="fas fa-search"
+                            aria-hidden="true">
+                    </i>
+
+                    <input
+                            id="account-search"
+                            type="search"
+                            placeholder="Tìm theo tài khoản hoặc tên nhân viên..."
+                            aria-label="Tìm tài khoản"
+                            oninput="filterAccounts()">
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================================
+                 TÀI KHOẢN ĐANG HOẠT ĐỘNG
+            ====================================================== -->
+
+            <section class="directory-section">
+
+
+                <!-- SECTION HEADER -->
+
+                <div class="directory-section-header">
+
+                    <div>
+
+                        <h2>
+                            Tài khoản đang hoạt động
+                        </h2>
+
+                        <p>
+                            Các tài khoản hiện đang được phép đăng nhập hệ thống.
+                        </p>
+
+                    </div>
+
+
+                    <span
+                            class="directory-state directory-state--active">
+
+                        Hoạt động
+
+                    </span>
+
+                </div>
+
+
+                <!-- TABLE -->
+
+                <div class="table-container">
+
+                    <table
+                            class="table directory-table"
+                            data-sheet="DangHoatDong">
+
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                Tài khoản
+                            </th>
+
+                            <th>
+                                Nhân viên
+                            </th>
+
+                            <th>
+                                Vai trò
+                            </th>
+
+                            <th>
+                                Trạng thái
+                            </th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                        <!-- ACCOUNT ROW -->
+
+                        <tr
+                                class="account-row directory-row"
+                                th:each="tk : ${listTaiKhoan}"
+                                th:if="${!tk.locked}">
+
+
+                            <!-- TÀI KHOẢN -->
+
+                            <td
+                                    th:text="${tk.email}">
+                            </td>
+
+
+                            <!-- NHÂN VIÊN -->
+
+                            <td
+                                    th:text="${tk.nhanvien != null
+                                    ? tk.nhanvien.HOTEN
+                                    : 'Chưa liên kết'}">
+                            </td>
+
+
+                            <!-- VAI TRÒ -->
+
+                            <td>
+
+                                <span
+                                        th:if="${tk.vaitro != null
+                                        and tk.vaitro.maVaitro == 'ADMIN'}">
+
+                                    ADMIN
+
+                                </span>
+
+
+                                <span
+                                        th:if="${tk.vaitro != null
+                                        and tk.vaitro.maVaitro == 'QUAN_LY_KHO'}">
+
+                                    Quản lý kho
+
+                                </span>
+
+
+                                <span
+                                        th:if="${tk.vaitro != null
+                                        and tk.vaitro.maVaitro == 'NHAN_VIEN'}">
+
+                                    Nhân viên
+
+                                </span>
+
+
+                                <span
+                                        th:if="${tk.vaitro == null
+                                        or (tk.vaitro.maVaitro != 'ADMIN'
+                                        and tk.vaitro.maVaitro != 'QUAN_LY_KHO'
+                                        and tk.vaitro.maVaitro != 'NHAN_VIEN')}">
+
+                                    Chưa xác định
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- TRẠNG THÁI -->
+
+                            <td>
+
+                                <span
+                                        class="directory-state directory-state--active">
+
+                                    Hoạt động
+
+                                </span>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        <!-- EMPTY SEARCH -->
+
+                        <tr
+                                class="directory-empty"
+                                style="display:none">
+
+                            <td colspan="4">
+
+                                Không có tài khoản phù hợp.
+
+                            </td>
+
+                        </tr>
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================================
+                 TÀI KHOẢN ĐÃ KHÓA
+            ====================================================== -->
+
+            <section class="directory-section">
+
+
+                <!-- SECTION HEADER -->
+
+                <div class="directory-section-header">
+
+                    <div>
+
+                        <h2>
+                            Tài khoản đã khóa
+                        </h2>
+
+                        <p>
+                            Các tài khoản hiện không được phép đăng nhập hệ thống.
+                        </p>
+
+                    </div>
+
+
+                    <span
+                            class="directory-state directory-state--archived">
+
+                        Đã khóa
+
+                    </span>
+
+                </div>
+
+
+                <!-- TABLE -->
+
+                <div class="table-container">
+
+                    <table
+                            class="table directory-table"
+                            data-sheet="DaKhoa">
+
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                Tài khoản
+                            </th>
+
+                            <th>
+                                Nhân viên
+                            </th>
+
+                            <th>
+                                Vai trò
+                            </th>
+
+                            <th>
+                                Trạng thái
+                            </th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                        <!-- ACCOUNT ROW -->
+
+                        <tr
+                                class="account-row directory-row"
+                                th:each="tk : ${listTaiKhoan}"
+                                th:if="${tk.locked}">
+
+
+                            <!-- TÀI KHOẢN -->
+
+                            <td
+                                    th:text="${tk.email}">
+                            </td>
+
+
+                            <!-- NHÂN VIÊN -->
+
+                            <td
+                                    th:text="${tk.nhanvien != null
+                                    ? tk.nhanvien.HOTEN
+                                    : 'Chưa liên kết'}">
+                            </td>
+
+
+                            <!-- VAI TRÒ -->
+
+                            <td>
+
+                                <span
+                                        th:if="${tk.vaitro != null
+                                        and tk.vaitro.maVaitro == 'ADMIN'}">
+
+                                    ADMIN
+
+                                </span>
+
+
+                                <span
+                                        th:if="${tk.vaitro != null
+                                        and tk.vaitro.maVaitro == 'QUAN_LY_KHO'}">
+
+                                    Quản lý kho
+
+                                </span>
+
+
+                                <span
+                                        th:if="${tk.vaitro != null
+                                        and tk.vaitro.maVaitro == 'NHAN_VIEN'}">
+
+                                    Nhân viên
+
+                                </span>
+
+
+                                <span
+                                        th:if="${tk.vaitro == null
+                                        or (tk.vaitro.maVaitro != 'ADMIN'
+                                        and tk.vaitro.maVaitro != 'QUAN_LY_KHO'
+                                        and tk.vaitro.maVaitro != 'NHAN_VIEN')}">
+
+                                    Chưa xác định
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- TRẠNG THÁI -->
+
+                            <td>
+
+                                <span
+                                        class="directory-state directory-state--archived">
+
+                                    Đã khóa
+
+                                </span>
+
+                            </td>
+
+
+                        </tr>
+
+
+                        <!-- EMPTY SEARCH -->
+
+                        <tr
+                                class="directory-empty"
+                                style="display:none">
+
+                            <td colspan="4">
+
+                                Không có tài khoản phù hợp.
+
+                            </td>
+
+                        </tr>
+
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+        </main>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     SEARCH
+====================================================== -->
+
 <script>
-function filterAccounts() {
-  const term = document.getElementById('account-search').value.trim().toLocaleLowerCase('vi');
-  let matches = 0;
-  document.querySelectorAll('.account-row').forEach(row => {
-    const text = row.children[0].textContent + ' ' + row.children[1].textContent;
-    const visible = text.toLocaleLowerCase('vi').includes(term);
-    row.hidden = !visible;
-    if (visible) matches++;
-  });
-  document.getElementById('account-search-empty').hidden = matches > 0 || document.querySelectorAll('.account-row').length === 0;
-}
-</script></body></html>
+
+    function filterAccounts() {
+
+        const searchInput =
+            document.getElementById('account-search');
+
+
+        const term =
+            searchInput.value
+                .trim()
+                .toLocaleLowerCase('vi');
+
+
+        document
+            .querySelectorAll('.directory-table')
+            .forEach(table => {
+
+                let matches = 0;
+
+
+                table
+                    .querySelectorAll('.account-row')
+                    .forEach(row => {
+
+                        const account =
+                            row.children[0]
+                                ?.textContent || '';
+
+
+                        const employee =
+                            row.children[1]
+                                ?.textContent || '';
+
+
+                        const role =
+                            row.children[2]
+                                ?.textContent || '';
+
+
+                        const text =
+                            (
+                                account +
+                                ' ' +
+                                employee +
+                                ' ' +
+                                role
+                            )
+                                .toLocaleLowerCase('vi');
+
+
+                        const visible =
+                            text.includes(term);
+
+
+                        row.hidden =
+                            !visible;
+
+
+                        if (visible) {
+                            matches++;
+                        }
+
+                    });
+
+
+                const emptyRow =
+                    table.querySelector(
+                        '.directory-empty'
+                    );
+
+
+                if (emptyRow) {
+
+                    emptyRow.style.display =
+                        matches === 0
+                            ? ''
+                            : 'none';
+
+                }
+
+            });
+
+    }
+
+
+    /* =====================================================
+       INIT
+    ====================================================== */
+
+    filterAccounts();
+
+</script>
+
+
+</body>
+
+</html>

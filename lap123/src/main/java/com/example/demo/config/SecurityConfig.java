@@ -236,7 +236,7 @@ public class SecurityConfig {
                                 "/kho/lich-su",
                                 "/baocao",
                                 "/baocao/**",
-                                "/nhanvien/**",
+                                "/nhanvien",
                                 "/sanpham/**",
                                 "/ncc/**",
                                 "/khachhang/**",

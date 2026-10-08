@@ -21,9 +21,10 @@ public class Vaitro {
     @OneToMany(mappedBy = "vaitro")
     private List<Taikhoan> taikhoans;
 
-    public Vaitro() {}
+    public Vaitro() {
+    }
 
-    public Vaitro(int vaitro_id,String ten){
+    public Vaitro(int vaitro_id, String ten) {
         this.vaitro_id = vaitro_id;
         this.ten = ten;
     }
@@ -37,15 +38,20 @@ public class Vaitro {
     }
 
     public String getTen() {
+        return ten;
+    }
+
+    public void setTen(String ten) {
+        this.ten = ten;
+    }
+
+    public String getMaVaitro() {
         return maVaitro;
     }
 
-    public void setTen(String Role) {
-        this.ten = Role;
+    public void setMaVaitro(String maVaitro) {
+        this.maVaitro = maVaitro;
     }
-
-    public String getMaVaitro() { return maVaitro; }
-    public void setMaVaitro(String maVaitro) { this.maVaitro = maVaitro; }
 
     public List<Taikhoan> getTaikhoans() {
         return taikhoans;
@@ -54,5 +60,4 @@ public class Vaitro {
     public void setTaikhoans(List<Taikhoan> taikhoans) {
         this.taikhoans = taikhoans;
     }
-
 }

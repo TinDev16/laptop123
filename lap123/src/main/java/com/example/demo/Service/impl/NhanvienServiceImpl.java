@@ -24,7 +24,7 @@ public class NhanvienServiceImpl implements NhanvienService {
 
     @Override
     public List<Nhanvien> getAllNhanvien() {
-        return nhanvienRepository.findAll();
+        return nhanvienRepository.findAllExceptAdmin();
     }
 
     @Override

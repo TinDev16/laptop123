@@ -1,0 +1,768 @@
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý loại nguyên vật liệu</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .admin-container {
+            max-width: 1250px;
+            margin: 32px auto;
+            padding: 0 22px 40px;
+        }
+
+        .breadcrumb {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 16px;
+            border: 1px solid #dbe2ea;
+            border-radius: 8px;
+            background: white;
+            color: #334155;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-primary {
+            color: white;
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .stat-number {
+            margin-top: 8px;
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+        .panel {
+            margin-bottom: 22px;
+            padding: 22px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .panel-heading h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-row input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 41px;
+            padding: 11px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        input:focus,
+        select:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        .advanced-toggle {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: #2563eb;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .advanced-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        /* Khu vực sắp xếp riêng */
+        .sort-panel {
+            display: flex;
+            align-items: flex-end;
+            gap: 14px;
+            flex-wrap: nowrap;
+            margin-bottom: 22px;
+            padding: 18px 22px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .sort-field {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sort-field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sort-panel button {
+            min-height: 41px;
+            flex-shrink: 0;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th,
+        td {
+            padding: 15px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .sort-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sort-link:hover {
+            color: #2563eb;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #dbe2ea;
+            border-radius: 7px;
+            background: white;
+            color: #334155;
+            text-decoration: none;
+        }
+
+        .pagination .current {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .empty-row {
+            text-align: center;
+            color: #64748b;
+            padding: 32px;
+        }
+
+        @media (max-width: 700px) {
+            .admin-container {
+                margin-top: 20px;
+                padding: 0 12px 28px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .page-header h1 {
+                font-size: 23px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sort-panel {
+                flex-direction: column;
+                align-items: stretch;
+                flex-wrap: wrap;
+                padding: 16px;
+            }
+
+            .sort-field {
+                width: 100%;
+                flex: auto;
+            }
+
+            .sort-panel button {
+                width: 100%;
+            }
+
+            .search-row input {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-container">
+
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">ADMIN</a>
+        / Quản lý loại nguyên vật liệu
+    </div>
+
+    <header class="page-header">
+        <div>
+            <h1>Loại nguyên vật liệu</h1>
+            <p>Quản lý tra cứu, tìm kiếm, sắp xếp và lọc loại nguyên vật liệu.</p>
+            <p class="muted"
+               style="margin-top: 10px"
+               th:text="${#temporals.format(today, 'dd/MM/yyyy')}">
+                12/10/2026
+            </p>
+        </div>
+
+        <a class="btn" th:href="@{/admin}">
+            ← Quay lại trang ADMIN
+        </a>
+    </header>
+
+    <!-- THỐNG KÊ -->
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-label">Tổng số loại</div>
+            <div class="stat-number" th:text="${totalAllTypes}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Đang hoạt động</div>
+            <div class="stat-number" th:text="${activeCount}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Ngừng sử dụng</div>
+            <div class="stat-number" th:text="${inactiveCount}">0</div>
+        </div>
+    </section>
+
+    <!-- TÌM KIẾM VÀ LỌC -->
+    <section class="panel">
+        <div class="panel-heading">
+            <h2>Tìm kiếm loại nguyên vật liệu</h2>
+        </div>
+
+        <form method="get" th:action="@{/admin/loai-nvl}">
+            <div class="search-row">
+                <input type="text"
+                       name="search"
+                       th:value="${search}"
+                       placeholder="Tìm theo mã loại hoặc tên loại...">
+
+                <input type="hidden"
+                       name="maLoai"
+                       th:value="${maLoai}">
+
+                <input type="hidden"
+                       name="tenLoai"
+                       th:value="${tenLoai}">
+
+                <input type="hidden"
+                       name="trangThai"
+                       th:value="${trangThai}">
+
+                <input type="hidden"
+                       name="sort"
+                       th:value="${sort}">
+
+                <input type="hidden"
+                       name="direction"
+                       th:value="${direction}">
+
+                <button class="btn btn-primary" type="submit">
+                    Tìm kiếm
+                </button>
+
+                <a class="btn" th:href="@{/admin/loai-nvl}">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        </form>
+
+        <button class="advanced-toggle"
+                type="button"
+                onclick="toggleAdvanced()"
+                id="advancedButton">
+            + Tìm kiếm nâng cao
+        </button>
+
+        <form method="get"
+              th:action="@{/admin/loai-nvl}"
+              id="advancedForm"
+              style="display: none">
+
+            <div class="advanced-fields">
+                <div class="field">
+                    <label for="maLoai">Mã loại</label>
+                    <input id="maLoai"
+                           name="maLoai"
+                           th:value="${maLoai}"
+                           placeholder="Nhập mã loại">
+                </div>
+
+                <div class="field">
+                    <label for="tenLoai">Tên loại nguyên vật liệu</label>
+                    <input id="tenLoai"
+                           name="tenLoai"
+                           th:value="${tenLoai}"
+                           placeholder="Nhập tên loại">
+                </div>
+
+                <div class="field">
+                    <label for="trangThai">Trạng thái</label>
+                    <select id="trangThai" name="trangThai">
+                        <option value=""
+                                th:selected="${trangThai == ''}">
+                            Tất cả trạng thái
+                        </option>
+
+                        <option value="1"
+                                th:selected="${trangThai == '1'}">
+                            Hoạt động
+                        </option>
+
+                        <option value="0"
+                                th:selected="${trangThai == '0'}">
+                            Ngừng sử dụng
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <input type="hidden"
+                   name="search"
+                   th:value="${search}">
+
+            <input type="hidden"
+                   name="sort"
+                   th:value="${sort}">
+
+            <input type="hidden"
+                   name="direction"
+                   th:value="${direction}">
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng tìm kiếm
+                </button>
+
+                <a class="btn" th:href="@{/admin/loai-nvl}">
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <!-- SẮP XẾP RIÊNG: NẰM NGOÀI TÌM KIẾM NÂNG CAO -->
+    <form method="get"
+          th:action="@{/admin/loai-nvl}"
+          class="sort-panel">
+
+        <!-- Giữ lại các điều kiện tìm kiếm và lọc -->
+        <input type="hidden"
+               name="search"
+               th:value="${search}">
+
+        <input type="hidden"
+               name="maLoai"
+               th:value="${maLoai}">
+
+        <input type="hidden"
+               name="tenLoai"
+               th:value="${tenLoai}">
+
+        <input type="hidden"
+               name="trangThai"
+               th:value="${trangThai}">
+
+        <div class="sort-field">
+            <label for="sort">Sắp xếp theo</label>
+            <select id="sort" name="sort">
+                <option value="maloai"
+                        th:selected="${sort == 'maloai'}">
+                    Mã loại
+                </option>
+
+                <option value="tenloai"
+                        th:selected="${sort == 'tenloai'}">
+                    Tên loại nguyên vật liệu
+                </option>
+
+            </select>
+        </div>
+
+        <div class="sort-field">
+            <label for="direction">Thứ tự sắp xếp</label>
+            <select id="direction" name="direction">
+                <option value="asc"
+                        th:selected="${direction == 'asc'}">
+                    Tăng dần
+                </option>
+
+                <option value="desc"
+                        th:selected="${direction == 'desc'}">
+                    Giảm dần
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Áp dụng sắp xếp
+        </button>
+    </form>
+
+    <!-- DANH SÁCH LOẠI NGUYÊN VẬT LIỆU -->
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Tất cả loại nguyên vật liệu</h2>
+                <p class="muted" style="margin: 8px 0 0">
+                    Tìm thấy
+                    <strong th:text="${totalItems}">0</strong>
+                    loại phù hợp
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/loai-nvl(
+                               search=${search},
+                               maLoai=${maLoai},
+                               tenLoai=${tenLoai},
+                               trangThai=${trangThai},
+                               sort='maloai',
+                               direction=${sort == 'maloai' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Mã loại
+                            <span th:if="${sort == 'maloai'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/loai-nvl(
+                               search=${search},
+                               maLoai=${maLoai},
+                               tenLoai=${tenLoai},
+                               trangThai=${trangThai},
+                               sort='tenloai',
+                               direction=${sort == 'tenloai' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tên loại nguyên vật liệu
+                            <span th:if="${sort == 'tenloai'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/loai-nvl(
+                               search=${search},
+                               maLoai=${maLoai},
+                               tenLoai=${tenLoai},
+                               trangThai=${trangThai},
+                               sort='trangthai',
+                               direction=${sort == 'trangthai' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Trạng thái
+                            <span th:if="${sort == 'trangthai'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="loai : ${loaiNvlList}">
+                    <td th:text="${loai.maloai}">1</td>
+                    <td th:text="${loai.tenloai}">MH</td>
+
+                    <td>
+                        <span th:if="${loai.trangthai == 1}"
+                              class="status status-active">
+                            Hoạt động
+                        </span>
+
+                        <span th:unless="${loai.trangthai == 1}"
+                              class="status status-inactive">
+                            Ngừng sử dụng
+                        </span>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(loaiNvlList)}">
+                    <td colspan="3" class="empty-row">
+                        Không tìm thấy loại nguyên vật liệu phù hợp.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG -->
+        <div class="table-footer">
+            <div class="muted">
+                Trang
+                <strong th:text="${currentPage}">1</strong>
+                /
+                <strong th:text="${totalPages}">1</strong>
+                · Tổng
+                <strong th:text="${totalItems}">0</strong>
+                kết quả
+            </div>
+
+            <div class="pagination">
+                <a th:if="${currentPage > 1}"
+                   th:href="@{/admin/loai-nvl(
+                       search=${search},
+                       maLoai=${maLoai},
+                       tenLoai=${tenLoai},
+                       trangThai=${trangThai},
+                       sort=${sort},
+                       direction=${direction},
+                       page=${currentPage - 1}
+                   )}">
+                    Trước
+                </a>
+
+                <span class="current"
+                      th:text="${currentPage}">1</span>
+
+                <a th:if="${currentPage < totalPages}"
+                   th:href="@{/admin/loai-nvl(
+                       search=${search},
+                       maLoai=${maLoai},
+                       tenLoai=${tenLoai},
+                       trangThai=${trangThai},
+                       sort=${sort},
+                       direction=${direction},
+                       page=${currentPage + 1}
+                   )}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function toggleAdvanced() {
+        const form = document.getElementById('advancedForm');
+        const button = document.getElementById('advancedButton');
+        const isHidden = form.style.display === 'none';
+
+        form.style.display = isHidden ? 'block' : 'none';
+
+        button.textContent = isHidden
+            ? '− Ẩn tìm kiếm nâng cao'
+            : '+ Tìm kiếm nâng cao';
+    }
+
+    // Giữ phần tìm kiếm nâng cao mở khi đang sử dụng bộ lọc nâng cao.
+    window.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.has('maLoai') ||
+            params.has('tenLoai') ||
+            params.has('trangThai')) {
+
+            document.getElementById('advancedForm').style.display = 'block';
+
+            document.getElementById('advancedButton').textContent =
+                '− Ẩn tìm kiếm nâng cao';
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Thông tin tài khoản</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <style>
+        .container { max-width: 760px; margin: 30px auto; padding: 20px; }
+        .form-card { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 24px; }
+        .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+        .field input, .field select {
+            box-sizing: border-box; width: 100%; padding: 10px;
+            border: 1px solid #ccc; border-radius: 6px;
+        }
+        .actions { display: flex; gap: 10px; margin-top: 22px; }
+        .btn { padding: 10px 15px; border: 0; border-radius: 6px; cursor: pointer; text-decoration: none; }
+        .primary { background: #2563eb; color: white; }
+        .secondary { background: #64748b; color: white; }
+        .note { background: #eff6ff; color: #1e40af; padding: 12px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+<main class="container">
+    <p>
+        <a th:href="@{/admin}">Hệ thống</a> /
+        <a th:href="@{/admin/taikhoan}">Tài khoản</a> / Thông tin
+    </p>
+
+    <section class="form-card">
+        <h1 th:text="${isEdit} ? 'Chỉnh sửa tài khoản' : 'Thêm tài khoản'"></h1>
+
+        <p class="note">
+            Mật khẩu sẽ được mã hóa trước khi lưu. Khi sửa tài khoản,
+            để trống mật khẩu nếu không muốn đổi mật khẩu hiện tại.
+        </p>
+
+        <form method="post" th:action="@{/admin/taikhoan/save}">
+            <input type="hidden" name="id"
+                   th:if="${isEdit}"
+                   th:value="${taikhoan.taikhoan_id}">
+
+            <div class="field">
+                <label for="email">Email đăng nhập *</label>
+                <input id="email" type="email" name="email"
+                       maxlength="255" required
+                       th:value="${taikhoan.email}">
+            </div>
+
+            <div class="field">
+                <label for="password"
+                       th:text="${isEdit} ? 'Mật khẩu mới (không bắt buộc)' : 'Mật khẩu *'"></label>
+                <input id="password" type="password" name="password"
+                       autocomplete="new-password"
+                       th:required="${!isEdit}"
+                       minlength="6">
+            </div>
+
+            <div class="field">
+                <label for="manv">Nhân viên *</label>
+                <select id="manv" name="manv" required>
+                    <option value="">-- Chọn nhân viên --</option>
+                    <option th:each="nv : ${danhSachNhanVien}"
+                            th:value="${nv.MANV}"
+                            th:selected="${taikhoan.nhanvien != null
+                                and taikhoan.nhanvien.MANV == nv.MANV}"
+                            th:text="${nv.HOTEN + ' (#' + nv.MANV + ')'}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="vaitroId">Vai trò *</label>
+                <select id="vaitroId" name="vaitroId" required>
+                    <option value="">-- Chọn vai trò --</option>
+                    <option th:each="v : ${danhSachVaiTro}"
+                            th:value="${v.vaitro_id}"
+                            th:selected="${taikhoan.vaitro != null
+                                and taikhoan.vaitro.vaitro_id == v.vaitro_id}"
+                            th:text="${v.ten != null ? v.ten : v.maVaitro}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button class="btn primary" type="submit">Lưu tài khoản</button>
+                <a class="btn secondary" th:href="@{/admin/taikhoan}">Hủy</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

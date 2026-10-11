@@ -20,6 +20,7 @@ public class Nhanvien {
     @Column(name = "GIOITINH")
     private String GIOITINH;
 
+
     @Column(name = "NGAYSINH")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date NGAYSINH;
@@ -39,6 +40,17 @@ public class Nhanvien {
 
     @OneToOne(mappedBy = "nhanvien")
     private Taikhoan taikhoan;
+
+    @Column(name = "email", unique = true)
+    private String EMAIL;
+
+    public String getEMAIL() {
+        return EMAIL;
+    }
+
+    public void setEMAIL(String EMAIL) {
+        this.EMAIL = EMAIL;
+    }
 
     public Nhanvien() {
 

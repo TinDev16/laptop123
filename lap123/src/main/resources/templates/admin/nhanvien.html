@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý nhân viên</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        .page {
+            max-width: 1400px;
+            margin: 28px auto;
+            padding: 20px;
+        }
+
+        .toolbar,
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+
+        input,
+        select {
+            padding: 9px 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 9px 13px;
+            border: 0;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+        }
+
+        .btn-warning {
+            background: #b45309;
+        }
+
+        .btn-success {
+            background: #15803d;
+        }
+
+        .btn-danger {
+            background: #b91c1c;
+        }
+
+        .btn:hover {
+            filter: brightness(0.92);
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 22px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 11px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            white-space: nowrap;
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .working {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .retired {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message {
+            padding: 12px;
+            margin: 14px 0;
+            border-radius: 6px;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .pagination a {
+            text-decoration: none;
+        }
+
+        .muted {
+            color: #64748b;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* MODAL NGHỈ VIỆC */
+        #modal-nghi-viec {
+            display: none;
+            position: fixed !important;
+            inset: 0;
+            z-index: 999999;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.65);
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        #modal-nghi-viec .modal-content {
+            width: 100%;
+            max-width: 500px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            padding: 24px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            animation: modalAppear 0.2s ease-out;
+        }
+
+        #modal-nghi-viec h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        #modal-nghi-viec .modal-description {
+            margin-bottom: 18px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        #modal-nghi-viec label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        #modal-nghi-viec textarea {
+            display: block;
+            width: 100%;
+            min-height: 120px;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            resize: vertical;
+            font: inherit;
+        }
+
+        #modal-nghi-viec textarea:focus {
+            outline: 2px solid #93c5fd;
+            border-color: #2563eb;
+        }
+
+        #modal-nghi-viec .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                padding: 10px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            #modal-nghi-viec {
+                padding: 12px;
+            }
+
+            #modal-nghi-viec .modal-content {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="page">
+
+    <p class="muted">
+        <a th:href="@{/admin}">Hệ thống</a> / Nhân viên
+    </p>
+
+    <div class="toolbar">
+        <div>
+            <h1>Danh sách nhân viên</h1>
+            <p class="muted">
+                Theo dõi hồ sơ hiện tại và hồ sơ lưu trữ.
+            </p>
+        </div>
+
+        <a class="btn" th:href="@{/admin/nhanvien/form}">
+            + Thêm nhân viên
+        </a>
+    </div>
+
+    <div th:if="${success}" class="message success"
+         th:text="${success}"></div>
+
+    <div th:if="${error}" class="message error"
+         th:text="${error}"></div>
+
+    <!-- TÌM KIẾM VÀ LỌC VAI TRÒ -->
+    <form class="search" method="get"
+          th:action="@{/admin/nhanvien}">
+
+        <input type="text"
+               name="q"
+               th:value="${q}"
+               placeholder="Tìm mã NV, họ tên, SĐT, email">
+
+        <select name="role">
+            <option value="">Tất cả vai trò</option>
+            <option th:each="v : ${danhSachVaiTro}"
+                    th:value="${v.maVaitro}"
+                    th:selected="${role != null and role == v.maVaitro}"
+                    th:text="${v.ten != null ? v.ten : v.maVaitro}">
+            </option>
+        </select>
+
+        <button class="btn" type="submit">Tìm kiếm</button>
+
+        <a class="btn btn-secondary"
+           th:href="@{/admin/nhanvien}">
+            Xóa lọc
+        </a>
+    </form>
+
+    <!-- NHÂN VIÊN ĐANG LÀM VIỆC -->
+    <section class="panel">
+
+        <div class="section-head">
+            <div>
+                <h2>Nhân viên đang làm việc</h2>
+                <span class="muted"
+                      th:text="'Tổng số: ' + ${tongDangLam}">
+                </span>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Mã NV</th>
+                <th>Họ tên</th>
+                <th>Giới tính</th>
+                <th>SĐT</th>
+                <th>Email</th>
+                <th>Ngày tham gia</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="nv : ${nhanVienDangLam}">
+                <td th:text="${nv.MANV}"></td>
+
+                <td th:text="${nv.HOTEN}"></td>
+
+                <td th:text="${nv.GIOITINH != null
+                    ? nv.GIOITINH : '-'}"></td>
+
+                <td th:text="${nv.SDT != null
+                    ? nv.SDT : '-'}"></td>
+
+                <td th:text="${nv.EMAIL != null
+                    ? nv.EMAIL : '-'}"></td>
+
+                <td th:text="${nv.NGAYTHAMGIA != null
+                    ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy')
+                    : '-'}"></td>
+
+                <td th:text="${nv.taikhoan != null
+                    and nv.taikhoan.vaitro != null
+                    ? (nv.taikhoan.vaitro.ten != null
+                        ? nv.taikhoan.vaitro.ten
+                        : nv.taikhoan.vaitro.maVaitro)
+                    : 'Chưa có tài khoản'}"></td>
+
+                <td>
+                    <span class="status working">Đang làm việc</span>
+                </td>
+
+                <td>
+                    <div class="actions">
+
+                        <a class="btn btn-secondary"
+                           th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
+                            Sửa
+                        </a>
+
+                        <button class="btn btn-warning"
+                                type="button"
+                                th:attr="data-id=${nv.MANV}"
+                                onclick="moModalNghiViec(this.dataset.id)">
+                            Cho nghỉ việc
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(nhanVienDangLam)}">
+                <td colspan="9" class="muted">
+                    Không có nhân viên phù hợp.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <a th:if="${pageWorking > 0}"
+               th:href="@{/admin/nhanvien(
+                   q=${q},
+                   role=${role},
+                   pageWorking=${pageWorking - 1},
+                   pageRetired=${pageRetired})}">
+                ← Trước
+            </a>
+
+            <span th:text="'Trang ' + ${pageWorking + 1}
+                + ' / ' + ${totalWorkingPages}">
+            </span>
+
+            <a th:if="${pageWorking + 1 < totalWorkingPages}"
+               th:href="@{/admin/nhanvien(
+                   q=${q},
+                   role=${role},
+                   pageWorking=${pageWorking + 1},
+                   pageRetired=${pageRetired})}">
+                Sau →
+            </a>
+        </div>
+    </section>
+
+    <!-- NHÂN VIÊN ĐÃ NGHỈ VIỆC -->
+    <section class="panel">
+
+        <div>
+            <h2>Nhân viên đã nghỉ việc</h2>
+            <span class="muted"
+                  th:text="'Tổng số: ' + ${tongDaNghi}">
+            </span>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Mã NV</th>
+                <th>Họ tên</th>
+                <th>Giới tính</th>
+                <th>SĐT</th>
+                <th>Email</th>
+                <th>Ngày tham gia</th>
+                <th>Vai trò</th>
+                <th>Lý do / ghi chú</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="nv : ${nhanVienDaNghi}">
+                <td th:text="${nv.MANV}"></td>
+
+                <td th:text="${nv.HOTEN}"></td>
+
+                <td th:text="${nv.GIOITINH != null
+                    ? nv.GIOITINH : '-'}"></td>
+
+                <td th:text="${nv.SDT != null
+                    ? nv.SDT : '-'}"></td>
+
+                <td th:text="${nv.EMAIL != null
+                    ? nv.EMAIL : '-'}"></td>
+
+                <td th:text="${nv.NGAYTHAMGIA != null
+                    ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy')
+                    : '-'}"></td>
+
+                <td th:text="${nv.taikhoan != null
+                    and nv.taikhoan.vaitro != null
+                    ? (nv.taikhoan.vaitro.ten != null
+                        ? nv.taikhoan.vaitro.ten
+                        : nv.taikhoan.vaitro.maVaitro)
+                    : 'Chưa có tài khoản'}"></td>
+
+                <td th:text="${nv.GHICHU != null
+                    and !#strings.isEmpty(nv.GHICHU.trim())
+                    ? nv.GHICHU : '-'}"></td>
+
+                <td>
+                    <div class="actions">
+
+                        <a class="btn btn-secondary"
+                           th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
+                            Sửa
+                        </a>
+
+                        <form method="post"
+                              th:action="@{/admin/nhanvien/{id}/status(id=${nv.MANV})}"
+                              onsubmit="return confirm('Khôi phục nhân viên này?')">
+
+                            <input type="hidden"
+                                   th:if="${_csrf != null}"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <input type="hidden"
+                                   name="trangthai"
+                                   value="0">
+
+                            <button class="btn btn-success" type="submit">
+                                Khôi phục
+                            </button>
+                        </form>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(nhanVienDaNghi)}">
+                <td colspan="9" class="muted">
+                    Không có nhân viên phù hợp.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <a th:if="${pageRetired > 0}"
+               th:href="@{/admin/nhanvien(
+                   q=${q},
+                   role=${role},
+                   pageWorking=${pageWorking},
+                   pageRetired=${pageRetired - 1})}">
+                ← Trước
+            </a>
+
+            <span th:text="'Trang ' + ${pageRetired + 1}
+                + ' / ' + ${totalRetiredPages}">
+            </span>
+
+            <a th:if="${pageRetired + 1 < totalRetiredPages}"
+               th:href="@{/admin/nhanvien(
+                   q=${q},
+                   role=${role},
+                   pageWorking=${pageWorking},
+                   pageRetired=${pageRetired + 1})}">
+                Sau →
+            </a>
+        </div>
+    </section>
+
+    <p>
+        <a th:href="@{/admin}">← Quay lại trang quản trị</a>
+    </p>
+</main>
+
+<!-- MODAL NHẬP LÝ DO NGHỈ VIỆC -->
+<div id="modal-nghi-viec"
+     onclick="clickNgoaiModal(event)">
+
+    <div class="modal-content"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="tieuDeModal">
+
+        <h3 id="tieuDeModal">Cho nhân viên nghỉ việc</h3>
+
+        <p class="modal-description">
+            Vui lòng nhập lý do nghỉ việc trước khi xác nhận.
+        </p>
+
+        <form id="form-nghi-viec"
+              method="post"
+              th:action="@{/admin/nhanvien/0/status}">
+
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <input type="hidden" name="trangthai" value="1">
+
+            <label for="lyDoNghiViec">Lý do nghỉ việc *</label>
+
+            <textarea id="lyDoNghiViec"
+                      name="lyDo"
+                      maxlength="255"
+                      required
+                      placeholder="Nhập lý do nghỉ việc..."></textarea>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary"
+                        type="button"
+                        onclick="dongModalNghiViec()">
+                    Hủy
+                </button>
+
+                <button class="btn btn-danger" type="submit">
+                    Xác nhận nghỉ việc
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function moModalNghiViec(id) {
+        const modal = document.getElementById('modal-nghi-viec');
+        const form = document.getElementById('form-nghi-viec');
+        const oLyDo = document.getElementById('lyDoNghiViec');
+
+        if (!id) {
+            alert('Không xác định được mã nhân viên.');
+            return;
+        }
+
+        form.action = '/admin/nhanvien/' + encodeURIComponent(id) + '/status';
+        oLyDo.value = '';
+
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        oLyDo.focus();
+    }
+
+    function dongModalNghiViec() {
+        document.getElementById('modal-nghi-viec').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function clickNgoaiModal(event) {
+        if (event.target.id === 'modal-nghi-viec') {
+            dongModalNghiViec();
+        }
+    }
+
+    document.getElementById('form-nghi-viec')
+        .addEventListener('submit', function (event) {
+            const oLyDo = document.getElementById('lyDoNghiViec');
+            const lyDo = oLyDo.value.trim();
+
+            if (!lyDo) {
+                event.preventDefault();
+                alert('Vui lòng nhập lý do nghỉ việc.');
+                oLyDo.focus();
+                return;
+            }
+
+            oLyDo.value = lyDo;
+        });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            dongModalNghiViec();
+        }
+    });
+</script>
+
+</body>
+</html>

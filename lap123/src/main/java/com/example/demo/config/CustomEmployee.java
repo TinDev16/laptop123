@@ -67,18 +67,19 @@ public class CustomEmployee implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        if (taikhoan.getVaitro() == null) {
+            return false;
+        }
 
-        if (taikhoan.getNhanvien() == null) {
+        String role = taikhoan.getVaitro().getMaVaitro();
+
+        // ADMIN không phụ thuộc trạng thái nhân viên liên kết
+        if ("ADMIN".equals(role)) {
             return true;
         }
 
-        if (taikhoan.getNhanvien().getTRANGTHAI() == 0) {
-            return true;
-        }
-
-        return taikhoan.getVaitro() != null
-                && "QUAN_LY_KHO".equals(
-                taikhoan.getVaitro().getMaVaitro()
-        );
+        // Các vai trò khác cần có nhân viên đang làm việc
+        return taikhoan.getNhanvien() != null
+                && taikhoan.getNhanvien().getTRANGTHAI() == 0;
     }
 }

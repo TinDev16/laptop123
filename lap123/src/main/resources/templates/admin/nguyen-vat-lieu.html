@@ -1,0 +1,840 @@
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý nguyên vật liệu</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .admin-container {
+            max-width: 1450px;
+            margin: 30px auto;
+            padding: 0 22px 40px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 18px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 15px;
+            border: 1px solid #dbe2ea;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn:hover { background: #f1f5f9; }
+
+        .btn-primary {
+            color: #fff;
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-primary:hover { background: #1d4ed8; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card, .panel {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .stat-card { padding: 20px; }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .stat-number {
+            margin-top: 8px;
+            font-size: 27px;
+            font-weight: 700;
+        }
+
+        .panel {
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .panel-heading h2 {
+            font-size: 19px;
+            margin: 0;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .quick-search {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            min-width: 0;
+            padding: 11px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .quick-search input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        .advanced-toggle {
+            border: 0;
+            background: none;
+            color: #2563eb;
+            cursor: pointer;
+            margin-top: 16px;
+            padding: 0;
+            font-size: 14px;
+        }
+
+        .advanced-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 1050px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        tbody tr:hover { background: #f8fafc; }
+
+        .sort-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sort-link:hover { color: #2563eb; }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .stock-ok {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .stock-low {
+            color: #b45309;
+            font-weight: 600;
+        }
+
+        .stock-empty {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination a, .pagination span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #dbe2ea;
+            border-radius: 7px;
+            color: #334155;
+            background: #fff;
+            text-decoration: none;
+        }
+
+        .pagination .current {
+            color: #fff;
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .empty-row {
+            padding: 35px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 750px) {
+            .admin-container { padding: 0 12px 28px; }
+            .stats, .advanced-grid { grid-template-columns: 1fr; }
+            .panel { padding: 16px; }
+            .page-header h1 { font-size: 23px; }
+        }
+
+        .sort-panel {
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 22px;
+            padding: 18px 22px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .sort-field {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .sort-field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sort-panel .btn {
+            min-height: 41px;
+        }
+
+        @media (max-width: 600px) {
+            .sort-panel {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .sort-field {
+                width: 100%;
+            }
+
+            .sort-panel .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-container">
+
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">ADMIN</a>
+        / Quản lý nguyên vật liệu
+    </div>
+
+    <header class="page-header">
+        <div>
+            <h1>Nguyên vật liệu</h1>
+            <p>Xem, tra cứu, sắp xếp và lọc danh mục nguyên vật liệu.</p>
+            <p class="muted" style="margin-top: 10px"
+               th:text="${#temporals.format(T(java.time.LocalDate).now(), 'dd/MM/yyyy')}">
+                12/10/2026
+            </p>
+        </div>
+
+        <a class="btn" th:href="@{/admin}">
+            ← Quay lại trang ADMIN
+        </a>
+    </header>
+
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-label">Tổng số nguyên vật liệu</div>
+            <div class="stat-number" th:text="${totalAll}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Đang hoạt động</div>
+            <div class="stat-number" th:text="${activeCount}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Hết hàng</div>
+            <div class="stat-number" th:text="${outOfStockCount}">0</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <h2>Tìm kiếm nguyên vật liệu</h2>
+        </div>
+
+        <form method="get" th:action="@{/admin/nguyen-vat-lieu}">
+            <div class="quick-search">
+                <input name="search"
+                       th:value="${search}"
+                       placeholder="Tìm theo mã, tên hoặc loại nguyên vật liệu...">
+
+                <input type="hidden" name="ma" th:value="${ma}">
+                <input type="hidden" name="ten" th:value="${ten}">
+                <input type="hidden" name="loai" th:value="${loai}">
+                <input type="hidden" name="donVi" th:value="${donVi}">
+                <input type="hidden" name="trangThai" th:value="${trangThai}">
+                <input type="hidden" name="tonKho" th:value="${tonKho}">
+                <input type="hidden" name="sort" th:value="${sort}">
+                <input type="hidden" name="direction" th:value="${direction}">
+
+                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                <a class="btn" th:href="@{/admin/nguyen-vat-lieu}">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        </form>
+
+        <button type="button"
+                class="advanced-toggle"
+                id="advancedButton"
+                onclick="toggleAdvanced()">
+            + Tìm kiếm nâng cao
+        </button>
+
+        <form method="get"
+              th:action="@{/admin/nguyen-vat-lieu}"
+              id="advancedForm"
+              style="display: none">
+
+            <div class="advanced-grid">
+                <div class="field">
+                    <label for="ma">Mã NVL</label>
+                    <input id="ma" name="ma"
+                           th:value="${ma}"
+                           placeholder="VD: NVL-MH-001">
+                </div>
+
+                <div class="field">
+                    <label for="ten">Tên nguyên vật liệu</label>
+                    <input id="ten" name="ten"
+                           th:value="${ten}"
+                           placeholder="Nhập tên NVL">
+                </div>
+
+                <div class="field">
+                    <label for="loai">Loại nguyên vật liệu</label>
+                    <select id="loai" name="loai">
+                        <option value="">Tất cả loại</option>
+                        <option th:each="type : ${types}"
+                                th:value="${type.maloai}"
+                                th:text="${type.tenloai}"
+                                th:selected="${loai == #strings.toString(type.maloai)}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="donVi">Đơn vị tính</label>
+                    <input id="donVi" name="donVi"
+                           th:value="${donVi}"
+                           placeholder="VD: cái, thanh">
+                </div>
+
+                <div class="field">
+                    <label for="trangThai">Trạng thái</label>
+                    <select id="trangThai" name="trangThai">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="1"
+                                th:selected="${trangThai == '1'}">
+                            Hoạt động
+                        </option>
+                        <option value="0"
+                                th:selected="${trangThai == '0'}">
+                            Ngừng sử dụng
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="tonKho">Tình trạng tồn kho</label>
+                    <select id="tonKho" name="tonKho">
+                        <option value="">Tất cả tình trạng</option>
+                        <option value="het"
+                                th:selected="${tonKho == 'het'}">
+                            Hết hàng
+                        </option>
+                        <option value="thap"
+                                th:selected="${tonKho == 'thap'}">
+                            Dưới tồn tối thiểu
+                        </option>
+                        <option value="du"
+                                th:selected="${tonKho == 'du'}">
+                            Đủ tồn tối thiểu
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="giaTu">Giá nhập từ (VNĐ)</label>
+                    <input
+                            type="number"
+                            id="giaTu"
+                            name="giaTu"
+                            min="0"
+                            step="any"
+                            placeholder="Nhập giá thấp nhất"
+                            th:value="${giaTu}">
+                </div>
+
+                <div class="form-group">
+                    <label for="giaDen">Giá nhập đến (VNĐ)</label>
+                    <input
+                            type="number"
+                            id="giaDen"
+                            name="giaDen"
+                            min="0"
+                            step="any"
+                            placeholder="Nhập giá cao nhất"
+                            th:value="${giaDen}">
+                </div>
+            </div>
+
+            <input type="hidden" name="search" th:value="${search}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng bộ lọc
+                </button>
+
+                <a class="btn" th:href="@{/admin/nguyen-vat-lieu}">
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <form method="get"
+          th:action="@{/admin/nguyen-vat-lieu}"
+          class="sort-panel">
+
+        <!-- Giữ nguyên các điều kiện tìm kiếm hiện tại -->
+        <input type="hidden" name="search" th:value="${search}">
+        <input type="hidden" name="ma" th:value="${ma}">
+        <input type="hidden" name="ten" th:value="${ten}">
+        <input type="hidden" name="loai" th:value="${loai}">
+        <input type="hidden" name="donVi" th:value="${donVi}">
+        <input type="hidden" name="trangThai" th:value="${trangThai}">
+        <input type="hidden" name="tonKho" th:value="${tonKho}">
+        <input type="hidden" name="giaTu" th:value="${giaTu}">
+        <input type="hidden" name="giaDen" th:value="${giaDen}">
+
+        <!-- Sắp xếp theo -->
+        <div class="sort-field">
+            <label for="sort">Sắp xếp theo</label>
+            <select id="sort" name="sort">
+                <option value="manvl_code"
+                        th:selected="${sort == 'manvl_code'}">
+                    Mã nguyên vật liệu
+                </option>
+                <option value="tennvl"
+                        th:selected="${sort == 'tennvl'}">
+                    Tên nguyên vật liệu
+                </option>
+                <option value="tenloai"
+                        th:selected="${sort == 'tenloai'}">
+                    Loại nguyên vật liệu
+                </option>
+                <option value="soluongton"
+                        th:selected="${sort == 'soluongton'}">
+                    Số lượng tồn
+                </option>
+                <option value="ton_toithieu"
+                        th:selected="${sort == 'ton_toithieu'}">
+                    Tồn tối thiểu
+                </option>
+                <option value="dongianhap"
+                        th:selected="${sort == 'dongianhap'}">
+                    Giá nhập
+                </option>
+            </select>
+        </div>
+
+        <!-- Thứ tự -->
+        <div class="sort-field">
+            <label for="direction">Thứ tự sắp xếp</label>
+            <select id="direction" name="direction">
+                <option value="asc"
+                        th:selected="${direction == 'asc'}">
+                    Tăng dần
+                </option>
+                <option value="desc"
+                        th:selected="${direction == 'desc'}">
+                    Giảm dần
+                </option>
+            </select>
+        </div>
+
+        <!-- Nút áp dụng -->
+        <button type="submit" class="btn btn-primary">
+            Áp dụng sắp xếp
+        </button>
+    </form>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Danh mục nguyên vật liệu</h2>
+                <p class="muted" style="margin: 8px 0 0">
+                    Tìm thấy
+                    <strong th:text="${totalItems}">0</strong>
+                    bản ghi
+                </p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nguyen-vat-lieu(
+                               search=${search}, ma=${ma}, ten=${ten},
+                               loai=${loai}, donVi=${donVi},
+                               trangThai=${trangThai}, tonKho=${tonKho},
+                               sort='manvl_code',
+                               direction=${sort == 'manvl_code' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Mã NVL
+                            <span th:if="${sort == 'manvl_code'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nguyen-vat-lieu(
+                               search=${search}, ma=${ma}, ten=${ten},
+                               loai=${loai}, donVi=${donVi},
+                               trangThai=${trangThai}, tonKho=${tonKho},
+                               sort='tennvl',
+                               direction=${sort == 'tennvl' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tên NVL
+                            <span th:if="${sort == 'tennvl'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Loại NVL</th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nguyen-vat-lieu(
+                               search=${search}, ma=${ma}, ten=${ten},
+                               loai=${loai}, donVi=${donVi},
+                               trangThai=${trangThai}, tonKho=${tonKho},
+                               sort='donvitinh',
+                               direction=${sort == 'donvitinh' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Đơn vị
+                            <span th:if="${sort == 'donvitinh'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nguyen-vat-lieu(
+                               search=${search}, ma=${ma}, ten=${ten},
+                               loai=${loai}, donVi=${donVi},
+                               trangThai=${trangThai}, tonKho=${tonKho},
+                               sort='soluongton',
+                               direction=${sort == 'soluongton' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tồn kho
+                            <span th:if="${sort == 'soluongton'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nguyen-vat-lieu(
+                               search=${search}, ma=${ma}, ten=${ten},
+                               loai=${loai}, donVi=${donVi},
+                               trangThai=${trangThai}, tonKho=${tonKho},
+                               sort='ton_toithieu',
+                               direction=${sort == 'ton_toithieu' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tồn tối thiểu
+                            <span th:if="${sort == 'ton_toithieu'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nguyen-vat-lieu(
+                               search=${search}, ma=${ma}, ten=${ten},
+                               loai=${loai}, donVi=${donVi},
+                               trangThai=${trangThai}, tonKho=${tonKho},
+                               sort='dongianhap',
+                               direction=${sort == 'dongianhap' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Giá nhập
+                            <span th:if="${sort == 'dongianhap'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="nvl : ${materials}">
+                    <td>
+                        <strong th:text="${nvl.manvl_code}">NVL-MH-001</strong>
+                    </td>
+
+                    <td th:text="${nvl.tennvl}">MHFULLHD</td>
+
+                    <td th:text="${nvl.tenloai ?: 'Chưa phân loại'}">
+                        MH
+                    </td>
+
+                    <td th:text="${nvl.donvitinh}">cái</td>
+
+                    <td>
+                        <span th:if="${nvl.soluongton == null or nvl.soluongton <= 0}"
+                              class="stock-empty">
+                            <span th:text="${nvl.soluongton ?: 0}">0</span>
+                            · Hết
+                        </span>
+
+                        <span th:if="${nvl.soluongton != null and nvl.soluongton > 0 and nvl.soluongton < nvl.ton_toithieu}"
+                              class="stock-low"
+                              th:text="${nvl.soluongton}">
+                            2
+                        </span>
+
+                        <span th:if="${nvl.soluongton != null and nvl.soluongton > 0 and nvl.soluongton >= nvl.ton_toithieu}"
+                              class="stock-ok"
+                              th:text="${nvl.soluongton}">
+                            10
+                        </span>
+                    </td>
+
+                    <td th:text="${nvl.ton_toithieu ?: 0}">3</td>
+
+                    <td th:text="${#numbers.formatDecimal(nvl.dongianhap ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                        500,000 đ
+                    </td>
+
+                    <td>
+                        <span th:if="${nvl.trangthai == 1}"
+                              class="status status-active">
+                            Hoạt động
+                        </span>
+
+                        <span th:unless="${nvl.trangthai == 1}"
+                              class="status status-inactive">
+                            Ngừng sử dụng
+                        </span>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(materials)}">
+                    <td colspan="8" class="empty-row">
+                        Không tìm thấy nguyên vật liệu phù hợp.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer">
+            <div class="muted">
+                Trang <strong th:text="${currentPage}">1</strong>
+                / <strong th:text="${totalPages}">1</strong>
+                · Tổng <strong th:text="${totalItems}">0</strong> bản ghi
+            </div>
+
+            <div class="pagination">
+                <a th:if="${currentPage > 1}"
+                   th:href="@{/admin/nguyen-vat-lieu(
+                       search=${search}, ma=${ma}, ten=${ten},
+                       loai=${loai}, donVi=${donVi},
+                       trangThai=${trangThai}, tonKho=${tonKho},
+                       sort=${sort}, direction=${direction},
+                       page=${currentPage - 1}
+                   )}">
+                    Trước
+                </a>
+
+                <span class="current" th:text="${currentPage}">1</span>
+
+                <a th:if="${currentPage < totalPages}"
+                   th:href="@{/admin/nguyen-vat-lieu(
+                       search=${search}, ma=${ma}, ten=${ten},
+                       loai=${loai}, donVi=${donVi},
+                       trangThai=${trangThai}, tonKho=${tonKho},
+                       sort=${sort}, direction=${direction},
+                       page=${currentPage + 1}
+                   )}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function toggleAdvanced() {
+        const form = document.getElementById('advancedForm');
+        const button = document.getElementById('advancedButton');
+        const opening = form.style.display === 'none';
+
+        form.style.display = opening ? 'block' : 'none';
+        button.textContent = opening
+            ? '− Ẩn tìm kiếm nâng cao'
+            : '+ Tìm kiếm nâng cao';
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+
+        if (['ma', 'ten', 'loai', 'donVi', 'trangThai', 'tonKho']
+            .some(key => params.has(key))) {
+            document.getElementById('advancedForm').style.display = 'block';
+            document.getElementById('advancedButton').textContent =
+                '− Ẩn tìm kiếm nâng cao';
+        }
+    });
+</script>
+</body>
+</html>

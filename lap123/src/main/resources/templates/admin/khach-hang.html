@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý khách hàng</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .admin-container {
+            max-width: 1600px;
+            margin: 32px auto;
+            padding: 0 22px 40px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 18px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            min-height: 41px;
+            padding: 10px 16px;
+            border: 1px solid #dbe2ea;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 21px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .stat-number {
+            margin-top: 10px;
+            color: #0f172a;
+            font-size: 29px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .panel {
+            margin-bottom: 22px;
+            padding: 22px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .panel-heading h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        .panel-heading p {
+            margin: 8px 0 0;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-row input[type="text"] {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .advanced-toggle {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: #2563eb;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .advanced-toggle:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .advanced-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .field label,
+        .sort-field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .sort-panel {
+            display: flex;
+            align-items: flex-end;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+            padding: 18px 22px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .sort-field {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1450px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px 14px;
+            text-align: left;
+            vertical-align: middle;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .sort-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sort-link:hover {
+            color: #2563eb;
+        }
+
+        .customer-name {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .money-value {
+            color: #047857;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .quantity-value {
+            color: #1d4ed8;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-active {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .status-inactive {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .status-unknown {
+            color: #475569;
+            background: #f1f5f9;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            min-width: 36px;
+            min-height: 36px;
+            padding: 0 10px;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #dbe2ea;
+            border-radius: 7px;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+        }
+
+        .pagination a:hover {
+            background: #f1f5f9;
+        }
+
+        .pagination .current {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .pagination .disabled {
+            color: #94a3b8;
+            background: #f1f5f9;
+        }
+
+        .empty-row {
+            padding: 35px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 900px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-fields {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 750px) {
+            .admin-container {
+                margin-top: 20px;
+                padding: 0 12px 28px;
+            }
+
+            .advanced-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .page-header h1 {
+                font-size: 23px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sort-panel {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+            }
+
+            .sort-field {
+                width: 100%;
+                flex: auto;
+            }
+
+            .sort-panel button,
+            .search-row .btn {
+                width: 100%;
+            }
+
+            .search-row input[type="text"] {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-container">
+
+    <!-- ĐIỀU HƯỚNG -->
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">ADMIN</a>
+        / Đối tác
+        / Quản lý khách hàng
+    </div>
+
+    <!-- TIÊU ĐỀ -->
+    <header class="page-header">
+        <div>
+            <h1>Quản lý khách hàng</h1>
+            <p>
+                Tra cứu thông tin khách hàng, tìm kiếm nâng cao,
+                lọc và sắp xếp danh sách.
+            </p>
+            <p class="muted" style="margin-top: 10px">
+                12/10/2026
+            </p>
+        </div>
+
+        <a class="btn" th:href="@{/admin}">
+            ← Quay lại trang ADMIN
+        </a>
+    </header>
+
+    <!-- THỐNG KÊ -->
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-label">Tổng số khách hàng</div>
+            <div class="stat-number"
+                 th:text="${tongKhachHang}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Khách hàng hoạt động</div>
+            <div class="stat-number"
+                 th:text="${dangHoatDong}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">Khách hàng ngừng hoạt động</div>
+            <div class="stat-number"
+                 th:text="${ngungHoatDong}">0</div>
+        </div>
+    </section>
+
+    <!-- TÌM KIẾM NHANH VÀ NÂNG CAO -->
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Tìm kiếm khách hàng</h2>
+                <p class="muted">
+                    Tìm nhanh theo mã khách hàng, họ tên hoặc số điện thoại.
+                    Có thể lọc thêm theo tổng tiền và số sản phẩm đã mua.
+                </p>
+            </div>
+        </div>
+
+        <!-- TÌM KIẾM NHANH -->
+        <form method="get" th:action="@{/admin/khach-hang}">
+            <div class="search-row">
+                <input
+                        type="text"
+                        name="search"
+                        th:value="${search}"
+                        placeholder="Nhập mã KH, họ tên hoặc số điện thoại...">
+
+                <input type="hidden" name="maKh" th:value="${maKh}">
+                <input type="hidden" name="hoTen" th:value="${hoTen}">
+                <input type="hidden" name="gioiTinh" th:value="${gioiTinh}">
+                <input type="hidden" name="trangThai" th:value="${trangThai}">
+
+                <input type="hidden" name="tuNgaySinh" th:value="${tuNgaySinh}">
+                <input type="hidden" name="denNgaySinh" th:value="${denNgaySinh}">
+                <input type="hidden" name="tuNgayThamGia" th:value="${tuNgayThamGia}">
+                <input type="hidden" name="denNgayThamGia" th:value="${denNgayThamGia}">
+
+                <input type="hidden" name="tuTongTien" th:value="${tuTongTien}">
+                <input type="hidden" name="denTongTien" th:value="${denTongTien}">
+                <input type="hidden" name="tuTongSanPham" th:value="${tuTongSanPham}">
+                <input type="hidden" name="denTongSanPham" th:value="${denTongSanPham}">
+
+                <input type="hidden" name="sort" th:value="${sort}">
+                <input type="hidden" name="direction" th:value="${direction}">
+
+                <button type="submit" class="btn btn-primary">
+                    Tìm kiếm
+                </button>
+
+                <a class="btn" th:href="@{/admin/khach-hang}">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        </form>
+
+        <!-- NÚT HIỆN / ẨN TÌM KIẾM NÂNG CAO -->
+        <button
+                class="advanced-toggle"
+                type="button"
+                id="advancedButton"
+                aria-controls="advancedForm"
+                aria-expanded="false">
+            + Tìm kiếm nâng cao
+        </button>
+
+        <!-- FORM TÌM KIẾM NÂNG CAO -->
+        <form
+                method="get"
+                th:action="@{/admin/khach-hang}"
+                id="advancedForm"
+                style="display: none;">
+
+            <div class="advanced-fields">
+
+                <div class="field">
+                    <label for="maKh">Mã khách hàng</label>
+                    <input
+                            id="maKh"
+                            name="maKh"
+                            type="text"
+                            th:value="${maKh}"
+                            placeholder="Nhập mã KH">
+                </div>
+
+                <div class="field">
+                    <label for="hoTen">Họ tên</label>
+                    <input
+                            id="hoTen"
+                            name="hoTen"
+                            type="text"
+                            th:value="${hoTen}"
+                            placeholder="Nhập họ tên">
+                </div>
+
+                <div class="field">
+                    <label for="gioiTinh">Giới tính</label>
+                    <select id="gioiTinh" name="gioiTinh">
+                        <option value="">Tất cả giới tính</option>
+                        <option value="Nam"
+                                th:selected="${gioiTinh == 'Nam'}">
+                            Nam
+                        </option>
+                        <option value="Nữ"
+                                th:selected="${gioiTinh == 'Nữ'}">
+                            Nữ
+                        </option>
+                        <option value="Khác"
+                                th:selected="${gioiTinh == 'Khác'}">
+                            Khác
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="trangThai">Trạng thái</label>
+                    <select id="trangThai" name="trangThai">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="0"
+                                th:selected="${trangThai == '0'}">
+                            Hoạt động
+                        </option>
+                        <option value="1"
+                                th:selected="${trangThai == '1'}">
+                            Ngừng hoạt động
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="tuNgaySinh">Ngày sinh từ</label>
+                    <input
+                            id="tuNgaySinh"
+                            type="date"
+                            name="tuNgaySinh"
+                            th:value="${tuNgaySinh}">
+                </div>
+
+                <div class="field">
+                    <label for="denNgaySinh">Ngày sinh đến</label>
+                    <input
+                            id="denNgaySinh"
+                            type="date"
+                            name="denNgaySinh"
+                            th:value="${denNgaySinh}">
+                </div>
+
+                <div class="field">
+                    <label for="tuNgayThamGia">Ngày tham gia từ</label>
+                    <input
+                            id="tuNgayThamGia"
+                            type="date"
+                            name="tuNgayThamGia"
+                            th:value="${tuNgayThamGia}">
+                </div>
+
+                <div class="field">
+                    <label for="denNgayThamGia">Ngày tham gia đến</label>
+                    <input
+                            id="denNgayThamGia"
+                            type="date"
+                            name="denNgayThamGia"
+                            th:value="${denNgayThamGia}">
+                </div>
+
+                <!-- LỌC THEO TỔNG TIỀN -->
+                <div class="field">
+                    <label for="tuTongTien">Tổng tiền đã mua từ (VNĐ)</label>
+                    <input
+                            id="tuTongTien"
+                            name="tuTongTien"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            th:value="${tuTongTien}"
+                            placeholder="Ví dụ: 1000000">
+                </div>
+
+                <div class="field">
+                    <label for="denTongTien">Tổng tiền đã mua đến (VNĐ)</label>
+                    <input
+                            id="denTongTien"
+                            name="denTongTien"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            th:value="${denTongTien}"
+                            placeholder="Ví dụ: 10000000">
+                </div>
+
+                <!-- LỌC THEO SỐ LƯỢNG SẢN PHẨM -->
+                <div class="field">
+                    <label for="tuTongSanPham">Số sản phẩm đã mua từ</label>
+                    <input
+                            id="tuTongSanPham"
+                            name="tuTongSanPham"
+                            type="number"
+                            min="0"
+                            step="1"
+                            th:value="${tuTongSanPham}"
+                            placeholder="Ví dụ: 1">
+                </div>
+
+                <div class="field">
+                    <label for="denTongSanPham">Số sản phẩm đã mua đến</label>
+                    <input
+                            id="denTongSanPham"
+                            name="denTongSanPham"
+                            type="number"
+                            min="0"
+                            step="1"
+                            th:value="${denTongSanPham}"
+                            placeholder="Ví dụ: 100">
+                </div>
+
+            </div>
+
+            <!-- GIỮ TỪ KHÓA VÀ CÁCH SẮP XẾP -->
+            <input type="hidden" name="search" th:value="${search}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng bộ lọc
+                </button>
+
+                <a class="btn" th:href="@{/admin/khach-hang}">
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <!-- SẮP XẾP -->
+    <form
+            method="get"
+            th:action="@{/admin/khach-hang}"
+            class="sort-panel">
+
+        <input type="hidden" name="search" th:value="${search}">
+        <input type="hidden" name="maKh" th:value="${maKh}">
+        <input type="hidden" name="hoTen" th:value="${hoTen}">
+        <input type="hidden" name="gioiTinh" th:value="${gioiTinh}">
+        <input type="hidden" name="trangThai" th:value="${trangThai}">
+
+        <input type="hidden" name="tuNgaySinh" th:value="${tuNgaySinh}">
+        <input type="hidden" name="denNgaySinh" th:value="${denNgaySinh}">
+        <input type="hidden" name="tuNgayThamGia" th:value="${tuNgayThamGia}">
+        <input type="hidden" name="denNgayThamGia" th:value="${denNgayThamGia}">
+
+        <input type="hidden" name="tuTongTien" th:value="${tuTongTien}">
+        <input type="hidden" name="denTongTien" th:value="${denTongTien}">
+        <input type="hidden" name="tuTongSanPham" th:value="${tuTongSanPham}">
+        <input type="hidden" name="denTongSanPham" th:value="${denTongSanPham}">
+
+        <div class="sort-field">
+            <label for="sort">Sắp xếp theo</label>
+            <select id="sort" name="sort">
+                <option value="makh" th:selected="${sort == 'makh'}">
+                    Mã khách hàng
+                </option>
+                <option value="hoten" th:selected="${sort == 'hoten'}">
+                    Họ tên
+                </option>
+                <option value="gioitinh" th:selected="${sort == 'gioitinh'}">
+                    Giới tính
+                </option>
+                <option value="ngaysinh" th:selected="${sort == 'ngaysinh'}">
+                    Ngày sinh
+                </option>
+                <option value="sdt" th:selected="${sort == 'sdt'}">
+                    Số điện thoại
+                </option>
+                <option value="ngaythamgia" th:selected="${sort == 'ngaythamgia'}">
+                    Ngày tham gia
+                </option>
+                <option value="tongtien" th:selected="${sort == 'tongtien'}">
+                    Tổng tiền đã mua
+                </option>
+                <option value="tongsanpham" th:selected="${sort == 'tongsanpham'}">
+                    Tổng sản phẩm đã mua
+                </option>
+            </select>
+        </div>
+
+        <div class="sort-field">
+            <label for="direction">Thứ tự sắp xếp</label>
+            <select id="direction" name="direction">
+                <option value="asc" th:selected="${direction == 'asc'}">
+                    Tăng dần
+                </option>
+                <option value="desc" th:selected="${direction == 'desc'}">
+                    Giảm dần
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Áp dụng sắp xếp
+        </button>
+    </form>
+
+    <!-- DANH SÁCH KHÁCH HÀNG -->
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Danh sách khách hàng</h2>
+                <p class="muted">
+                    Thông tin chỉ xem, không có thao tác thêm, sửa hoặc xóa.
+                </p>
+            </div>
+
+            <span class="muted">
+                Tìm thấy
+                <strong th:text="${totalRecords}">0</strong>
+                kết quả
+            </span>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <!-- MÃ KH -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/khach-hang(
+                               search=${search},
+                               maKh=${maKh},
+                               hoTen=${hoTen},
+                               gioiTinh=${gioiTinh},
+                               trangThai=${trangThai},
+                               tuNgaySinh=${tuNgaySinh},
+                               denNgaySinh=${denNgaySinh},
+                               tuNgayThamGia=${tuNgayThamGia},
+                               denNgayThamGia=${denNgayThamGia},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               tuTongSanPham=${tuTongSanPham},
+                               denTongSanPham=${denTongSanPham},
+                               sort='makh',
+                               direction=${sort == 'makh' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Mã KH
+                            <span th:if="${sort == 'makh'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- HỌ TÊN -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/khach-hang(
+                               search=${search},
+                               maKh=${maKh},
+                               hoTen=${hoTen},
+                               gioiTinh=${gioiTinh},
+                               trangThai=${trangThai},
+                               tuNgaySinh=${tuNgaySinh},
+                               denNgaySinh=${denNgaySinh},
+                               tuNgayThamGia=${tuNgayThamGia},
+                               denNgayThamGia=${denNgayThamGia},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               tuTongSanPham=${tuTongSanPham},
+                               denTongSanPham=${denTongSanPham},
+                               sort='hoten',
+                               direction=${sort == 'hoten' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Họ tên
+                            <span th:if="${sort == 'hoten'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày tham gia</th>
+
+                    <!-- TỔNG TIỀN -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/khach-hang(
+                               search=${search},
+                               maKh=${maKh},
+                               hoTen=${hoTen},
+                               gioiTinh=${gioiTinh},
+                               trangThai=${trangThai},
+                               tuNgaySinh=${tuNgaySinh},
+                               denNgaySinh=${denNgaySinh},
+                               tuNgayThamGia=${tuNgayThamGia},
+                               denNgayThamGia=${denNgayThamGia},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               tuTongSanPham=${tuTongSanPham},
+                               denTongSanPham=${denTongSanPham},
+                               sort='tongtien',
+                               direction=${sort == 'tongtien' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tổng tiền đã mua
+                            <span th:if="${sort == 'tongtien'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- TỔNG SẢN PHẨM -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/khach-hang(
+                               search=${search},
+                               maKh=${maKh},
+                               hoTen=${hoTen},
+                               gioiTinh=${gioiTinh},
+                               trangThai=${trangThai},
+                               tuNgaySinh=${tuNgaySinh},
+                               denNgaySinh=${denNgaySinh},
+                               tuNgayThamGia=${tuNgayThamGia},
+                               denNgayThamGia=${denNgayThamGia},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               tuTongSanPham=${tuTongSanPham},
+                               denTongSanPham=${denTongSanPham},
+                               sort='tongsanpham',
+                               direction=${sort == 'tongsanpham' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tổng sản phẩm đã mua
+                            <span th:if="${sort == 'tongsanpham'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="kh : ${khachHangList}">
+
+                    <!-- MÃ KH -->
+                    <td th:text="${kh['makh'] != null ? kh['makh'] : '—'}">
+                        1
+                    </td>
+
+                    <!-- HỌ TÊN -->
+                    <td>
+                        <span class="customer-name"
+                              th:text="${kh['hoten'] != null and !#strings.isEmpty(kh['hoten'].toString()) ? kh['hoten'] : '—'}">
+                            VINH
+                        </span>
+                    </td>
+
+                    <!-- GIỚI TÍNH -->
+                    <td th:text="${kh['gioitinh'] != null and !#strings.isEmpty(kh['gioitinh'].toString()) ? kh['gioitinh'] : '—'}">
+                        Khác
+                    </td>
+
+                    <!-- NGÀY SINH -->
+                    <td>
+                        <span th:if="${kh['ngaysinh'] != null}"
+                              th:text="${#temporals.format(kh['ngaysinh'], 'dd/MM/yyyy')}">
+                            01/01/2000
+                        </span>
+                        <span th:unless="${kh['ngaysinh'] != null}">—</span>
+                    </td>
+
+                    <!-- SỐ ĐIỆN THOẠI -->
+                    <td th:text="${kh['sdt'] != null and !#strings.isEmpty(kh['sdt'].toString()) ? kh['sdt'] : '—'}">
+                        01234567891
+                    </td>
+
+                    <!-- NGÀY THAM GIA -->
+                    <td>
+                        <span th:if="${kh['ngaythamgia'] != null}"
+                              th:text="${#temporals.format(kh['ngaythamgia'], 'dd/MM/yyyy')}">
+                            01/01/2024
+                        </span>
+                        <span th:unless="${kh['ngaythamgia'] != null}">—</span>
+                    </td>
+
+                    <!-- TỔNG TIỀN ĐÃ MUA -->
+                    <td>
+                        <span class="money-value"
+                              th:text="${#numbers.formatDecimal(kh['tongTienDaMua'] != null ? kh['tongTienDaMua'] : 0, 1, 'POINT', 0, 'COMMA') + ' đ'}">
+                            0 đ
+                        </span>
+                    </td>
+
+                    <!-- TỔNG SẢN PHẨM ĐÃ MUA -->
+                    <td>
+                        <span class="quantity-value"
+                              th:text="${kh['tongSanPhamDaMua'] != null ? kh['tongSanPhamDaMua'] : 0}">
+                            0
+                        </span>
+                    </td>
+
+                    <!-- TRẠNG THÁI -->
+                    <td>
+                        <span
+                                th:if="${kh['trangthai'] != null and kh['trangthai'].toString() == '0'}"
+                                class="status status-active">
+                            Hoạt động
+                        </span>
+
+                        <span
+                                th:if="${kh['trangthai'] != null and kh['trangthai'].toString() == '1'}"
+                                class="status status-inactive">
+                            Ngừng hoạt động
+                        </span>
+
+                        <span
+                                th:if="${kh['trangthai'] == null or (kh['trangthai'].toString() != '0' and kh['trangthai'].toString() != '1')}"
+                                class="status status-unknown">
+                            Chưa xác định
+                        </span>
+                    </td>
+
+                    <!-- GHI CHÚ -->
+                    <td th:text="${kh['ghichu'] != null and !#strings.isEmpty(kh['ghichu'].toString()) ? kh['ghichu'] : '—'}">
+                        —
+                    </td>
+                </tr>
+
+                <!-- KHÔNG CÓ DỮ LIỆU -->
+                <tr th:if="${#lists.isEmpty(khachHangList)}">
+                    <td colspan="10" class="empty-row">
+                        Không tìm thấy khách hàng phù hợp.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG -->
+        <div class="table-footer">
+            <div class="muted">
+                Trang
+                <strong th:text="${page}">1</strong>
+                /
+                <strong th:text="${totalPages}">1</strong>
+                · Tổng
+                <strong th:text="${totalRecords}">0</strong>
+                kết quả
+            </div>
+
+            <div class="pagination">
+
+                <!-- TRANG TRƯỚC -->
+                <a
+                        th:if="${page > 1}"
+                        th:href="@{/admin/khach-hang(
+                            search=${search},
+                            maKh=${maKh},
+                            hoTen=${hoTen},
+                            gioiTinh=${gioiTinh},
+                            trangThai=${trangThai},
+                            tuNgaySinh=${tuNgaySinh},
+                            denNgaySinh=${denNgaySinh},
+                            tuNgayThamGia=${tuNgayThamGia},
+                            denNgayThamGia=${denNgayThamGia},
+                            tuTongTien=${tuTongTien},
+                            denTongTien=${denTongTien},
+                            tuTongSanPham=${tuTongSanPham},
+                            denTongSanPham=${denTongSanPham},
+                            sort=${sort},
+                            direction=${direction},
+                            page=${page - 1}
+                        )}">
+                    Trước
+                </a>
+
+                <span th:unless="${page > 1}" class="disabled">
+                    Trước
+                </span>
+
+                <!-- TRANG HIỆN TẠI -->
+                <span class="current" th:text="${page}">
+                    1
+                </span>
+
+                <!-- TRANG SAU -->
+                <a
+                        th:if="${page < totalPages}"
+                        th:href="@{/admin/khach-hang(
+                            search=${search},
+                            maKh=${maKh},
+                            hoTen=${hoTen},
+                            gioiTinh=${gioiTinh},
+                            trangThai=${trangThai},
+                            tuNgaySinh=${tuNgaySinh},
+                            denNgaySinh=${denNgaySinh},
+                            tuNgayThamGia=${tuNgayThamGia},
+                            denNgayThamGia=${denNgayThamGia},
+                            tuTongTien=${tuTongTien},
+                            denTongTien=${denTongTien},
+                            tuTongSanPham=${tuTongSanPham},
+                            denTongSanPham=${denTongSanPham},
+                            sort=${sort},
+                            direction=${direction},
+                            page=${page + 1}
+                        )}">
+                    Sau
+                </a>
+
+                <span th:unless="${page < totalPages}" class="disabled">
+                    Sau
+                </span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const button = document.getElementById('advancedButton');
+        const form = document.getElementById('advancedForm');
+
+        if (!button || !form) {
+            console.error(
+                'Không tìm thấy nút hoặc form tìm kiếm nâng cao.'
+            );
+            return;
+        }
+
+        const advancedFields = [
+            'maKh',
+            'hoTen',
+            'gioiTinh',
+            'trangThai',
+            'tuNgaySinh',
+            'denNgaySinh',
+            'tuNgayThamGia',
+            'denNgayThamGia',
+            'tuTongTien',
+            'denTongTien',
+            'tuTongSanPham',
+            'denTongSanPham'
+        ];
+
+        const params = new URLSearchParams(window.location.search);
+
+        // Tự mở tìm kiếm nâng cao khi đang có bộ lọc nâng cao.
+        const hasAdvancedFilter = advancedFields.some(function (field) {
+            const value = params.get(field);
+            return value !== null && value !== '';
+        });
+
+        function setAdvancedVisible(visible) {
+            form.style.display = visible ? 'block' : 'none';
+
+            button.textContent = visible
+                ? '− Ẩn tìm kiếm nâng cao'
+                : '+ Tìm kiếm nâng cao';
+
+            button.setAttribute(
+                'aria-expanded',
+                visible ? 'true' : 'false'
+            );
+        }
+
+        setAdvancedVisible(hasAdvancedFilter);
+
+        button.addEventListener('click', function () {
+            const isHidden = getComputedStyle(form).display === 'none';
+            setAdvancedVisible(isHidden);
+        });
+    });
+</script>
+
+</body>
+</html>

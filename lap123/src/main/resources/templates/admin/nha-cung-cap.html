@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý nhà cung cấp</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .admin-container {
+            max-width: 1500px;
+            margin: 32px auto;
+            padding: 0 22px 40px;
+        }
+
+        .breadcrumb {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            min-height: 41px;
+            padding: 10px 16px;
+            border: 1px solid #dbe2ea;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-primary {
+            color: white;
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 21px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .stat-number {
+            margin-top: 10px;
+            font-size: 29px;
+            font-weight: 700;
+        }
+
+        .stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: #eff6ff;
+            color: #2563eb;
+            font-size: 20px;
+        }
+
+        .panel {
+            margin-bottom: 22px;
+            padding: 22px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .panel-heading h2 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        .panel-heading p {
+            margin: 8px 0 0;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-row input[type="text"] {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .advanced-toggle {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: #2563eb;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .advanced-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .field label,
+        .sort-field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .sort-panel {
+            display: flex;
+            align-items: flex-end;
+            gap: 14px;
+            flex-wrap: nowrap;
+            margin-bottom: 22px;
+            padding: 18px 22px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .sort-field {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sort-panel button {
+            flex-shrink: 0;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1250px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .sort-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sort-link:hover {
+            color: #2563eb;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-active {
+            color: #166534;
+            background: #dcfce7;
+        }
+
+        .status-inactive {
+            color: #475569;
+            background: #f1f5f9;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #dbe2ea;
+            border-radius: 7px;
+            background: white;
+            color: #334155;
+            text-decoration: none;
+        }
+
+        .pagination .current {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .empty-row {
+            padding: 35px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .supplier-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .supplier-email {
+            color: #64748b;
+        }
+
+        .number-cell {
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (max-width: 750px) {
+            .admin-container {
+                margin-top: 20px;
+                padding: 0 12px 28px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .page-header h1 {
+                font-size: 23px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sort-panel {
+                flex-direction: column;
+                align-items: stretch;
+                flex-wrap: wrap;
+                padding: 16px;
+            }
+
+            .sort-field {
+                width: 100%;
+                flex: auto;
+            }
+
+            .sort-panel button,
+            .search-row .btn {
+                width: 100%;
+            }
+
+            .search-row input[type="text"] {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-container">
+
+    <!-- ĐIỀU HƯỚNG -->
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">ADMIN</a>
+        / Đối tác
+        / Quản lý nhà cung cấp
+    </div>
+
+    <!-- TIÊU ĐỀ -->
+    <header class="page-header">
+        <div>
+            <h1>Quản lý nhà cung cấp</h1>
+            <p>
+                Tra cứu hồ sơ nhà cung cấp, tổng lượng nguyên vật liệu đã nhập,
+                tổng tiền nhập, tìm kiếm nâng cao và sắp xếp danh sách.
+            </p>
+            <p class="muted"
+               style="margin-top: 10px"
+               th:text="${#temporals.format(today, 'dd/MM/yyyy')}">
+                12/10/2026
+            </p>
+        </div>
+
+        <a class="btn" th:href="@{/admin}">
+            ← Quay lại trang ADMIN
+        </a>
+    </header>
+
+    <!-- THỐNG KÊ -->
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-label">Tổng nhà cung cấp</div>
+                <div class="stat-icon">▤</div>
+            </div>
+            <div class="stat-number" th:text="${totalAll}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-label">Đang hợp tác</div>
+                <div class="stat-icon">✓</div>
+            </div>
+            <div class="stat-number" th:text="${activeCount}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-label">Đã ngừng hợp tác</div>
+                <div class="stat-icon">Ⅱ</div>
+            </div>
+            <div class="stat-number" th:text="${inactiveCount}">0</div>
+        </div>
+    </section>
+
+    <!-- TÌM KIẾM -->
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Tìm kiếm nhà cung cấp</h2>
+                <p class="muted">
+                    Tìm nhanh theo mã, tên, số điện thoại hoặc email.
+                </p>
+            </div>
+        </div>
+
+        <form method="get" th:action="@{/admin/nha-cung-cap}">
+            <div class="search-row">
+                <input type="text"
+                       name="search"
+                       th:value="${search}"
+                       placeholder="Nhập mã NCC, tên, số điện thoại hoặc email...">
+
+                <input type="hidden" name="maNcc" th:value="${maNcc}">
+                <input type="hidden" name="tenNcc" th:value="${tenNcc}">
+                <input type="hidden" name="diaChi" th:value="${diaChi}">
+                <input type="hidden" name="sdt" th:value="${sdt}">
+                <input type="hidden" name="email" th:value="${email}">
+                <input type="hidden" name="trangThai" th:value="${trangThai}">
+
+                <input type="hidden" name="tuSoNvl" th:value="${tuSoNvl}">
+                <input type="hidden" name="denSoNvl" th:value="${denSoNvl}">
+                <input type="hidden" name="tuTongTien" th:value="${tuTongTien}">
+                <input type="hidden" name="denTongTien" th:value="${denTongTien}">
+
+                <input type="hidden" name="sort" th:value="${sort}">
+                <input type="hidden" name="direction" th:value="${direction}">
+
+                <button type="submit" class="btn btn-primary">
+                    Tìm kiếm
+                </button>
+
+                <a class="btn" th:href="@{/admin/nha-cung-cap}">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        </form>
+
+        <button class="advanced-toggle"
+                type="button"
+                onclick="toggleAdvanced()"
+                id="advancedButton">
+            + Tìm kiếm nâng cao
+        </button>
+
+        <!-- TÌM KIẾM NÂNG CAO -->
+        <form method="get"
+              th:action="@{/admin/nha-cung-cap}"
+              id="advancedForm"
+              style="display: none">
+
+            <div class="advanced-fields">
+
+                <div class="field">
+                    <label for="maNcc">Mã nhà cung cấp</label>
+                    <input id="maNcc"
+                           name="maNcc"
+                           th:value="${maNcc}"
+                           placeholder="Nhập mã NCC">
+                </div>
+
+                <div class="field">
+                    <label for="tenNcc">Tên nhà cung cấp</label>
+                    <input id="tenNcc"
+                           name="tenNcc"
+                           th:value="${tenNcc}"
+                           placeholder="Nhập tên nhà cung cấp">
+                </div>
+
+                <div class="field">
+                    <label for="diaChi">Địa chỉ</label>
+                    <input id="diaChi"
+                           name="diaChi"
+                           th:value="${diaChi}"
+                           placeholder="Nhập địa chỉ">
+                </div>
+
+                <div class="field">
+                    <label for="sdt">Số điện thoại</label>
+                    <input id="sdt"
+                           name="sdt"
+                           th:value="${sdt}"
+                           placeholder="Nhập số điện thoại">
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email"
+                           name="email"
+                           type="text"
+                           th:value="${email}"
+                           placeholder="Nhập email">
+                </div>
+
+                <div class="field">
+                    <label for="trangThai">Trạng thái hợp tác</label>
+                    <select id="trangThai" name="trangThai">
+                        <option value=""
+                                th:selected="${trangThai == ''}">
+                            Tất cả trạng thái
+                        </option>
+                        <option value="0"
+                                th:selected="${trangThai == '0'}">
+                            Đang hợp tác
+                        </option>
+                        <option value="1"
+                                th:selected="${trangThai == '1'}">
+                            Đã ngừng hợp tác
+                        </option>
+                    </select>
+                </div>
+
+                <!-- LỌC THEO SỐ LƯỢNG NVL -->
+                <div class="field">
+                    <label for="tuSoNvl">Tổng NVL đã nhập từ</label>
+                    <input id="tuSoNvl"
+                           name="tuSoNvl"
+                           type="number"
+                           min="0"
+                           step="0.01"
+                           th:value="${tuSoNvl}"
+                           placeholder="Số lượng tối thiểu">
+                </div>
+
+                <div class="field">
+                    <label for="denSoNvl">Tổng NVL đã nhập đến</label>
+                    <input id="denSoNvl"
+                           name="denSoNvl"
+                           type="number"
+                           min="0"
+                           step="0.01"
+                           th:value="${denSoNvl}"
+                           placeholder="Số lượng tối đa">
+                </div>
+
+                <!-- LỌC THEO TỔNG TIỀN -->
+                <div class="field">
+                    <label for="tuTongTien">Tổng tiền nhập từ (VNĐ)</label>
+                    <input id="tuTongTien"
+                           name="tuTongTien"
+                           type="number"
+                           min="0"
+                           step="1"
+                           th:value="${tuTongTien}"
+                           placeholder="Số tiền tối thiểu">
+                </div>
+
+                <div class="field">
+                    <label for="denTongTien">Tổng tiền nhập đến (VNĐ)</label>
+                    <input id="denTongTien"
+                           name="denTongTien"
+                           type="number"
+                           min="0"
+                           step="1"
+                           th:value="${denTongTien}"
+                           placeholder="Số tiền tối đa">
+                </div>
+
+            </div>
+
+            <input type="hidden" name="search" th:value="${search}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng tìm kiếm
+                </button>
+
+                <a class="btn" th:href="@{/admin/nha-cung-cap}">
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <!-- SẮP XẾP RIÊNG -->
+    <form method="get"
+          th:action="@{/admin/nha-cung-cap}"
+          class="sort-panel">
+
+        <!-- Giữ điều kiện tìm kiếm hiện tại -->
+        <input type="hidden" name="search" th:value="${search}">
+        <input type="hidden" name="maNcc" th:value="${maNcc}">
+        <input type="hidden" name="tenNcc" th:value="${tenNcc}">
+        <input type="hidden" name="diaChi" th:value="${diaChi}">
+        <input type="hidden" name="sdt" th:value="${sdt}">
+        <input type="hidden" name="email" th:value="${email}">
+        <input type="hidden" name="trangThai" th:value="${trangThai}">
+
+        <input type="hidden" name="tuSoNvl" th:value="${tuSoNvl}">
+        <input type="hidden" name="denSoNvl" th:value="${denSoNvl}">
+        <input type="hidden" name="tuTongTien" th:value="${tuTongTien}">
+        <input type="hidden" name="denTongTien" th:value="${denTongTien}">
+
+        <div class="sort-field">
+            <label for="sort">Sắp xếp theo</label>
+            <select id="sort" name="sort">
+                <option value="mancc"
+                        th:selected="${sort == 'mancc'}">
+                    Mã nhà cung cấp
+                </option>
+
+                <option value="tenncc"
+                        th:selected="${sort == 'tenncc'}">
+                    Tên nhà cung cấp
+                </option>
+
+                <option value="diachi"
+                        th:selected="${sort == 'diachi'}">
+                    Địa chỉ
+                </option>
+
+                <option value="sdt"
+                        th:selected="${sort == 'sdt'}">
+                    Số điện thoại
+                </option>
+
+                <option value="email"
+                        th:selected="${sort == 'email'}">
+                    Email
+                </option>
+
+                <option value="tongnvl"
+                        th:selected="${sort == 'tongnvl'}">
+                    Tổng số NVL đã nhập
+                </option>
+
+                <option value="tongtiennhap"
+                        th:selected="${sort == 'tongtiennhap'}">
+                    Tổng tiền nhập NVL
+                </option>
+            </select>
+        </div>
+
+        <div class="sort-field">
+            <label for="direction">Thứ tự sắp xếp</label>
+            <select id="direction" name="direction">
+                <option value="asc"
+                        th:selected="${direction == 'asc'}">
+                    Tăng dần
+                </option>
+
+                <option value="desc"
+                        th:selected="${direction == 'desc'}">
+                    Giảm dần
+                </option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Áp dụng sắp xếp
+        </button>
+    </form>
+
+    <!-- DANH SÁCH -->
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Danh sách nhà cung cấp</h2>
+                <p class="muted">
+                    Thống kê số lượng NVL và tổng tiền từ các phiếu nhập đã hoàn tất.
+                    Hồ sơ chỉ xem, không có thao tác thêm, sửa hoặc ngừng hợp tác.
+                </p>
+            </div>
+
+            <span class="muted">
+                Tìm thấy
+                <strong th:text="${totalItems}">0</strong>
+                kết quả
+            </span>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <!-- MÃ NCC -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nha-cung-cap(
+                               search=${search},
+                               maNcc=${maNcc},
+                               tenNcc=${tenNcc},
+                               diaChi=${diaChi},
+                               sdt=${sdt},
+                               email=${email},
+                               trangThai=${trangThai},
+                               tuSoNvl=${tuSoNvl},
+                               denSoNvl=${denSoNvl},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               sort='mancc',
+                               direction=${sort == 'mancc' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Mã NCC
+                            <span th:if="${sort == 'mancc'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- TÊN NCC -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nha-cung-cap(
+                               search=${search},
+                               maNcc=${maNcc},
+                               tenNcc=${tenNcc},
+                               diaChi=${diaChi},
+                               sdt=${sdt},
+                               email=${email},
+                               trangThai=${trangThai},
+                               tuSoNvl=${tuSoNvl},
+                               denSoNvl=${denSoNvl},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               sort='tenncc',
+                               direction=${sort == 'tenncc' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tên nhà cung cấp
+                            <span th:if="${sort == 'tenncc'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Địa chỉ</th>
+                    <th>Số điện thoại</th>
+
+                    <!-- TỔNG NVL -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nha-cung-cap(
+                               search=${search},
+                               maNcc=${maNcc},
+                               tenNcc=${tenNcc},
+                               diaChi=${diaChi},
+                               sdt=${sdt},
+                               email=${email},
+                               trangThai=${trangThai},
+                               tuSoNvl=${tuSoNvl},
+                               denSoNvl=${denSoNvl},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               sort='tongnvl',
+                               direction=${sort == 'tongnvl' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tổng NVL đã nhập
+                            <span th:if="${sort == 'tongnvl'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- TỔNG TIỀN NHẬP -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nha-cung-cap(
+                               search=${search},
+                               maNcc=${maNcc},
+                               tenNcc=${tenNcc},
+                               diaChi=${diaChi},
+                               sdt=${sdt},
+                               email=${email},
+                               trangThai=${trangThai},
+                               tuSoNvl=${tuSoNvl},
+                               denSoNvl=${denSoNvl},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               sort='tongtiennhap',
+                               direction=${sort == 'tongtiennhap' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tổng tiền nhập
+                            <span th:if="${sort == 'tongtiennhap'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- TRẠNG THÁI -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/nha-cung-cap(
+                               search=${search},
+                               maNcc=${maNcc},
+                               tenNcc=${tenNcc},
+                               diaChi=${diaChi},
+                               sdt=${sdt},
+                               email=${email},
+                               trangThai=${trangThai},
+                               tuSoNvl=${tuSoNvl},
+                               denSoNvl=${denSoNvl},
+                               tuTongTien=${tuTongTien},
+                               denTongTien=${denTongTien},
+                               sort='trangthai',
+                               direction=${sort == 'trangthai' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Trạng thái
+                            <span th:if="${sort == 'trangthai'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Ghi chú</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="ncc : ${nhaCungCapList}">
+                    <td th:text="${ncc['mancc']}">1</td>
+
+                    <td>
+                        <span class="supplier-name"
+                              th:text="${ncc['tenncc']}">
+                            Nhà cung cấp ABC
+                        </span>
+                    </td>
+
+                    <td th:text="${ncc['diachi'] != null and !#strings.isEmpty(ncc['diachi']) ? ncc['diachi'] : '—'}">
+                        TP.HCM
+                    </td>
+
+                    <td th:text="${ncc['sdt'] != null and !#strings.isEmpty(ncc['sdt']) ? ncc['sdt'] : '—'}">
+                        0123456789
+                    </td>
+
+
+                    <!-- TỔNG SỐ LƯỢNG NVL ĐÃ NHẬP -->
+                    <td class="number-cell"
+                        th:text="${#numbers.formatDecimal(ncc['tongSoNvl'] == null ? 0 : ncc['tongSoNvl'], 1, 'COMMA', 2, 'POINT')}">
+                        0.00
+                    </td>
+
+                    <!-- TỔNG TIỀN NHẬP -->
+                    <td class="number-cell"
+                        th:text="${#numbers.formatDecimal(ncc['tongTienNhap'] == null ? 0 : ncc['tongTienNhap'], 1, 'COMMA', 0, 'POINT') + ' VNĐ'}">
+                        0 VNĐ
+                    </td>
+
+                    <td>
+                        <span th:if="${ncc['trangthai'] == null or ncc['trangthai'] == 0}"
+                              class="status status-active">
+                            Đang hợp tác
+                        </span>
+
+                        <span th:if="${ncc['trangthai'] != null and ncc['trangthai'] != 0}"
+                              class="status status-inactive">
+                            Đã ngừng hợp tác
+                        </span>
+                    </td>
+
+                    <td th:text="${ncc['ghichu'] != null and !#strings.isEmpty(ncc['ghichu']) ? ncc['ghichu'] : '—'}">
+                        —
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(nhaCungCapList)}">
+                    <td colspan="9" class="empty-row">
+                        Không tìm thấy nhà cung cấp phù hợp.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG -->
+        <div class="table-footer">
+            <div class="muted">
+                Trang
+                <strong th:text="${currentPage}">1</strong>
+                /
+                <strong th:text="${totalPages}">1</strong>
+                · Tổng
+                <strong th:text="${totalItems}">0</strong>
+                kết quả
+            </div>
+
+            <div class="pagination">
+                <a th:if="${currentPage > 1}"
+                   th:href="@{/admin/nha-cung-cap(
+                       search=${search},
+                       maNcc=${maNcc},
+                       tenNcc=${tenNcc},
+                       diaChi=${diaChi},
+                       sdt=${sdt},
+                       email=${email},
+                       trangThai=${trangThai},
+                       tuSoNvl=${tuSoNvl},
+                       denSoNvl=${denSoNvl},
+                       tuTongTien=${tuTongTien},
+                       denTongTien=${denTongTien},
+                       sort=${sort},
+                       direction=${direction},
+                       page=${currentPage - 1}
+                   )}">
+                    Trước
+                </a>
+
+                <span class="current"
+                      th:text="${currentPage}">1</span>
+
+                <a th:if="${currentPage < totalPages}"
+                   th:href="@{/admin/nha-cung-cap(
+                       search=${search},
+                       maNcc=${maNcc},
+                       tenNcc=${tenNcc},
+                       diaChi=${diaChi},
+                       sdt=${sdt},
+                       email=${email},
+                       trangThai=${trangThai},
+                       tuSoNvl=${tuSoNvl},
+                       denSoNvl=${denSoNvl},
+                       tuTongTien=${tuTongTien},
+                       denTongTien=${denTongTien},
+                       sort=${sort},
+                       direction=${direction},
+                       page=${currentPage + 1}
+                   )}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function toggleAdvanced() {
+        const form = document.getElementById('advancedForm');
+        const button = document.getElementById('advancedButton');
+        const isHidden = form.style.display === 'none';
+
+        form.style.display = isHidden ? 'block' : 'none';
+
+        button.textContent = isHidden
+            ? '− Ẩn tìm kiếm nâng cao'
+            : '+ Tìm kiếm nâng cao';
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+
+        const advancedFields = [
+            'maNcc',
+            'tenNcc',
+            'diaChi',
+            'sdt',
+            'email',
+            'trangThai',
+            'tuSoNvl',
+            'denSoNvl',
+            'tuTongTien',
+            'denTongTien'
+        ];
+
+        const hasAdvancedFilter = advancedFields.some(function (field) {
+            return params.has(field) && params.get(field) !== '';
+        });
+
+        if (hasAdvancedFilter) {
+            document.getElementById('advancedForm').style.display = 'block';
+            document.getElementById('advancedButton').textContent =
+                '− Ẩn tìm kiếm nâng cao';
+        }
+    });
+</script>
+
+</body>
+</html>

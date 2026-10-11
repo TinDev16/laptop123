@@ -38,7 +38,7 @@ CREATE TABLE `bom` (
   CONSTRAINT `fk_bom_nguoitao` FOREIGN KEY (`nguoitao`) REFERENCES `nhanvien` (`manv`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_bom_sanpham` FOREIGN KEY (`masp`) REFERENCES `sanpham` (`masp`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `ck_bom_trangthai` CHECK ((`trangthai` in (_utf8mb4'HIEU_LUC',_utf8mb4'NGUNG_SU_DUNG')))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ CREATE TABLE `bom` (
 
 LOCK TABLES `bom` WRITE;
 /*!40000 ALTER TABLE `bom` DISABLE KEYS */;
-INSERT INTO `bom` VALUES (1,1,'mặc định','2026-10-07 17:15:39',9,'HIEU_LUC','');
+INSERT INTO `bom` VALUES (1,1,'mặc định','2026-10-07 17:15:39',9,'HIEU_LUC',''),(2,1,'nâng cấp 1','2026-10-12 01:05:44',9,'HIEU_LUC',''),(3,2,'mặc định','2026-10-12 01:05:57',9,'HIEU_LUC',''),(4,2,'nâng cấp 1','2026-10-12 01:06:13',9,'HIEU_LUC','');
 /*!40000 ALTER TABLE `bom` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -72,7 +72,7 @@ CREATE TABLE `bom_chitiet` (
   CONSTRAINT `fk_bomct_nvl` FOREIGN KEY (`manvl`) REFERENCES `nguyenvatlieu` (`manvl`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `ck_bomct_haohut` CHECK (((`tyle_haohut` >= 0) and (`tyle_haohut` <= 100))),
   CONSTRAINT `ck_bomct_soluong` CHECK ((`soluong_dinhmuc` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,7 +81,7 @@ CREATE TABLE `bom_chitiet` (
 
 LOCK TABLES `bom_chitiet` WRITE;
 /*!40000 ALTER TABLE `bom_chitiet` DISABLE KEYS */;
-INSERT INTO `bom_chitiet` VALUES (1,1,1,5.0000,0.00,NULL);
+INSERT INTO `bom_chitiet` VALUES (1,1,1,5.0000,0.00,NULL),(2,2,1,5.0000,0.00,NULL),(3,2,2,2.0000,0.00,NULL),(4,3,1,1.0000,0.00,NULL),(5,4,1,1.0000,0.00,NULL),(6,4,2,1.0000,0.00,NULL);
 /*!40000 ALTER TABLE `bom_chitiet` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -161,7 +161,7 @@ CREATE TABLE `ct_phieunhap_nvl` (
   CONSTRAINT `fk_ctpnnvl_pn` FOREIGN KEY (`mapn`) REFERENCES `phieunhap_nvl` (`mapn`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ck_ctpnnvl_dg` CHECK ((`dongia` >= 0)),
   CONSTRAINT `ck_ctpnnvl_sl` CHECK ((`soluong` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -170,7 +170,7 @@ CREATE TABLE `ct_phieunhap_nvl` (
 
 LOCK TABLES `ct_phieunhap_nvl` WRITE;
 /*!40000 ALTER TABLE `ct_phieunhap_nvl` DISABLE KEYS */;
-INSERT INTO `ct_phieunhap_nvl` (`id`, `mapn`, `manvl`, `soluong`, `dongia`) VALUES (1,1,1,20.00,500000.00);
+INSERT INTO `ct_phieunhap_nvl` (`id`, `mapn`, `manvl`, `soluong`, `dongia`) VALUES (1,1,1,20.00,500000.00),(2,2,3,3.00,1000000.00),(3,2,2,1.00,1000000.00);
 /*!40000 ALTER TABLE `ct_phieunhap_nvl` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -366,7 +366,7 @@ CREATE TABLE `khachhang` (
   `ngaysinh` datetime(6) DEFAULT NULL,
   `ngaythamgia` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`makh`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -375,7 +375,7 @@ CREATE TABLE `khachhang` (
 
 LOCK TABLES `khachhang` WRITE;
 /*!40000 ALTER TABLE `khachhang` DISABLE KEYS */;
-INSERT INTO `khachhang` VALUES (1,'VINH','01234567891',NULL,NULL,0,NULL,'Khác','2005-01-31 17:00:00.000000','2023-12-31 17:00:00.000000');
+INSERT INTO `khachhang` VALUES (1,'VINH','01234567891',NULL,NULL,0,NULL,'Khác','2005-01-31 17:00:00.000000','2023-12-31 17:00:00.000000'),(2,'edf','03437439',NULL,NULL,0,NULL,'Nam','2020-02-19 17:00:00.000000','2025-02-19 17:00:00.000000');
 /*!40000 ALTER TABLE `khachhang` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -396,7 +396,7 @@ CREATE TABLE `kho_nvl_san_xuat` (
   KEY `idx_kho_nvl_sx_manvl` (`manvl`),
   CONSTRAINT `fk_kho_nvl_sx_nvl` FOREIGN KEY (`manvl`) REFERENCES `nguyenvatlieu` (`manvl`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `ck_kho_nvl_sx_ton` CHECK ((`soluongton` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -405,7 +405,7 @@ CREATE TABLE `kho_nvl_san_xuat` (
 
 LOCK TABLES `kho_nvl_san_xuat` WRITE;
 /*!40000 ALTER TABLE `kho_nvl_san_xuat` DISABLE KEYS */;
-INSERT INTO `kho_nvl_san_xuat` VALUES (1,1,1.00,'2026-10-07 17:17:07');
+INSERT INTO `kho_nvl_san_xuat` VALUES (1,1,1.00,'2026-10-07 17:17:07'),(2,2,0.00,'2026-10-12 00:34:34'),(3,3,0.00,'2026-10-12 02:52:33');
 /*!40000 ALTER TABLE `kho_nvl_san_xuat` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -429,7 +429,7 @@ CREATE TABLE `kho_thanhpham_san_xuat` (
   CONSTRAINT `fk_kho_tp_sx_bom` FOREIGN KEY (`mabom`) REFERENCES `bom` (`mabom`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_kho_tp_sx_sp` FOREIGN KEY (`masp`) REFERENCES `sanpham` (`masp`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `ck_kho_tp_sx_ton` CHECK ((`soluongton` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -438,7 +438,7 @@ CREATE TABLE `kho_thanhpham_san_xuat` (
 
 LOCK TABLES `kho_thanhpham_san_xuat` WRITE;
 /*!40000 ALTER TABLE `kho_thanhpham_san_xuat` DISABLE KEYS */;
-INSERT INTO `kho_thanhpham_san_xuat` VALUES (1,1,1,0,'2026-10-07 17:17:39');
+INSERT INTO `kho_thanhpham_san_xuat` VALUES (1,1,1,0,'2026-10-07 17:17:39'),(3,1,2,0,'2026-10-12 01:05:44'),(4,2,3,0,'2026-10-12 01:05:57'),(5,2,4,0,'2026-10-12 01:06:13');
 /*!40000 ALTER TABLE `kho_thanhpham_san_xuat` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -470,7 +470,7 @@ CREATE TABLE `lich_su_kho` (
   CONSTRAINT `ck_lsk_giaodich` CHECK ((`loai_giaodich` in (_utf8mb4'NHAP_NVL',_utf8mb4'XUAT_NVL',_utf8mb4'NHAP_THANH_PHAM',_utf8mb4'XUAT_THANH_PHAM'))),
   CONSTRAINT `ck_lsk_loaihang` CHECK ((`loai_hang` in (_utf8mb4'NVL',_utf8mb4'THANH_PHAM'))),
   CONSTRAINT `ck_lsk_soluong` CHECK ((`soluong` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -479,7 +479,7 @@ CREATE TABLE `lich_su_kho` (
 
 LOCK TABLES `lich_su_kho` WRITE;
 /*!40000 ALTER TABLE `lich_su_kho` DISABLE KEYS */;
-INSERT INTO `lich_su_kho` VALUES (1,'NVL',1,'NHAP_NVL',20.00,500000.00,'2026-10-07 17:11:00',9,'phieunhap_nvl',1,NULL),(2,'NVL',1,'XUAT_NVL',16.00,0.00,'2026-10-07 17:16:33',9,'phieuxuat_nvl',1,NULL),(3,'THANH_PHAM',1,'NHAP_THANH_PHAM',3.00,0.00,'2026-10-07 17:17:39',9,'ketqua_sanxuat',1,NULL),(4,'THANH_PHAM',1,'XUAT_THANH_PHAM',2.00,2500000.00,'2026-10-07 17:19:24',9,'phieuxuat_thanhpham',1,NULL);
+INSERT INTO `lich_su_kho` VALUES (1,'NVL',1,'NHAP_NVL',20.00,500000.00,'2026-10-07 17:11:00',9,'phieunhap_nvl',1,NULL),(2,'NVL',1,'XUAT_NVL',16.00,0.00,'2026-10-07 17:16:33',9,'phieuxuat_nvl',1,NULL),(3,'THANH_PHAM',1,'NHAP_THANH_PHAM',3.00,0.00,'2026-10-07 17:17:39',9,'ketqua_sanxuat',1,NULL),(4,'THANH_PHAM',1,'XUAT_THANH_PHAM',2.00,2500000.00,'2026-10-07 17:19:24',9,'phieuxuat_thanhpham',1,NULL),(5,'NVL',2,'NHAP_NVL',1.00,1000000.00,'2026-10-12 02:52:53',9,'phieunhap_nvl',2,NULL),(6,'NVL',3,'NHAP_NVL',3.00,1000000.00,'2026-10-12 02:52:53',9,'phieunhap_nvl',2,NULL);
 /*!40000 ALTER TABLE `lich_su_kho` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -576,7 +576,7 @@ CREATE TABLE `loai_nguyen_vat_lieu` (
   `trangthai` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`maloai`),
   UNIQUE KEY `uk_loai_nvl_ten` (`tenloai`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -585,7 +585,7 @@ CREATE TABLE `loai_nguyen_vat_lieu` (
 
 LOCK TABLES `loai_nguyen_vat_lieu` WRITE;
 /*!40000 ALTER TABLE `loai_nguyen_vat_lieu` DISABLE KEYS */;
-INSERT INTO `loai_nguyen_vat_lieu` VALUES (1,'MH',1);
+INSERT INTO `loai_nguyen_vat_lieu` VALUES (1,'MH',1),(2,'Ram',1);
 /*!40000 ALTER TABLE `loai_nguyen_vat_lieu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -644,7 +644,7 @@ CREATE TABLE `nguyenvatlieu` (
   CONSTRAINT `ck_nvl_leadtime` CHECK ((`lead_time_ngay` >= 0)),
   CONSTRAINT `ck_nvl_ton` CHECK ((`soluongton` >= 0)),
   CONSTRAINT `ck_nvl_ton_toithieu` CHECK ((`ton_toithieu` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -653,7 +653,7 @@ CREATE TABLE `nguyenvatlieu` (
 
 LOCK TABLES `nguyenvatlieu` WRITE;
 /*!40000 ALTER TABLE `nguyenvatlieu` DISABLE KEYS */;
-INSERT INTO `nguyenvatlieu` VALUES (1,1,'NVL-MH-001','MHFULLHD','cái',500000.00,4.00,3.00,0,1,'');
+INSERT INTO `nguyenvatlieu` VALUES (1,1,'NVL-MH-001','MHFULLHD','cái',500000.00,4.00,3.00,0,1,''),(2,2,'NVL-RAM-001','Ram1','Thanh',1000000.00,1.00,5.00,0,1,''),(3,2,'NVL-RAM-002','Ram','cái',1000000.00,3.00,3.00,0,1,'');
 /*!40000 ALTER TABLE `nguyenvatlieu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -677,7 +677,7 @@ CREATE TABLE `nhanvien` (
   PRIMARY KEY (`manv`),
   UNIQUE KEY `uk_nhanvien_email` (`email`),
   UNIQUE KEY `uk_nhanvien_sdt` (`sdt`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -686,7 +686,7 @@ CREATE TABLE `nhanvien` (
 
 LOCK TABLES `nhanvien` WRITE;
 /*!40000 ALTER TABLE `nhanvien` DISABLE KEYS */;
-INSERT INTO `nhanvien` VALUES (1,'Nguyễn Văn Quản Lý','Nam','1995-01-09 17:00:00.000000','0900000001','quanly@lap123.local','2025-12-31 17:00:00.000000',1,'gà'),(2,'Trần Văn Nhân Viên','Khác','2003-05-19 17:00:00.000000','0900000002','nhanvien@lap123.local','2025-12-31 17:00:00.000000',0,'f'),(6,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434',NULL,'2321-12-11 17:00:00.000000',1,'gà'),(7,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212',NULL,'2032-12-11 17:00:00.000000',1,'gà'),(8,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313',NULL,'2002-12-10 17:00:00.000000',1,'k'),(9,'Quản trị viên a','Nam',NULL,'',NULL,NULL,0,''),(10,'Nguyễn VĂN s','Nam','2012-02-05 17:00:00.000000','012345689',NULL,NULL,0,'quá gà');
+INSERT INTO `nhanvien` VALUES (1,'Nguyễn Văn Quản Lý','Nam','1995-01-09 17:00:00.000000','0900000001','quanly@lap123.local','2025-12-31 17:00:00.000000',1,'gà'),(2,'Trần Văn Nhân Viên','Khác','2003-05-19 17:00:00.000000','0900000002','nhanvien@lap123.local','2025-12-31 17:00:00.000000',1,'f'),(6,'Nguyễn Văn Anh','Nam','2112-12-11 17:00:00.000000','12321434',NULL,'2321-12-11 17:00:00.000000',0,''),(7,'Phan Văn Tre','Nữ','2012-12-20 17:00:00.000000','12121212',NULL,'2032-12-11 17:00:00.000000',1,'gà'),(8,'Lê Tra','Nữ','2021-12-30 17:00:00.000000','12313',NULL,'2002-12-10 17:00:00.000000',1,'k'),(9,'Quản trị viên a','Nam',NULL,'',NULL,NULL,0,NULL),(10,'Nguyễn VĂN s','Nam','2012-02-05 17:00:00.000000','012345689',NULL,NULL,0,'quá gà'),(11,'NV','Nam','2005-02-19 17:00:00.000000','12321455346','aaaad@gmail.com','2026-10-10 17:00:00.000000',0,NULL);
 /*!40000 ALTER TABLE `nhanvien` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -771,7 +771,7 @@ CREATE TABLE `phieunhap_nvl` (
   CONSTRAINT `fk_pnnvl_ncc` FOREIGN KEY (`mancc`) REFERENCES `ncc` (`mancc`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_pnnvl_nguoilap` FOREIGN KEY (`nguoilap`) REFERENCES `nhanvien` (`manv`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `ck_pnnvl_trangthai` CHECK ((`trangthai` in (_utf8mb4'NHAP_NHAP',_utf8mb4'DA_NHAP',_utf8mb4'HUY')))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -780,7 +780,7 @@ CREATE TABLE `phieunhap_nvl` (
 
 LOCK TABLES `phieunhap_nvl` WRITE;
 /*!40000 ALTER TABLE `phieunhap_nvl` DISABLE KEYS */;
-INSERT INTO `phieunhap_nvl` VALUES (1,1,9,'2026-10-07 17:10:57',10000000.00,'DA_NHAP','                            ');
+INSERT INTO `phieunhap_nvl` VALUES (1,1,9,'2026-10-07 17:10:57',10000000.00,'DA_NHAP','                            '),(2,1,9,'2026-10-12 02:52:51',4000000.00,'DA_NHAP','                            ');
 /*!40000 ALTER TABLE `phieunhap_nvl` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -922,7 +922,7 @@ CREATE TABLE `sanpham` (
   KEY `fk_sanpham_thuonghieu` (`mathuonghieu`),
   CONSTRAINT `fk_sanpham_thuonghieu` FOREIGN KEY (`mathuonghieu`) REFERENCES `thuonghieu` (`mathuonghieu`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `ck_sanpham_ton` CHECK ((`soluongton` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -931,7 +931,7 @@ CREATE TABLE `sanpham` (
 
 LOCK TABLES `sanpham` WRITE;
 /*!40000 ALTER TABLE `sanpham` DISABLE KEYS */;
-INSERT INTO `sanpham` VALUES (1,1,'ASUS','Cái','1791368117811_1790001828294_ssss_13__1_12.webp','Ý',NULL,'Windows',NULL,0.00,1,0,NULL);
+INSERT INTO `sanpham` VALUES (1,1,'ASUS','Cái','1791368117811_1790001828294_ssss_13__1_12.webp','Ý',NULL,'Windows',NULL,0.00,1,0,NULL),(2,2,'del1123','Cái','1791741922980_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(3,1,'asus1','Cái','1791744748671_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(4,1,'asus2','Cái','1791744764070_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(5,1,'asus3','Cái','1791744783601_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(6,1,'auss','Cái','1791744802624_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(7,1,'asus6','Cái','1791744824785_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(8,1,'asus7','Cái','1791744843015_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(9,1,'asus8','Cái','1791744860015_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(10,1,'asus9','Cái','1791744873661_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL),(11,1,'asus10','Cái','1791744887929_1790001828294_ssss_13__1_12.webp','mỹ',NULL,'Windows',NULL,0.00,0,0,NULL);
 /*!40000 ALTER TABLE `sanpham` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -948,7 +948,7 @@ CREATE TABLE `taikhoan` (
   `vaitro_id` int NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `trangthai` tinyint NOT NULL DEFAULT '1' COMMENT '1: hoạt động, 0: khóa',
+  `trangthai` int NOT NULL,
   `reset_token` varchar(255) DEFAULT NULL,
   `locked` bit(1) NOT NULL,
   PRIMARY KEY (`taikhoan_id`),
@@ -957,7 +957,7 @@ CREATE TABLE `taikhoan` (
   KEY `fk_taikhoan_vaitro` (`vaitro_id`),
   CONSTRAINT `fk_taikhoan_nhanvien` FOREIGN KEY (`manv`) REFERENCES `nhanvien` (`manv`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_taikhoan_vaitro` FOREIGN KEY (`vaitro_id`) REFERENCES `vaitro` (`vaitro_id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -966,7 +966,7 @@ CREATE TABLE `taikhoan` (
 
 LOCK TABLES `taikhoan` WRITE;
 /*!40000 ALTER TABLE `taikhoan` DISABLE KEYS */;
-INSERT INTO `taikhoan` VALUES (1,1,2,'quanly@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_MANAGER',1,NULL,_binary ''),(2,2,2,'nhanvien@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_EMPLOYEE',1,NULL,_binary '\0'),(6,6,1,'admin@mail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(7,7,1,'chien@gmail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(8,8,2,'df@gmial.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(9,9,1,'a','$2a$10$in3KlNF0odwSm8Q6O3Ee9O6sLzkeAKT0pb1y.kwpVGy6fTCXkgaia',1,NULL,_binary '\0'),(10,10,2,'N','$2a$10$X7ygq7e5PkNFFLw4Wkyi8ec/uz4KuOHXunXbQB0a7HhOmFYmIDi1W',1,NULL,_binary '\0');
+INSERT INTO `taikhoan` VALUES (1,1,2,'quanly@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_MANAGER',1,NULL,_binary ''),(2,2,2,'nhanvien@lap123.local','$2a$10$PLACEHOLDER_HASH_FOR_EMPLOYEE',1,NULL,_binary ''),(6,6,5,'ad','$2a$10$in3KlNF0odwSm8Q6O3Ee9O6sLzkeAKT0pb1y.kwpVGy6fTCXkgaia',1,NULL,_binary '\0'),(7,7,1,'chien@gmail.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(8,8,2,'df@gmial.com','$2a$10$uz35qMlz/c1VWzXVqur1FOcGqxdrmb7H9TWKnBhXdIVRwT2kgmFcO',1,NULL,_binary ''),(9,9,1,'a','$2a$10$in3KlNF0odwSm8Q6O3Ee9O6sLzkeAKT0pb1y.kwpVGy6fTCXkgaia',1,NULL,_binary '\0'),(10,10,2,'N','$2a$10$X7ygq7e5PkNFFLw4Wkyi8ec/uz4KuOHXunXbQB0a7HhOmFYmIDi1W',1,NULL,_binary '\0'),(11,11,2,'NV@gmail.com','$2a$10$k8m6zvOOWyY1ex8Ucv1gaOKZctJVWDotMFnuOkalTQ5ltE9yx2rKu',1,NULL,_binary '\0');
 /*!40000 ALTER TABLE `taikhoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -984,7 +984,7 @@ CREATE TABLE `thuonghieu` (
   `ghichu` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`mathuonghieu`),
   UNIQUE KEY `tenthuonghieu` (`tenthuonghieu`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -993,7 +993,7 @@ CREATE TABLE `thuonghieu` (
 
 LOCK TABLES `thuonghieu` WRITE;
 /*!40000 ALTER TABLE `thuonghieu` DISABLE KEYS */;
-INSERT INTO `thuonghieu` VALUES (1,'ASUS',0,NULL);
+INSERT INTO `thuonghieu` VALUES (1,'ASUS',0,NULL),(2,'dell',0,NULL);
 /*!40000 ALTER TABLE `thuonghieu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1081,4 +1081,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-08 11:09:01
+-- Dump completed on 2026-10-12  4:39:31

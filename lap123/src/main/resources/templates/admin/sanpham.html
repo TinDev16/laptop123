@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý sản phẩm</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .admin-product-page {
+            padding: 24px;
+            color: #1f2937;
+        }
+
+        .admin-product-page * {
+            box-sizing: border-box;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .page-title {
+            margin: 0 0 8px;
+        }
+
+        .directory-subtitle {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .admin-stat {
+            padding: 18px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .admin-stat-label {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .admin-stat-value {
+            margin-top: 7px;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        /* TÌM KIẾM NHANH */
+        .quick-search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .quick-search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 220px;
+            max-width: 620px;
+            padding: 0 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .quick-search-box input {
+            width: 100%;
+            min-width: 0;
+            padding: 12px 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 10px 14px;
+            border: 1px solid transparent;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        .btn-compact {
+            padding: 7px 10px;
+            font-size: 12px;
+        }
+
+        /* BẢNG TÌM KIẾM NÂNG CAO */
+        .advanced-search {
+            margin: 0 0 25px;
+            border: 1px solid #dbe3ef;
+            border-radius: 11px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .advanced-search-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .advanced-search-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .advanced-search-header p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .advanced-search-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .advanced-search.open .advanced-search-content {
+            display: block;
+        }
+
+        .advanced-search-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 17px;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .filter-field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .filter-field input,
+        .filter-field select {
+            width: 100%;
+            min-width: 0;
+            height: 41px;
+            padding: 9px 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            background: #fff;
+            color: #374151;
+            outline: none;
+        }
+
+        .filter-field input:focus,
+        .filter-field select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+        }
+
+        .filter-hint {
+            color: #6b7280;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .advanced-search-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+            margin-top: 21px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .filter-error {
+            margin-top: 14px;
+            color: #b91c1c;
+            font-size: 13px;
+        }
+
+        /* DANH SÁCH SẢN PHẨM */
+        .directory-section {
+            margin-top: 28px;
+        }
+
+        .directory-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .directory-section-header h2 {
+            margin: 0 0 6px;
+            font-size: 20px;
+        }
+
+        .directory-section-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .directory-state {
+            display: inline-block;
+            white-space: nowrap;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .directory-state--active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .directory-state--archived {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            background: #fff;
+        }
+
+        .directory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .directory-table th,
+        .directory-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .directory-table th {
+            background: #f8fafc;
+            color: #374151;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .directory-table td {
+            font-size: 13px;
+        }
+
+        .directory-row:hover {
+            background: #fafafa;
+        }
+
+        .product-thumbnail {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            border-radius: 7px;
+            background: #fff;
+        }
+
+        .product-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .product-thumbnail-placeholder {
+            color: #9ca3af;
+        }
+
+        .product-name-cell {
+            min-width: 150px;
+            font-weight: 600;
+        }
+
+        .stock-quantity {
+            white-space: nowrap;
+        }
+
+        .stock-quantity--empty {
+            color: #b91c1c;
+        }
+
+        .bom-price-range {
+            min-width: 170px;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #1d4ed8;
+        }
+
+        .bom-price-missing {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .directory-note {
+            min-width: 160px;
+            max-width: 260px;
+            white-space: normal;
+        }
+
+        .directory-empty td {
+            padding: 28px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        /* PHÂN TRANG */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 14px 0 0;
+        }
+
+        .pagination-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pagination-links a,
+        .pagination-links span {
+            display: inline-block;
+            padding: 7px 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #374151;
+        }
+
+        .pagination-links .current {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        /* PHIÊN BẢN BOM */
+        .bom-version-row {
+            display: none;
+        }
+
+        .bom-version-row.bom-version-open {
+            display: table-row;
+        }
+
+        .bom-version-row > td {
+            padding: 0 !important;
+            background: #f8fafc;
+        }
+
+        .bom-version-container {
+            padding: 15px 20px 17px 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .bom-version-title {
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .bom-version-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bom-version-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 11px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .bom-version-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bom-version-icon {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 6px;
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .bom-version-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .bom-version-meta {
+            margin-top: 4px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .bom-version-detail {
+            margin-top: 5px;
+            color: #374151;
+            font-size: 13px;
+        }
+
+        .bom-version-status {
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .bom-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .bom-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .bom-version-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .bom-version-loading {
+            padding: 12px 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .version-toggle-icon {
+            margin-left: 4px;
+            transition: transform .2s ease;
+        }
+
+        .version-toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
+        @media (max-width: 900px) {
+            .advanced-search-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .admin-product-page {
+                padding: 14px;
+            }
+
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-search-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-search-content {
+                padding: 14px;
+            }
+
+            .bom-version-item {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .directory-section-header {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="admin-product-page">
+
+    <!-- TIÊU ĐỀ -->
+    <header class="page-header">
+        <div>
+            <div style="font-size:13px;color:#6b7280;margin-bottom:8px">
+                <i class="fas fa-home"></i>
+                / Danh mục / Sản phẩm
+            </div>
+
+            <h1 class="page-title">Quản lý sản phẩm</h1>
+
+            <p class="directory-subtitle">
+                Theo dõi sản phẩm đang bán, sản phẩm đã ngừng bán và chi phí BOM.
+            </p>
+        </div>
+
+        <!-- NÚT QUAY LẠI TRANG ADMIN -->
+        <a th:href="@{/admin}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại
+        </a>
+    </header>
+
+    <!-- THỐNG KÊ -->
+    <section class="admin-stats">
+        <div class="admin-stat">
+            <div class="admin-stat-label">Tổng sản phẩm</div>
+            <div class="admin-stat-value" th:text="${tongSanpham}">0</div>
+        </div>
+
+        <div class="admin-stat">
+            <div class="admin-stat-label">Sản phẩm đang bán</div>
+            <div class="admin-stat-value" th:text="${tongDangBan}">0</div>
+        </div>
+
+        <div class="admin-stat">
+            <div class="admin-stat-label">Sản phẩm đã ngừng bán</div>
+            <div class="admin-stat-value" th:text="${tongNgungBan}">0</div>
+        </div>
+    </section>
+
+    <!-- TÌM KIẾM NHANH -->
+    <div class="quick-search">
+        <div class="quick-search-box">
+            <i class="fas fa-search"></i>
+            <input id="quickKeyword"
+                   type="search"
+                   placeholder="Nhập mã sản phẩm, tên sản phẩm hoặc thương hiệu...">
+        </div>
+
+        <button type="button"
+                id="toggleAdvancedSearch"
+                class="btn btn-outline">
+            <i class="fas fa-sliders-h"></i>
+            Tìm kiếm nâng cao
+            <i id="advancedChevron" class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+
+    <!-- BẢNG TÌM KIẾM NÂNG CAO -->
+    <section class="advanced-search" id="advancedSearchPanel">
+
+        <div class="advanced-search-header">
+            <div>
+                <h3>
+                    <i class="fas fa-filter"></i>
+                    Tìm kiếm nâng cao
+                </h3>
+                <p>
+                    Kết hợp nhiều điều kiện để lọc danh sách sản phẩm.
+                </p>
+            </div>
+        </div>
+
+        <form method="get" th:action="@{/admin/sanpham}"
+              id="advancedSearchForm">
+
+            <div class="advanced-search-content">
+
+                <div class="advanced-search-grid">
+
+                    <!-- TỪ KHÓA -->
+                    <div class="filter-field">
+                        <label for="advancedKeyword">Từ khóa</label>
+                        <input id="advancedKeyword"
+                               type="search"
+                               placeholder="Mã, tên sản phẩm hoặc thương hiệu...">
+                    </div>
+
+                    <!-- TRẠNG THÁI -->
+                    <div class="filter-field">
+                        <label for="filterStatus">Trạng thái</label>
+                        <select id="filterStatus" name="trangThai">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="0"
+                                    th:selected="${trangThai == '0'}">
+                                Đang bán
+                            </option>
+                            <option value="1"
+                                    th:selected="${trangThai == '1'}">
+                                Đã ngừng bán
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- THƯƠNG HIỆU -->
+                    <!-- THƯƠNG HIỆU -->
+                    <div class="filter-field">
+                        <label for="thuongHieu">Thương hiệu</label>
+
+                        <select id="thuongHieu" name="thuongHieu">
+                            <option value="">Tất cả thương hiệu</option>
+
+                            <option
+                                    th:each="th : ${thuonghieuList}"
+                                    th:value="${th.TENTHUONGHIEU}"
+                                    th:text="${th.TENTHUONGHIEU}"
+                                    th:selected="${thuongHieu == th.TENTHUONGHIEU}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- HỆ ĐIỀU HÀNH -->
+                    <div class="filter-field">
+                        <label for="filterOS">Hệ điều hành</label>
+                        <select id="filterOS" name="heDieuHanh">
+                            <option value="">Tất cả hệ điều hành</option>
+                            <option value="Windows"
+                                    th:selected="${heDieuHanh == 'Windows'}">
+                                Windows
+                            </option>
+                            <option value="macOS"
+                                    th:selected="${heDieuHanh == 'macOS'}">
+                                macOS
+                            </option>
+                            <option value="Linux"
+                                    th:selected="${heDieuHanh == 'Linux'}">
+                                Linux
+                            </option>
+                            <option value="ChromeOS"
+                                    th:selected="${heDieuHanh == 'ChromeOS'}">
+                                ChromeOS
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- SẮP XẾP -->
+                    <div class="filter-field">
+                        <label for="filterSort">Sắp xếp theo</label>
+                        <select id="filterSort" name="sort">
+                            <option value="MASP"
+                                    th:selected="${sort == 'MASP'}">
+                                Mã sản phẩm
+                            </option>
+                            <option value="TENSP"
+                                    th:selected="${sort == 'TENSP' or sort == null}">
+                                Tên sản phẩm
+                            </option>
+                            <option value="SOLUONGTON"
+                                    th:selected="${sort == 'SOLUONGTON'}">
+                                Tồn kho
+                            </option>
+                            <option value="GIA_BOM_MIN"
+                                    th:selected="${sort == 'GIA_BOM_MIN'}">
+                                Giá BOM thấp nhất
+                            </option>
+                            <option value="GIA_BOM_MAX"
+                                    th:selected="${sort == 'GIA_BOM_MAX'}">
+                                Giá BOM cao nhất
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- TỒN KHO TỪ -->
+                    <div class="filter-field">
+                        <label for="tonKhoTu">Tồn kho từ</label>
+
+                        <input
+                                id="tonKhoTu"
+                                type="number"
+                                name="tonKhoTu"
+                                min="0"
+                                step="1"
+                                th:value="${tonKhoTu}"
+                                placeholder="Số lượng tối thiểu">
+                    </div>
+
+                    <!-- TỒN KHO ĐẾN -->
+                    <div class="filter-field">
+                        <label for="tonKhoDen">Tồn kho đến</label>
+
+                        <input
+                                id="tonKhoDen"
+                                type="number"
+                                name="tonKhoDen"
+                                min="0"
+                                step="1"
+                                th:value="${tonKhoDen}"
+                                placeholder="Số lượng tối đa">
+                    </div>
+
+                    <!-- GIÁ BOM TỪ -->
+                    <div class="filter-field">
+                        <label for="giaTu">
+                            Giá BOM từ (VNĐ)
+                        </label>
+                        <input id="giaTu"
+                               type="number"
+                               name="giaTu"
+                               min="0"
+                               step="1"
+                               th:value="${giaTu}"
+                               placeholder="Ví dụ: 5000000">
+                        <span class="filter-hint">
+                            Chi phí nguyên vật liệu thấp nhất theo BOM.
+                        </span>
+                    </div>
+
+                    <!-- GIÁ BOM ĐẾN -->
+                    <div class="filter-field">
+                        <label for="giaDen">
+                            Giá BOM đến (VNĐ)
+                        </label>
+                        <input id="giaDen"
+                               type="number"
+                               name="giaDen"
+                               min="0"
+                               step="1"
+                               th:value="${giaDen}"
+                               placeholder="Ví dụ: 15000000">
+                        <span class="filter-hint">
+                            Chi phí nguyên vật liệu cao nhất theo BOM.
+                        </span>
+                    </div>
+
+                    <!-- THỨ TỰ -->
+                    <div class="filter-field">
+                        <label for="filterDirection">Thứ tự</label>
+                        <select id="filterDirection" name="direction">
+                            <option value="asc"
+                                    th:selected="${direction == 'asc' or direction == null}">
+                                Tăng dần
+                            </option>
+                            <option value="desc"
+                                    th:selected="${direction == 'desc'}">
+                                Giảm dần
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="filter-error"
+                     th:if="${giaRangeError}"
+                     th:text="${giaRangeError}">
+                    Khoảng giá không hợp lệ.
+                </div>
+
+                <div class="filter-error"
+                     th:if="${tonRangeError}"
+                     th:text="${tonRangeError}">
+                    Khoảng tồn kho không hợp lệ.
+                </div>
+
+                <!-- Đồng bộ từ khóa vào hai danh sách hiện tại -->
+                <input type="hidden" name="qDangBan" id="advancedActiveKeyword"
+                       th:value="${qDangBan}">
+
+                <input type="hidden" name="qNgungBan" id="advancedArchivedKeyword"
+                       th:value="${qNgungBan}">
+
+                <input type="hidden" name="pageDangBan" value="1">
+                <input type="hidden" name="pageNgungBan" value="1">
+
+                <div class="advanced-search-actions">
+                    <a class="btn btn-outline"
+                       th:href="@{/admin/sanpham}">
+                        <i class="fas fa-undo"></i>
+                        Đặt lại
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </section>
+
+    <!-- ================= SẢN PHẨM ĐANG BÁN ================= -->
+    <section class="directory-section">
+
+        <div class="directory-section-header">
+            <div>
+                <h2>Sản phẩm đang bán</h2>
+                <p>Danh mục sản phẩm đang kinh doanh.</p>
+            </div>
+
+            <span class="directory-state directory-state--active">
+                Đang bán
+            </span>
+        </div>
+
+        <!-- Tìm nhanh danh sách đang bán -->
+        <form method="get"
+              th:action="@{/admin/sanpham}"
+              class="quick-search">
+
+            <div class="quick-search-box">
+                <i class="fas fa-search"></i>
+                <input type="search"
+                       name="qDangBan"
+                       th:value="${qDangBan}"
+                       placeholder="Tìm mã, tên, thương hiệu..."
+                       aria-label="Tìm sản phẩm đang bán">
+            </div>
+
+            <input type="hidden" name="qNgungBan" th:value="${qNgungBan}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+            <input type="hidden" name="trangThai" th:value="${trangThai}">
+            <input type="hidden" name="thuongHieu" th:value="${thuongHieu}">
+            <input type="hidden" name="heDieuHanh" th:value="${heDieuHanh}">
+            <input type="hidden" name="tonTu" th:value="${tonTu}">
+            <input type="hidden" name="tonDen" th:value="${tonDen}">
+            <input type="hidden" name="giaTu" th:value="${giaTu}">
+            <input type="hidden" name="giaDen" th:value="${giaDen}">
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i>
+                Tìm nhanh
+            </button>
+        </form>
+
+        <div class="table-container">
+            <table class="table directory-table product-table">
+                <thead>
+                <tr>
+                    <th>Mã SP</th>
+                    <th>Hình ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Thương hiệu</th>
+                    <th>Hệ điều hành</th>
+                    <th>Tồn kho</th>
+                    <th>Khoảng giá BOM</th>
+                    <th>Trạng thái</th>
+                    <th>Thông tin</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <th:block th:each="sp : ${dangBanList}">
+
+                    <tr class="directory-row"
+                        th:attr="data-product-id=${sp.MASP}">
+
+                        <td th:text="${sp.MASP}"></td>
+
+                        <td>
+                            <div class="product-thumbnail">
+                                <img th:if="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}"
+                                     th:src="@{/uploads/{file}(file=${sp.HINHANHSP})}"
+                                     th:alt="${'Ảnh ' + sp.TENSP}"
+                                     loading="lazy">
+
+                                <span th:unless="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}"
+                                      class="product-thumbnail-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </span>
+                            </div>
+                        </td>
+
+                        <td class="product-name-cell"
+                            th:text="${sp.TENSP}">
+                        </td>
+
+                        <td th:text="${sp.thuonghieu != null
+                                      ? sp.thuonghieu.TENTHUONGHIEU
+                                      : 'Chưa có'}">
+                        </td>
+
+                        <td th:text="${sp.HEDIEUHANH ?: '—'}"></td>
+
+                        <td>
+                            <span class="stock-quantity"
+                                  th:classappend="${sp.SOLUONGTON == null or sp.SOLUONGTON == 0
+                                                   ? ' stock-quantity--empty' : ''}">
+                                <strong th:text="${sp.SOLUONGTON != null
+                                                  ? sp.SOLUONGTON : 0}">0</strong>
+                                <small> chiếc</small>
+                            </span>
+                        </td>
+
+                        <td class="bom-price-range">
+                            <!-- Controller cần truyền map giaBomTheoSanpham -->
+                            <th:block th:with="range=${giaBomTheoSanpham != null
+                                                     ? giaBomTheoSanpham[sp.MASP]
+                                                     : null}">
+                                <span th:if="${range != null and range.min != null and range.max != null}"
+                                      th:text="${#numbers.formatDecimal(range.min, 0, 'POINT', 0, 'COMMA')
+                                                + ' - '
+                                                + #numbers.formatDecimal(range.max, 0, 'POINT', 0, 'COMMA')
+                                                + ' VNĐ'}">
+                                </span>
+
+                                <span class="bom-price-missing"
+                                      th:unless="${range != null and range.min != null and range.max != null}">
+                                    Chưa có BOM
+                                </span>
+                            </th:block>
+                        </td>
+
+                        <td>
+                            <span class="directory-state directory-state--active">
+                                Đang bán
+                            </span>
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn btn-outline btn-compact btn-bom-version"
+                                    th:attr="data-product-id=${sp.MASP}">
+                                <i class="fas fa-layer-group"></i>
+                                Phiên bản BOM
+                                <i class="fas fa-chevron-down version-toggle-icon"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- CHI TIẾT PHIÊN BẢN BOM -->
+                    <tr class="bom-version-row"
+                        th:attr="data-product-id=${sp.MASP}">
+                        <td colspan="9">
+                            <div class="bom-version-container">
+                                <div class="bom-version-title">
+                                    <i class="fas fa-layer-group"></i>
+                                    Phiên bản BOM
+                                </div>
+
+                                <div class="bom-version-loading">
+                                    Chưa tải phiên bản BOM.
+                                </div>
+
+                                <div class="bom-version-list"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                </th:block>
+
+                <tr th:if="${#lists.isEmpty(dangBanList)}"
+                    class="directory-empty">
+                    <td colspan="9">
+                        Không có sản phẩm phù hợp với điều kiện tìm kiếm.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG ĐANG BÁN -->
+        <div class="pagination">
+            <span>
+                <strong th:text="${dangBanTotal}">0</strong> sản phẩm
+                · Trang <strong th:text="${dangBanPage}">1</strong>
+                / <strong th:text="${dangBanTotalPages}">1</strong>
+            </span>
+
+            <div class="pagination-links">
+                <a th:if="${dangBanPage > 1}"
+                   th:href="@{/admin/sanpham(
+                       qDangBan=${qDangBan},
+                       qNgungBan=${qNgungBan},
+                       trangThai=${trangThai},
+                       thuongHieu=${thuongHieu},
+                       heDieuHanh=${heDieuHanh},
+                       tonTu=${tonTu},
+                       tonDen=${tonDen},
+                       giaTu=${giaTu},
+                       giaDen=${giaDen},
+                       sort=${sort},
+                       direction=${direction},
+                       pageDangBan=${dangBanPage - 1},
+                       pageNgungBan=${ngungBanPage})}">
+                    Trước
+                </a>
+
+                <span class="current" th:text="${dangBanPage}">1</span>
+
+                <a th:if="${dangBanPage < dangBanTotalPages}"
+                   th:href="@{/admin/sanpham(
+                       qDangBan=${qDangBan},
+                       qNgungBan=${qNgungBan},
+                       trangThai=${trangThai},
+                       thuongHieu=${thuongHieu},
+                       heDieuHanh=${heDieuHanh},
+                       tonTu=${tonTu},
+                       tonDen=${tonDen},
+                       giaTu=${giaTu},
+                       giaDen=${giaDen},
+                       sort=${sort},
+                       direction=${direction},
+                       pageDangBan=${dangBanPage + 1},
+                       pageNgungBan=${ngungBanPage})}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SẢN PHẨM ĐÃ NGỪNG BÁN ================= -->
+    <section class="directory-section">
+
+        <div class="directory-section-header">
+            <div>
+                <h2>Sản phẩm đã ngừng bán</h2>
+                <p>
+                    Giữ hồ sơ sản phẩm để tra cứu chứng từ và lịch sử tồn kho.
+                </p>
+            </div>
+
+            <span class="directory-state directory-state--archived">
+                Đã ngừng bán
+            </span>
+        </div>
+
+        <!-- Tìm nhanh danh sách ngừng bán -->
+        <form method="get"
+              th:action="@{/admin/sanpham}"
+              class="quick-search">
+
+            <div class="quick-search-box">
+                <i class="fas fa-search"></i>
+                <input type="search"
+                       name="qNgungBan"
+                       th:value="${qNgungBan}"
+                       placeholder="Tìm mã, tên, thương hiệu..."
+                       aria-label="Tìm sản phẩm đã ngừng bán">
+            </div>
+
+            <input type="hidden" name="qDangBan" th:value="${qDangBan}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+            <input type="hidden" name="trangThai" th:value="${trangThai}">
+            <input type="hidden" name="thuongHieu" th:value="${thuongHieu}">
+            <input type="hidden" name="heDieuHanh" th:value="${heDieuHanh}">
+            <input type="hidden" name="tonTu" th:value="${tonTu}">
+            <input type="hidden" name="tonDen" th:value="${tonDen}">
+            <input type="hidden" name="giaTu" th:value="${giaTu}">
+            <input type="hidden" name="giaDen" th:value="${giaDen}">
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i>
+                Tìm nhanh
+            </button>
+        </form>
+
+        <div class="table-container">
+            <table class="table directory-table product-table">
+                <thead>
+                <tr>
+                    <th>Mã SP</th>
+                    <th>Hình ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Thương hiệu</th>
+                    <th>Hệ điều hành</th>
+                    <th>Tồn kho</th>
+                    <th>Khoảng giá BOM</th>
+                    <th>Trạng thái</th>
+                    <th>Lý do / ghi chú</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr class="directory-row"
+                    th:each="sp : ${ngungBanList}">
+
+                    <td th:text="${sp.MASP}"></td>
+
+                    <td>
+                        <div class="product-thumbnail">
+                            <img th:if="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}"
+                                 th:src="@{/uploads/{file}(file=${sp.HINHANHSP})}"
+                                 th:alt="${'Ảnh ' + sp.TENSP}"
+                                 loading="lazy">
+
+                            <span th:unless="${sp.HINHANHSP != null and !#strings.isEmpty(sp.HINHANHSP)}"
+                                  class="product-thumbnail-placeholder">
+                                <i class="fas fa-image"></i>
+                            </span>
+                        </div>
+                    </td>
+
+                    <td class="product-name-cell"
+                        th:text="${sp.TENSP}">
+                    </td>
+
+                    <td th:text="${sp.thuonghieu != null
+                                  ? sp.thuonghieu.TENTHUONGHIEU
+                                  : 'Chưa có'}">
+                    </td>
+
+                    <td th:text="${sp.HEDIEUHANH ?: '—'}"></td>
+
+                    <td>
+                        <span class="stock-quantity"
+                              th:classappend="${sp.SOLUONGTON == null or sp.SOLUONGTON == 0
+                                               ? ' stock-quantity--empty' : ''}">
+                            <strong th:text="${sp.SOLUONGTON != null
+                                              ? sp.SOLUONGTON : 0}">0</strong>
+                            <small> chiếc</small>
+                        </span>
+                    </td>
+
+                    <td class="bom-price-range">
+                        <th:block th:with="range=${giaBomTheoSanpham != null
+                                                 ? giaBomTheoSanpham[sp.MASP]
+                                                 : null}">
+                            <span th:if="${range != null and range.min != null and range.max != null}"
+                                  th:text="${#numbers.formatDecimal(range.min, 0, 'POINT', 0, 'COMMA')
+                                            + ' - '
+                                            + #numbers.formatDecimal(range.max, 0, 'POINT', 0, 'COMMA')
+                                            + ' VNĐ'}">
+                            </span>
+
+                            <span class="bom-price-missing"
+                                  th:unless="${range != null and range.min != null and range.max != null}">
+                                Chưa có BOM
+                            </span>
+                        </th:block>
+                    </td>
+
+                    <td>
+                        <span class="directory-state directory-state--archived">
+                            Đã ngừng bán
+                        </span>
+                    </td>
+
+                    <td class="directory-note"
+                        th:text="${sp.GHICHU != null and !#strings.isEmpty(sp.GHICHU)
+                                  ? sp.GHICHU : '—'}">
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(ngungBanList)}"
+                    class="directory-empty">
+                    <td colspan="9">
+                        Không có sản phẩm phù hợp với điều kiện tìm kiếm.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG NGỪNG BÁN -->
+        <div class="pagination">
+            <span>
+                <strong th:text="${ngungBanTotal}">0</strong> sản phẩm
+                · Trang <strong th:text="${ngungBanPage}">1</strong>
+                / <strong th:text="${ngungBanTotalPages}">1</strong>
+            </span>
+
+            <div class="pagination-links">
+                <a th:if="${ngungBanPage > 1}"
+                   th:href="@{/admin/sanpham(
+                       qDangBan=${qDangBan},
+                       qNgungBan=${qNgungBan},
+                       trangThai=${trangThai},
+                       thuongHieu=${thuongHieu},
+                       heDieuHanh=${heDieuHanh},
+                       tonTu=${tonTu},
+                       tonDen=${tonDen},
+                       giaTu=${giaTu},
+                       giaDen=${giaDen},
+                       sort=${sort},
+                       direction=${direction},
+                       pageDangBan=${dangBanPage},
+                       pageNgungBan=${ngungBanPage - 1})}">
+                    Trước
+                </a>
+
+                <span class="current" th:text="${ngungBanPage}">1</span>
+
+                <a th:if="${ngungBanPage < ngungBanTotalPages}"
+                   th:href="@{/admin/sanpham(
+                       qDangBan=${qDangBan},
+                       qNgungBan=${qNgungBan},
+                       trangThai=${trangThai},
+                       thuongHieu=${thuongHieu},
+                       heDieuHanh=${heDieuHanh},
+                       tonTu=${tonTu},
+                       tonDen=${tonDen},
+                       giaTu=${giaTu},
+                       giaDen=${giaDen},
+                       sort=${sort},
+                       direction=${direction},
+                       pageDangBan=${dangBanPage},
+                       pageNgungBan=${ngungBanPage + 1})}">
+                    Sau
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // MỞ / ĐÓNG BẢNG TÌM KIẾM NÂNG CAO
+    const advancedPanel = document.getElementById("advancedSearchPanel");
+    const advancedToggle = document.getElementById("toggleAdvancedSearch");
+    const advancedChevron = document.getElementById("advancedChevron");
+
+    advancedToggle.addEventListener("click", function () {
+        const isOpen = advancedPanel.classList.toggle("open");
+
+        advancedChevron.classList.toggle("fa-chevron-down", !isOpen);
+        advancedChevron.classList.toggle("fa-chevron-up", isOpen);
+
+        advancedToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    // Đồng bộ từ khóa tìm kiếm nhanh với bảng tìm kiếm nâng cao
+    const quickKeyword = document.getElementById("quickKeyword");
+    const advancedKeyword = document.getElementById("advancedKeyword");
+    const activeKeyword = document.getElementById("advancedActiveKeyword");
+    const archivedKeyword = document.getElementById("advancedArchivedKeyword");
+
+    quickKeyword.addEventListener("input", function () {
+        advancedKeyword.value = quickKeyword.value;
+    });
+
+    advancedKeyword.addEventListener("input", function () {
+        quickKeyword.value = advancedKeyword.value;
+    });
+
+    document.getElementById("advancedSearchForm")
+        .addEventListener("submit", function () {
+            const keyword = advancedKeyword.value.trim();
+
+            // Áp dụng từ khóa vào cả danh sách đang bán và ngừng bán.
+            activeKeyword.value = keyword;
+            archivedKeyword.value = keyword;
+        });
+
+    // KIỂM TRA KHOẢNG GIÁ VÀ TỒN KHO TRƯỚC KHI GỬI FORM
+    document.getElementById("advancedSearchForm")
+        .addEventListener("submit", function (event) {
+            const giaTuInput = document.getElementById("giaTu");
+            const giaDenInput = document.getElementById("giaDen");
+            const tonTuInput = document.getElementById("stockFrom");
+            const tonDenInput = document.getElementById("stockTo");
+
+            const giaTu = giaTuInput.value.trim() === ""
+                ? null : Number(giaTuInput.value);
+
+            const giaDen = giaDenInput.value.trim() === ""
+                ? null : Number(giaDenInput.value);
+
+            const tonTu = tonTuInput.value.trim() === ""
+                ? null : Number(tonTuInput.value);
+
+            const tonDen = tonDenInput.value.trim() === ""
+                ? null : Number(tonDenInput.value);
+
+            if (giaTu !== null && giaDen !== null && giaTu > giaDen) {
+                event.preventDefault();
+                advancedPanel.classList.add("open");
+                alert("Giá BOM từ không được lớn hơn giá BOM đến.");
+                giaTuInput.focus();
+                return;
+            }
+
+            if (tonTu !== null && tonDen !== null && tonTu > tonDen) {
+                event.preventDefault();
+                advancedPanel.classList.add("open");
+                alert("Tồn kho từ không được lớn hơn tồn kho đến.");
+                tonTuInput.focus();
+            }
+        });
+
+    // MỞ / ĐÓNG PHIÊN BẢN BOM
+    document.addEventListener("click", async function (event) {
+        const button = event.target.closest(".btn-bom-version");
+        if (!button) return;
+
+        const productId = button.dataset.productId;
+
+        const row = document.querySelector(
+            '.bom-version-row[data-product-id="' + productId + '"]'
+        );
+
+        if (!row) return;
+
+        const icon = button.querySelector(".version-toggle-icon");
+
+        if (row.classList.contains("bom-version-open")) {
+            row.classList.remove("bom-version-open");
+            if (icon) icon.classList.remove("open");
+            return;
+        }
+
+        row.classList.add("bom-version-open");
+        if (icon) icon.classList.add("open");
+
+        if (row.dataset.loaded === "true") return;
+
+        const loading = row.querySelector(".bom-version-loading");
+        const list = row.querySelector(".bom-version-list");
+
+        loading.textContent = "Đang tải phiên bản BOM...";
+        loading.style.display = "block";
+        list.replaceChildren();
+
+        try {
+            const response = await fetch(
+                "/admin/sanpham/bom-versions?productId="
+                + encodeURIComponent(productId)
+            );
+
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status);
+            }
+
+            const versions = await response.json();
+            loading.style.display = "none";
+
+            if (!Array.isArray(versions) || versions.length === 0) {
+                loading.textContent = "Sản phẩm này chưa có phiên bản BOM.";
+                loading.style.display = "block";
+                row.dataset.loaded = "true";
+                return;
+            }
+
+            versions.forEach(function (version) {
+                const item = document.createElement("div");
+                item.className = "bom-version-item";
+
+                const info = document.createElement("div");
+                info.className = "bom-version-info";
+
+                const iconBox = document.createElement("div");
+                iconBox.className = "bom-version-icon";
+                iconBox.innerHTML = '<i class="fas fa-layer-group"></i>';
+
+                const detail = document.createElement("div");
+
+                const name = document.createElement("div");
+                name.className = "bom-version-name";
+                name.textContent = "BOM phiên bản " + (version.phienban ?? "");
+
+                const code = document.createElement("div");
+                code.className = "bom-version-meta";
+                code.textContent = "Mã BOM: " + (version.mabom ?? "");
+
+                const quantity = document.createElement("div");
+                quantity.className = "bom-version-detail";
+                quantity.textContent =
+                    "Số lượng thành phẩm: "
+                    + formatNumber(version.soluong_thanhpham)
+                    + " cái";
+
+                const price = document.createElement("div");
+                price.className = "bom-version-detail";
+                price.textContent =
+                    "Tổng giá nguyên vật liệu: "
+                    + formatCurrency(version.tong_gia_nvl)
+                    + " VNĐ";
+
+                detail.append(name, code, quantity, price);
+                info.append(iconBox, detail);
+
+                const actions = document.createElement("div");
+                actions.className = "bom-version-actions";
+
+                const status = document.createElement("span");
+                const active = version.trangthai === "HIEU_LUC";
+
+                status.className = "bom-version-status "
+                    + (active ? "bom-active" : "bom-inactive");
+
+                status.textContent = active ? "Hiệu lực" : "Ngừng sử dụng";
+
+                const link = document.createElement("a");
+                link.className = "btn btn-outline btn-compact";
+                link.href = "/admin/bom/" + encodeURIComponent(version.mabom);
+                link.textContent = "Xem BOM";
+
+                actions.append(status, link);
+                item.append(info, actions);
+                list.appendChild(item);
+            });
+
+            row.dataset.loaded = "true";
+
+        } catch (error) {
+            loading.textContent =
+                "Không thể tải phiên bản BOM. " + error.message;
+            loading.style.display = "block";
+        }
+    });
+
+    function formatNumber(value) {
+        const number = Number(value ?? 0);
+
+        return Number.isFinite(number)
+            ? number.toLocaleString("vi-VN")
+            : "0";
+    }
+
+    function formatCurrency(value) {
+        const number = Number(value ?? 0);
+
+        return Number.isFinite(number)
+            ? Math.round(number).toLocaleString("vi-VN")
+            : "0";
+    }
+</script>
+
+</body>
+</html>

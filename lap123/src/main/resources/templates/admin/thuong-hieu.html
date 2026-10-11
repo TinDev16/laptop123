@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý thương hiệu</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px 30px;
+        }
+
+        .breadcrumb {
+            margin-bottom: 18px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            min-height: 42px;
+            padding: 9px 16px;
+            border: 1px solid #dbe2ea;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            border-color: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .stat-card span {
+            display: block;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .stat-card strong {
+            font-size: 26px;
+            color: #0f172a;
+        }
+
+        .panel {
+            padding: 22px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 19px;
+        }
+
+        .panel-description {
+            margin-top: -8px;
+            margin-bottom: 18px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            min-height: 42px;
+            padding: 9px 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #fff;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-row input[type="text"] {
+            flex: 1;
+            min-width: 220px;
+            min-height: 42px;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .sort-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            align-items: end;
+            gap: 16px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #334155;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .sort-link {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .sort-link:hover {
+            color: #2563eb;
+        }
+
+        .product-count {
+            display: inline-flex;
+            min-width: 38px;
+            justify-content: center;
+            align-items: center;
+            padding: 6px 11px;
+            border-radius: 20px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-unknown {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .empty-row {
+            padding: 28px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .muted {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            min-height: 36px;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .pagination a {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .pagination a:hover {
+            background: #cbd5e1;
+        }
+
+        .pagination .current {
+            background: #2563eb;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .pagination .disabled {
+            color: #94a3b8;
+            background: #f1f5f9;
+        }
+
+        @media (max-width: 900px) {
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .sort-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .sort-row button {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .admin-container {
+                margin-top: 20px;
+                padding: 0 12px 25px;
+            }
+
+            .stats,
+            .form-grid,
+            .sort-row {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .page-header h1 {
+                font-size: 23px;
+            }
+
+            .search-row input[type="text"] {
+                min-width: 100%;
+            }
+
+            .search-row .btn,
+            .filter-actions .btn,
+            .sort-row button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-container">
+
+    <!-- ĐIỀU HƯỚNG -->
+    <div class="breadcrumb">
+        <a th:href="@{/admin}">ADMIN</a>
+        / Đối tác
+        / Quản lý thương hiệu
+    </div>
+
+    <!-- TIÊU ĐỀ -->
+    <div class="page-header">
+        <div>
+            <h1>Quản lý thương hiệu</h1>
+            <p>Danh sách thương hiệu và số sản phẩm đang sử dụng từng thương hiệu.</p>
+        </div>
+
+        <a class="btn" th:href="@{/admin}">
+            ← Quay lại trang ADMIN
+        </a>
+    </div>
+
+    <!-- THỐNG KÊ -->
+    <div class="stats">
+        <div class="stat-card">
+            <span>Tổng số thương hiệu</span>
+            <strong th:text="${tongThuongHieu}">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Thương hiệu hoạt động</span>
+            <strong th:text="${dangHoatDong}">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Thương hiệu ngừng hoạt động</span>
+            <strong th:text="${ngungHoatDong}">0</strong>
+        </div>
+    </div>
+
+    <!-- TÌM KIẾM NHANH -->
+    <div class="panel">
+        <h2>Tìm kiếm thương hiệu</h2>
+
+        <form method="get" th:action="@{/admin/thuong-hieu}">
+            <div class="search-row">
+                <input
+                        type="text"
+                        name="search"
+                        th:value="${search}"
+                        placeholder="Nhập mã hoặc tên thương hiệu...">
+
+                <button type="submit" class="btn btn-primary">
+                    Tìm kiếm
+                </button>
+
+                <a th:href="@{/admin/thuong-hieu}"
+                   class="btn btn-secondary">
+                    Làm mới
+                </a>
+            </div>
+
+            <!-- GIỮ BỘ LỌC VÀ SẮP XẾP -->
+            <input type="hidden" name="maThuongHieu"
+                   th:value="${maThuongHieu}">
+            <input type="hidden" name="tenThuongHieu"
+                   th:value="${tenThuongHieu}">
+            <input type="hidden" name="trangThai"
+                   th:value="${trangThai}">
+            <input type="hidden" name="tuSoSanPham"
+                   th:value="${tuSoSanPham}">
+            <input type="hidden" name="denSoSanPham"
+                   th:value="${denSoSanPham}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+        </form>
+    </div>
+
+    <!-- TÌM KIẾM NÂNG CAO -->
+    <div class="panel">
+        <h2>Tìm kiếm nâng cao và lọc</h2>
+
+        <p class="panel-description">
+            Lọc thương hiệu theo mã, tên, trạng thái và tổng số sản phẩm đang sử dụng thương hiệu đó.
+        </p>
+
+        <form method="get" th:action="@{/admin/thuong-hieu}">
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="maThuongHieu">Mã thương hiệu</label>
+                    <input
+                            id="maThuongHieu"
+                            type="text"
+                            name="maThuongHieu"
+                            th:value="${maThuongHieu}"
+                            placeholder="Nhập mã thương hiệu">
+                </div>
+
+                <div class="form-group">
+                    <label for="tenThuongHieu">Tên thương hiệu</label>
+                    <input
+                            id="tenThuongHieu"
+                            type="text"
+                            name="tenThuongHieu"
+                            th:value="${tenThuongHieu}"
+                            placeholder="Nhập tên thương hiệu">
+                </div>
+
+                <div class="form-group">
+                    <label for="trangThai">Trạng thái</label>
+                    <select id="trangThai" name="trangThai">
+                        <option value=""
+                                th:selected="${trangThai == ''}">
+                            Tất cả trạng thái
+                        </option>
+
+                        <option value="0"
+                                th:selected="${trangThai == '0'}">
+                            Hoạt động
+                        </option>
+
+                        <option value="1"
+                                th:selected="${trangThai == '1'}">
+                            Ngừng hoạt động
+                        </option>
+                    </select>
+                </div>
+
+                <!-- SỐ SẢN PHẨM TỪ -->
+                <div class="form-group">
+                    <label for="tuSoSanPham">
+                        Số sản phẩm từ
+                    </label>
+                    <input
+                            id="tuSoSanPham"
+                            type="number"
+                            name="tuSoSanPham"
+                            min="0"
+                            step="1"
+                            th:value="${tuSoSanPham}"
+                            placeholder="Ví dụ: 0">
+                </div>
+
+                <!-- SỐ SẢN PHẨM ĐẾN -->
+                <div class="form-group">
+                    <label for="denSoSanPham">
+                        Số sản phẩm đến
+                    </label>
+                    <input
+                            id="denSoSanPham"
+                            type="number"
+                            name="denSoSanPham"
+                            min="0"
+                            step="1"
+                            th:value="${denSoSanPham}"
+                            placeholder="Ví dụ: 20">
+                </div>
+
+            </div>
+
+            <!-- GIỮ TỪ KHÓA VÀ CÁCH SẮP XẾP -->
+            <input type="hidden" name="search" th:value="${search}">
+            <input type="hidden" name="sort" th:value="${sort}">
+            <input type="hidden" name="direction" th:value="${direction}">
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng bộ lọc
+                </button>
+
+                <a th:href="@{/admin/thuong-hieu}"
+                   class="btn btn-secondary">
+                    Xóa bộ lọc
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- SẮP XẾP -->
+    <div class="panel">
+        <h2>Sắp xếp danh sách</h2>
+
+        <form method="get" th:action="@{/admin/thuong-hieu}">
+            <div class="sort-row">
+
+                <div class="form-group">
+                    <label for="sort">Sắp xếp theo</label>
+                    <select id="sort" name="sort">
+                        <option value="mathuonghieu"
+                                th:selected="${sort == 'mathuonghieu'}">
+                            Mã thương hiệu
+                        </option>
+
+                        <option value="tenthuonghieu"
+                                th:selected="${sort == 'tenthuonghieu'}">
+                            Tên thương hiệu
+                        </option>
+
+                        <option value="tongsanpham"
+                                th:selected="${sort == 'tongsanpham'}">
+                            Tổng số sản phẩm
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="direction">Thứ tự</label>
+                    <select id="direction" name="direction">
+                        <option value="asc"
+                                th:selected="${direction == 'asc'}">
+                            Tăng dần
+                        </option>
+
+                        <option value="desc"
+                                th:selected="${direction == 'desc'}">
+                            Giảm dần
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Áp dụng sắp xếp
+                </button>
+            </div>
+
+            <!-- GIỮ CÁC ĐIỀU KIỆN TÌM KIẾM KHI SẮP XẾP -->
+            <input type="hidden" name="search" th:value="${search}">
+            <input type="hidden" name="maThuongHieu"
+                   th:value="${maThuongHieu}">
+            <input type="hidden" name="tenThuongHieu"
+                   th:value="${tenThuongHieu}">
+            <input type="hidden" name="trangThai"
+                   th:value="${trangThai}">
+            <input type="hidden" name="tuSoSanPham"
+                   th:value="${tuSoSanPham}">
+            <input type="hidden" name="denSoSanPham"
+                   th:value="${denSoSanPham}">
+        </form>
+    </div>
+
+    <!-- DANH SÁCH THƯƠNG HIỆU -->
+    <div class="panel">
+        <h2>Danh sách thương hiệu</h2>
+
+        <p class="panel-description">
+            Tổng số sản phẩm là số bản ghi sản phẩm đang liên kết với mã thương hiệu trong bảng sanpham.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <!-- MÃ THƯƠNG HIỆU -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/thuong-hieu(
+                               search=${search},
+                               maThuongHieu=${maThuongHieu},
+                               tenThuongHieu=${tenThuongHieu},
+                               trangThai=${trangThai},
+                               tuSoSanPham=${tuSoSanPham},
+                               denSoSanPham=${denSoSanPham},
+                               sort='mathuonghieu',
+                               direction=${sort == 'mathuonghieu' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Mã thương hiệu
+                            <span th:if="${sort == 'mathuonghieu'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- TÊN THƯƠNG HIỆU -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/thuong-hieu(
+                               search=${search},
+                               maThuongHieu=${maThuongHieu},
+                               tenThuongHieu=${tenThuongHieu},
+                               trangThai=${trangThai},
+                               tuSoSanPham=${tuSoSanPham},
+                               denSoSanPham=${denSoSanPham},
+                               sort='tenthuonghieu',
+                               direction=${sort == 'tenthuonghieu' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tên thương hiệu
+                            <span th:if="${sort == 'tenthuonghieu'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <!-- TỔNG SẢN PHẨM -->
+                    <th>
+                        <a class="sort-link"
+                           th:href="@{/admin/thuong-hieu(
+                               search=${search},
+                               maThuongHieu=${maThuongHieu},
+                               tenThuongHieu=${tenThuongHieu},
+                               trangThai=${trangThai},
+                               tuSoSanPham=${tuSoSanPham},
+                               denSoSanPham=${denSoSanPham},
+                               sort='tongsanpham',
+                               direction=${sort == 'tongsanpham' and direction == 'asc' ? 'desc' : 'asc'}
+                           )}">
+                            Tổng số sản phẩm
+                            <span th:if="${sort == 'tongsanpham'}"
+                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                        </a>
+                    </th>
+
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="item : ${thuongHieuList}">
+
+                    <!-- MÃ THƯƠNG HIỆU -->
+                    <td th:text="${item['mathuonghieu']}">1</td>
+
+                    <!-- TÊN THƯƠNG HIỆU -->
+                    <td th:text="${item['tenthuonghieu']}">ASUS</td>
+
+                    <!-- TỔNG SẢN PHẨM -->
+                    <td>
+                        <span
+                                class="product-count"
+                                th:text="${item['tongSanPham'] != null ? item['tongSanPham'] : 0}">
+                            0
+                        </span>
+                    </td>
+
+                    <!-- TRẠNG THÁI -->
+                    <td>
+                        <span
+                                th:if="${item['trangthai'] != null and item['trangthai'].toString() == '0'}"
+                                class="status status-active">
+                            Hoạt động
+                        </span>
+
+                        <span
+                                th:if="${item['trangthai'] != null and item['trangthai'].toString() == '1'}"
+                                class="status status-inactive">
+                            Ngừng hoạt động
+                        </span>
+
+                        <span
+                                th:if="${item['trangthai'] == null or (item['trangthai'].toString() != '0' and item['trangthai'].toString() != '1')}"
+                                class="status status-unknown">
+                            Chưa xác định
+                        </span>
+                    </td>
+
+                    <!-- GHI CHÚ -->
+                    <td>
+                        <span
+                                th:text="${item['ghichu'] != null and !#strings.isEmpty(item['ghichu'].toString()) ? item['ghichu'] : '—'}">
+                            —
+                        </span>
+                    </td>
+                </tr>
+
+                <!-- KHÔNG CÓ DỮ LIỆU -->
+                <tr th:if="${#lists.isEmpty(thuongHieuList)}">
+                    <td colspan="5" class="empty-row">
+                        Không tìm thấy thương hiệu phù hợp.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG -->
+        <div class="table-footer">
+            <div class="muted">
+                Tổng cộng
+                <strong th:text="${totalRecords}">0</strong>
+                thương hiệu phù hợp.
+
+                <span>
+                    Trang
+                    <strong th:text="${page}">1</strong>
+                    /
+                    <strong th:text="${totalPages}">1</strong>
+                </span>
+            </div>
+
+            <div class="pagination">
+
+                <!-- TRANG TRƯỚC -->
+                <a
+                        th:if="${page > 1}"
+                        th:href="@{/admin/thuong-hieu(
+                            search=${search},
+                            maThuongHieu=${maThuongHieu},
+                            tenThuongHieu=${tenThuongHieu},
+                            trangThai=${trangThai},
+                            tuSoSanPham=${tuSoSanPham},
+                            denSoSanPham=${denSoSanPham},
+                            sort=${sort},
+                            direction=${direction},
+                            page=${page - 1}
+                        )}">
+                    Trước
+                </a>
+
+                <span th:unless="${page > 1}" class="disabled">
+                    Trước
+                </span>
+
+                <!-- TRANG HIỆN TẠI -->
+                <span class="current">
+                    <span th:text="${page}">1</span>
+                    /
+                    <span th:text="${totalPages}">1</span>
+                </span>
+
+                <!-- TRANG SAU -->
+                <a
+                        th:if="${page < totalPages}"
+                        th:href="@{/admin/thuong-hieu(
+                            search=${search},
+                            maThuongHieu=${maThuongHieu},
+                            tenThuongHieu=${tenThuongHieu},
+                            trangThai=${trangThai},
+                            tuSoSanPham=${tuSoSanPham},
+                            denSoSanPham=${denSoSanPham},
+                            sort=${sort},
+                            direction=${direction},
+                            page=${page + 1}
+                        )}">
+                    Sau
+                </a>
+
+                <span th:unless="${page < totalPages}" class="disabled">
+                    Sau
+                </span>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

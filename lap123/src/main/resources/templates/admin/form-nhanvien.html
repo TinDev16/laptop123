@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Hồ sơ nhân viên</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        .container {
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 24px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .field input,
+        .field select {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #1d4ed8;
+        }
+
+        .secondary:hover {
+            background: #475569;
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+        }
+
+        .required-note {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                padding: 10px;
+            }
+
+            .form-card {
+                padding: 16px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="container">
+
+    <p class="breadcrumb">
+        <a th:href="@{/admin}">Hệ thống</a> /
+        <a th:href="@{/admin/nhanvien}">Nhân viên</a> /
+        Hồ sơ
+    </p>
+
+    <section class="form-card">
+
+        <h1 th:text="${isEdit} ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên'">
+            Hồ sơ nhân viên
+        </h1>
+
+        <p>Nhập thông tin hồ sơ nhân viên.</p>
+
+        <form method="post"
+              th:action="@{/admin/nhanvien/save}"
+              th:object="${nhanvien}">
+
+            <input type="hidden" th:field="*{MANV}">
+
+            <div class="grid">
+
+                <!-- Họ tên -->
+                <div class="field full">
+                    <label for="HOTEN">Họ và tên *</label>
+                    <input id="HOTEN"
+                           type="text"
+                           th:field="*{HOTEN}"
+                           maxlength="255"
+                           required>
+                </div>
+
+                <!-- Giới tính -->
+                <div class="field">
+                    <label for="GIOITINH">Giới tính</label>
+                    <select id="GIOITINH" th:field="*{GIOITINH}">
+                        <option value="">-- Chọn giới tính --</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+
+                <!-- Ngày sinh -->
+                <div class="field">
+                    <label for="NGAYSINH">Ngày sinh</label>
+                    <input id="NGAYSINH"
+                           type="date"
+                           name="NGAYSINH"
+                           th:value="${nhanvien.NGAYSINH != null
+                               ? #dates.format(nhanvien.NGAYSINH, 'yyyy-MM-dd')
+                               : ''}">
+                </div>
+
+                <!-- Số điện thoại -->
+                <div class="field">
+                    <label for="SDT">Số điện thoại</label>
+                    <input id="SDT"
+                           type="tel"
+                           th:field="*{SDT}"
+                           maxlength="255">
+                </div>
+
+                <!-- Email -->
+                <div class="field">
+                    <label for="EMAIL">Email nhân viên</label>
+                    <input id="EMAIL"
+                           type="email"
+                           th:field="*{EMAIL}"
+                           maxlength="255">
+                </div>
+
+                <!-- Ngày tham gia -->
+                <div class="field"
+                     th:with="ngayHienTai=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+
+                    <label for="NGAYTHAMGIA">Ngày tham gia</label>
+
+                    <input id="NGAYTHAMGIA"
+                           type="date"
+                           name="NGAYTHAMGIA"
+                           th:value="${nhanvien.NGAYTHAMGIA != null
+                               ? #dates.format(nhanvien.NGAYTHAMGIA, 'yyyy-MM-dd')
+                               : (isEdit ? '' : ngayHienTai)}">
+                </div>
+
+            </div>
+
+            <p class="required-note">* Trường bắt buộc.</p>
+
+            <div class="actions">
+                <button class="btn primary" type="submit">
+                    Lưu hồ sơ
+                </button>
+
+                <a class="btn secondary" th:href="@{/admin/nhanvien}">
+                    Hủy
+                </a>
+            </div>
+
+        </form>
+    </section>
+</main>
+</body>
+</html>

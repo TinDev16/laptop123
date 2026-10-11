@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Quản lý tài khoản</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <style>
+        .page { max-width: 1400px; margin: 28px auto; padding: 20px; }
+        .toolbar, .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .search { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0; }
+        input, select { padding: 9px 11px; border: 1px solid #ccc; border-radius: 6px; }
+        .btn { display: inline-block; padding: 9px 13px; border: 0; border-radius: 6px; cursor: pointer; text-decoration: none; color: white; background: #2563eb; }
+        .secondary { background: #64748b; }
+        .warning { background: #b45309; }
+        .success-btn { background: #15803d; }
+        .panel { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-top: 22px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 11px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #f8fafc; white-space: nowrap; }
+        .status { display: inline-block; padding: 4px 9px; border-radius: 20px; font-size: 12px; }
+        .active { background: #dcfce7; color: #166534; }
+        .locked { background: #fee2e2; color: #991b1b; }
+        .message { padding: 12px; margin: 14px 0; border-radius: 6px; }
+        .success { background: #dcfce7; color: #166534; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .muted { color: #64748b; }
+        .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .pagination { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+        .pagination a { text-decoration: none; }
+    </style>
+</head>
+<body>
+<main class="page">
+    <p class="muted">
+        <a th:href="@{/admin}">Hệ thống</a> / Tài khoản
+    </p>
+
+    <div class="toolbar">
+        <div>
+            <h1>Tài khoản hệ thống</h1>
+            <p class="muted">Theo dõi quyền truy cập và trạng thái tài khoản.</p>
+        </div>
+        <a class="btn" th:href="@{/admin/taikhoan/form}">+ Thêm tài khoản</a>
+    </div>
+
+    <div th:if="${success}" class="message success" th:text="${success}"></div>
+    <div th:if="${error}" class="message error" th:text="${error}"></div>
+
+    <form class="search" method="get" th:action="@{/admin/taikhoan}">
+        <input type="text" name="q" th:value="${q}"
+               placeholder="Tìm email, họ tên, mã NV, vai trò">
+
+        <select name="role">
+            <option value="">Tất cả vai trò</option>
+            <option th:each="v : ${danhSachVaiTro}"
+                    th:value="${v.maVaitro}"
+                    th:selected="${role == v.maVaitro}"
+                    th:text="${v.ten != null ? v.ten : v.maVaitro}"></option>
+        </select>
+
+        <button class="btn" type="submit">Tìm kiếm</button>
+        <a class="btn secondary" th:href="@{/admin/taikhoan}">Xóa lọc</a>
+    </form>
+
+    <!-- TÀI KHOẢN ĐANG HOẠT ĐỘNG -->
+    <section class="panel">
+        <div class="section-head">
+            <div>
+                <h2>Tài khoản đang hoạt động</h2>
+                <span class="muted" th:text="'Tổng số: ' + ${tongDangHoatDong}"></span>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Mã TK</th>
+                <th>Email tài khoản</th>
+                <th>Nhân viên</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tk : ${taiKhoanDangHoatDong}">
+                <td th:text="${tk.taikhoan_id}"></td>
+                <td th:text="${tk.email}"></td>
+                <td th:text="${tk.nhanvien != null
+                    ? tk.nhanvien.HOTEN + ' (#' + tk.nhanvien.MANV + ')'
+                    : 'Chưa liên kết'}"></td>
+                <td th:text="${tk.vaitro != null
+                    ? (tk.vaitro.ten != null ? tk.vaitro.ten : tk.vaitro.maVaitro)
+                    : 'Chưa có vai trò'}"></td>
+                <td><span class="status active">Đang hoạt động</span></td>
+                <td>
+                    <div class="actions">
+                        <a class="btn secondary"
+                           th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">Sửa</a>
+                        <form method="post"
+                              th:action="@{/admin/taikhoan/{id}/lock(id=${tk.taikhoan_id})}"
+                              onsubmit="return confirm('Khóa tài khoản này?')">
+                            <input type="hidden" name="locked" value="true">
+                            <button class="btn warning" type="submit">Khóa</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(taiKhoanDangHoatDong)}">
+                <td colspan="6" class="muted">Không có tài khoản phù hợp.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <a th:if="${pageActive > 0}"
+               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive - 1},pageLocked=${pageLocked})}">← Trước</a>
+            <span th:text="'Trang ' + ${pageActive + 1} + ' / ' + ${totalActivePages}"></span>
+            <a th:if="${pageActive + 1 < totalActivePages}"
+               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive + 1},pageLocked=${pageLocked})}">Sau →</a>
+        </div>
+    </section>
+
+    <!-- TÀI KHOẢN ĐÃ KHÓA -->
+    <section class="panel">
+        <div>
+            <h2>Tài khoản đã khóa</h2>
+            <span class="muted" th:text="'Tổng số: ' + ${tongDaKhoa}"></span>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Mã TK</th>
+                <th>Email tài khoản</th>
+                <th>Nhân viên</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tk : ${taiKhoanDaKhoa}">
+                <td th:text="${tk.taikhoan_id}"></td>
+                <td th:text="${tk.email}"></td>
+                <td th:text="${tk.nhanvien != null
+                    ? tk.nhanvien.HOTEN + ' (#' + tk.nhanvien.MANV + ')'
+                    : 'Chưa liên kết'}"></td>
+                <td th:text="${tk.vaitro != null
+                    ? (tk.vaitro.ten != null ? tk.vaitro.ten : tk.vaitro.maVaitro)
+                    : 'Chưa có vai trò'}"></td>
+                <td><span class="status locked">Đã khóa</span></td>
+                <td>
+                    <div class="actions">
+                        <a class="btn secondary"
+                           th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">Sửa</a>
+                        <form method="post"
+                              th:action="@{/admin/taikhoan/{id}/lock(id=${tk.taikhoan_id})}"
+                              onsubmit="return confirm('Mở khóa tài khoản này?')">
+                            <input type="hidden" name="locked" value="false">
+                            <button class="btn success-btn" type="submit">Mở khóa</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(taiKhoanDaKhoa)}">
+                <td colspan="6" class="muted">Không có tài khoản phù hợp.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <a th:if="${pageLocked > 0}"
+               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive},pageLocked=${pageLocked - 1})}">← Trước</a>
+            <span th:text="'Trang ' + ${pageLocked + 1} + ' / ' + ${totalLockedPages}"></span>
+            <a th:if="${pageLocked + 1 < totalLockedPages}"
+               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive},pageLocked=${pageLocked + 1})}">Sau →</a>
+        </div>
+    </section>
+
+    <p><a th:href="@{/admin}">← Quay lại trang quản trị</a></p>
+</main>
+</body>
+</html>

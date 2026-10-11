@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ADMIN - Trang quản trị</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        .admin-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 24px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 28px;
+        }
+
+        .admin-card {
+            display: block;
+            padding: 26px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            background: #fff;
+            transition: .2s;
+        }
+
+        .admin-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 14px #00000012;
+            transform: translateY(-2px);
+        }
+
+        .admin-card h3 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+
+        .admin-card p {
+            color: #666;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+
+        .logout-form {
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="admin-container">
+
+    <h1>Trang quản trị ADMIN</h1>
+    <p>Quản lý hồ sơ nhân viên, tài khoản, sản phẩm và quyền truy cập hệ thống.</p>
+
+    <div class="admin-grid">
+
+        <!-- Quản lý nhân viên -->
+        <a th:href="@{/admin/nhanvien}" class="admin-card">
+            <h3>Quản lý nhân viên</h3>
+            <p>Xem hồ sơ, tìm kiếm, chỉnh sửa và quản lý trạng thái làm việc.</p>
+        </a>
+
+        <!-- Quản lý tài khoản -->
+        <a th:href="@{/admin/taikhoan}" class="admin-card">
+            <h3>Quản lý tài khoản</h3>
+            <p>Tạo tài khoản, phân quyền, tìm kiếm và khóa hoặc mở khóa đăng nhập.</p>
+        </a>
+
+        <!-- Quản lý sản phẩm -->
+        <a th:href="@{/admin/sanpham}" class="admin-card">
+            <h3>Quản lý sản phẩm</h3>
+            <p>Xem danh sách sản phẩm, tìm kiếm, theo dõi phiên bản BOM và giá nguyên vật liệu.</p>
+        </a>
+
+        <a th:href="@{/admin/loai-nvl}" class="admin-card">
+            <h3>Quản lý loại nguyên vật liệu</h3>
+            <p>
+                Xem danh sách, tìm kiếm nâng cao, sắp xếp và lọc
+                loại nguyên vật liệu.
+            </p>
+        </a>
+
+        <a th:href="@{/admin/nguyen-vat-lieu}" class="admin-card">
+            <h3>Quản lý nguyên vật liệu</h3>
+            <p>
+                Xem danh mục NVL, tìm kiếm nâng cao, sắp xếp
+                và lọc theo loại, trạng thái và tồn kho.
+            </p>
+        </a>
+
+        <!-- Quản lý nhà cung cấp -->
+        <a th:href="@{/admin/nha-cung-cap}" class="admin-card">
+            <h3>Quản lý nhà cung cấp</h3>
+            <p>
+                Xem danh sách nhà cung cấp, tìm kiếm theo mã, tên,
+                số điện thoại, email; lọc và sắp xếp danh sách.
+            </p>
+        </a>
+
+        <!-- Quản lý thương hiệu -->
+        <a th:href="@{/admin/thuong-hieu}" class="admin-card">
+            <h3>Quản lý thương hiệu</h3>
+            <p>
+                Xem danh sách thương hiệu, tìm kiếm nâng cao,
+                lọc theo trạng thái và sắp xếp danh sách.
+            </p>
+        </a>
+
+        <a th:href="@{/admin/khach-hang}" class="admin-card">
+            <h3>Quản lý khách hàng</h3>
+            <p>
+                Tra cứu thông tin khách hàng, tìm kiếm nâng cao,
+                lọc theo trạng thái và sắp xếp danh sách.
+            </p>
+        </a>
+
+    </div>
+
+    <!-- Đăng xuất -->
+    <form class="logout-form" th:action="@{/logout}" method="post">
+        <button type="submit">Đăng xuất</button>
+    </form>
+
+</div>
+</body>
+</html>

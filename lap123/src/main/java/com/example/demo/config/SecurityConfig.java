@@ -302,14 +302,27 @@ public class SecurityConfig {
                         ).hasRole("QUAN_LY_KHO")
 
 
+
+
+
+                        /*
+                         * =========================================================
+                         * ADMIN - GIAO DIỆN QUẢN TRỊ RIÊNG
+                         * =========================================================
+                         */
+                                .requestMatchers(
+                                        "/admin",
+                                        "/admin/**"
+                                ).hasRole("ADMIN")
+
                         /*
                          * =========================================================
                          * MẶC ĐỊNH
-                         * Những URL chưa khai báo -> chỉ QUẢN LÝ KHO
+                         * Các URL chưa khai báo chỉ dành cho QUẢN LÝ KHO
                          * =========================================================
                          */
-                        .requestMatchers("/**")
-                        .hasRole("QUAN_LY_KHO")
+                                .requestMatchers("/**")
+                                .hasRole("QUAN_LY_KHO")
 
 
                         /*

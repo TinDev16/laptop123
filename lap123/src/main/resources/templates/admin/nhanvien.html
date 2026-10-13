@@ -924,7 +924,11 @@
                         </td>
 
                         <td>
-                            <div class="actions">
+                            <div class="actions"
+                                 th:if="${nv.taikhoan == null
+                 or nv.taikhoan.vaitro == null
+                 or !#strings.equalsIgnoreCase(
+                     nv.taikhoan.vaitro.maVaitro, 'ADMIN')}">
 
                                 <a class="btn btn-secondary"
                                    th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
@@ -939,8 +943,15 @@
                                     <i class="fa-solid fa-user-minus"></i>
                                     Cho nghỉ việc
                                 </button>
-
                             </div>
+
+                            <span class="muted"
+                                  th:if="${nv.taikhoan != null
+                  and nv.taikhoan.vaitro != null
+                  and #strings.equalsIgnoreCase(
+                      nv.taikhoan.vaitro.maVaitro, 'ADMIN')}">
+        Không áp dụng
+    </span>
                         </td>
                     </tr>
 
@@ -1034,7 +1045,11 @@
                             ? nv.GHICHU : '-'}"></td>
 
                         <td>
-                            <div class="actions">
+                            <div class="actions"
+                                 th:if="${nv.taikhoan == null
+                 or nv.taikhoan.vaitro == null
+                 or !#strings.equalsIgnoreCase(
+                     nv.taikhoan.vaitro.maVaitro, 'ADMIN')}">
 
                                 <a class="btn btn-secondary"
                                    th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
@@ -1060,8 +1075,15 @@
                                         Khôi phục
                                     </button>
                                 </form>
-
                             </div>
+
+                            <span class="muted"
+                                  th:if="${nv.taikhoan != null
+                  and nv.taikhoan.vaitro != null
+                  and #strings.equalsIgnoreCase(
+                      nv.taikhoan.vaitro.maVaitro, 'ADMIN')}">
+        Không áp dụng
+    </span>
                         </td>
                     </tr>
 

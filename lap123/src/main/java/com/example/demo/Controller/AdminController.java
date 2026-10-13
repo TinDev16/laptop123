@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import com.example.demo.config.CustomEmployee;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.time.LocalDate;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -64,8 +69,8 @@ public class AdminController {
 
         String roleFilter = role == null ? "" : role.trim();
 
-        // Lấy danh sách nhân viên, loại trừ nhân viên ADMIN.
-        List<Nhanvien> all = nhanvienRepository.findAllExceptAdmin();
+        // Hiển thị tất cả nhân viên, bao gồm cả ADMIN.
+        List<Nhanvien> all = nhanvienRepository.findAll();
 
         // Danh sách nhân viên đang làm:
         // lọc theo trạng thái, từ khóa và vai trò.
@@ -122,9 +127,7 @@ public class AdminController {
         // Danh sách vai trò để hiển thị trong ô lọc.
         model.addAttribute(
                 "danhSachVaiTro",
-                vaitroRepository.findAll().stream()
-                        .filter(v -> !"ADMIN".equalsIgnoreCase(v.getMaVaitro()))
-                        .collect(Collectors.toList()));
+                vaitroRepository.findAll());
 
         return "admin/nhanvien";
     }
@@ -412,6 +415,12 @@ public class AdminController {
             return "redirect:/admin/taikhoan";
         }
 
+        if (tk != null && isAdminAccount(tk)) {
+            redirect.addFlashAttribute(
+                    "error", "Không thể sửa tài khoản ADMIN.");
+            return "redirect:/admin/taikhoan";
+        }
+
         model.addAttribute("taikhoan", tk);
         model.addAttribute("isEdit", id != null);
 
@@ -492,6 +501,12 @@ public class AdminController {
                             "error", "Không tìm thấy tài khoản.");
                     return "redirect:/admin/taikhoan";
                 }
+
+                if (isAdminAccount(tk)) {
+                    redirect.addFlashAttribute(
+                            "error", "Không thể sửa tài khoản ADMIN.");
+                    return "redirect:/admin/taikhoan";
+                }
             }
 
             Nhanvien nhanvien =
@@ -567,14 +582,11 @@ public class AdminController {
             return "redirect:/admin/taikhoan";
         }
 
-        // Không cho khóa tài khoản ADMIN qua màn hình này.
-        if (tk.getVaitro() != null
-                && "ADMIN".equalsIgnoreCase(tk.getVaitro().getMaVaitro())
-                && locked) {
-
+// Không cho khóa hoặc mở khóa tài khoản ADMIN.
+        if (isAdminAccount(tk)) {
             redirect.addFlashAttribute(
                     "error",
-                    "Không thể khóa tài khoản ADMIN qua màn hình này.");
+                    "Không thể khóa hoặc mở khóa tài khoản ADMIN.");
             return "redirect:/admin/taikhoan";
         }
 
@@ -605,6 +617,164 @@ public class AdminController {
     }
 
     // =========================================================
+// THÔNG TIN CÁ NHÂN ADMIN
+// =========================================================
+
+    @GetMapping("/thong-tin-ca-nhan")
+    public String thongTinCaNhan(
+            @RequestParam(defaultValue = "nhanvien") String tab,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirect) {
+
+        Taikhoan tk = getTaiKhoanAdminDangNhap(authentication);
+
+        if (tk == null) {
+            redirect.addFlashAttribute(
+                    "error", "Không xác định được tài khoản ADMIN đang đăng nhập.");
+            return "redirect:/admin";
+        }
+
+        model.addAttribute("taikhoan", tk);
+        model.addAttribute("nhanvien", tk.getNhanvien());
+// Sidebar ADMIN
+        model.addAttribute("activeTab", "thongtincanhan");
+
+// Tab nội dung của trang cá nhân
+        model.addAttribute(
+                "profileTab",
+                "taikhoan".equals(tab) ? "taikhoan" : "nhanvien");
+
+        return "admin/thong-tin-ca-nhan";
+    }
+
+    @PostMapping("/thong-tin-ca-nhan/nhanvien")
+    public String capNhatThongTinNhanVienAdmin(
+            @ModelAttribute("nhanvien") Nhanvien form,
+            Authentication authentication,
+            RedirectAttributes redirect) {
+
+        Taikhoan tk = getTaiKhoanAdminDangNhap(authentication);
+
+        if (tk == null || tk.getNhanvien() == null) {
+            redirect.addFlashAttribute(
+                    "error", "Tài khoản ADMIN chưa được liên kết với nhân viên.");
+            return "redirect:/admin/thong-tin-ca-nhan";
+        }
+
+        try {
+            Nhanvien target = tk.getNhanvien();
+
+            // Chỉ cập nhật các trường thông tin cá nhân được cho phép.
+            target.setHOTEN(form.getHOTEN());
+            target.setGIOITINH(form.getGIOITINH());
+            target.setNGAYSINH(form.getNGAYSINH());
+            target.setSDT(form.getSDT());
+            target.setEMAIL(form.getEMAIL());
+
+            if (target.getHOTEN() == null || target.getHOTEN().isBlank()) {
+                redirect.addFlashAttribute(
+                        "error", "Họ tên không được để trống.");
+                return "redirect:/admin/thong-tin-ca-nhan?tab=nhanvien";
+            }
+
+            nhanvienRepository.save(target);
+
+            redirect.addFlashAttribute(
+                    "success", "Cập nhật thông tin nhân viên thành công.");
+
+        } catch (DataIntegrityViolationException ex) {
+            redirect.addFlashAttribute(
+                    "error", "Email hoặc số điện thoại nhân viên đã được sử dụng.");
+        } catch (Exception ex) {
+            redirect.addFlashAttribute(
+                    "error", "Không thể cập nhật thông tin nhân viên.");
+        }
+
+        return "redirect:/admin/thong-tin-ca-nhan?tab=nhanvien";
+    }
+
+    @PostMapping("/thong-tin-ca-nhan/taikhoan")
+    public String capNhatThongTinTaiKhoanAdmin(
+            @RequestParam String email,
+            @RequestParam(required = false, defaultValue = "") String password,
+            Authentication authentication,
+            RedirectAttributes redirect) {
+
+        Taikhoan tk = getTaiKhoanAdminDangNhap(authentication);
+
+        if (tk == null) {
+            redirect.addFlashAttribute(
+                    "error", "Không xác định được tài khoản ADMIN.");
+            return "redirect:/admin";
+        }
+
+        String emailValue = email == null ? "" : email.trim();
+
+        if (emailValue.isBlank()) {
+            redirect.addFlashAttribute(
+                    "error", "Email tài khoản không được để trống.");
+            return "redirect:/admin/thong-tin-ca-nhan?tab=taikhoan";
+        }
+
+        Taikhoan duplicate = taikhoanRepository.findByEmail(emailValue);
+
+        if (duplicate != null
+                && duplicate.getTaikhoan_id() != tk.getTaikhoan_id()) {
+            redirect.addFlashAttribute(
+                    "error", "Email tài khoản đã được sử dụng.");
+            return "redirect:/admin/thong-tin-ca-nhan?tab=taikhoan";
+        }
+
+        try {
+            tk.setEmail(emailValue);
+
+            // Chỉ thay đổi mật khẩu khi ADMIN nhập mật khẩu mới.
+            if (password != null && !password.isBlank()) {
+                tk.setPassword(passwordEncoder.encode(password));
+            }
+
+            // Không thay đổi vai trò, trạng thái khóa hoặc nhân viên liên kết.
+            taikhoanRepository.save(tk);
+
+            redirect.addFlashAttribute(
+                    "success", "Cập nhật thông tin tài khoản thành công.");
+
+        } catch (DataIntegrityViolationException ex) {
+            redirect.addFlashAttribute(
+                    "error", "Email tài khoản đã được sử dụng.");
+        } catch (Exception ex) {
+            redirect.addFlashAttribute(
+                    "error", "Không thể cập nhật thông tin tài khoản.");
+        }
+
+        return "redirect:/admin/thong-tin-ca-nhan?tab=taikhoan";
+    }
+
+    /**
+     * Lấy đúng tài khoản ADMIN đang đăng nhập,
+     * không dựa vào ID do trình duyệt gửi lên.
+     */
+    private Taikhoan getTaiKhoanAdminDangNhap(Authentication authentication) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof CustomEmployee)) {
+            return null;
+        }
+
+        CustomEmployee principal =
+                (CustomEmployee) authentication.getPrincipal();
+
+        Taikhoan current = taikhoanRepository
+                .findByEmail(principal.getUsername());
+
+        if (current == null || !isAdminAccount(current)) {
+            return null;
+        }
+
+        return current;
+    }
+
+    // =========================================================
     // HÀM HỖ TRỢ
     // =========================================================
 
@@ -614,6 +784,13 @@ public class AdminController {
                 && n.getTaikhoan().getVaitro() != null
                 && "ADMIN".equals(
                 n.getTaikhoan().getVaitro().getMaVaitro());
+    }
+
+    private boolean isAdminAccount(Taikhoan tk) {
+        return tk != null
+                && tk.getVaitro() != null
+                && "ADMIN".equalsIgnoreCase(
+                tk.getVaitro().getMaVaitro());
     }
 
     private boolean matchEmployee(Nhanvien n, String keyword) {

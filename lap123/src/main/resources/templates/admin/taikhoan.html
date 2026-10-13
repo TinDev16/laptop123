@@ -732,7 +732,18 @@
                         </td>
 
                         <td>
-                            <div class="actions">
+                            <th:block th:if="${tk.vaitro != null
+        and #strings.equalsIgnoreCase(
+            tk.vaitro.maVaitro, 'ADMIN')}">
+
+                                <span class="muted">Không thể thao tác admin</span>
+                            </th:block>
+
+                            <div class="actions"
+                                 th:unless="${tk.vaitro != null
+            and #strings.equalsIgnoreCase(
+                tk.vaitro.maVaitro, 'ADMIN')}">
+
                                 <a class="btn secondary"
                                    th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">
                                     <i class="fa-solid fa-pen"></i>
@@ -846,7 +857,18 @@
                         </td>
 
                         <td>
-                            <div class="actions">
+                            <th:block th:if="${tk.vaitro != null
+        and #strings.equalsIgnoreCase(
+            tk.vaitro.maVaitro, 'ADMIN')}">
+
+                                <span class="muted">Không thể thao tác admin</span>
+                            </th:block>
+
+                            <div class="actions"
+                                 th:unless="${tk.vaitro != null
+            and #strings.equalsIgnoreCase(
+                tk.vaitro.maVaitro, 'ADMIN')}">
+
                                 <a class="btn secondary"
                                    th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">
                                     <i class="fa-solid fa-pen"></i>

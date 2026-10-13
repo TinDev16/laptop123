@@ -45,6 +45,13 @@
             <span>Quản lý tài khoản</span>
         </a>
 
+        <a th:href="@{/admin/thong-tin-ca-nhan}"
+           class="admin-menu-item"
+           th:classappend="${activeTab == 'thongtincanhan' ? ' active' : ''}">
+            <i class="fas fa-id-card"></i>
+            <span>Thông tin cá nhân</span>
+        </a>
+
         <div class="admin-menu-heading">SẢN PHẨM & KHO</div>
 
         <a th:href="@{/admin/sanpham}"

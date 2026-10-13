@@ -1,0 +1,692 @@
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Thông tin cá nhân ADMIN</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin-layout.css}">
+
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f8fafc;
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+
+        /* =========================
+           LAYOUT ADMIN
+           ========================= */
+
+        .profile-layout {
+            min-height: 100vh;
+        }
+
+        .profile-main {
+            margin-left: 260px;
+            min-width: 0;
+            min-height: 100vh;
+            padding: 1px 0;
+            transition: margin-left .2s ease;
+        }
+
+        .profile-page {
+            width: 100%;
+            max-width: 1050px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        /* =========================
+           HEADER
+           ========================= */
+
+        .profile-header {
+            margin-bottom: 24px;
+        }
+
+        .profile-header h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .profile-header p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           CARD
+           ========================= */
+
+        .profile-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
+        }
+
+        /* =========================
+           TABS
+           ========================= */
+
+        .profile-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 16px 20px 0;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .profile-tab {
+            display: inline-block;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color .2s, border-color .2s;
+        }
+
+        .profile-tab:hover {
+            color: #2563eb;
+        }
+
+        .profile-tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
+        /* =========================
+           CONTENT
+           ========================= */
+
+        .profile-content {
+            padding: 24px;
+        }
+
+        .profile-content h2 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            color: #0f172a;
+        }
+
+        .section-description {
+            color: #64748b;
+            margin: 0 0 24px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* =========================
+           FORM
+           ========================= */
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #1e293b;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+        }
+
+        .field input:disabled,
+        .field select:disabled {
+            background: #f8fafc;
+            color: #475569;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        /* =========================
+           BUTTONS
+           ========================= */
+
+        .profile-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+        }
+
+        .profile-actions[hidden],
+        .profile-actions button[hidden] {
+            display: none !important;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 11px 17px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: background .2s, transform .1s;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        /* =========================
+           ALERTS
+           ========================= */
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* =========================
+           ROLE
+           ========================= */
+
+        .role-readonly {
+            display: inline-flex;
+            align-items: center;
+            min-height: 42px;
+            padding: 7px 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* =========================
+           RESPONSIVE
+           ========================= */
+
+        @media (max-width: 768px) {
+            .profile-main {
+                margin-left: 72px;
+            }
+
+            .profile-page {
+                margin: 24px auto;
+                padding: 0 14px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+
+            .profile-content {
+                padding: 18px;
+            }
+
+            .profile-tabs {
+                padding: 12px 12px 0;
+            }
+
+            .profile-tab {
+                padding: 11px 10px;
+                font-size: 13px;
+            }
+
+            .profile-header h1 {
+                font-size: 23px;
+            }
+
+            .profile-actions {
+                flex-direction: column-reverse;
+            }
+
+            .profile-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="profile-layout">
+
+    <!-- SIDEBAR ADMIN DÙNG FRAGMENT CÓ SẴN -->
+    <!-- SIDEBAR ADMIN -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('thongtincanhan')}"></aside>
+
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="profile-main">
+
+        <div class="profile-page">
+
+            <!-- HEADER -->
+            <header class="profile-header">
+                <h1>Thông tin cá nhân</h1>
+                <p>
+                    Xem và cập nhật thông tin của tài khoản quản trị đang đăng nhập.
+                </p>
+            </header>
+
+            <!-- THÔNG BÁO -->
+            <div th:if="${success}"
+                 class="alert alert-success"
+                 th:text="${success}">
+            </div>
+
+            <div th:if="${error}"
+                 class="alert alert-error"
+                 th:text="${error}">
+            </div>
+
+            <section class="profile-card">
+
+                <!-- TAB NAVIGATION -->
+                <nav class="profile-tabs">
+
+                    <a class="profile-tab"
+                       th:classappend="${profileTab == 'nhanvien' ? ' active' : ''}"
+                       th:href="@{/admin/thong-tin-ca-nhan(tab='nhanvien')}">
+                        <i class="fas fa-user"></i>
+                        Thông tin nhân viên
+                    </a>
+
+                    <a class="profile-tab"
+                       th:classappend="${profileTab == 'taikhoan' ? ' active' : ''}"
+                       th:href="@{/admin/thong-tin-ca-nhan(tab='taikhoan')}">
+                        <i class="fas fa-user-shield"></i>
+                        Thông tin tài khoản
+                    </a>
+
+                </nav>
+
+                <!-- =========================================
+                     TAB NHÂN VIÊN
+                     ========================================= -->
+
+                <div class="profile-content"
+                     th:if="${profileTab == 'nhanvien'}">
+
+                    <h2>Thông tin nhân viên</h2>
+
+                    <p class="section-description">
+                        Chỉnh sửa hồ sơ nhân viên liên kết với tài khoản ADMIN.
+                    </p>
+
+                    <div th:if="${nhanvien == null}"
+                         class="alert alert-error">
+                        Tài khoản ADMIN hiện chưa được liên kết với hồ sơ nhân viên.
+                    </div>
+
+                    <form th:if="${nhanvien != null}"
+                          th:action="@{/admin/thong-tin-ca-nhan/nhanvien}"
+                          th:object="${nhanvien}"
+                          method="post"
+                          id="employeeForm">
+
+                        <div class="form-grid">
+
+                            <div class="field">
+                                <label for="employeeCode">Mã nhân viên</label>
+                                <input type="text"
+                                       id="employeeCode"
+                                       th:value="*{MANV}"
+                                       disabled>
+                            </div>
+
+                            <div class="field">
+                                <label for="employeeName">Họ và tên *</label>
+                                <input type="text"
+                                       id="employeeName"
+                                       th:field="*{HOTEN}"
+                                       data-editable
+                                       maxlength="150"
+                                       required
+                                       disabled>
+                            </div>
+
+                            <div class="field">
+                                <label for="employeeGender">Giới tính</label>
+                                <input type="text"
+                                       id="employeeGender"
+                                       th:field="*{GIOITINH}"
+                                       data-editable
+                                       disabled>
+                            </div>
+
+                            <div class="field">
+                                <label for="employeeBirthDate">Ngày sinh</label>
+                                <input type="date"
+                                       id="employeeBirthDate"
+                                       th:field="*{NGAYSINH}"
+                                       data-editable
+                                       disabled>
+                            </div>
+
+                            <div class="field">
+                                <label for="employeePhone">Số điện thoại</label>
+                                <input type="text"
+                                       id="employeePhone"
+                                       th:field="*{SDT}"
+                                       data-editable
+                                       maxlength="20"
+                                       disabled>
+                            </div>
+
+                            <div class="field">
+                                <label for="employeeEmail">Email nhân viên</label>
+                                <input type="email"
+                                       id="employeeEmail"
+                                       th:field="*{EMAIL}"
+                                       data-editable
+                                       maxlength="150"
+                                       disabled>
+                            </div>
+
+                        </div>
+
+                        <div class="profile-actions">
+
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    id="editEmployeeBtn"
+                                    onclick="enableEdit('employee')">
+                                <i class="fas fa-pen"></i>
+                                Sửa thông tin
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    id="cancelEmployeeBtn"
+                                    onclick="cancelEdit('employee')"
+                                    hidden>
+                                Hủy
+                            </button>
+
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    id="saveEmployeeBtn"
+                                    hidden>
+                                <i class="fas fa-save"></i>
+                                Cập nhật
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+                <!-- =========================================
+                     TAB TÀI KHOẢN
+                     ========================================= -->
+
+                <div class="profile-content"
+                     th:if="${profileTab == 'taikhoan'}">
+
+                    <h2>Thông tin tài khoản</h2>
+
+                    <p class="section-description">
+                        Cập nhật email đăng nhập hoặc đặt mật khẩu mới.
+                        Để trống mật khẩu nếu không muốn đổi.
+                    </p>
+
+                    <form th:action="@{/admin/thong-tin-ca-nhan/taikhoan}"
+                          method="post"
+                          id="accountForm">
+
+                        <div class="form-grid">
+
+                            <div class="field">
+                                <label for="accountId">Mã tài khoản</label>
+                                <input type="text"
+                                       id="accountId"
+                                       th:value="${taikhoan.taikhoan_id}"
+                                       disabled>
+                            </div>
+
+                            <div class="field">
+                                <label>Vai trò</label>
+                                <div class="role-readonly">
+                                    <i class="fas fa-shield-alt"></i>
+                                    &nbsp; ADMIN
+                                </div>
+                            </div>
+
+                            <div class="field full">
+                                <label for="accountEmail">Email đăng nhập *</label>
+                                <input type="email"
+                                       id="accountEmail"
+                                       name="email"
+                                       th:value="${taikhoan.email}"
+                                       data-editable
+                                       maxlength="150"
+                                       autocomplete="username"
+                                       required
+                                       disabled>
+                            </div>
+
+                            <div class="field full">
+                                <label for="accountPassword">Mật khẩu mới</label>
+                                <input type="password"
+                                       id="accountPassword"
+                                       name="password"
+                                       placeholder="Để trống nếu không đổi mật khẩu"
+                                       autocomplete="new-password"
+                                       minlength="8"
+                                       data-editable
+                                       disabled>
+                            </div>
+
+                        </div>
+
+                        <div class="profile-actions">
+
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    id="editAccountBtn"
+                                    onclick="enableEdit('account')">
+                                <i class="fas fa-pen"></i>
+                                Sửa thông tin
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    id="cancelAccountBtn"
+                                    onclick="cancelEdit('account')"
+                                    hidden>
+                                Hủy
+                            </button>
+
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    id="saveAccountBtn"
+                                    hidden>
+                                <i class="fas fa-save"></i>
+                                Cập nhật
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+    const originalValues = {};
+
+    function enableEdit(type) {
+        const form = document.getElementById(
+            type === 'employee' ? 'employeeForm' : 'accountForm'
+        );
+
+        if (!form) {
+            return;
+        }
+
+        originalValues[type] = {};
+
+        form.querySelectorAll('[data-editable]').forEach((input, index) => {
+            originalValues[type][index] = input.value;
+            input.disabled = false;
+        });
+
+        const editButton = document.getElementById(
+            type === 'employee' ? 'editEmployeeBtn' : 'editAccountBtn'
+        );
+
+        const saveButton = document.getElementById(
+            type === 'employee' ? 'saveEmployeeBtn' : 'saveAccountBtn'
+        );
+
+        const cancelButton = document.getElementById(
+            type === 'employee' ? 'cancelEmployeeBtn' : 'cancelAccountBtn'
+        );
+
+        if (editButton) editButton.hidden = true;
+        if (saveButton) saveButton.hidden = false;
+        if (cancelButton) cancelButton.hidden = false;
+
+        const firstEditable = form.querySelector('[data-editable]');
+
+        if (firstEditable) {
+            firstEditable.focus();
+        }
+    }
+
+    function cancelEdit(type) {
+        const form = document.getElementById(
+            type === 'employee' ? 'employeeForm' : 'accountForm'
+        );
+
+        if (!form) {
+            return;
+        }
+
+        form.querySelectorAll('[data-editable]').forEach((input, index) => {
+            input.value = originalValues[type]?.[index] ?? '';
+            input.disabled = true;
+        });
+
+        const editButton = document.getElementById(
+            type === 'employee' ? 'editEmployeeBtn' : 'editAccountBtn'
+        );
+
+        const saveButton = document.getElementById(
+            type === 'employee' ? 'saveEmployeeBtn' : 'saveAccountBtn'
+        );
+
+        const cancelButton = document.getElementById(
+            type === 'employee' ? 'cancelEmployeeBtn' : 'cancelAccountBtn'
+        );
+
+        if (editButton) editButton.hidden = false;
+        if (saveButton) saveButton.hidden = true;
+        if (cancelButton) cancelButton.hidden = true;
+    }
+</script>
+
+</body>
+</html>

@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.example.demo.Entity.Taikhoan;
 
 public class CustomEmployee implements UserDetails {
 
@@ -81,5 +82,9 @@ public class CustomEmployee implements UserDetails {
         // Các vai trò khác cần có nhân viên đang làm việc
         return taikhoan.getNhanvien() != null
                 && taikhoan.getNhanvien().getTRANGTHAI() == 0;
+    }
+
+    public Taikhoan getTaikhoan() {
+        return taikhoan;
     }
 }

@@ -374,12 +374,11 @@ public class MaterialCatalogService {
         // KIỂM TRA DỮ LIỆU CƠ BẢN
         // =========================
 
-        if (code == null || code.isBlank()
-                || name == null || name.isBlank()
+        if (name == null || name.isBlank()
                 || unit == null || unit.isBlank()) {
 
             throw new IllegalArgumentException(
-                    "Mã, tên và đơn vị tính không được trống."
+                    "Tên và đơn vị tính không được trống."
             );
         }
 
@@ -387,6 +386,18 @@ public class MaterialCatalogService {
             throw new IllegalArgumentException(
                     "Vui lòng chọn loại nguyên vật liệu."
             );
+        }
+
+        // Tạo mới: backend tự sinh mã, không sử dụng mã do trình duyệt gửi lên.
+        if (id == null) {
+            code = generateMaterialCode(typeId);
+        } else {
+            // Sửa NVL: giữ mã hiện tại, không cho phép để trống.
+            if (code == null || code.isBlank()) {
+                throw new IllegalArgumentException("Mã NVL không được trống.");
+            }
+
+            code = code.trim();
         }
 
         if (code.length() > 30
@@ -660,5 +671,103 @@ public class MaterialCatalogService {
         }
 
         return key.longValue();
+    }
+
+    // =========================
+// TỰ ĐỘNG SINH MÃ NVL
+// =========================
+
+    public String generateMaterialCode(Integer typeId) {
+
+        if (typeId == null) {
+            throw new IllegalArgumentException(
+                    "Vui lòng chọn loại nguyên vật liệu."
+            );
+        }
+
+        String typeName = jdbc.query(
+                """
+                SELECT tenloai
+                FROM loai_nguyen_vat_lieu
+                WHERE maloai = ?
+                  AND trangthai = 1
+                """,
+                rs -> {
+                    if (!rs.next()) {
+                        throw new IllegalArgumentException(
+                                "Loại nguyên vật liệu không tồn tại hoặc đã ngừng sử dụng."
+                        );
+                    }
+                    return rs.getString("tenloai");
+                },
+                typeId
+        );
+
+        // Chuẩn hóa tên loại thành phần mã.
+        String normalized = java.text.Normalizer.normalize(
+                typeName,
+                java.text.Normalizer.Form.NFD
+        );
+
+        normalized = normalized
+                .replace("đ", "d")
+                .replace("Đ", "D")
+                .replaceAll("\\p{M}", "")
+                .toUpperCase(java.util.Locale.ROOT)
+                .replaceAll("[^A-Z0-9]+", "-")
+                .replaceAll("^-|-$", "");
+
+        String prefix = "NVL-" + normalized + "-";
+
+        // Lấy các mã hiện có của loại này.
+        List<String> existingCodes = jdbc.queryForList(
+                """
+                SELECT manvl_code
+                FROM nguyenvatlieu
+                WHERE manvl_code LIKE ?
+                """,
+                String.class,
+                prefix + "%"
+        );
+
+        java.util.Set<Integer> usedNumbers = new java.util.HashSet<>();
+
+        for (String existingCode : existingCodes) {
+            if (existingCode == null ||
+                    !existingCode.startsWith(prefix)) {
+                continue;
+            }
+
+            String suffix = existingCode.substring(prefix.length());
+
+            if (suffix.matches("\\d+")) {
+                try {
+                    usedNumbers.add(Integer.parseInt(suffix));
+                } catch (NumberFormatException ignored) {
+                    // Bỏ qua hậu tố số vượt giới hạn int.
+                }
+            }
+        }
+
+        // Tìm số thứ tự nhỏ nhất chưa được sử dụng.
+        int number = 1;
+
+        while (usedNumbers.contains(number)) {
+            number++;
+        }
+
+        String code = prefix + String.format(
+                java.util.Locale.ROOT,
+                "%03d",
+                number
+        );
+
+        if (code.length() > 30) {
+            throw new IllegalArgumentException(
+                    "Tên loại quá dài để tạo mã NVL. Vui lòng rút gọn tên loại."
+            );
+        }
+
+        return code;
     }
 }

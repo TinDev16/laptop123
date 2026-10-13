@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/nguyen-vat-lieu")
@@ -284,5 +285,15 @@ public class MaterialCatalogController {
         }
 
         return "redirect:/nguyen-vat-lieu/loai";
+    }
+
+    // =========================
+// TẠO MÃ NVL XEM TRƯỚC
+// =========================
+
+    @GetMapping("/code-preview")
+    @ResponseBody
+    public String previewMaterialCode(@RequestParam Integer typeId) {
+        return service.generateMaterialCode(typeId);
     }
 }

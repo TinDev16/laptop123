@@ -83,15 +83,10 @@
                     <div class="ceo-form-grid">
 
 
-                        <!-- ========================= -->
-                        <!-- MÃ NVL -->
-                        <!-- ========================= -->
-
+                        <!-- MÃ NVL TỰ ĐỘNG -->
                         <div class="ceo-field">
-
                             <label for="code">
-                                Mã NVL
-                                <span class="ceo-required">*</span>
+                                Mã NVL <span class="ceo-required">*</span>
                             </label>
 
                             <input id="code"
@@ -101,12 +96,16 @@
                                    maxlength="30"
                                    th:value="${material?.manvl_code}"
                                    class="form-control"
-                                   placeholder="Ví dụ: NVL-001">
+                                   placeholder="Chọn loại NVL để tạo mã"
+                                   readonly>
 
-                            <small>
-                                Mã duy nhất để nhận diện vật liệu.
+                            <small th:if="${material == null}">
+                                Mã được tự động tạo theo loại NVL đã chọn.
                             </small>
 
+                            <small th:if="${material != null}">
+                                Mã NVL đã được tạo và không thể chỉnh sửa.
+                            </small>
                         </div>
 
 
@@ -147,7 +146,9 @@
                             <select id="typeId"
                                     name="typeId"
                                     required
-                                    class="form-control">
+                                    class="form-control"
+                                    th:attr="data-preview-url=@{/nguyen-vat-lieu/code-preview}">
+
 
                                 <option value="">
                                     -- Chọn loại nguyên vật liệu --
@@ -368,6 +369,55 @@
     </div>
 
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const typeSelect = document.getElementById("typeId");
+        const codeInput = document.getElementById("code");
+
+        if (!typeSelect || !codeInput) return;
+
+        // Chỉ tự tạo mã khi thêm mới, không thay đổi mã khi sửa.
+        const isCreateForm = !codeInput.value;
+
+        if (!isCreateForm) return;
+
+        const previewUrl = typeSelect.dataset.previewUrl;
+
+        async function updateMaterialCode() {
+            const typeId = typeSelect.value;
+
+            if (!typeId) {
+                codeInput.value = "";
+                return;
+            }
+
+            codeInput.value = "Đang tạo mã...";
+
+            try {
+                const url = new URL(previewUrl, window.location.origin);
+                url.searchParams.set("typeId", typeId);
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error("Không lấy được mã NVL.");
+                }
+
+                codeInput.value = await response.text();
+            } catch (error) {
+                codeInput.value = "";
+                console.error(error);
+                alert("Không thể tạo mã NVL. Vui lòng chọn lại loại.");
+            }
+        }
+
+        typeSelect.addEventListener("change", updateMaterialCode);
+
+        // Tự tạo mã nếu form đã có loại được chọn.
+        updateMaterialCode();
+    });
+</script>
 
 </body>
 </html>

@@ -11,6 +11,73 @@
     <link
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet">
+
+
+    <style>
+        .warehouse-error-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(15, 23, 42, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .warehouse-error-content {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: warehouseModalShow 0.2s ease-out;
+        }
+
+        .warehouse-error-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fef2f2;
+            color: #dc2626;
+            font-size: 28px;
+        }
+
+        .warehouse-error-content h3 {
+            margin: 0 0 12px;
+            color: #1e293b;
+            font-size: 21px;
+        }
+
+        .warehouse-error-content p {
+            margin: 0 0 24px;
+            color: #475569;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .warehouse-error-actions {
+            display: flex;
+            justify-content: center;
+        }
+
+        @keyframes warehouseModalShow {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -59,12 +126,38 @@
             </p>
 
 
-            <!-- ALERT ERROR -->
-            <p
-                    th:if="${error}"
-                    th:text="${error}"
-                    class="alert alert-danger">
-            </p>
+            <!-- MODAL THÔNG BÁO LỖI -->
+            <div
+                    id="warehouse-error-modal"
+                    class="warehouse-error-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="warehouse-error-title">
+
+                <div class="warehouse-error-content">
+
+                    <div class="warehouse-error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+
+                    <h3 id="warehouse-error-title">
+                        Không đủ nguyên vật liệu
+                    </h3>
+
+                    <p id="warehouse-error-message"></p>
+
+                    <div class="warehouse-error-actions">
+                        <button
+                                type="button"
+                                id="close-warehouse-error"
+                                class="btn btn-primary">
+                            <i class="fas fa-check"></i>
+                            Đã hiểu
+                        </button>
+                    </div>
+
+                </div>
+            </div>
 
 
             <div class="content-card">
@@ -295,6 +388,43 @@
     </div>
 
 </div>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const serverError = /*[[${error}]]*/ null;
+
+        const modal = document.getElementById("warehouse-error-modal");
+        const messageElement = document.getElementById("warehouse-error-message");
+        const closeButton = document.getElementById("close-warehouse-error");
+
+        function closeWarehouseErrorModal() {
+            modal.style.display = "none";
+            document.body.style.overflow = "";
+        }
+
+        closeButton.addEventListener("click", closeWarehouseErrorModal);
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeWarehouseErrorModal();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && modal.style.display === "flex") {
+                closeWarehouseErrorModal();
+            }
+        });
+
+        if (serverError) {
+            messageElement.textContent = serverError;
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+            closeButton.focus();
+        }
+    });
+</script>
 
 </body>
 

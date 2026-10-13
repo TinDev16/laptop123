@@ -162,14 +162,32 @@ public class MrpWorkflowController {
     }
 
     @PostMapping("/kho/xuat-nvl/{id}/duyet")
-    public String approveMaterialIssue(@PathVariable long id, Authentication auth, RedirectAttributes flash) {
+    public String approveMaterialIssue(
+            @PathVariable long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+
         requireManager(auth);
+
         try {
             warehouse.issueMaterials(id, auth.getName());
-            flash.addFlashAttribute("success", "Duyệt và xuất NVL thành công.");
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Duyệt và xuất NVL thành công."
+            );
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            flash.addFlashAttribute("error", exception.getMessage());
+
+            String message = exception.getMessage();
+
+            if (message == null || message.isBlank()) {
+                message = "Không thể xuất nguyên vật liệu. Vui lòng kiểm tra lại tồn kho.";
+            }
+
+            flash.addFlashAttribute("error", message);
         }
+
         return "redirect:/kho/xuat-nvl/" + id;
     }
 
@@ -200,15 +218,57 @@ public class MrpWorkflowController {
     }
 
     @PostMapping("/san-xuat/ket-qua")
-    public String createResult(Authentication auth, @RequestParam long orderId, @RequestParam int completed,
-                               @RequestParam(required = false) String note,
-                               RedirectAttributes flash) {
+    public String createResult(
+            Authentication auth,
+            @RequestParam long orderId,
+            @RequestParam int completed,
+            @RequestParam(required = false) String note,
+            RedirectAttributes flash) {
+
         try {
-            long id = documents.createResult(auth.getName(), orderId, completed, 0, note);
-            flash.addFlashAttribute("success", "Đã gửi kết quả sản xuất để xác nhận.");
+            long id = documents.createResult(
+                    auth.getName(),
+                    orderId,
+                    completed,
+                    0,
+                    note
+            );
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Đã gửi kết quả sản xuất để xác nhận."
+            );
+
             return "redirect:/san-xuat/ket-qua/" + id;
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            flash.addFlashAttribute("error", exception.getMessage());
+
+            String message = exception.getMessage();
+
+            if (message == null || message.isBlank()) {
+                message = "Không thể ghi nhận kết quả sản xuất.";
+            }
+
+            String normalized = message.toLowerCase();
+
+            if (normalized.contains("tồn kho")
+                    || normalized.contains("ton kho")
+                    || normalized.contains("thành phẩm")
+                    || normalized.contains("thanh pham")
+                    || normalized.contains("không đủ")
+                    || normalized.contains("khong du")
+                    || normalized.contains("stock")) {
+
+                flash.addFlashAttribute(
+                        "error",
+                        "Thành phẩm trong kho sản xuất không đủ cho số lượng gửi xác nhận. "
+                                + "Vui lòng kiểm tra số lượng có sẵn và giảm số lượng gửi."
+                );
+
+            } else {
+                flash.addFlashAttribute("error", message);
+            }
+
             return "redirect:/san-xuat/ket-qua/create";
         }
     }

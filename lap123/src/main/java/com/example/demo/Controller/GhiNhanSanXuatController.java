@@ -53,10 +53,24 @@ public class GhiNhanSanXuatController {
             );
 
         } catch (IllegalArgumentException | IllegalStateException e) {
-            flash.addFlashAttribute(
-                    "error",
-                    e.getMessage()
-            );
+            String message = e.getMessage();
+
+            if (message != null &&
+                    (message.toLowerCase().contains("không đủ")
+                            || message.toLowerCase().contains("khong du")
+                            || message.toLowerCase().contains("insufficient"))) {
+
+                flash.addFlashAttribute(
+                        "error",
+                        "Nguyên vật liệu không đủ để sản xuất số lượng này! Vui lòng kiểm tra tồn kho sản xuất."
+                );
+
+            } else {
+                flash.addFlashAttribute(
+                        "error",
+                        message != null ? message : "Ghi nhận sản xuất thất bại."
+                );
+            }
         }
 
         return "redirect:/san-xuat/ghi-nhan";

@@ -10,6 +10,61 @@
     <link rel="stylesheet" th:href="@{/style.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet">
+
+    <style>
+        .production-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.45);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .production-modal-content {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+        }
+
+        .production-modal-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            margin-bottom: 16px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 21px;
+        }
+
+        .production-modal-content h3 {
+            margin: 0 0 12px;
+            color: #991b1b;
+            font-size: 18px;
+        }
+
+        .production-modal-content p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+
+        .production-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 
 <body>
@@ -39,12 +94,6 @@
                 </a>
             </div>
 
-
-            <!-- ERROR -->
-            <div class="directory-alert directory-alert--error"
-                 th:if="${error}"
-                 th:text="${error}">
-            </div>
 
 
             <!-- ===================================================== -->
@@ -374,15 +423,72 @@
 
 </div>
 
+<!-- MODAL THÔNG BÁO LỖI -->
+<div id="production-error-modal" class="production-modal">
+    <div class="production-modal-content">
+        <div class="production-modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
 
+        <h3 id="production-error-title">
+            Thành phẩm không đủ
+        </h3>
+
+        <p id="production-error-message"></p>
+
+        <div class="production-modal-actions">
+            <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="closeProductionErrorModal()">
+                <i class="fas fa-check"></i>
+                Đã hiểu
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- ========================================================= -->
 <!-- JAVASCRIPT -->
 <!-- ========================================================= -->
 
-<script>
+<script th:inline="javascript">
 
     document.addEventListener("DOMContentLoaded", function () {
+
+        const serverError = /*[[${error}]]*/ null;
+
+        function showProductionError(
+            message,
+            title = "Thành phẩm không đủ"
+        ) {
+            document.getElementById("production-error-title").textContent = title;
+
+            document.getElementById("production-error-message").textContent = message;
+
+            document.getElementById("production-error-modal").style.display = "flex";
+
+            document.body.style.overflow = "hidden";
+        }
+
+        window.closeProductionErrorModal = function () {
+            const modal = document.getElementById("production-error-modal");
+
+            if (modal) {
+                modal.style.display = "none";
+            }
+
+            document.body.style.overflow = "";
+        };
+
+        document.getElementById("production-error-modal").addEventListener(
+            "click",
+            function (event) {
+                if (event.target === this) {
+                    closeProductionErrorModal();
+                }
+            }
+        );
 
 
         /* =========================================================
@@ -779,6 +885,31 @@
         orderSelect.value = "";
 
         filterOrders();
+
+        // Hiện modal nếu server trả lỗi sau khi gửi kết quả
+        if (serverError) {
+            const normalizedError = serverError.toLowerCase();
+
+            if (
+                normalizedError.includes("tồn kho") ||
+                normalizedError.includes("ton kho") ||
+                normalizedError.includes("thành phẩm") ||
+                normalizedError.includes("thanh pham") ||
+                normalizedError.includes("không đủ") ||
+                normalizedError.includes("khong du") ||
+                normalizedError.includes("stock")
+            ) {
+                showProductionError(
+                    serverError,
+                    "Thành phẩm không đủ"
+                );
+            } else {
+                showProductionError(
+                    serverError,
+                    "Không thể gửi kết quả sản xuất"
+                );
+            }
+        }
 
     });
 

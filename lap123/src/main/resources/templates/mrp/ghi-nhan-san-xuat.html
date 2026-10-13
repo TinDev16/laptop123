@@ -502,6 +502,60 @@
 
         }
 
+        /* MODAL THÔNG BÁO */
+        .production-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.45);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .production-modal-content {
+            width: 100%;
+            max-width: 460px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+        }
+
+        .production-modal-content h3 {
+            margin: 0 0 12px;
+            color: #991b1b;
+            font-size: 18px;
+        }
+
+        .production-modal-content p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+
+        .production-modal-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            margin-bottom: 16px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 21px;
+        }
+
+        .production-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
     </style>
 
 </head>
@@ -978,6 +1032,33 @@
 
 </div>
 
+<!-- MODAL THÔNG BÁO LỖI SẢN XUẤT -->
+<div id="production-error-modal" class="production-modal">
+
+    <div class="production-modal-content">
+
+        <div class="production-modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
+        <h3 id="production-error-title">
+            Nguyên vật liệu không đủ
+        </h3>
+
+        <p id="production-error-message"></p>
+
+        <div class="production-modal-actions">
+            <button type="button"
+                    class="btn btn-primary"
+                    onclick="closeProductionErrorModal()">
+                <i class="fas fa-check"></i>
+                Đã hiểu
+            </button>
+        </div>
+
+    </div>
+</div>
+
 
 <!-- =============================================================
      JAVASCRIPT
@@ -1031,6 +1112,37 @@
 
     const orders =
         /*[[${orders}]]*/ [];
+
+    const serverError = /*[[${error}]]*/ null;
+
+    function showProductionError(
+        message,
+        title = 'Nguyên vật liệu không đủ'
+    ) {
+        document.getElementById('production-error-title').textContent = title;
+
+        document.getElementById('production-error-message').textContent =
+            message;
+
+        document.getElementById('production-error-modal').style.display = 'flex';
+
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProductionErrorModal() {
+        document.getElementById('production-error-modal').style.display = 'none';
+
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('production-error-modal').addEventListener(
+        'click',
+        function(event) {
+            if (event.target === this) {
+                closeProductionErrorModal();
+            }
+        }
+    );
 
 
     /*
@@ -2085,27 +2197,18 @@
                     );
 
 
-                if (
-                    insufficientMaterials.length > 0
-                ) {
-
+                if (insufficientMaterials.length > 0) {
                     event.preventDefault();
 
+                    const names = insufficientMaterials
+                        .map(line => line.tennvl)
+                        .join(', ');
 
-                    const names =
-                        insufficientMaterials
-                            .map(
-                                line =>
-                                    line.tennvl
-                            )
-                            .join(', ');
-
-
-                    alert(
-                        'Không đủ tồn kho sản xuất cho NVL: '
-                        + names
+                    showProductionError(
+                        'Không thể sản xuất số lượng đã nhập vì tồn kho không đủ.\n\n' +
+                        'Nguyên vật liệu thiếu: ' + names +
+                        '\n\nVui lòng giảm số lượng sản xuất hoặc bổ sung nguyên vật liệu.'
                     );
-
 
                     return;
                 }
@@ -2161,6 +2264,26 @@
 
     updateSubmitButton();
 
+    /* Hiện modal nếu Service trả lỗi sau khi submit */
+    if (serverError) {
+        const errorText = serverError.toLowerCase();
+
+        if (
+            errorText.includes('không đủ') ||
+            errorText.includes('khong du') ||
+            errorText.includes('insufficient')
+        ) {
+            showProductionError(
+                'Không thể ghi nhận sản xuất vì nguyên vật liệu không đủ.\n\n' +
+                serverError
+            );
+        } else {
+            showProductionError(
+                serverError,
+                'Không thể ghi nhận sản xuất'
+            );
+        }
+    }
 </script>
 
 

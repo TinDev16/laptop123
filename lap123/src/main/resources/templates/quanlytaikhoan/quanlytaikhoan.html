@@ -191,7 +191,9 @@
                         <tr
                                 class="account-row directory-row"
                                 th:each="tk : ${listTaiKhoan}"
-                                th:if="${!tk.locked}">
+                                th:if="${!tk.locked
+    and tk.vaitro != null
+    and tk.vaitro.maVaitro != 'ADMIN'}">
 
 
                             <!-- TÀI KHOẢN -->
@@ -371,7 +373,9 @@
                         <tr
                                 class="account-row directory-row"
                                 th:each="tk : ${listTaiKhoan}"
-                                th:if="${tk.locked}">
+                                th:if="${tk.locked
+    and tk.vaitro != null
+    and tk.vaitro.maVaitro != 'ADMIN'}">
 
 
                             <!-- TÀI KHOẢN -->

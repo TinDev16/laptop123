@@ -173,7 +173,11 @@
                         <tr
                                 class="directory-row"
                                 th:each="item : ${nhanvien}"
-                                th:if="${item.TRANGTHAI == 0}">
+                                th:if="${item.TRANGTHAI == 0
+                                and item.taikhoan != null
+                                and item.taikhoan.vaitro != null
+                                and (item.taikhoan.vaitro.maVaitro == 'QUAN_LY_KHO'
+                                or item.taikhoan.vaitro.maVaitro == 'NHAN_VIEN')}">
 
                             <!-- MÃ NV -->
 
@@ -216,38 +220,19 @@
                                  VAI TRÒ
                             ========================== -->
 
+                            <!-- VAI TRÒ -->
                             <td>
+    <span th:if="${item.taikhoan != null
+                  and item.taikhoan.vaitro != null
+                  and item.taikhoan.vaitro.maVaitro == 'QUAN_LY_KHO'}">
+        Quản lý kho
+    </span>
 
-                                <span
-                                        th:if="${item.taikhoan != null
-                                        and item.taikhoan.vaitro != null
-                                        and item.taikhoan.vaitro.maVaitro == 'QUAN_LY_KHO'}">
-
-                                    Quản lý kho
-
-                                </span>
-
-
-                                <span
-                                        th:if="${item.taikhoan != null
-                                        and item.taikhoan.vaitro != null
-                                        and item.taikhoan.vaitro.maVaitro == 'ADMIN'}">
-
-                                    ADMIN
-
-                                </span>
-
-
-                                <span
-                                        th:if="${item.taikhoan == null
-                                        or item.taikhoan.vaitro == null
-                                        or (item.taikhoan.vaitro.maVaitro != 'QUAN_LY_KHO'
-                                        and item.taikhoan.vaitro.maVaitro != 'ADMIN')}">
-
-                                    Nhân viên
-
-                                </span>
-
+                                <span th:if="${item.taikhoan != null
+                  and item.taikhoan.vaitro != null
+                  and item.taikhoan.vaitro.maVaitro == 'NHAN_VIEN'}">
+        Nhân viên
+    </span>
                             </td>
 
 
@@ -355,7 +340,11 @@
                         <tr
                                 class="directory-row"
                                 th:each="item : ${nhanvien}"
-                                th:if="${item.TRANGTHAI == 1}">
+                                th:if="${item.TRANGTHAI == 1
+                                and item.taikhoan != null
+                                and item.taikhoan.vaitro != null
+                                and (item.taikhoan.vaitro.maVaitro == 'QUAN_LY_KHO'
+                                or item.taikhoan.vaitro.maVaitro == 'NHAN_VIEN')}">
 
                             <!-- MÃ NV -->
 
@@ -398,38 +387,19 @@
                                  VAI TRÒ
                             ========================== -->
 
+                            <!-- VAI TRÒ -->
                             <td>
+    <span th:if="${item.taikhoan != null
+                  and item.taikhoan.vaitro != null
+                  and item.taikhoan.vaitro.maVaitro == 'QUAN_LY_KHO'}">
+        Quản lý kho
+    </span>
 
-                                <span
-                                        th:if="${item.taikhoan != null
-                                        and item.taikhoan.vaitro != null
-                                        and item.taikhoan.vaitro.maVaitro == 'QUAN_LY_KHO'}">
-
-                                    Quản lý kho
-
-                                </span>
-
-
-                                <span
-                                        th:if="${item.taikhoan != null
-                                        and item.taikhoan.vaitro != null
-                                        and item.taikhoan.vaitro.maVaitro == 'ADMIN'}">
-
-                                    ADMIN
-
-                                </span>
-
-
-                                <span
-                                        th:if="${item.taikhoan == null
-                                        or item.taikhoan.vaitro == null
-                                        or (item.taikhoan.vaitro.maVaitro != 'QUAN_LY_KHO'
-                                        and item.taikhoan.vaitro.maVaitro != 'ADMIN')}">
-
-                                    Nhân viên
-
-                                </span>
-
+                                <span th:if="${item.taikhoan != null
+                  and item.taikhoan.vaitro != null
+                  and item.taikhoan.vaitro.maVaitro == 'NHAN_VIEN'}">
+        Nhân viên
+    </span>
                             </td>
 
 

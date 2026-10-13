@@ -4,157 +4,525 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ADMIN - Quản lý nhân viên</title>
+
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin-layout.css}">
 
     <style>
-        .page {
-            max-width: 1400px;
-            margin: 28px auto;
-            padding: 20px;
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-surface: #fff;
+            --admin-text: #0f172a;
+            --admin-text-secondary: #64748b;
+            --admin-primary: #2563eb;
+            --admin-primary-hover: #1d4ed8;
+            --admin-border: #e2e8f0;
+            --admin-border-hover: #cbd5e1;
+            --admin-success-bg: #f0fdf4;
+            --admin-success-text: #166534;
+            --admin-danger-bg: #fef2f2;
+            --admin-danger-text: #b91c1c;
+            --admin-radius: 14px;
+            --admin-radius-sm: 9px;
+            --admin-shadow: 0 1px 3px rgba(15,23,42,.04);
+            --admin-shadow-hover: 0 4px 12px rgba(15,23,42,.06);
         }
 
-        .toolbar,
-        .section-head {
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: var(--admin-bg);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: var(--admin-primary);
+            text-decoration: none;
+            transition: color .18s ease;
+        }
+
+        a:hover {
+            color: var(--admin-primary-hover);
+        }
+
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        h1, h2, h3, p {
+            overflow-wrap: anywhere;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--admin-text);
+            font-size: 28px;
+            font-weight: 750;
+            line-height: 1.3;
+            letter-spacing: -.6px;
+        }
+
+        h2 {
+            margin: 0 0 5px;
+            color: var(--admin-text);
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        h3 {
+            color: var(--admin-text);
+        }
+
+        .muted {
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+        }
+
+        /* ===== BỐ CỤC NỘI DUNG ===== */
+
+        .admin-content {
+            min-width: 0;
+            padding: 30px 32px 44px;
+        }
+
+        .breadcrumb {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            gap: 7px;
+            margin: 0 0 22px;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
         }
 
-        .search {
+        .breadcrumb a {
+            color: var(--admin-primary);
+            font-weight: 600;
+        }
+
+        .page-header {
             display: flex;
-            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
             flex-wrap: wrap;
-            margin: 18px 0;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
-        input,
-        select {
-            padding: 9px 11px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+        .page-header > div {
+            flex: 1;
+            min-width: 0;
         }
+
+        .page-header p {
+            margin: 8px 0 0;
+            color: var(--admin-text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ===== NÚT ===== */
 
         .btn {
-            display: inline-block;
-            padding: 9px 13px;
-            border: 0;
-            border-radius: 6px;
-            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 9px 14px;
+            color: #fff;
+            background: var(--admin-primary);
+            border: 1px solid var(--admin-primary);
+            border-radius: var(--admin-radius-sm);
             cursor: pointer;
-            background: #2563eb;
-            color: white;
-            font-size: 14px;
-        }
-
-        .btn-secondary {
-            background: #64748b;
-        }
-
-        .btn-warning {
-            background: #b45309;
-        }
-
-        .btn-success {
-            background: #15803d;
-        }
-
-        .btn-danger {
-            background: #b91c1c;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 650;
+            line-height: 1.4;
+            text-align: center;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color .18s ease,
+            border-color .18s ease,
+            box-shadow .18s ease,
+            transform .18s ease;
         }
 
         .btn:hover {
-            filter: brightness(0.92);
+            color: #fff;
+            background: var(--admin-primary-hover);
+            border-color: var(--admin-primary-hover);
+            box-shadow: var(--admin-shadow-hover);
+            transform: translateY(-1px);
         }
 
-        .panel {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 18px;
-            margin-top: 22px;
-            overflow-x: auto;
+        .btn:focus-visible {
+            outline: 3px solid rgba(37,99,235,.2);
+            outline-offset: 2px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        /* Nút phụ nền trắng */
+
+        .btn-secondary {
+            color: #334155;
+            background: #fff;
+            border-color: var(--admin-border-hover);
         }
 
-        th,
-        td {
-            padding: 11px 10px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-        }
-
-        th {
+        .btn-secondary:hover {
+            color: var(--admin-text);
             background: #f8fafc;
-            white-space: nowrap;
+            border-color: #94a3b8;
         }
 
-        td {
-            vertical-align: middle;
+        .btn-warning {
+            color: #92400e;
+            background: #fffbeb;
+            border-color: #fde68a;
         }
 
-        .status {
-            display: inline-block;
-            padding: 4px 9px;
-            border-radius: 20px;
-            font-size: 12px;
+        .btn-warning:hover {
+            color: #78350f;
+            background: #fef3c7;
+            border-color: #fcd34d;
         }
 
-        .working {
-            background: #dcfce7;
+        .btn-success {
             color: #166534;
+            background: #f0fdf4;
+            border-color: #bbf7d0;
         }
 
-        .retired {
-            background: #fee2e2;
-            color: #991b1b;
+        .btn-success:hover {
+            color: #14532d;
+            background: #dcfce7;
+            border-color: #86efac;
         }
+
+        .btn-danger {
+            color: #fff;
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .btn-danger:hover {
+            color: #fff;
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+        /* ===== THÔNG BÁO ===== */
 
         .message {
-            padding: 12px;
-            margin: 14px 0;
-            border-radius: 6px;
+            padding: 13px 16px;
+            margin: 0 0 18px;
+            border: 1px solid transparent;
+            border-radius: var(--admin-radius-sm);
+            font-size: 13px;
+            line-height: 1.6;
         }
 
         .success {
-            background: #dcfce7;
-            color: #166534;
+            color: var(--admin-success-text);
+            background: var(--admin-success-bg);
+            border-color: #bbf7d0;
         }
 
         .error {
-            background: #fee2e2;
-            color: #991b1b;
+            color: var(--admin-danger-text);
+            background: var(--admin-danger-bg);
+            border-color: #fecaca;
         }
+
+        /* ===== TÌM KIẾM VÀ LỌC ===== */
+
+        .search {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0 24px;
+            padding: 16px;
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .search input,
+        .search select {
+            min-height: 40px;
+            padding: 9px 12px;
+            color: var(--admin-text);
+            background: #fff;
+            border: 1px solid var(--admin-border-hover);
+            border-radius: var(--admin-radius-sm);
+            outline: none;
+            font-size: 13px;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .search input {
+            flex: 1 1 280px;
+            min-width: 180px;
+        }
+
+        .search select {
+            flex: 0 1 230px;
+            min-width: 180px;
+            cursor: pointer;
+        }
+
+        .search input::placeholder {
+            color: #94a3b8;
+        }
+
+        .search input:hover,
+        .search select:hover {
+            border-color: #94a3b8;
+        }
+
+        .search input:focus,
+        .search select:focus {
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+        }
+
+        /* ===== KHUNG DANH SÁCH ===== */
+
+        .panel {
+            min-width: 0;
+            margin-top: 24px;
+            padding: 22px;
+            overflow-x: auto;
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .panel > div:first-child {
+            margin-bottom: 15px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .section-head .muted,
+        .panel > div:first-child > .muted {
+            display: inline-block;
+            margin-top: 3px;
+        }
+
+        /* ===== BẢNG ===== */
+
+        table {
+            width: 100%;
+            min-width: 1050px;
+            margin-top: 12px;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px 13px;
+            border-bottom: 1px solid #edf0f4;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            color: #475569;
+            background: #f8fafc;
+            font-size: 12px;
+            font-weight: 750;
+            letter-spacing: .15px;
+            white-space: nowrap;
+            border-top: 1px solid var(--admin-border);
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        th:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        td {
+            color: #334155;
+            line-height: 1.55;
+        }
+
+        tbody tr {
+            transition: background-color .15s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        td:nth-child(1) {
+            color: #64748b;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        td:nth-child(2) {
+            color: var(--admin-text);
+            font-weight: 650;
+            min-width: 145px;
+        }
+
+        td:nth-child(5) {
+            overflow-wrap: anywhere;
+        }
+
+        /* ===== TRẠNG THÁI ===== */
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .working {
+            color: #166534;
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .working::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            flex: 0 0 6px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        .retired {
+            color: #991b1b;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        /* ===== THAO TÁC ===== */
+
+        .actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+            min-width: 155px;
+        }
+
+        .actions .btn {
+            min-height: 33px;
+            padding: 7px 10px;
+            font-size: 12px;
+        }
+
+        .actions form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        /* ===== PHÂN TRANG ===== */
 
         .pagination {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 16px;
             flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
         }
 
         .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 7px 12px;
+            color: #334155;
+            background: #fff;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            font-weight: 600;
             text-decoration: none;
+            transition: background-color .18s ease, border-color .18s ease;
         }
 
-        .muted {
-            color: #64748b;
+        .pagination a:hover {
+            color: var(--admin-primary);
+            background: #eff6ff;
+            border-color: #bfdbfe;
         }
 
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
+        .pagination span {
+            font-weight: 600;
         }
 
-        /* MODAL NGHỈ VIỆC */
+        /* ===== QUAY LẠI ===== */
+
+        .back-link {
+            margin-top: 24px;
+        }
+
+        .back-link .btn-secondary {
+            color: #334155;
+            background: #fff;
+            border-color: var(--admin-border);
+        }
+
+        .back-link .btn-secondary:hover {
+            color: var(--admin-text);
+            background: #f8fafc;
+            border-color: var(--admin-border-hover);
+        }
+
+        /* ===== MODAL NGHỈ VIỆC ===== */
+
         #modal-nghi-viec {
             display: none;
             position: fixed !important;
@@ -162,9 +530,10 @@
             z-index: 999999;
             width: 100%;
             height: 100%;
-            box-sizing: border-box;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.65);
+            padding: 24px;
+            background: rgba(15,23,42,.62);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
             justify-content: center;
             align-items: center;
             overflow-y: auto;
@@ -173,378 +542,568 @@
         #modal-nghi-viec .modal-content {
             width: 100%;
             max-width: 500px;
-            max-height: calc(100vh - 40px);
+            max-height: calc(100vh - 48px);
             overflow-y: auto;
-            box-sizing: border-box;
-            padding: 24px;
-            border-radius: 12px;
+            padding: 28px;
             background: #fff;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-            animation: modalAppear 0.2s ease-out;
+            border: 1px solid rgba(226,232,240,.9);
+            border-radius: 16px;
+            box-shadow: 0 24px 70px rgba(15,23,42,.25);
+            animation: modalAppear .2s ease-out;
         }
 
         #modal-nghi-viec h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
+            margin: 0 0 10px;
+            color: var(--admin-text);
+            font-size: 21px;
+            font-weight: 750;
+            line-height: 1.4;
+            letter-spacing: -.3px;
         }
 
         #modal-nghi-viec .modal-description {
-            margin-bottom: 18px;
-            color: #64748b;
-            line-height: 1.5;
+            margin: 0 0 23px;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+            line-height: 1.7;
         }
 
         #modal-nghi-viec label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
+            margin-bottom: 9px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
         }
 
         #modal-nghi-viec textarea {
             display: block;
             width: 100%;
-            min-height: 120px;
-            box-sizing: border-box;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
+            min-height: 130px;
+            padding: 12px 14px;
+            color: var(--admin-text);
+            background: #fff;
+            border: 1px solid var(--admin-border-hover);
+            border-radius: var(--admin-radius-sm);
             resize: vertical;
-            font: inherit;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        #modal-nghi-viec textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        #modal-nghi-viec textarea:hover {
+            border-color: #94a3b8;
         }
 
         #modal-nghi-viec textarea:focus {
-            outline: 2px solid #93c5fd;
-            border-color: #2563eb;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
         }
 
         #modal-nghi-viec .modal-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            align-items: center;
             flex-wrap: wrap;
-            margin-top: 18px;
+            gap: 10px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #f1f5f9;
         }
 
         @keyframes modalAppear {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(-8px) scale(.99);
             }
-
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
-        @media (max-width: 700px) {
-            .page {
+        /* ===== RESPONSIVE ===== */
+
+        @media (max-width: 1100px) {
+            .admin-content {
+                padding: 26px 22px 36px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .search input {
+                flex-basis: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-content {
+                padding: 22px 16px 32px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 17px;
+            }
+
+            .page-header {
+                align-items: flex-start;
+            }
+
+            .page-header > .btn {
+                width: 100%;
+            }
+
+            .search {
+                padding: 13px;
+            }
+
+            .search input,
+            .search select {
+                flex: 1 1 100%;
+                width: 100%;
+                min-width: 0;
+            }
+
+            .search > .btn {
+                flex: 1 1 auto;
+            }
+
+            .panel {
+                margin-top: 18px;
+                padding: 15px;
+                border-radius: 12px;
+            }
+
+            table {
+                min-width: 1000px;
+            }
+
+            th, td {
                 padding: 10px;
             }
 
-            th,
-            td {
-                padding: 8px;
-            }
-
             #modal-nghi-viec {
-                padding: 12px;
+                padding: 16px;
             }
 
             #modal-nghi-viec .modal-content {
-                padding: 18px;
+                max-height: calc(100vh - 32px);
+                padding: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-content {
+                padding: 18px 12px 28px;
+            }
+
+            .breadcrumb {
+                margin-bottom: 18px;
+                font-size: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .page-header {
+                gap: 14px;
+            }
+
+            .page-header p {
+                font-size: 12px;
+            }
+
+            .search {
+                gap: 9px;
+                padding: 11px;
+            }
+
+            .search > .btn {
+                flex: 1 1 100%;
+                width: 100%;
+            }
+
+            .panel {
+                padding: 12px;
+            }
+
+            .section-head {
+                align-items: flex-start;
+            }
+
+            .pagination {
+                gap: 8px;
+            }
+
+            #modal-nghi-viec {
+                padding: 10px;
+            }
+
+            #modal-nghi-viec .modal-content {
+                max-height: calc(100vh - 20px);
+                padding: 19px 16px;
+                border-radius: 12px;
+            }
+
+            #modal-nghi-viec h3 {
+                font-size: 19px;
+            }
+
+            #modal-nghi-viec .modal-actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+
+            #modal-nghi-viec .modal-actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
             }
         }
     </style>
 </head>
 
 <body>
-<main class="page">
+<div class="admin-layout">
 
-    <p class="muted">
-        <a th:href="@{/admin}">Hệ thống</a> / Nhân viên
-    </p>
+    <!-- SIDEBAR ADMIN: chỉ khai báo một lần -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('nhanvien')}"></aside>
 
-    <div class="toolbar">
-        <div>
-            <h1>Danh sách nhân viên</h1>
-            <p class="muted">
-                Theo dõi hồ sơ hiện tại và hồ sơ lưu trữ.
-            </p>
-        </div>
+    <div class="admin-main">
 
-        <a class="btn" th:href="@{/admin/nhanvien/form}">
-            + Thêm nhân viên
-        </a>
-    </div>
-
-    <div th:if="${success}" class="message success"
-         th:text="${success}"></div>
-
-    <div th:if="${error}" class="message error"
-         th:text="${error}"></div>
-
-    <!-- TÌM KIẾM VÀ LỌC VAI TRÒ -->
-    <form class="search" method="get"
-          th:action="@{/admin/nhanvien}">
-
-        <input type="text"
-               name="q"
-               th:value="${q}"
-               placeholder="Tìm mã NV, họ tên, SĐT, email">
-
-        <select name="role">
-            <option value="">Tất cả vai trò</option>
-            <option th:each="v : ${danhSachVaiTro}"
-                    th:value="${v.maVaitro}"
-                    th:selected="${role != null and role == v.maVaitro}"
-                    th:text="${v.ten != null ? v.ten : v.maVaitro}">
-            </option>
-        </select>
-
-        <button class="btn" type="submit">Tìm kiếm</button>
-
-        <a class="btn btn-secondary"
-           th:href="@{/admin/nhanvien}">
-            Xóa lọc
-        </a>
-    </form>
-
-    <!-- NHÂN VIÊN ĐANG LÀM VIỆC -->
-    <section class="panel">
-
-        <div class="section-head">
+        <!-- TOPBAR -->
+        <header class="admin-topbar">
             <div>
-                <h2>Nhân viên đang làm việc</h2>
-                <span class="muted"
-                      th:text="'Tổng số: ' + ${tongDangLam}">
-                </span>
+                <div class="admin-topbar-title">Quản lý nhân viên</div>
+                <div class="admin-topbar-breadcrumb">
+                    ADMIN / Nhân sự / Quản lý nhân viên
+                </div>
             </div>
-        </div>
+        </header>
 
-        <table>
-            <thead>
-            <tr>
-                <th>Mã NV</th>
-                <th>Họ tên</th>
-                <th>Giới tính</th>
-                <th>SĐT</th>
-                <th>Email</th>
-                <th>Ngày tham gia</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-            </thead>
+        <main class="admin-content">
 
-            <tbody>
-            <tr th:each="nv : ${nhanVienDangLam}">
-                <td th:text="${nv.MANV}"></td>
+            <!-- ĐIỀU HƯỚNG -->
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">ADMIN</a>
+                <span>/</span>
+                <span>Nhân sự</span>
+                <span>/</span>
+                <span>Quản lý nhân viên</span>
+            </div>
 
-                <td th:text="${nv.HOTEN}"></td>
+            <!-- TIÊU ĐỀ -->
+            <div class="page-header">
+                <div>
+                    <h1>Danh sách nhân viên</h1>
+                    <p>
+                        Theo dõi hồ sơ nhân viên đang làm việc và hồ sơ lưu trữ,
+                        quản lý thông tin và khôi phục hồ sơ khi cần.
+                    </p>
+                </div>
 
-                <td th:text="${nv.GIOITINH != null
-                    ? nv.GIOITINH : '-'}"></td>
+                <a class="btn" th:href="@{/admin/nhanvien/form}">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Thêm nhân viên
+                </a>
+            </div>
 
-                <td th:text="${nv.SDT != null
-                    ? nv.SDT : '-'}"></td>
+            <!-- THÔNG BÁO -->
+            <div th:if="${success}" class="message success"
+                 th:text="${success}"></div>
 
-                <td th:text="${nv.EMAIL != null
-                    ? nv.EMAIL : '-'}"></td>
+            <div th:if="${error}" class="message error"
+                 th:text="${error}"></div>
 
-                <td th:text="${nv.NGAYTHAMGIA != null
-                    ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy')
-                    : '-'}"></td>
+            <!-- TÌM KIẾM VÀ LỌC VAI TRÒ -->
+            <form class="search" method="get"
+                  th:action="@{/admin/nhanvien}">
 
-                <td th:text="${nv.taikhoan != null
-                    and nv.taikhoan.vaitro != null
-                    ? (nv.taikhoan.vaitro.ten != null
-                        ? nv.taikhoan.vaitro.ten
-                        : nv.taikhoan.vaitro.maVaitro)
-                    : 'Chưa có tài khoản'}"></td>
+                <input type="text"
+                       name="q"
+                       th:value="${q}"
+                       placeholder="Tìm mã NV, họ tên, SĐT, email">
 
-                <td>
-                    <span class="status working">Đang làm việc</span>
-                </td>
+                <select name="role">
+                    <option value="">Tất cả vai trò</option>
+                    <option th:each="v : ${danhSachVaiTro}"
+                            th:value="${v.maVaitro}"
+                            th:selected="${role != null and role == v.maVaitro}"
+                            th:text="${v.ten != null ? v.ten : v.maVaitro}">
+                    </option>
+                </select>
 
-                <td>
-                    <div class="actions">
+                <button class="btn" type="submit">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    Tìm kiếm
+                </button>
 
-                        <a class="btn btn-secondary"
-                           th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
-                            Sửa
-                        </a>
+                <a class="btn btn-secondary"
+                   th:href="@{/admin/nhanvien}">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Xóa lọc
+                </a>
+            </form>
 
-                        <button class="btn btn-warning"
-                                type="button"
-                                th:attr="data-id=${nv.MANV}"
-                                onclick="moModalNghiViec(this.dataset.id)">
-                            Cho nghỉ việc
-                        </button>
+            <!-- NHÂN VIÊN ĐANG LÀM VIỆC -->
+            <section class="panel">
 
+                <div class="section-head">
+                    <div>
+                        <h2>Nhân viên đang làm việc</h2>
+                        <span class="muted"
+                              th:text="'Tổng số: ' + ${tongDangLam}">
+                        </span>
                     </div>
-                </td>
-            </tr>
+                </div>
 
-            <tr th:if="${#lists.isEmpty(nhanVienDangLam)}">
-                <td colspan="9" class="muted">
-                    Không có nhân viên phù hợp.
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã NV</th>
+                        <th>Họ tên</th>
+                        <th>Giới tính</th>
+                        <th>SĐT</th>
+                        <th>Email</th>
+                        <th>Ngày tham gia</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
 
-        <div class="pagination">
-            <a th:if="${pageWorking > 0}"
-               th:href="@{/admin/nhanvien(
-                   q=${q},
-                   role=${role},
-                   pageWorking=${pageWorking - 1},
-                   pageRetired=${pageRetired})}">
-                ← Trước
-            </a>
+                    <tbody>
+                    <tr th:each="nv : ${nhanVienDangLam}">
+                        <td th:text="${nv.MANV}"></td>
+                        <td th:text="${nv.HOTEN}"></td>
 
-            <span th:text="'Trang ' + ${pageWorking + 1}
-                + ' / ' + ${totalWorkingPages}">
-            </span>
+                        <td th:text="${nv.GIOITINH != null
+                            ? nv.GIOITINH : '-'}"></td>
 
-            <a th:if="${pageWorking + 1 < totalWorkingPages}"
-               th:href="@{/admin/nhanvien(
-                   q=${q},
-                   role=${role},
-                   pageWorking=${pageWorking + 1},
-                   pageRetired=${pageRetired})}">
-                Sau →
-            </a>
-        </div>
-    </section>
+                        <td th:text="${nv.SDT != null
+                            ? nv.SDT : '-'}"></td>
 
-    <!-- NHÂN VIÊN ĐÃ NGHỈ VIỆC -->
-    <section class="panel">
+                        <td th:text="${nv.EMAIL != null
+                            ? nv.EMAIL : '-'}"></td>
 
-        <div>
-            <h2>Nhân viên đã nghỉ việc</h2>
-            <span class="muted"
-                  th:text="'Tổng số: ' + ${tongDaNghi}">
-            </span>
-        </div>
+                        <td th:text="${nv.NGAYTHAMGIA != null
+                            ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy')
+                            : '-'}"></td>
 
-        <table>
-            <thead>
-            <tr>
-                <th>Mã NV</th>
-                <th>Họ tên</th>
-                <th>Giới tính</th>
-                <th>SĐT</th>
-                <th>Email</th>
-                <th>Ngày tham gia</th>
-                <th>Vai trò</th>
-                <th>Lý do / ghi chú</th>
-                <th>Thao tác</th>
-            </tr>
-            </thead>
+                        <td th:text="${nv.taikhoan != null
+                            and nv.taikhoan.vaitro != null
+                            ? (nv.taikhoan.vaitro.ten != null
+                                ? nv.taikhoan.vaitro.ten
+                                : nv.taikhoan.vaitro.maVaitro)
+                            : 'Chưa có tài khoản'}"></td>
 
-            <tbody>
-            <tr th:each="nv : ${nhanVienDaNghi}">
-                <td th:text="${nv.MANV}"></td>
+                        <td>
+                            <span class="status working">Đang làm việc</span>
+                        </td>
 
-                <td th:text="${nv.HOTEN}"></td>
+                        <td>
+                            <div class="actions">
 
-                <td th:text="${nv.GIOITINH != null
-                    ? nv.GIOITINH : '-'}"></td>
+                                <a class="btn btn-secondary"
+                                   th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
+                                    <i class="fa-solid fa-pen"></i>
+                                    Sửa
+                                </a>
 
-                <td th:text="${nv.SDT != null
-                    ? nv.SDT : '-'}"></td>
+                                <button class="btn btn-warning"
+                                        type="button"
+                                        th:attr="data-id=${nv.MANV}"
+                                        onclick="moModalNghiViec(this.dataset.id)">
+                                    <i class="fa-solid fa-user-minus"></i>
+                                    Cho nghỉ việc
+                                </button>
 
-                <td th:text="${nv.EMAIL != null
-                    ? nv.EMAIL : '-'}"></td>
+                            </div>
+                        </td>
+                    </tr>
 
-                <td th:text="${nv.NGAYTHAMGIA != null
-                    ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy')
-                    : '-'}"></td>
+                    <tr th:if="${#lists.isEmpty(nhanVienDangLam)}">
+                        <td colspan="9" class="muted">
+                            Không có nhân viên phù hợp.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
 
-                <td th:text="${nv.taikhoan != null
-                    and nv.taikhoan.vaitro != null
-                    ? (nv.taikhoan.vaitro.ten != null
-                        ? nv.taikhoan.vaitro.ten
-                        : nv.taikhoan.vaitro.maVaitro)
-                    : 'Chưa có tài khoản'}"></td>
+                <div class="pagination">
+                    <a th:if="${pageWorking > 0}"
+                       th:href="@{/admin/nhanvien(
+                           q=${q},
+                           role=${role},
+                           pageWorking=${pageWorking - 1},
+                           pageRetired=${pageRetired})}">
+                        ← Trước
+                    </a>
 
-                <td th:text="${nv.GHICHU != null
-                    and !#strings.isEmpty(nv.GHICHU.trim())
-                    ? nv.GHICHU : '-'}"></td>
+                    <span th:text="'Trang ' + ${pageWorking + 1}
+                        + ' / ' + ${totalWorkingPages}">
+                    </span>
 
-                <td>
-                    <div class="actions">
+                    <a th:if="${pageWorking + 1 < totalWorkingPages}"
+                       th:href="@{/admin/nhanvien(
+                           q=${q},
+                           role=${role},
+                           pageWorking=${pageWorking + 1},
+                           pageRetired=${pageRetired})}">
+                        Sau →
+                    </a>
+                </div>
+            </section>
 
-                        <a class="btn btn-secondary"
-                           th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
-                            Sửa
-                        </a>
+            <!-- NHÂN VIÊN ĐÃ NGHỈ VIỆC -->
+            <section class="panel">
 
-                        <form method="post"
-                              th:action="@{/admin/nhanvien/{id}/status(id=${nv.MANV})}"
-                              onsubmit="return confirm('Khôi phục nhân viên này?')">
-
-                            <input type="hidden"
-                                   th:if="${_csrf != null}"
-                                   th:name="${_csrf.parameterName}"
-                                   th:value="${_csrf.token}">
-
-                            <input type="hidden"
-                                   name="trangthai"
-                                   value="0">
-
-                            <button class="btn btn-success" type="submit">
-                                Khôi phục
-                            </button>
-                        </form>
-
+                <div class="section-head">
+                    <div>
+                        <h2>Nhân viên đã nghỉ việc</h2>
+                        <span class="muted"
+                              th:text="'Tổng số: ' + ${tongDaNghi}">
+                        </span>
                     </div>
-                </td>
-            </tr>
+                </div>
 
-            <tr th:if="${#lists.isEmpty(nhanVienDaNghi)}">
-                <td colspan="9" class="muted">
-                    Không có nhân viên phù hợp.
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã NV</th>
+                        <th>Họ tên</th>
+                        <th>Giới tính</th>
+                        <th>SĐT</th>
+                        <th>Email</th>
+                        <th>Ngày tham gia</th>
+                        <th>Vai trò</th>
+                        <th>Lý do / ghi chú</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
 
-        <div class="pagination">
-            <a th:if="${pageRetired > 0}"
-               th:href="@{/admin/nhanvien(
-                   q=${q},
-                   role=${role},
-                   pageWorking=${pageWorking},
-                   pageRetired=${pageRetired - 1})}">
-                ← Trước
-            </a>
+                    <tbody>
+                    <tr th:each="nv : ${nhanVienDaNghi}">
+                        <td th:text="${nv.MANV}"></td>
+                        <td th:text="${nv.HOTEN}"></td>
 
-            <span th:text="'Trang ' + ${pageRetired + 1}
-                + ' / ' + ${totalRetiredPages}">
-            </span>
+                        <td th:text="${nv.GIOITINH != null
+                            ? nv.GIOITINH : '-'}"></td>
 
-            <a th:if="${pageRetired + 1 < totalRetiredPages}"
-               th:href="@{/admin/nhanvien(
-                   q=${q},
-                   role=${role},
-                   pageWorking=${pageWorking},
-                   pageRetired=${pageRetired + 1})}">
-                Sau →
-            </a>
-        </div>
-    </section>
+                        <td th:text="${nv.SDT != null
+                            ? nv.SDT : '-'}"></td>
 
-    <p>
-        <a th:href="@{/admin}">← Quay lại trang quản trị</a>
-    </p>
-</main>
+                        <td th:text="${nv.EMAIL != null
+                            ? nv.EMAIL : '-'}"></td>
+
+                        <td th:text="${nv.NGAYTHAMGIA != null
+                            ? #dates.format(nv.NGAYTHAMGIA, 'dd/MM/yyyy')
+                            : '-'}"></td>
+
+                        <td th:text="${nv.taikhoan != null
+                            and nv.taikhoan.vaitro != null
+                            ? (nv.taikhoan.vaitro.ten != null
+                                ? nv.taikhoan.vaitro.ten
+                                : nv.taikhoan.vaitro.maVaitro)
+                            : 'Chưa có tài khoản'}"></td>
+
+                        <td th:text="${nv.GHICHU != null
+                            and !#strings.isEmpty(nv.GHICHU.trim())
+                            ? nv.GHICHU : '-'}"></td>
+
+                        <td>
+                            <div class="actions">
+
+                                <a class="btn btn-secondary"
+                                   th:href="@{/admin/nhanvien/form(id=${nv.MANV})}">
+                                    <i class="fa-solid fa-pen"></i>
+                                    Sửa
+                                </a>
+
+                                <form method="post"
+                                      th:action="@{/admin/nhanvien/{id}/status(id=${nv.MANV})}"
+                                      onsubmit="return confirm('Khôi phục nhân viên này?')">
+
+                                    <input type="hidden"
+                                           th:if="${_csrf != null}"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}">
+
+                                    <input type="hidden"
+                                           name="trangthai"
+                                           value="0">
+
+                                    <button class="btn btn-success" type="submit">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                        Khôi phục
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(nhanVienDaNghi)}">
+                        <td colspan="9" class="muted">
+                            Không có nhân viên phù hợp.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <a th:if="${pageRetired > 0}"
+                       th:href="@{/admin/nhanvien(
+                           q=${q},
+                           role=${role},
+                           pageWorking=${pageWorking},
+                           pageRetired=${pageRetired - 1})}">
+                        ← Trước
+                    </a>
+
+                    <span th:text="'Trang ' + ${pageRetired + 1}
+                        + ' / ' + ${totalRetiredPages}">
+                    </span>
+
+                    <a th:if="${pageRetired + 1 < totalRetiredPages}"
+                       th:href="@{/admin/nhanvien(
+                           q=${q},
+                           role=${role},
+                           pageWorking=${pageWorking},
+                           pageRetired=${pageRetired + 1})}">
+                        Sau →
+                    </a>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
 
 <!-- MODAL NHẬP LÝ DO NGHỈ VIỆC -->
-<div id="modal-nghi-viec"
-     onclick="clickNgoaiModal(event)">
+<div id="modal-nghi-viec" onclick="clickNgoaiModal(event)">
 
     <div class="modal-content"
          role="dialog"
@@ -602,12 +1161,12 @@
             return;
         }
 
-        form.action = '/admin/nhanvien/' + encodeURIComponent(id) + '/status';
-        oLyDo.value = '';
+        form.action = '/admin/nhanvien/'
+            + encodeURIComponent(id) + '/status';
 
+        oLyDo.value = '';
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
-
         oLyDo.focus();
     }
 

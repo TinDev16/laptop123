@@ -4,216 +4,524 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ADMIN - Hồ sơ nhân viên</title>
+
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin-layout.css}">
 
     <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-surface: #ffffff;
+            --admin-text: #0f172a;
+            --admin-text-secondary: #64748b;
+            --admin-primary: #2563eb;
+            --admin-primary-hover: #1d4ed8;
+            --admin-border: #e2e8f0;
+            --admin-border-hover: #cbd5e1;
+            --admin-radius: 14px;
+            --admin-radius-sm: 9px;
+            --admin-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --admin-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: var(--admin-bg);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: var(--admin-primary);
+            text-decoration: none;
+            transition: color 0.18s ease;
+        }
+
+        a:hover {
+            color: var(--admin-primary-hover);
+        }
+
         .container {
-            max-width: 850px;
-            margin: 30px auto;
-            padding: 20px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 36px 28px 48px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin: 0 0 24px;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+        }
+
+        .breadcrumb a {
+            color: var(--admin-text-secondary);
+            font-weight: 500;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--admin-primary);
         }
 
         .form-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 24px;
+            padding: 30px;
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .form-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 28px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .heading-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            color: var(--admin-primary);
+            background: #eff6ff;
+            border-radius: 12px;
+            font-size: 20px;
+        }
+
+        .form-card h1 {
+            margin: 0 0 7px;
+            color: var(--admin-text);
+            font-size: 26px;
+            font-weight: 750;
+            line-height: 1.35;
+            letter-spacing: -0.5px;
+        }
+
+        .form-description {
+            margin: 0;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0 0 20px;
+            color: #334155;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .section-title i {
+            color: var(--admin-primary);
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 18px;
+            gap: 22px 20px;
         }
 
         .field {
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .field label {
+            color: #334155;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .required {
+            color: #dc2626;
         }
 
         .field input,
         .field select {
-            box-sizing: border-box;
+            display: block;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            min-width: 0;
+            min-height: 44px;
+            padding: 10px 13px;
+            color: var(--admin-text);
+            background: #fff;
+            border: 1px solid var(--admin-border-hover);
+            border-radius: var(--admin-radius-sm);
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: border-color 0.18s ease,
+            box-shadow 0.18s ease,
+            background-color 0.18s ease;
+        }
+
+        .field input:hover,
+        .field select:hover {
+            border-color: #94a3b8;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .field input::placeholder {
+            color: #94a3b8;
+        }
+
+        .field select {
+            cursor: pointer;
+        }
+
+        .field input[type="date"] {
+            color-scheme: light;
+            cursor: pointer;
         }
 
         .full {
             grid-column: 1 / -1;
         }
 
+        .required-note {
+            margin: 22px 0 0;
+            color: var(--admin-text-secondary);
+            font-size: 12px;
+        }
+
         .actions {
             display: flex;
-            gap: 10px;
-            margin-top: 22px;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+            padding-top: 22px;
+            border-top: 1px solid #f1f5f9;
         }
 
         .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            border: 0;
-            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 42px;
+            padding: 10px 18px;
+            border: 1px solid transparent;
+            border-radius: var(--admin-radius-sm);
             cursor: pointer;
-            text-decoration: none;
+            font-family: inherit;
             font-size: 14px;
+            font-weight: 650;
+            line-height: 1.4;
+            text-align: center;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.18s ease,
+            border-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.2);
+            outline-offset: 2px;
         }
 
         .primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .secondary {
-            background: #64748b;
-            color: white;
+            color: #fff;
+            background: var(--admin-primary);
+            border-color: var(--admin-primary);
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.12);
         }
 
         .primary:hover {
-            background: #1d4ed8;
+            color: #fff;
+            background: var(--admin-primary-hover);
+            border-color: var(--admin-primary-hover);
+            box-shadow: var(--admin-shadow-hover);
+            transform: translateY(-1px);
+        }
+
+        .secondary {
+            color: #334155;
+            background: #fff;
+            border-color: var(--admin-border-hover);
         }
 
         .secondary:hover {
-            background: #475569;
+            color: var(--admin-text);
+            background: #f8fafc;
+            border-color: #94a3b8;
         }
 
-        .breadcrumb {
-            margin-bottom: 20px;
-        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 26px 20px 36px;
+            }
 
-        .required-note {
-            color: #64748b;
-            font-size: 13px;
+            .form-card {
+                padding: 24px;
+            }
+
+            .form-card h1 {
+                font-size: 24px;
+            }
+
+            .grid {
+                gap: 19px 16px;
+            }
         }
 
         @media (max-width: 650px) {
             .container {
-                padding: 10px;
+                padding: 22px 16px 32px;
             }
 
             .form-card {
-                padding: 16px;
+                padding: 21px;
             }
 
             .grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 18px;
             }
 
             .full {
                 grid-column: auto;
             }
         }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 18px 12px 28px;
+            }
+
+            .breadcrumb {
+                gap: 6px;
+                margin-bottom: 18px;
+                font-size: 12px;
+            }
+
+            .form-card {
+                padding: 18px 15px;
+                border-radius: 12px;
+            }
+
+            .form-card h1 {
+                font-size: 22px;
+            }
+
+            .heading-icon {
+                flex-basis: 42px;
+                width: 42px;
+                height: 42px;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                margin-top: 22px;
+            }
+
+            .actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 
 <body>
-<main class="container">
+<div class="admin-layout">
 
-    <p class="breadcrumb">
-        <a th:href="@{/admin}">Hệ thống</a> /
-        <a th:href="@{/admin/nhanvien}">Nhân viên</a> /
-        Hồ sơ
-    </p>
+    <!-- Sidebar ADMIN dùng chung -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('nhanvien')}"></aside>
 
-    <section class="form-card">
+    <main class="admin-main">
+        <div class="container">
 
-        <h1 th:text="${isEdit} ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên'">
-            Hồ sơ nhân viên
-        </h1>
-
-        <p>Nhập thông tin hồ sơ nhân viên.</p>
-
-        <form method="post"
-              th:action="@{/admin/nhanvien/save}"
-              th:object="${nhanvien}">
-
-            <input type="hidden" th:field="*{MANV}">
-
-            <div class="grid">
-
-                <!-- Họ tên -->
-                <div class="field full">
-                    <label for="HOTEN">Họ và tên *</label>
-                    <input id="HOTEN"
-                           type="text"
-                           th:field="*{HOTEN}"
-                           maxlength="255"
-                           required>
-                </div>
-
-                <!-- Giới tính -->
-                <div class="field">
-                    <label for="GIOITINH">Giới tính</label>
-                    <select id="GIOITINH" th:field="*{GIOITINH}">
-                        <option value="">-- Chọn giới tính --</option>
-                        <option value="Nam">Nam</option>
-                        <option value="Nữ">Nữ</option>
-                        <option value="Khác">Khác</option>
-                    </select>
-                </div>
-
-                <!-- Ngày sinh -->
-                <div class="field">
-                    <label for="NGAYSINH">Ngày sinh</label>
-                    <input id="NGAYSINH"
-                           type="date"
-                           name="NGAYSINH"
-                           th:value="${nhanvien.NGAYSINH != null
-                               ? #dates.format(nhanvien.NGAYSINH, 'yyyy-MM-dd')
-                               : ''}">
-                </div>
-
-                <!-- Số điện thoại -->
-                <div class="field">
-                    <label for="SDT">Số điện thoại</label>
-                    <input id="SDT"
-                           type="tel"
-                           th:field="*{SDT}"
-                           maxlength="255">
-                </div>
-
-                <!-- Email -->
-                <div class="field">
-                    <label for="EMAIL">Email nhân viên</label>
-                    <input id="EMAIL"
-                           type="email"
-                           th:field="*{EMAIL}"
-                           maxlength="255">
-                </div>
-
-                <!-- Ngày tham gia -->
-                <div class="field"
-                     th:with="ngayHienTai=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
-
-                    <label for="NGAYTHAMGIA">Ngày tham gia</label>
-
-                    <input id="NGAYTHAMGIA"
-                           type="date"
-                           name="NGAYTHAMGIA"
-                           th:value="${nhanvien.NGAYTHAMGIA != null
-                               ? #dates.format(nhanvien.NGAYTHAMGIA, 'yyyy-MM-dd')
-                               : (isEdit ? '' : ngayHienTai)}">
-                </div>
-
-            </div>
-
-            <p class="required-note">* Trường bắt buộc.</p>
-
-            <div class="actions">
-                <button class="btn primary" type="submit">
-                    Lưu hồ sơ
-                </button>
-
-                <a class="btn secondary" th:href="@{/admin/nhanvien}">
-                    Hủy
+            <p class="breadcrumb">
+                <a th:href="@{/admin}">
+                    <i class="fa-solid fa-house"></i>
+                    Hệ thống
                 </a>
-            </div>
+                <span>/</span>
+                <a th:href="@{/admin/nhanvien}">Quản lý nhân viên</a>
+                <span>/</span>
+                <span>Hồ sơ</span>
+            </p>
 
-        </form>
-    </section>
-</main>
+            <section class="form-card">
+
+                <div class="form-heading">
+                    <div class="heading-icon">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </div>
+
+                    <div>
+                        <h1 th:text="${isEdit} ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên'">
+                            Hồ sơ nhân viên
+                        </h1>
+
+                        <p class="form-description">
+                            Nhập thông tin hồ sơ nhân viên vào hệ thống.
+                        </p>
+                    </div>
+                </div>
+
+                <h2 class="section-title">
+                    <i class="fa-solid fa-address-card"></i>
+                    Thông tin cá nhân
+                </h2>
+
+                <form method="post"
+                      th:action="@{/admin/nhanvien/save}"
+                      th:object="${nhanvien}">
+
+                    <input type="hidden" th:field="*{MANV}">
+
+                    <div class="grid">
+
+                        <!-- Họ tên -->
+                        <div class="field full">
+                            <label for="HOTEN">
+                                Họ và tên <span class="required">*</span>
+                            </label>
+
+                            <input id="HOTEN"
+                                   type="text"
+                                   th:field="*{HOTEN}"
+                                   maxlength="255"
+                                   placeholder="Nhập họ và tên nhân viên"
+                                   autocomplete="name"
+                                   required>
+                        </div>
+
+                        <!-- Giới tính -->
+                        <div class="field">
+                            <label for="GIOITINH">Giới tính</label>
+
+                            <select id="GIOITINH" th:field="*{GIOITINH}">
+                                <option value="">-- Chọn giới tính --</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+
+                        <!-- Ngày sinh -->
+                        <div class="field">
+                            <label for="NGAYSINH">Ngày sinh</label>
+
+                            <input id="NGAYSINH"
+                                   type="date"
+                                   name="NGAYSINH"
+                                   th:value="${nhanvien.NGAYSINH != null
+                                       ? #dates.format(nhanvien.NGAYSINH, 'yyyy-MM-dd')
+                                       : ''}">
+                        </div>
+
+                        <!-- Số điện thoại -->
+                        <div class="field">
+                            <label for="SDT">Số điện thoại</label>
+
+                            <input id="SDT"
+                                   type="tel"
+                                   th:field="*{SDT}"
+                                   maxlength="255"
+                                   placeholder="Nhập số điện thoại"
+                                   autocomplete="tel">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="field">
+                            <label for="EMAIL">Email nhân viên</label>
+
+                            <input id="EMAIL"
+                                   type="email"
+                                   th:field="*{EMAIL}"
+                                   maxlength="255"
+                                   placeholder="example@email.com"
+                                   autocomplete="email">
+                        </div>
+
+                        <!-- Ngày tham gia -->
+                        <div class="field"
+                             th:with="ngayHienTai=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+
+                            <label for="NGAYTHAMGIA">Ngày tham gia</label>
+
+                            <input id="NGAYTHAMGIA"
+                                   type="date"
+                                   name="NGAYTHAMGIA"
+                                   th:value="${nhanvien.NGAYTHAMGIA != null
+                                       ? #dates.format(nhanvien.NGAYTHAMGIA, 'yyyy-MM-dd')
+                                       : (isEdit ? '' : ngayHienTai)}">
+                        </div>
+
+                    </div>
+
+                    <p class="required-note">
+                        <span class="required">*</span>
+                        Trường bắt buộc.
+                    </p>
+
+                    <div class="actions">
+                        <button class="btn primary" type="submit">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Lưu hồ sơ
+                        </button>
+
+                        <a class="btn secondary" th:href="@{/admin/nhanvien}">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Quay lại
+                        </a>
+                    </div>
+
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
 </body>
 </html>

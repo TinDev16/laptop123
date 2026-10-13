@@ -4,182 +4,911 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ADMIN - Quản lý tài khoản</title>
+
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin-layout.css}">
+
     <style>
-        .page { max-width: 1400px; margin: 28px auto; padding: 20px; }
-        .toolbar, .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .search { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0; }
-        input, select { padding: 9px 11px; border: 1px solid #ccc; border-radius: 6px; }
-        .btn { display: inline-block; padding: 9px 13px; border: 0; border-radius: 6px; cursor: pointer; text-decoration: none; color: white; background: #2563eb; }
-        .secondary { background: #64748b; }
-        .warning { background: #b45309; }
-        .success-btn { background: #15803d; }
-        .panel { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-top: 22px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 11px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
-        th { background: #f8fafc; white-space: nowrap; }
-        .status { display: inline-block; padding: 4px 9px; border-radius: 20px; font-size: 12px; }
-        .active { background: #dcfce7; color: #166534; }
-        .locked { background: #fee2e2; color: #991b1b; }
-        .message { padding: 12px; margin: 14px 0; border-radius: 6px; }
-        .success { background: #dcfce7; color: #166534; }
-        .error { background: #fee2e2; color: #991b1b; }
-        .muted { color: #64748b; }
-        .actions { display: flex; flex-wrap: wrap; gap: 6px; }
-        .pagination { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
-        .pagination a { text-decoration: none; }
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-surface: #ffffff;
+            --admin-text: #0f172a;
+            --admin-text-secondary: #64748b;
+            --admin-primary: #2563eb;
+            --admin-primary-hover: #1d4ed8;
+            --admin-border: #e2e8f0;
+            --admin-border-hover: #cbd5e1;
+            --admin-success-bg: #f0fdf4;
+            --admin-success-text: #166534;
+            --admin-danger-bg: #fef2f2;
+            --admin-danger-text: #b91c1c;
+            --admin-radius: 14px;
+            --admin-radius-sm: 9px;
+            --admin-shadow: 0 1px 3px rgba(15, 23, 42, .04);
+            --admin-shadow-hover: 0 4px 12px rgba(15, 23, 42, .06);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px 32px 44px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 20px;
+            color: var(--admin-text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .breadcrumb a {
+            color: var(--admin-text-secondary);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--admin-primary);
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 26px;
+        }
+
+        .toolbar > div {
+            min-width: 0;
+        }
+
+        .toolbar h1 {
+            margin: 0 0 8px;
+            color: var(--admin-text);
+            font-size: 28px;
+            font-weight: 750;
+            line-height: 1.3;
+            letter-spacing: -.035em;
+        }
+
+        .muted {
+            color: var(--admin-text-secondary);
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .toolbar p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 9px 14px;
+            border: 1px solid transparent;
+            border-radius: var(--admin-radius-sm);
+            background: var(--admin-primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 650;
+            line-height: 1.4;
+            text-align: center;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: var(--admin-shadow);
+            transition: background .18s ease, border-color .18s ease,
+            color .18s ease, box-shadow .18s ease,
+            transform .18s ease;
+        }
+
+        .btn:hover {
+            border-color: var(--admin-primary-hover);
+            background: var(--admin-primary-hover);
+            color: #fff;
+            box-shadow: var(--admin-shadow-hover);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        .pagination a:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, .18);
+            outline-offset: 2px;
+        }
+
+        .toolbar > .btn {
+            min-height: 43px;
+            padding: 11px 17px;
+            font-size: 13px;
+        }
+
+        .secondary {
+            border-color: var(--admin-border);
+            background: #fff;
+            color: #475569;
+            box-shadow: none;
+        }
+
+        .secondary:hover {
+            border-color: var(--admin-border-hover);
+            background: #f8fafc;
+            color: var(--admin-primary);
+        }
+
+        .warning {
+            border-color: #fed7aa;
+            background: #fff7ed;
+            color: #c2410c;
+            box-shadow: none;
+        }
+
+        .warning:hover {
+            border-color: #fdba74;
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .success-btn {
+            border-color: #bbf7d0;
+            background: var(--admin-success-bg);
+            color: var(--admin-success-text);
+            box-shadow: none;
+        }
+
+        .success-btn:hover {
+            border-color: #86efac;
+            background: #dcfce7;
+            color: #14532d;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 0 0 18px;
+            padding: 13px 16px;
+            border: 1px solid transparent;
+            border-radius: var(--admin-radius-sm);
+            font-size: 13px;
+            font-weight: 550;
+            line-height: 1.65;
+            overflow-wrap: anywhere;
+        }
+
+        .message:empty {
+            display: none;
+        }
+
+        .success {
+            border-color: #bbf7d0;
+            background: var(--admin-success-bg);
+            color: var(--admin-success-text);
+        }
+
+        .error {
+            border-color: #fecaca;
+            background: var(--admin-danger-bg);
+            color: var(--admin-danger-text);
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 11px;
+            margin: 0 0 24px;
+            padding: 18px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            background: var(--admin-surface);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .search input,
+        .search select {
+            min-width: 0;
+            min-height: 41px;
+            padding: 10px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            outline: none;
+            background: #fff;
+            color: var(--admin-text);
+            font-family: inherit;
+            font-size: 13px;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .search input::placeholder {
+            color: #94a3b8;
+        }
+
+        .search input:focus,
+        .search select:focus {
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+        }
+
+        .search input[name="q"] {
+            flex: 1 1 300px;
+            width: 100%;
+        }
+
+        .search select {
+            flex: 0 1 230px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .search > .btn {
+            min-height: 41px;
+            padding: 10px 16px;
+        }
+
+        .panel {
+            min-width: 0;
+            margin-top: 24px;
+            padding: 22px;
+            overflow-x: auto;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            background: var(--admin-surface);
+            box-shadow: var(--admin-shadow);
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .section-head h2 {
+            margin: 0 0 7px;
+            color: var(--admin-text);
+            font-size: 17px;
+            font-weight: 750;
+            line-height: 1.45;
+            letter-spacing: -.015em;
+        }
+
+        .section-head .muted {
+            display: inline-block;
+        }
+
+        .panel > table {
+            width: 100%;
+            min-width: 820px;
+            margin-top: 17px;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+
+        .panel > table th,
+        .panel > table td {
+            padding: 14px 13px;
+            border-bottom: 1px solid #edf1f5;
+            text-align: left;
+            vertical-align: middle;
+            line-height: 1.65;
+        }
+
+        .panel > table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: .025em;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        .panel > table td {
+            color: #334155;
+            overflow-wrap: anywhere;
+        }
+
+        .panel > table tbody tr {
+            transition: background .15s ease;
+        }
+
+        .panel > table tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .panel > table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .panel > table td:first-child {
+            color: #475569;
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .panel > table td:nth-child(2) {
+            min-width: 180px;
+            color: #1e293b;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .panel > table td:nth-child(3),
+        .panel > table td:nth-child(4) {
+            min-width: 140px;
+        }
+
+        .panel > table th:last-child,
+        .panel > table td:last-child {
+            min-width: 150px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .active {
+            border-color: #bbf7d0;
+            background: var(--admin-success-bg);
+            color: var(--admin-success-text);
+        }
+
+        .locked {
+            border-color: #fecaca;
+            background: var(--admin-danger-bg);
+            color: var(--admin-danger-text);
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .actions > a,
+        .actions > form {
+            flex: 0 0 auto;
+        }
+
+        .actions > form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .actions .btn {
+            min-height: 34px;
+            padding: 7px 11px;
+            font-size: 12px;
+        }
+
+        input[type="hidden"] {
+            display: none !important;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--admin-border);
+            color: var(--admin-text-secondary);
+            font-size: 12px;
+        }
+
+        .pagination span {
+            margin: 0 3px;
+            color: #475569;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 35px;
+            padding: 8px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 650;
+        }
+
+        .pagination a:hover {
+            border-color: #bfdbfe;
+            background: #eff6ff;
+            color: var(--admin-primary);
+        }
+
+        .back-link {
+            margin-top: 24px;
+        }
+
+        @media (max-width: 1100px) {
+            .page {
+                padding: 26px 24px 36px;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .panel > table th,
+            .panel > table td {
+                padding: 12px 10px;
+            }
+
+            .search {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 22px 16px 32px;
+            }
+
+            .toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .toolbar h1 {
+                font-size: 25px;
+            }
+
+            .toolbar > .btn {
+                width: 100%;
+            }
+
+            .search {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .search input[name="q"],
+            .search select,
+            .search > .btn {
+                flex: 1 1 auto;
+                width: 100%;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .pagination {
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page {
+                padding: 17px 12px 26px;
+            }
+
+            .toolbar h1 {
+                font-size: 23px;
+            }
+
+            .toolbar p {
+                font-size: 13px;
+            }
+
+            .message {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            .search {
+                padding: 13px;
+                margin-bottom: 18px;
+            }
+
+            .panel {
+                margin-top: 18px;
+                padding: 14px;
+                border-radius: 12px;
+            }
+
+            .panel > table {
+                min-width: 820px;
+            }
+
+            .actions {
+                gap: 6px;
+            }
+
+            .pagination {
+                gap: 8px;
+                font-size: 11px;
+            }
+
+            .pagination a {
+                padding: 8px 10px;
+            }
+
+            .back-link > .btn {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
+
 <body>
-<main class="page">
-    <p class="muted">
-        <a th:href="@{/admin}">Hệ thống</a> / Tài khoản
-    </p>
+<div class="admin-layout">
 
-    <div class="toolbar">
-        <div>
-            <h1>Tài khoản hệ thống</h1>
-            <p class="muted">Theo dõi quyền truy cập và trạng thái tài khoản.</p>
-        </div>
-        <a class="btn" th:href="@{/admin/taikhoan/form}">+ Thêm tài khoản</a>
-    </div>
+    <!-- Sidebar ADMIN dùng chung -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('taikhoan')}"></aside>
 
-    <div th:if="${success}" class="message success" th:text="${success}"></div>
-    <div th:if="${error}" class="message error" th:text="${error}"></div>
+    <main class="admin-main">
+        <div class="page">
 
-    <form class="search" method="get" th:action="@{/admin/taikhoan}">
-        <input type="text" name="q" th:value="${q}"
-               placeholder="Tìm email, họ tên, mã NV, vai trò">
+            <p class="breadcrumb">
+                <a th:href="@{/admin}">
+                    <i class="fa-solid fa-house"></i>
+                    Hệ thống
+                </a>
+                <span>/</span>
+                <span>Tài khoản</span>
+            </p>
 
-        <select name="role">
-            <option value="">Tất cả vai trò</option>
-            <option th:each="v : ${danhSachVaiTro}"
-                    th:value="${v.maVaitro}"
-                    th:selected="${role == v.maVaitro}"
-                    th:text="${v.ten != null ? v.ten : v.maVaitro}"></option>
-        </select>
+            <div class="toolbar">
+                <div>
+                    <h1>
+                        <i class="fa-solid fa-user-shield"></i>
+                        Tài khoản hệ thống
+                    </h1>
+                    <p class="muted">
+                        Theo dõi quyền truy cập và trạng thái tài khoản.
+                    </p>
+                </div>
 
-        <button class="btn" type="submit">Tìm kiếm</button>
-        <a class="btn secondary" th:href="@{/admin/taikhoan}">Xóa lọc</a>
-    </form>
-
-    <!-- TÀI KHOẢN ĐANG HOẠT ĐỘNG -->
-    <section class="panel">
-        <div class="section-head">
-            <div>
-                <h2>Tài khoản đang hoạt động</h2>
-                <span class="muted" th:text="'Tổng số: ' + ${tongDangHoatDong}"></span>
+                <a class="btn" th:href="@{/admin/taikhoan/form}">
+                    <i class="fa-solid fa-plus"></i>
+                    Thêm tài khoản
+                </a>
             </div>
-        </div>
 
-        <table>
-            <thead>
-            <tr>
-                <th>Mã TK</th>
-                <th>Email tài khoản</th>
-                <th>Nhân viên</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="tk : ${taiKhoanDangHoatDong}">
-                <td th:text="${tk.taikhoan_id}"></td>
-                <td th:text="${tk.email}"></td>
-                <td th:text="${tk.nhanvien != null
-                    ? tk.nhanvien.HOTEN + ' (#' + tk.nhanvien.MANV + ')'
-                    : 'Chưa liên kết'}"></td>
-                <td th:text="${tk.vaitro != null
-                    ? (tk.vaitro.ten != null ? tk.vaitro.ten : tk.vaitro.maVaitro)
-                    : 'Chưa có vai trò'}"></td>
-                <td><span class="status active">Đang hoạt động</span></td>
-                <td>
-                    <div class="actions">
-                        <a class="btn secondary"
-                           th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">Sửa</a>
-                        <form method="post"
-                              th:action="@{/admin/taikhoan/{id}/lock(id=${tk.taikhoan_id})}"
-                              onsubmit="return confirm('Khóa tài khoản này?')">
-                            <input type="hidden" name="locked" value="true">
-                            <button class="btn warning" type="submit">Khóa</button>
-                        </form>
+            <div th:if="${success}" class="message success">
+                <i class="fa-solid fa-circle-check"></i>
+                <span th:text="${success}"></span>
+            </div>
+
+            <div th:if="${error}" class="message error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Tìm kiếm và lọc -->
+            <form class="search"
+                  method="get"
+                  th:action="@{/admin/taikhoan}">
+
+                <input type="text"
+                       name="q"
+                       th:value="${q}"
+                       placeholder="Tìm email, họ tên, mã NV, vai trò">
+
+                <select name="role">
+                    <option value="">Tất cả vai trò</option>
+                    <option th:each="v : ${danhSachVaiTro}"
+                            th:value="${v.maVaitro}"
+                            th:selected="${role == v.maVaitro}"
+                            th:text="${v.ten != null ? v.ten : v.maVaitro}">
+                    </option>
+                </select>
+
+                <button class="btn" type="submit">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    Tìm kiếm
+                </button>
+
+                <a class="btn secondary" th:href="@{/admin/taikhoan}">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    Xóa lọc
+                </a>
+            </form>
+
+            <!-- TÀI KHOẢN ĐANG HOẠT ĐỘNG -->
+            <section class="panel">
+                <div class="section-head">
+                    <div>
+                        <h2>
+                            <i class="fa-solid fa-circle-check"
+                               style="color: #16a34a;"></i>
+                            Tài khoản đang hoạt động
+                        </h2>
+                        <span class="muted"
+                              th:text="'Tổng số: ' + ${tongDangHoatDong}">
+                        </span>
                     </div>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(taiKhoanDangHoatDong)}">
-                <td colspan="6" class="muted">Không có tài khoản phù hợp.</td>
-            </tr>
-            </tbody>
-        </table>
+                </div>
 
-        <div class="pagination">
-            <a th:if="${pageActive > 0}"
-               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive - 1},pageLocked=${pageLocked})}">← Trước</a>
-            <span th:text="'Trang ' + ${pageActive + 1} + ' / ' + ${totalActivePages}"></span>
-            <a th:if="${pageActive + 1 < totalActivePages}"
-               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive + 1},pageLocked=${pageLocked})}">Sau →</a>
-        </div>
-    </section>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã TK</th>
+                        <th>Email tài khoản</th>
+                        <th>Nhân viên</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
 
-    <!-- TÀI KHOẢN ĐÃ KHÓA -->
-    <section class="panel">
-        <div>
-            <h2>Tài khoản đã khóa</h2>
-            <span class="muted" th:text="'Tổng số: ' + ${tongDaKhoa}"></span>
-        </div>
+                    <tbody>
+                    <tr th:each="tk : ${taiKhoanDangHoatDong}">
+                        <td th:text="${tk.taikhoan_id}"></td>
 
-        <table>
-            <thead>
-            <tr>
-                <th>Mã TK</th>
-                <th>Email tài khoản</th>
-                <th>Nhân viên</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="tk : ${taiKhoanDaKhoa}">
-                <td th:text="${tk.taikhoan_id}"></td>
-                <td th:text="${tk.email}"></td>
-                <td th:text="${tk.nhanvien != null
-                    ? tk.nhanvien.HOTEN + ' (#' + tk.nhanvien.MANV + ')'
-                    : 'Chưa liên kết'}"></td>
-                <td th:text="${tk.vaitro != null
-                    ? (tk.vaitro.ten != null ? tk.vaitro.ten : tk.vaitro.maVaitro)
-                    : 'Chưa có vai trò'}"></td>
-                <td><span class="status locked">Đã khóa</span></td>
-                <td>
-                    <div class="actions">
-                        <a class="btn secondary"
-                           th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">Sửa</a>
-                        <form method="post"
-                              th:action="@{/admin/taikhoan/{id}/lock(id=${tk.taikhoan_id})}"
-                              onsubmit="return confirm('Mở khóa tài khoản này?')">
-                            <input type="hidden" name="locked" value="false">
-                            <button class="btn success-btn" type="submit">Mở khóa</button>
-                        </form>
+                        <td th:text="${tk.email}"></td>
+
+                        <td th:text="${tk.nhanvien != null
+                            ? tk.nhanvien.HOTEN + ' (#' + tk.nhanvien.MANV + ')'
+                            : 'Chưa liên kết'}">
+                        </td>
+
+                        <td th:text="${tk.vaitro != null
+                            ? (tk.vaitro.ten != null
+                                ? tk.vaitro.ten
+                                : tk.vaitro.maVaitro)
+                            : 'Chưa có vai trò'}">
+                        </td>
+
+                        <td>
+                            <span class="status active">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Đang hoạt động
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="actions">
+                                <a class="btn secondary"
+                                   th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">
+                                    <i class="fa-solid fa-pen"></i>
+                                    Sửa
+                                </a>
+
+                                <form method="post"
+                                      th:action="@{/admin/taikhoan/{id}/lock(id=${tk.taikhoan_id})}"
+                                      onsubmit="return confirm('Khóa tài khoản này?')">
+
+                                    <input type="hidden"
+                                           name="locked"
+                                           value="true">
+
+                                    <button class="btn warning" type="submit">
+                                        <i class="fa-solid fa-lock"></i>
+                                        Khóa
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(taiKhoanDangHoatDong)}">
+                        <td colspan="6" class="muted">
+                            Không có tài khoản phù hợp.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <a th:if="${pageActive > 0}"
+                       th:href="@{/admin/taikhoan(
+                           q=${q},
+                           role=${role},
+                           pageActive=${pageActive - 1},
+                           pageLocked=${pageLocked}
+                       )}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        Trước
+                    </a>
+
+                    <span th:text="'Trang ' + ${pageActive + 1}
+                        + ' / ' + ${totalActivePages}">
+                    </span>
+
+                    <a th:if="${pageActive + 1 < totalActivePages}"
+                       th:href="@{/admin/taikhoan(
+                           q=${q},
+                           role=${role},
+                           pageActive=${pageActive + 1},
+                           pageLocked=${pageLocked}
+                       )}">
+                        Sau
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
+            </section>
+
+            <!-- TÀI KHOẢN ĐÃ KHÓA -->
+            <section class="panel">
+                <div class="section-head">
+                    <div>
+                        <h2>
+                            <i class="fa-solid fa-lock"
+                               style="color: #dc2626;"></i>
+                            Tài khoản đã khóa
+                        </h2>
+                        <span class="muted"
+                              th:text="'Tổng số: ' + ${tongDaKhoa}">
+                        </span>
                     </div>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(taiKhoanDaKhoa)}">
-                <td colspan="6" class="muted">Không có tài khoản phù hợp.</td>
-            </tr>
-            </tbody>
-        </table>
+                </div>
 
-        <div class="pagination">
-            <a th:if="${pageLocked > 0}"
-               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive},pageLocked=${pageLocked - 1})}">← Trước</a>
-            <span th:text="'Trang ' + ${pageLocked + 1} + ' / ' + ${totalLockedPages}"></span>
-            <a th:if="${pageLocked + 1 < totalLockedPages}"
-               th:href="@{/admin/taikhoan(q=${q},role=${role},pageActive=${pageActive},pageLocked=${pageLocked + 1})}">Sau →</a>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã TK</th>
+                        <th>Email tài khoản</th>
+                        <th>Nhân viên</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="tk : ${taiKhoanDaKhoa}">
+                        <td th:text="${tk.taikhoan_id}"></td>
+
+                        <td th:text="${tk.email}"></td>
+
+                        <td th:text="${tk.nhanvien != null
+                            ? tk.nhanvien.HOTEN + ' (#' + tk.nhanvien.MANV + ')'
+                            : 'Chưa liên kết'}">
+                        </td>
+
+                        <td th:text="${tk.vaitro != null
+                            ? (tk.vaitro.ten != null
+                                ? tk.vaitro.ten
+                                : tk.vaitro.maVaitro)
+                            : 'Chưa có vai trò'}">
+                        </td>
+
+                        <td>
+                            <span class="status locked">
+                                <i class="fa-solid fa-lock"></i>
+                                Đã khóa
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="actions">
+                                <a class="btn secondary"
+                                   th:href="@{/admin/taikhoan/form(id=${tk.taikhoan_id})}">
+                                    <i class="fa-solid fa-pen"></i>
+                                    Sửa
+                                </a>
+
+                                <form method="post"
+                                      th:action="@{/admin/taikhoan/{id}/lock(id=${tk.taikhoan_id})}"
+                                      onsubmit="return confirm('Mở khóa tài khoản này?')">
+
+                                    <input type="hidden"
+                                           name="locked"
+                                           value="false">
+
+                                    <button class="btn success-btn" type="submit">
+                                        <i class="fa-solid fa-lock-open"></i>
+                                        Mở khóa
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(taiKhoanDaKhoa)}">
+                        <td colspan="6" class="muted">
+                            Không có tài khoản phù hợp.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <a th:if="${pageLocked > 0}"
+                       th:href="@{/admin/taikhoan(
+                           q=${q},
+                           role=${role},
+                           pageActive=${pageActive},
+                           pageLocked=${pageLocked - 1}
+                       )}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        Trước
+                    </a>
+
+                    <span th:text="'Trang ' + ${pageLocked + 1}
+                        + ' / ' + ${totalLockedPages}">
+                    </span>
+
+                    <a th:if="${pageLocked + 1 < totalLockedPages}"
+                       th:href="@{/admin/taikhoan(
+                           q=${q},
+                           role=${role},
+                           pageActive=${pageActive},
+                           pageLocked=${pageLocked + 1}
+                       )}">
+                        Sau
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
+            </section>
+
         </div>
-    </section>
-
-    <p><a th:href="@{/admin}">← Quay lại trang quản trị</a></p>
-</main>
+    </main>
+</div>
 </body>
 </html>

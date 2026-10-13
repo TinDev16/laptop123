@@ -5,433 +5,1010 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ADMIN - Quản lý loại nguyên vật liệu</title>
+
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-layout.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        * {
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-surface: #ffffff;
+            --admin-text: #0f172a;
+            --admin-text-secondary: #64748b;
+            --admin-primary: #2563eb;
+            --admin-primary-hover: #1d4ed8;
+            --admin-border: #e2e8f0;
+            --admin-border-hover: #cbd5e1;
+            --admin-success-bg: #f0fdf4;
+            --admin-success-text: #166534;
+            --admin-danger-bg: #fef2f2;
+            --admin-danger-text: #b91c1c;
+            --admin-radius: 14px;
+            --admin-radius-sm: 9px;
+            --admin-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --admin-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        .admin-loainvl-page,
+        .admin-loainvl-page * {
             box-sizing: border-box;
         }
 
-        body {
-            background: #f5f7fb;
-            color: #1e293b;
-        }
-
-        .admin-container {
-            max-width: 1250px;
-            margin: 32px auto;
-            padding: 0 22px 40px;
-        }
-
-        .breadcrumb {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 18px;
-        }
-
-        .breadcrumb a {
-            color: #2563eb;
-            text-decoration: none;
-        }
-
-        .page-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-        }
-
-        .page-header h1 {
-            margin: 0 0 8px;
-            font-size: 28px;
-        }
-
-        .page-header p {
-            margin: 0;
-            color: #64748b;
-        }
-
-        .btn {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 16px;
-            border: 1px solid #dbe2ea;
-            border-radius: 8px;
-            background: white;
-            color: #334155;
-            text-decoration: none;
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .btn:hover {
-            background: #f1f5f9;
-        }
-
-        .btn-primary {
-            color: white;
-            background: #2563eb;
-            border-color: #2563eb;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            padding: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: white;
-        }
-
-        .stat-label {
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        .stat-number {
-            margin-top: 8px;
-            font-size: 27px;
-            font-weight: 700;
-        }
-
-        .panel {
-            margin-bottom: 22px;
-            padding: 22px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-        }
-
-        .panel-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
-        }
-
-        .panel-heading h2 {
-            margin: 0;
-            font-size: 19px;
-        }
-
-        .search-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .search-row input {
-            flex: 1;
-            min-width: 220px;
-        }
-
-        input,
-        select {
+        .admin-loainvl-page {
             width: 100%;
-            min-height: 41px;
-            padding: 11px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background: white;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px 32px 44px;
+            color: var(--admin-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", Roboto, Arial, sans-serif;
             font-size: 14px;
-            color: #334155;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        input:focus,
-        select:focus {
-            outline: 2px solid #bfdbfe;
-            border-color: #2563eb;
+        .admin-loainvl-page button,
+        .admin-loainvl-page input,
+        .admin-loainvl-page select {
+            font: inherit;
         }
 
-        .advanced-toggle {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 0;
-            border: 0;
-            background: none;
-            color: #2563eb;
-            font-size: 14px;
-            cursor: pointer;
+        .admin-loainvl-page a {
+            transition: color .18s ease, background-color .18s ease,
+            border-color .18s ease, box-shadow .18s ease;
         }
 
-        .advanced-fields {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 18px;
-        }
+        /* BREADCRUMB */
 
-        .field label {
-            display: block;
-            margin-bottom: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #475569;
-        }
-
-        .filter-actions {
+        .admin-loainvl-page .breadcrumb {
             display: flex;
-            gap: 10px;
             flex-wrap: wrap;
-            margin-top: 18px;
-        }
-
-        /* Khu vực sắp xếp riêng */
-        .sort-panel {
-            display: flex;
-            align-items: flex-end;
-            gap: 14px;
-            flex-wrap: nowrap;
+            align-items: center;
+            gap: 8px;
             margin-bottom: 22px;
-            padding: 18px 22px;
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
         }
 
-        .sort-field {
-            flex: 1;
+        .admin-loainvl-page .breadcrumb a {
+            color: var(--admin-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .admin-loainvl-page .breadcrumb a:hover {
+            color: var(--admin-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* HEADER */
+
+        .admin-loainvl-page .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .admin-loainvl-page .page-header > div {
             min-width: 0;
         }
 
-        .sort-field label {
-            display: block;
-            margin-bottom: 7px;
-            color: #475569;
-            font-size: 13px;
-            font-weight: 600;
+        .admin-loainvl-page .page-header h1 {
+            margin: 0 0 7px;
+            color: var(--admin-text);
+            font-size: 28px;
+            font-weight: 750;
+            line-height: 1.3;
+            letter-spacing: -.7px;
         }
 
-        .sort-panel button {
-            min-height: 41px;
-            flex-shrink: 0;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
-        }
-
-        th,
-        td {
-            padding: 15px 14px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #475569;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
-        td {
+        .admin-loainvl-page .page-header p {
+            margin: 0;
+            color: var(--admin-text-secondary);
             font-size: 14px;
+            line-height: 1.7;
         }
 
-        tbody tr:hover {
-            background: #f8fafc;
+        .admin-loainvl-page .page-header .muted {
+            margin-top: 10px;
         }
 
-        .status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+        .admin-loainvl-page .muted {
+            color: var(--admin-text-secondary);
+            font-size: 13px;
         }
 
-        .status-active {
-            background: #dcfce7;
-            color: #166534;
-        }
+        /* BUTTONS */
 
-        .status-inactive {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .sort-link {
-            color: inherit;
+        .admin-loainvl-page .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: 40px;
+            padding: 9px 15px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            background: var(--admin-surface);
+            color: #334155;
             text-decoration: none;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.4;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color .18s ease,
+            border-color .18s ease, color .18s ease,
+            box-shadow .18s ease, transform .18s ease;
         }
 
-        .sort-link:hover {
-            color: #2563eb;
+        .admin-loainvl-page .btn:hover {
+            background: #f8fafc;
+            border-color: var(--admin-border-hover);
+            color: var(--admin-text);
+            box-shadow: var(--admin-shadow);
         }
 
-        .table-footer {
+        .admin-loainvl-page .btn:active {
+            transform: translateY(1px);
+        }
+
+        .admin-loainvl-page .btn-primary {
+            color: #fff;
+            background: var(--admin-primary);
+            border-color: var(--admin-primary);
+            box-shadow: 0 1px 2px rgba(37, 99, 235, .12);
+        }
+
+        .admin-loainvl-page .btn-primary:hover {
+            color: #fff;
+            background: var(--admin-primary-hover);
+            border-color: var(--admin-primary-hover);
+            box-shadow: 0 3px 8px rgba(37, 99, 235, .18);
+        }
+
+        .admin-loainvl-page button:focus-visible,
+        .admin-loainvl-page a:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, .2);
+            outline-offset: 2px;
+        }
+
+        /* STATISTICS */
+
+        .admin-loainvl-page .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .admin-loainvl-page .stat-card {
+            min-width: 0;
+            padding: 22px 23px;
+            overflow: hidden;
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+            transition: border-color .2s ease,
+            box-shadow .2s ease, transform .2s ease;
+        }
+
+        .admin-loainvl-page .stat-card:hover {
+            border-color: var(--admin-border-hover);
+            box-shadow: var(--admin-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .admin-loainvl-page .stat-label {
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+            font-weight: 550;
+            line-height: 1.6;
+        }
+
+        .admin-loainvl-page .stat-number {
+            margin-top: 9px;
+            color: var(--admin-text);
+            font-size: 30px;
+            font-weight: 750;
+            line-height: 1.2;
+            letter-spacing: -.8px;
+            overflow-wrap: anywhere;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* PANELS */
+
+        .admin-loainvl-page .panel {
+            min-width: 0;
+            margin-bottom: 24px;
+            padding: 24px;
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .admin-loainvl-page .panel-heading {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 14px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .muted {
-            color: #64748b;
+        .admin-loainvl-page .panel-heading h2 {
+            margin: 0;
+            color: var(--admin-text);
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.45;
+            letter-spacing: -.25px;
+        }
+
+        .admin-loainvl-page .panel-heading p {
+            color: var(--admin-text-secondary);
             font-size: 13px;
         }
 
-        .pagination {
-            display: flex;
-            gap: 8px;
-            align-items: center;
+        .admin-loainvl-page .panel-heading strong {
+            color: var(--admin-text);
+            font-weight: 700;
         }
 
-        .pagination a,
-        .pagination span {
-            display: inline-flex;
-            min-width: 36px;
-            height: 36px;
-            padding: 0 10px;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid #dbe2ea;
-            border-radius: 7px;
-            background: white;
+        /* INPUTS */
+
+        .admin-loainvl-page input,
+        .admin-loainvl-page select {
+            width: 100%;
+            min-width: 0;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--admin-radius-sm);
+            outline: none;
+            background: #fff;
             color: #334155;
-            text-decoration: none;
+            font-size: 13px;
+            line-height: 1.5;
+            transition: border-color .18s ease,
+            box-shadow .18s ease, background-color .18s ease;
         }
 
-        .pagination .current {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: white;
+        .admin-loainvl-page input::placeholder {
+            color: #94a3b8;
+            opacity: 1;
         }
 
-        .empty-row {
-            text-align: center;
+        .admin-loainvl-page input:hover,
+        .admin-loainvl-page select:hover {
+            border-color: var(--admin-border-hover);
+        }
+
+        .admin-loainvl-page input:focus,
+        .admin-loainvl-page select:focus {
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+        }
+
+        .admin-loainvl-page select {
+            cursor: pointer;
+        }
+
+        /* SEARCH */
+
+        .admin-loainvl-page .search-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-loainvl-page .search-row input:not([type="hidden"]) {
+            flex: 1 1 280px;
+            width: auto;
+            min-width: 220px;
+        }
+
+        .admin-loainvl-page .search-row .btn {
+            flex: 0 0 auto;
+        }
+
+        /* ADVANCED SEARCH */
+
+        .admin-loainvl-page .advanced-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 17px;
+            padding: 5px 0;
+            border: none;
+            background: transparent;
+            color: var(--admin-primary);
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+            transition: color .18s ease;
+        }
+
+        .admin-loainvl-page .advanced-toggle:hover {
+            color: var(--admin-primary-hover);
+            text-decoration: underline;
+        }
+
+        .admin-loainvl-page #advancedForm {
+            margin-top: 4px;
+            padding-top: 20px;
+            border-top: 1px solid var(--admin-border);
+        }
+
+        .admin-loainvl-page .advanced-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .admin-loainvl-page .field {
+            min-width: 0;
+        }
+
+        .admin-loainvl-page .field label,
+        .admin-loainvl-page .sort-field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 650;
+            line-height: 1.5;
+        }
+
+        .admin-loainvl-page .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        /* SORT */
+
+        .admin-loainvl-page .sort-panel {
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 21px 24px;
+            background: var(--admin-surface);
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .admin-loainvl-page .sort-panel input[type="hidden"] {
+            display: none;
+        }
+
+        .admin-loainvl-page .sort-field {
+            flex: 1 1 220px;
+            min-width: 180px;
+        }
+
+        .admin-loainvl-page .sort-panel button {
+            min-height: 42px;
+            flex: 0 0 auto;
+        }
+
+        /* TABLE */
+
+        .admin-loainvl-page .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            background: #fff;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+
+        .admin-loainvl-page .table-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .admin-loainvl-page .table-wrapper::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .admin-loainvl-page .table-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+
+        .admin-loainvl-page .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .admin-loainvl-page table {
+            width: 100%;
+            min-width: 600px;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: left;
+        }
+
+        .admin-loainvl-page thead th {
+            padding: 14px 15px;
+            border-bottom: 1px solid var(--admin-border);
+            background: #f8fafc;
+            color: #475569;
+            text-align: left;
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .admin-loainvl-page thead th:first-child {
+            padding-left: 18px;
+        }
+
+        .admin-loainvl-page tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #edf1f5;
+            color: #334155;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .admin-loainvl-page tbody td:first-child {
+            padding-left: 18px;
+        }
+
+        .admin-loainvl-page tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-loainvl-page tbody tr {
+            transition: background-color .15s ease;
+        }
+
+        .admin-loainvl-page tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        /* STATUS */
+
+        .admin-loainvl-page .status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .admin-loainvl-page .status-active {
+            color: var(--admin-success-text);
+            background: var(--admin-success-bg);
+            border-color: #dcfce7;
+        }
+
+        .admin-loainvl-page .status-inactive {
             color: #64748b;
-            padding: 32px;
+            background: #f1f5f9;
+            border-color: #e2e8f0;
         }
 
-        @media (max-width: 700px) {
-            .admin-container {
-                margin-top: 20px;
-                padding: 0 12px 28px;
+        /* SORT LINKS */
+
+        .admin-loainvl-page .sort-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: inherit;
+            text-decoration: none;
+            transition: color .18s ease;
+        }
+
+        .admin-loainvl-page .sort-link:hover {
+            color: var(--admin-primary);
+        }
+
+        .admin-loainvl-page .sort-link span {
+            color: var(--admin-primary);
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        /* TABLE FOOTER */
+
+        .admin-loainvl-page .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .admin-loainvl-page .table-footer .muted {
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .admin-loainvl-page .table-footer .muted strong {
+            color: var(--admin-text);
+            font-weight: 700;
+        }
+
+        /* PAGINATION */
+
+        .admin-loainvl-page .pagination {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .admin-loainvl-page .pagination a,
+        .admin-loainvl-page .pagination span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            min-height: 36px;
+            padding: 0 11px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background-color .18s ease,
+            color .18s ease, border-color .18s ease,
+            box-shadow .18s ease;
+        }
+
+        .admin-loainvl-page .pagination a:hover {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: var(--admin-primary);
+        }
+
+        .admin-loainvl-page .pagination .current {
+            color: #fff;
+            background: var(--admin-primary);
+            border-color: var(--admin-primary);
+            box-shadow: 0 2px 5px rgba(37, 99, 235, .16);
+        }
+
+        /* EMPTY STATE */
+
+        .admin-loainvl-page .empty-row {
+            padding: 44px 24px !important;
+            color: var(--admin-text-secondary);
+            text-align: center;
+            font-size: 13px;
+            background: #fff;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1100px) {
+            .admin-loainvl-page {
+                padding-right: 24px;
+                padding-left: 24px;
             }
 
-            .stats {
-                grid-template-columns: 1fr;
+            .admin-loainvl-page .advanced-fields {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
-            .advanced-fields {
-                grid-template-columns: 1fr;
+            .admin-loainvl-page .sort-panel {
+                gap: 13px;
             }
 
-            .panel {
-                padding: 16px;
-            }
-
-            .page-header h1 {
-                font-size: 23px;
+            .admin-loainvl-page .sort-field {
+                flex-basis: 190px;
             }
         }
 
-        @media (max-width: 600px) {
-            .sort-panel {
+        @media (max-width: 768px) {
+            .admin-loainvl-page {
+                padding: 23px 18px 34px;
+            }
+
+            .admin-loainvl-page .breadcrumb {
+                margin-bottom: 18px;
+            }
+
+            .admin-loainvl-page .page-header {
+                margin-bottom: 22px;
+            }
+
+            .admin-loainvl-page .page-header h1 {
+                font-size: 25px;
+            }
+
+            .admin-loainvl-page .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 13px;
+            }
+
+            .admin-loainvl-page .stat-card {
+                padding: 18px;
+            }
+
+            .admin-loainvl-page .stat-number {
+                font-size: 27px;
+            }
+
+            .admin-loainvl-page .panel {
+                padding: 19px;
+                margin-bottom: 19px;
+            }
+
+            .admin-loainvl-page .panel-heading {
+                margin-bottom: 17px;
+            }
+
+            .admin-loainvl-page .advanced-fields {
+                gap: 15px;
+            }
+
+            .admin-loainvl-page .sort-panel {
+                padding: 19px;
+                margin-bottom: 19px;
+            }
+
+            .admin-loainvl-page .search-row input:not([type="hidden"]) {
+                flex-basis: 100%;
+                width: 100%;
+            }
+
+            .admin-loainvl-page .table-footer {
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .admin-loainvl-page {
+                padding: 18px 12px 28px;
+            }
+
+            .admin-loainvl-page .breadcrumb {
+                gap: 6px;
+                margin-bottom: 16px;
+                font-size: 12px;
+            }
+
+            .admin-loainvl-page .page-header {
                 flex-direction: column;
                 align-items: stretch;
-                flex-wrap: wrap;
+                gap: 15px;
+                margin-bottom: 20px;
+            }
+
+            .admin-loainvl-page .page-header h1 {
+                font-size: 23px;
+                letter-spacing: -.4px;
+            }
+
+            .admin-loainvl-page .page-header p {
+                font-size: 13px;
+            }
+
+            .admin-loainvl-page .page-header > .btn {
+                align-self: flex-start;
+                white-space: normal;
+            }
+
+            .admin-loainvl-page .stats {
+                grid-template-columns: 1fr;
+                gap: 11px;
+                margin-bottom: 18px;
+            }
+
+            .admin-loainvl-page .stat-card {
+                padding: 17px 18px;
+            }
+
+            .admin-loainvl-page .stat-number {
+                margin-top: 6px;
+                font-size: 26px;
+            }
+
+            .admin-loainvl-page .panel {
                 padding: 16px;
+                margin-bottom: 17px;
+                border-radius: 12px;
             }
 
-            .sort-field {
+            .admin-loainvl-page .panel-heading h2 {
+                font-size: 16px;
+            }
+
+            .admin-loainvl-page .search-row {
+                align-items: stretch;
+            }
+
+            .admin-loainvl-page .search-row input:not([type="hidden"]) {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+
+            .admin-loainvl-page .search-row .btn {
+                flex: 1 1 auto;
+            }
+
+            .admin-loainvl-page .advanced-fields {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .admin-loainvl-page .filter-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .admin-loainvl-page .filter-actions .btn {
                 width: 100%;
-                flex: auto;
             }
 
-            .sort-panel button {
+            .admin-loainvl-page .sort-panel {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 15px;
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .admin-loainvl-page .sort-field {
+                width: 100%;
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+
+            .admin-loainvl-page .sort-panel button {
                 width: 100%;
             }
 
-            .search-row input {
-                min-width: 100%;
+            .admin-loainvl-page .table-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 13px;
+            }
+
+            .admin-loainvl-page .pagination {
+                width: 100%;
+            }
+
+            .admin-loainvl-page .empty-row {
+                padding: 32px 18px !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .admin-loainvl-page *,
+            .admin-loainvl-page *::before,
+            .admin-loainvl-page *::after {
+                scroll-behavior: auto !important;
+                transition-duration: .01ms !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
             }
         }
     </style>
 </head>
 
 <body>
-<div class="admin-container">
+<div class="admin-layout">
 
-    <div class="breadcrumb">
-        <a th:href="@{/admin}">ADMIN</a>
-        / Quản lý loại nguyên vật liệu
-    </div>
+    <!-- SIDEBAR ADMIN DÙNG CHUNG -->
+    <aside th:replace="~{fragments/admin-sidebar :: sidebar('loai-nvl')}"></aside>
 
-    <header class="page-header">
-        <div>
-            <h1>Loại nguyên vật liệu</h1>
-            <p>Quản lý tra cứu, tìm kiếm, sắp xếp và lọc loại nguyên vật liệu.</p>
-            <p class="muted"
-               style="margin-top: 10px"
-               th:text="${#temporals.format(today, 'dd/MM/yyyy')}">
-                12/10/2026
-            </p>
-        </div>
+    <!-- NỘI DUNG CHÍNH -->
+    <main class="admin-main">
+        <div class="admin-loainvl-page">
 
-        <a class="btn" th:href="@{/admin}">
-            ← Quay lại trang ADMIN
-        </a>
-    </header>
+            <!-- BREADCRUMB -->
+            <div class="breadcrumb">
+                <a th:href="@{/admin}">ADMIN</a>
+                <span>/</span>
+                <span>Quản lý loại nguyên vật liệu</span>
+            </div>
 
-    <!-- THỐNG KÊ -->
-    <section class="stats">
-        <div class="stat-card">
-            <div class="stat-label">Tổng số loại</div>
-            <div class="stat-number" th:text="${totalAllTypes}">0</div>
-        </div>
+            <!-- HEADER -->
+            <header class="page-header">
+                <div>
+                    <h1>Loại nguyên vật liệu</h1>
+                    <p>
+                        Quản lý tra cứu, tìm kiếm, sắp xếp và lọc
+                        loại nguyên vật liệu.
+                    </p>
+                    <p class="muted"
+                       th:if="${today != null}"
+                       th:text="${#temporals.format(today, 'dd/MM/yyyy')}">
+                        12/10/2026
+                    </p>
+                </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Đang hoạt động</div>
-            <div class="stat-number" th:text="${activeCount}">0</div>
-        </div>
+            </header>
 
-        <div class="stat-card">
-            <div class="stat-label">Ngừng sử dụng</div>
-            <div class="stat-number" th:text="${inactiveCount}">0</div>
-        </div>
-    </section>
+            <!-- THỐNG KÊ -->
+            <section class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Tổng số loại</div>
+                    <div class="stat-number"
+                         th:text="${totalAllTypes}">0</div>
+                </div>
 
-    <!-- TÌM KIẾM VÀ LỌC -->
-    <section class="panel">
-        <div class="panel-heading">
-            <h2>Tìm kiếm loại nguyên vật liệu</h2>
-        </div>
+                <div class="stat-card">
+                    <div class="stat-label">Đang hoạt động</div>
+                    <div class="stat-number"
+                         th:text="${activeCount}">0</div>
+                </div>
 
-        <form method="get" th:action="@{/admin/loai-nvl}">
-            <div class="search-row">
-                <input type="text"
+                <div class="stat-card">
+                    <div class="stat-label">Ngừng sử dụng</div>
+                    <div class="stat-number"
+                         th:text="${inactiveCount}">0</div>
+                </div>
+            </section>
+
+            <!-- TÌM KIẾM VÀ LỌC -->
+            <section class="panel">
+                <div class="panel-heading">
+                    <h2>Tìm kiếm loại nguyên vật liệu</h2>
+                </div>
+
+                <form method="get" th:action="@{/admin/loai-nvl}">
+                    <div class="search-row">
+                        <input type="text"
+                               name="search"
+                               th:value="${search}"
+                               placeholder="Tìm theo mã loại hoặc tên loại...">
+
+                        <input type="hidden"
+                               name="maLoai"
+                               th:value="${maLoai}">
+
+                        <input type="hidden"
+                               name="tenLoai"
+                               th:value="${tenLoai}">
+
+                        <input type="hidden"
+                               name="trangThai"
+                               th:value="${trangThai}">
+
+                        <input type="hidden"
+                               name="sort"
+                               th:value="${sort}">
+
+                        <input type="hidden"
+                               name="direction"
+                               th:value="${direction}">
+
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                            Tìm kiếm
+                        </button>
+
+                        <a class="btn" th:href="@{/admin/loai-nvl}">
+                            <i class="fas fa-rotate-left"></i>
+                            Xóa bộ lọc
+                        </a>
+                    </div>
+                </form>
+
+                <button class="advanced-toggle"
+                        type="button"
+                        onclick="toggleAdvanced()"
+                        id="advancedButton"
+                        aria-expanded="false"
+                        aria-controls="advancedForm">
+                    <i class="fas fa-sliders-h"></i>
+                    Tìm kiếm nâng cao
+                </button>
+
+                <form method="get"
+                      th:action="@{/admin/loai-nvl}"
+                      id="advancedForm"
+                      style="display: none">
+
+                    <div class="advanced-fields">
+                        <div class="field">
+                            <label for="maLoai">Mã loại</label>
+                            <input id="maLoai"
+                                   name="maLoai"
+                                   th:value="${maLoai}"
+                                   placeholder="Nhập mã loại">
+                        </div>
+
+                        <div class="field">
+                            <label for="tenLoai">
+                                Tên loại nguyên vật liệu
+                            </label>
+                            <input id="tenLoai"
+                                   name="tenLoai"
+                                   th:value="${tenLoai}"
+                                   placeholder="Nhập tên loại">
+                        </div>
+
+                        <div class="field">
+                            <label for="trangThai">Trạng thái</label>
+                            <select id="trangThai" name="trangThai">
+                                <option value=""
+                                        th:selected="${trangThai == null or trangThai == ''}">
+                                    Tất cả trạng thái
+                                </option>
+
+                                <option value="1"
+                                        th:selected="${trangThai == '1'}">
+                                    Hoạt động
+                                </option>
+
+                                <option value="0"
+                                        th:selected="${trangThai == '0'}">
+                                    Ngừng sử dụng
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="hidden"
+                           name="search"
+                           th:value="${search}">
+
+                    <input type="hidden"
+                           name="sort"
+                           th:value="${sort}">
+
+                    <input type="hidden"
+                           name="direction"
+                           th:value="${direction}">
+
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i>
+                            Áp dụng tìm kiếm
+                        </button>
+
+                        <a class="btn" th:href="@{/admin/loai-nvl}">
+                            <i class="fas fa-rotate-left"></i>
+                            Đặt lại
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            <!-- SẮP XẾP -->
+            <form method="get"
+                  th:action="@{/admin/loai-nvl}"
+                  class="sort-panel">
+
+                <input type="hidden"
                        name="search"
-                       th:value="${search}"
-                       placeholder="Tìm theo mã loại hoặc tên loại...">
+                       th:value="${search}">
 
                 <input type="hidden"
                        name="maLoai"
@@ -445,322 +1022,228 @@
                        name="trangThai"
                        th:value="${trangThai}">
 
-                <input type="hidden"
-                       name="sort"
-                       th:value="${sort}">
-
-                <input type="hidden"
-                       name="direction"
-                       th:value="${direction}">
-
-                <button class="btn btn-primary" type="submit">
-                    Tìm kiếm
-                </button>
-
-                <a class="btn" th:href="@{/admin/loai-nvl}">
-                    Xóa bộ lọc
-                </a>
-            </div>
-        </form>
-
-        <button class="advanced-toggle"
-                type="button"
-                onclick="toggleAdvanced()"
-                id="advancedButton">
-            + Tìm kiếm nâng cao
-        </button>
-
-        <form method="get"
-              th:action="@{/admin/loai-nvl}"
-              id="advancedForm"
-              style="display: none">
-
-            <div class="advanced-fields">
-                <div class="field">
-                    <label for="maLoai">Mã loại</label>
-                    <input id="maLoai"
-                           name="maLoai"
-                           th:value="${maLoai}"
-                           placeholder="Nhập mã loại">
-                </div>
-
-                <div class="field">
-                    <label for="tenLoai">Tên loại nguyên vật liệu</label>
-                    <input id="tenLoai"
-                           name="tenLoai"
-                           th:value="${tenLoai}"
-                           placeholder="Nhập tên loại">
-                </div>
-
-                <div class="field">
-                    <label for="trangThai">Trạng thái</label>
-                    <select id="trangThai" name="trangThai">
-                        <option value=""
-                                th:selected="${trangThai == ''}">
-                            Tất cả trạng thái
+                <div class="sort-field">
+                    <label for="sort">Sắp xếp theo</label>
+                    <select id="sort" name="sort">
+                        <option value="maloai"
+                                th:selected="${sort == 'maloai'}">
+                            Mã loại
                         </option>
 
-                        <option value="1"
-                                th:selected="${trangThai == '1'}">
-                            Hoạt động
-                        </option>
-
-                        <option value="0"
-                                th:selected="${trangThai == '0'}">
-                            Ngừng sử dụng
+                        <option value="tenloai"
+                                th:selected="${sort == 'tenloai'}">
+                            Tên loại nguyên vật liệu
                         </option>
                     </select>
                 </div>
-            </div>
 
-            <input type="hidden"
-                   name="search"
-                   th:value="${search}">
+                <div class="sort-field">
+                    <label for="direction">Thứ tự sắp xếp</label>
+                    <select id="direction" name="direction">
+                        <option value="asc"
+                                th:selected="${direction == 'asc'}">
+                            Tăng dần
+                        </option>
 
-            <input type="hidden"
-                   name="sort"
-                   th:value="${sort}">
+                        <option value="desc"
+                                th:selected="${direction == 'desc'}">
+                            Giảm dần
+                        </option>
+                    </select>
+                </div>
 
-            <input type="hidden"
-                   name="direction"
-                   th:value="${direction}">
-
-            <div class="filter-actions">
                 <button type="submit" class="btn btn-primary">
-                    Áp dụng tìm kiếm
+                    <i class="fas fa-sort"></i>
+                    Áp dụng sắp xếp
                 </button>
+            </form>
 
-                <a class="btn" th:href="@{/admin/loai-nvl}">
-                    Đặt lại
-                </a>
-            </div>
-        </form>
-    </section>
+            <!-- DANH SÁCH -->
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Tất cả loại nguyên vật liệu</h2>
+                        <p class="muted" style="margin: 8px 0 0">
+                            Tìm thấy
+                            <strong th:text="${totalItems}">0</strong>
+                            loại phù hợp
+                        </p>
+                    </div>
+                </div>
 
-    <!-- SẮP XẾP RIÊNG: NẰM NGOÀI TÌM KIẾM NÂNG CAO -->
-    <form method="get"
-          th:action="@{/admin/loai-nvl}"
-          class="sort-panel">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>
+                                <a class="sort-link"
+                                   th:href="@{/admin/loai-nvl(
+                                       search=${search},
+                                       maLoai=${maLoai},
+                                       tenLoai=${tenLoai},
+                                       trangThai=${trangThai},
+                                       sort='maloai',
+                                       direction=${sort == 'maloai' and direction == 'asc' ? 'desc' : 'asc'}
+                                   )}">
+                                    Mã loại
+                                    <span th:if="${sort == 'maloai'}"
+                                          th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
 
-        <!-- Giữ lại các điều kiện tìm kiếm và lọc -->
-        <input type="hidden"
-               name="search"
-               th:value="${search}">
+                            <th>
+                                <a class="sort-link"
+                                   th:href="@{/admin/loai-nvl(
+                                       search=${search},
+                                       maLoai=${maLoai},
+                                       tenLoai=${tenLoai},
+                                       trangThai=${trangThai},
+                                       sort='tenloai',
+                                       direction=${sort == 'tenloai' and direction == 'asc' ? 'desc' : 'asc'}
+                                   )}">
+                                    Tên loại nguyên vật liệu
+                                    <span th:if="${sort == 'tenloai'}"
+                                          th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
 
-        <input type="hidden"
-               name="maLoai"
-               th:value="${maLoai}">
+                            <th>
+                                <a class="sort-link"
+                                   th:href="@{/admin/loai-nvl(
+                                       search=${search},
+                                       maLoai=${maLoai},
+                                       tenLoai=${tenLoai},
+                                       trangThai=${trangThai},
+                                       sort='trangthai',
+                                       direction=${sort == 'trangthai' and direction == 'asc' ? 'desc' : 'asc'}
+                                   )}">
+                                    Trạng thái
+                                    <span th:if="${sort == 'trangthai'}"
+                                          th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                                </a>
+                            </th>
+                        </tr>
+                        </thead>
 
-        <input type="hidden"
-               name="tenLoai"
-               th:value="${tenLoai}">
+                        <tbody>
+                        <tr th:each="loai : ${loaiNvlList}">
+                            <td th:text="${loai.maloai}">1</td>
 
-        <input type="hidden"
-               name="trangThai"
-               th:value="${trangThai}">
+                            <td th:text="${loai.tenloai}">Linh kiện</td>
 
-        <div class="sort-field">
-            <label for="sort">Sắp xếp theo</label>
-            <select id="sort" name="sort">
-                <option value="maloai"
-                        th:selected="${sort == 'maloai'}">
-                    Mã loại
-                </option>
+                            <td>
+                                <span th:if="${loai.trangthai == 1}"
+                                      class="status status-active">
+                                    <i class="fas fa-check-circle"></i>
+                                    Hoạt động
+                                </span>
 
-                <option value="tenloai"
-                        th:selected="${sort == 'tenloai'}">
-                    Tên loại nguyên vật liệu
-                </option>
+                                <span th:unless="${loai.trangthai == 1}"
+                                      class="status status-inactive">
+                                    <i class="fas fa-pause-circle"></i>
+                                    Ngừng sử dụng
+                                </span>
+                            </td>
+                        </tr>
 
-            </select>
-        </div>
+                        <tr th:if="${#lists.isEmpty(loaiNvlList)}">
+                            <td colspan="3" class="empty-row">
+                                <i class="fas fa-inbox"></i>
+                                Không tìm thấy loại nguyên vật liệu phù hợp.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-        <div class="sort-field">
-            <label for="direction">Thứ tự sắp xếp</label>
-            <select id="direction" name="direction">
-                <option value="asc"
-                        th:selected="${direction == 'asc'}">
-                    Tăng dần
-                </option>
+                <!-- PHÂN TRANG -->
+                <div class="table-footer">
+                    <div class="muted">
+                        Trang
+                        <strong th:text="${currentPage}">1</strong>
+                        /
+                        <strong th:text="${totalPages}">1</strong>
+                        · Tổng
+                        <strong th:text="${totalItems}">0</strong>
+                        kết quả
+                    </div>
 
-                <option value="desc"
-                        th:selected="${direction == 'desc'}">
-                    Giảm dần
-                </option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-            Áp dụng sắp xếp
-        </button>
-    </form>
-
-    <!-- DANH SÁCH LOẠI NGUYÊN VẬT LIỆU -->
-    <section class="panel">
-        <div class="panel-heading">
-            <div>
-                <h2>Tất cả loại nguyên vật liệu</h2>
-                <p class="muted" style="margin: 8px 0 0">
-                    Tìm thấy
-                    <strong th:text="${totalItems}">0</strong>
-                    loại phù hợp
-                </p>
-            </div>
-        </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                <tr>
-                    <th>
-                        <a class="sort-link"
+                    <div class="pagination">
+                        <a th:if="${currentPage > 1}"
                            th:href="@{/admin/loai-nvl(
                                search=${search},
                                maLoai=${maLoai},
                                tenLoai=${tenLoai},
                                trangThai=${trangThai},
-                               sort='maloai',
-                               direction=${sort == 'maloai' and direction == 'asc' ? 'desc' : 'asc'}
+                               sort=${sort},
+                               direction=${direction},
+                               page=${currentPage - 1}
                            )}">
-                            Mã loại
-                            <span th:if="${sort == 'maloai'}"
-                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                            <i class="fas fa-chevron-left"></i>
+                            Trước
                         </a>
-                    </th>
 
-                    <th>
-                        <a class="sort-link"
+                        <span class="current"
+                              th:text="${currentPage}">1</span>
+
+                        <a th:if="${currentPage < totalPages}"
                            th:href="@{/admin/loai-nvl(
                                search=${search},
                                maLoai=${maLoai},
                                tenLoai=${tenLoai},
                                trangThai=${trangThai},
-                               sort='tenloai',
-                               direction=${sort == 'tenloai' and direction == 'asc' ? 'desc' : 'asc'}
+                               sort=${sort},
+                               direction=${direction},
+                               page=${currentPage + 1}
                            )}">
-                            Tên loại nguyên vật liệu
-                            <span th:if="${sort == 'tenloai'}"
-                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
+                            Sau
+                            <i class="fas fa-chevron-right"></i>
                         </a>
-                    </th>
+                    </div>
+                </div>
+            </section>
 
-                    <th>
-                        <a class="sort-link"
-                           th:href="@{/admin/loai-nvl(
-                               search=${search},
-                               maLoai=${maLoai},
-                               tenLoai=${tenLoai},
-                               trangThai=${trangThai},
-                               sort='trangthai',
-                               direction=${sort == 'trangthai' and direction == 'asc' ? 'desc' : 'asc'}
-                           )}">
-                            Trạng thái
-                            <span th:if="${sort == 'trangthai'}"
-                                  th:text="${direction == 'asc' ? '↑' : '↓'}"></span>
-                        </a>
-                    </th>
-                </tr>
-                </thead>
-
-                <tbody>
-                <tr th:each="loai : ${loaiNvlList}">
-                    <td th:text="${loai.maloai}">1</td>
-                    <td th:text="${loai.tenloai}">MH</td>
-
-                    <td>
-                        <span th:if="${loai.trangthai == 1}"
-                              class="status status-active">
-                            Hoạt động
-                        </span>
-
-                        <span th:unless="${loai.trangthai == 1}"
-                              class="status status-inactive">
-                            Ngừng sử dụng
-                        </span>
-                    </td>
-                </tr>
-
-                <tr th:if="${#lists.isEmpty(loaiNvlList)}">
-                    <td colspan="3" class="empty-row">
-                        Không tìm thấy loại nguyên vật liệu phù hợp.
-                    </td>
-                </tr>
-                </tbody>
-            </table>
         </div>
-
-        <!-- PHÂN TRANG -->
-        <div class="table-footer">
-            <div class="muted">
-                Trang
-                <strong th:text="${currentPage}">1</strong>
-                /
-                <strong th:text="${totalPages}">1</strong>
-                · Tổng
-                <strong th:text="${totalItems}">0</strong>
-                kết quả
-            </div>
-
-            <div class="pagination">
-                <a th:if="${currentPage > 1}"
-                   th:href="@{/admin/loai-nvl(
-                       search=${search},
-                       maLoai=${maLoai},
-                       tenLoai=${tenLoai},
-                       trangThai=${trangThai},
-                       sort=${sort},
-                       direction=${direction},
-                       page=${currentPage - 1}
-                   )}">
-                    Trước
-                </a>
-
-                <span class="current"
-                      th:text="${currentPage}">1</span>
-
-                <a th:if="${currentPage < totalPages}"
-                   th:href="@{/admin/loai-nvl(
-                       search=${search},
-                       maLoai=${maLoai},
-                       tenLoai=${tenLoai},
-                       trangThai=${trangThai},
-                       sort=${sort},
-                       direction=${direction},
-                       page=${currentPage + 1}
-                   )}">
-                    Sau
-                </a>
-            </div>
-        </div>
-    </section>
-
+    </main>
 </div>
 
 <script>
     function toggleAdvanced() {
         const form = document.getElementById('advancedForm');
         const button = document.getElementById('advancedButton');
+
+        if (!form || !button) {
+            return;
+        }
+
         const isHidden = form.style.display === 'none';
 
         form.style.display = isHidden ? 'block' : 'none';
+        button.setAttribute('aria-expanded', String(isHidden));
 
-        button.textContent = isHidden
-            ? '− Ẩn tìm kiếm nâng cao'
-            : '+ Tìm kiếm nâng cao';
+        button.innerHTML = isHidden
+            ? '<i class="fas fa-times"></i> Ẩn tìm kiếm nâng cao'
+            : '<i class="fas fa-sliders-h"></i> Tìm kiếm nâng cao';
     }
 
-    // Giữ phần tìm kiếm nâng cao mở khi đang sử dụng bộ lọc nâng cao.
     window.addEventListener('DOMContentLoaded', function () {
         const params = new URLSearchParams(window.location.search);
 
-        if (params.has('maLoai') ||
-            params.has('tenLoai') ||
-            params.has('trangThai')) {
+        const hasAdvancedFilters =
+            (params.has('maLoai') && params.get('maLoai') !== '') ||
+            (params.has('tenLoai') && params.get('tenLoai') !== '') ||
+            (params.has('trangThai') && params.get('trangThai') !== '');
 
-            document.getElementById('advancedForm').style.display = 'block';
+        if (hasAdvancedFilters) {
+            const form = document.getElementById('advancedForm');
+            const button = document.getElementById('advancedButton');
 
-            document.getElementById('advancedButton').textContent =
-                '− Ẩn tìm kiếm nâng cao';
+            if (form && button) {
+                form.style.display = 'block';
+                button.setAttribute('aria-expanded', 'true');
+                button.innerHTML =
+                    '<i class="fas fa-times"></i> Ẩn tìm kiếm nâng cao';
+            }
         }
     });
 </script>

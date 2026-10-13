@@ -1,0 +1,327 @@
+
+:root {
+    --admin-sidebar-width: 260px;
+    --admin-sidebar-bg: #ffffff;
+    --admin-layout-bg: #f8fafc;
+    --admin-layout-text: #0f172a;
+    --admin-layout-muted: #64748b;
+    --admin-layout-primary: #2563eb;
+    --admin-layout-border: #e2e8f0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--admin-layout-bg);
+    color: var(--admin-layout-text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Arial, sans-serif;
+}
+
+.admin-layout {
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    width: var(--admin-sidebar-width);
+    height: 100vh;
+    padding: 22px 16px 16px;
+    overflow-y: auto;
+    background: var(--admin-sidebar-bg);
+    border-right: 1px solid var(--admin-layout-border);
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px 22px;
+    color: var(--admin-layout-text);
+    text-decoration: none;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-brand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    color: #ffffff;
+    background: var(--admin-layout-primary);
+    border-radius: 12px;
+    font-size: 19px;
+}
+
+.admin-brand strong,
+.admin-brand small {
+    display: block;
+}
+
+.admin-brand strong {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.admin-brand small {
+    margin-top: 3px;
+    color: var(--admin-layout-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.admin-user {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 20px 0;
+    padding: 13px 10px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+}
+
+.admin-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border-radius: 50%;
+    font-size: 17px;
+}
+
+.admin-user-info {
+    min-width: 0;
+}
+
+.admin-user-info strong,
+.admin-user-info span {
+    display: block;
+}
+
+.admin-user-info strong {
+    overflow: hidden;
+    color: #1e293b;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-user-info span {
+    margin-top: 3px;
+    color: var(--admin-layout-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+}
+
+.admin-menu {
+    flex: 1;
+}
+
+.admin-menu-heading {
+    margin: 20px 10px 8px;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.admin-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 43px;
+    margin: 3px 0;
+    padding: 11px 12px;
+    color: #475569;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 550;
+    text-decoration: none;
+    transition: color 0.18s, background 0.18s;
+}
+
+.admin-menu-item > i {
+    width: 19px;
+    flex-shrink: 0;
+    color: #94a3b8;
+    text-align: center;
+    font-size: 15px;
+}
+
+.admin-menu-item:hover {
+    color: var(--admin-layout-primary);
+    background: #f1f5f9;
+}
+
+.admin-menu-item:hover > i {
+    color: var(--admin-layout-primary);
+}
+
+.admin-menu-item.active {
+    color: #1d4ed8;
+    background: #eff6ff;
+    font-weight: 700;
+}
+
+.admin-menu-item.active > i {
+    color: #2563eb;
+}
+
+.admin-sidebar-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--admin-layout-border);
+}
+
+.admin-sidebar-footer form {
+    margin: 0;
+}
+
+.admin-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 14px;
+    color: #b91c1c;
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    transition: background 0.18s;
+}
+
+.admin-logout:hover {
+    background: #fef2f2;
+}
+
+.admin-main {
+    min-width: 0;
+    min-height: 100vh;
+    margin-left: var(--admin-sidebar-width);
+}
+
+.admin-content {
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 30px 32px 44px;
+}
+
+.admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 68px;
+    padding: 16px 32px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--admin-layout-border);
+}
+
+.admin-topbar-title {
+    color: var(--admin-layout-text);
+    font-size: 18px;
+    font-weight: 750;
+}
+
+.admin-topbar-breadcrumb {
+    margin-top: 4px;
+    color: var(--admin-layout-muted);
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    :root {
+        --admin-sidebar-width: 225px;
+    }
+
+    .admin-content {
+        padding: 24px 20px 32px;
+    }
+
+    .admin-topbar {
+        padding: 15px 20px;
+    }
+}
+
+@media (max-width: 650px) {
+    .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        padding: 14px;
+        border-right: 0;
+        border-bottom: 1px solid var(--admin-layout-border);
+    }
+
+    .admin-brand {
+        padding-bottom: 14px;
+    }
+
+    .admin-user {
+        margin: 12px 0;
+    }
+
+    .admin-menu {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2px 8px;
+    }
+
+    .admin-menu-heading {
+        grid-column: 1 / -1;
+        margin-top: 14px;
+    }
+
+    .admin-menu-item {
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .admin-menu-item > i {
+        width: 16px;
+    }
+
+    .admin-main {
+        margin-left: 0;
+    }
+
+    .admin-content {
+        padding: 20px 14px 28px;
+    }
+
+    .admin-topbar {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 380px) {
+    .admin-menu {
+        grid-template-columns: 1fr;
+    }
+}

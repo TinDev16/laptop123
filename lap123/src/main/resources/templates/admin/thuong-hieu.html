@@ -6,369 +6,704 @@
     <title>ADMIN - Quản lý thương hiệu</title>
 
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-layout.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        * {
+        /* =========================================================
+           ADMIN DESIGN SYSTEM — MINIMALISM
+           Trang: Quản lý thương hiệu
+           ========================================================= */
+
+        :root {
+            --admin-bg: #f8fafc;
+            --admin-surface: #ffffff;
+            --admin-text: #0f172a;
+            --admin-text-secondary: #64748b;
+            --admin-primary: #2563eb;
+            --admin-primary-hover: #1d4ed8;
+            --admin-border: #e2e8f0;
+            --admin-border-hover: #cbd5e1;
+            --admin-success-bg: #f0fdf4;
+            --admin-success-text: #166534;
+            --admin-danger-bg: #fef2f2;
+            --admin-danger-text: #b91c1c;
+            --admin-radius: 14px;
+            --admin-radius-sm: 9px;
+            --admin-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --admin-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        /* =========================
+           BASE
+           ========================= */
+
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: var(--admin-bg);
         }
 
         body {
             margin: 0;
-            background: #f5f7fb;
-            color: #1e293b;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
         .admin-container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px 30px;
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 28px 32px 40px;
         }
 
+        /* =========================
+           BREADCRUMB
+           ========================= */
+
         .breadcrumb {
-            margin-bottom: 18px;
-            color: #64748b;
-            font-size: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            color: var(--admin-text-secondary);
+            font-size: 12px;
         }
 
         .breadcrumb a {
-            color: #2563eb;
+            color: var(--admin-primary);
+            font-weight: 600;
             text-decoration: none;
+            transition: color 0.18s ease;
         }
+
+        .breadcrumb a:hover {
+            color: var(--admin-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* =========================
+           HEADER
+           ========================= */
 
         .page-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 15px;
+            align-items: flex-start;
+            gap: 24px;
             flex-wrap: wrap;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
+        }
+
+        .page-header > div {
+            min-width: 0;
         }
 
         .page-header h1 {
             margin: 0 0 8px;
-            font-size: 28px;
+            color: var(--admin-text);
+            font-size: 30px;
+            line-height: 1.25;
+            letter-spacing: -0.8px;
+            font-weight: 650;
         }
 
         .page-header p {
             margin: 0;
-            color: #64748b;
-            line-height: 1.6;
+            color: var(--admin-text-secondary);
+            font-size: 14px;
+            line-height: 1.7;
         }
+
+        /* =========================
+           BUTTON
+           ========================= */
 
         .btn {
             display: inline-flex;
-            justify-content: center;
             align-items: center;
-            gap: 7px;
-            min-height: 42px;
-            padding: 9px 16px;
-            border: 1px solid #dbe2ea;
-            border-radius: 8px;
-            background: #fff;
+            justify-content: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 9px 15px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            background: #ffffff;
             color: #334155;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 550;
+            line-height: 1.4;
+            text-align: center;
             text-decoration: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
             white-space: nowrap;
+            cursor: pointer;
+            transition:
+                    background 0.18s ease,
+                    border-color 0.18s ease,
+                    color 0.18s ease,
+                    box-shadow 0.18s ease;
         }
 
         .btn:hover {
-            background: #f1f5f9;
+            background: #f8fafc;
+            border-color: var(--admin-border-hover);
+            color: var(--admin-text);
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.18);
+            outline-offset: 2px;
         }
 
         .btn-primary {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: #fff;
+            color: #ffffff;
+            background: var(--admin-primary);
+            border-color: var(--admin-primary);
         }
 
         .btn-primary:hover {
-            background: #1d4ed8;
-            border-color: #1d4ed8;
+            color: #ffffff;
+            background: var(--admin-primary-hover);
+            border-color: var(--admin-primary-hover);
         }
 
         .btn-secondary {
-            background: #e2e8f0;
-            border-color: #e2e8f0;
-            color: #1e293b;
+            color: #334155;
+            background: #ffffff;
+            border-color: var(--admin-border);
         }
 
         .btn-secondary:hover {
-            background: #cbd5e1;
+            color: var(--admin-text);
+            background: #f8fafc;
+            border-color: var(--admin-border-hover);
         }
+
+        /* =========================
+           THỐNG KÊ
+           ========================= */
 
         .stats {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 22px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
-            padding: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #fff;
+            min-width: 0;
+            padding: 24px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            background: var(--admin-surface);
+            box-shadow: var(--admin-shadow);
+            transition:
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--admin-border-hover);
+            box-shadow: var(--admin-shadow-hover);
         }
 
         .stat-card span {
             display: block;
-            color: #64748b;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            color: var(--admin-text-secondary);
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .stat-card strong {
-            font-size: 26px;
-            color: #0f172a;
+            display: block;
+            color: var(--admin-text);
+            font-size: 32px;
+            line-height: 1.2;
+            font-weight: 650;
+            letter-spacing: -0.8px;
+            font-variant-numeric: tabular-nums;
         }
 
+        /* =========================
+           PANEL
+           ========================= */
+
         .panel {
-            padding: 22px;
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #fff;
+            min-width: 0;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius);
+            background: var(--admin-surface);
+            box-shadow: var(--admin-shadow);
         }
 
         .panel h2 {
-            margin-top: 0;
-            margin-bottom: 18px;
-            font-size: 19px;
+            margin: 0 0 18px;
+            color: var(--admin-text);
+            font-size: 18px;
+            line-height: 1.45;
+            font-weight: 650;
+            letter-spacing: -0.25px;
         }
 
         .panel-description {
-            margin-top: -8px;
-            margin-bottom: 18px;
-            color: #64748b;
+            margin: -8px 0 22px;
+            color: var(--admin-text-secondary);
             font-size: 13px;
-            line-height: 1.6;
+            line-height: 1.7;
         }
+
+        /* =========================
+           FORM
+           ========================= */
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
+            gap: 22px 20px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 8px;
             min-width: 0;
         }
 
         .form-group label {
-            font-weight: 600;
             color: #334155;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 550;
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .search-row input[type="text"] {
             width: 100%;
-            min-height: 42px;
-            padding: 9px 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            background: #fff;
-            color: #334155;
-            font-size: 14px;
+            min-width: 0;
+            min-height: 43px;
+            padding: 10px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: var(--admin-radius-sm);
+            outline: none;
+            background: #ffffff;
+            color: var(--admin-text);
+            font-family: inherit;
+            font-size: 13px;
+            transition:
+                    border-color 0.2s ease,
+                    box-shadow 0.2s ease;
+        }
+
+        .form-group input::placeholder,
+        .search-row input[type="text"]::placeholder {
+            color: #94a3b8;
         }
 
         .form-group input:focus,
-        .form-group select:focus {
-            outline: 2px solid #bfdbfe;
-            border-color: #2563eb;
+        .form-group select:focus,
+        .search-row input[type="text"]:focus {
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
         }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        .form-group select option {
+            color: var(--admin-text);
+            background: #ffffff;
+        }
+
+        /* =========================
+           TÌM KIẾM NHANH
+           ========================= */
 
         .search-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .search-row input[type="text"] {
             flex: 1;
             min-width: 220px;
-            min-height: 42px;
-            padding: 9px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            font-size: 14px;
         }
+
+        .search-row .btn {
+            flex-shrink: 0;
+        }
+
+        /* =========================
+           NÚT LỌC
+           ========================= */
 
         .filter-actions {
             display: flex;
+            align-items: center;
             gap: 10px;
             flex-wrap: wrap;
-            margin-top: 18px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--admin-border);
         }
+
+        /* =========================
+           SẮP XẾP
+           ========================= */
 
         .sort-row {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
             align-items: end;
-            gap: 16px;
+            gap: 20px;
         }
+
+        .sort-row > button {
+            min-height: 43px;
+        }
+
+        /* =========================
+           BẢNG DỮ LIỆU
+           ========================= */
 
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
+            border: 1px solid var(--admin-border);
+            border-radius: 10px;
+            background: #ffffff;
         }
 
         table {
             width: 100%;
             min-width: 900px;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
         }
 
         th,
         td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 16px;
+            border-bottom: 1px solid #edf1f5;
             text-align: left;
             vertical-align: middle;
         }
 
         th {
             background: #f8fafc;
-            color: #334155;
-            font-size: 13px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 650;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
             white-space: nowrap;
         }
 
         td {
-            font-size: 14px;
+            color: #334155;
+            font-size: 13px;
             overflow-wrap: anywhere;
+        }
+
+        tbody tr {
+            transition: background 0.15s ease;
         }
 
         tbody tr:hover {
             background: #f8fafc;
         }
 
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* =========================
+           LIÊN KẾT SẮP XẾP
+           ========================= */
+
         .sort-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
             color: inherit;
             text-decoration: none;
+            transition: color 0.18s ease;
         }
 
         .sort-link:hover {
-            color: #2563eb;
+            color: var(--admin-primary);
         }
+
+        /* =========================
+           SỐ LƯỢNG SẢN PHẨM
+           ========================= */
 
         .product-count {
             display: inline-flex;
             min-width: 38px;
+            min-height: 28px;
             justify-content: center;
             align-items: center;
-            padding: 6px 11px;
-            border-radius: 20px;
-            background: #dbeafe;
+            padding: 5px 11px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            background: #eff6ff;
             color: #1d4ed8;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
 
+        /* =========================
+           TRẠNG THÁI
+           ========================= */
+
         .status {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 13px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
+            line-height: 1.5;
             white-space: nowrap;
         }
 
         .status-active {
-            background: #dcfce7;
-            color: #166534;
+            color: var(--admin-success-text);
+            background: var(--admin-success-bg);
+            border-color: #dcfce7;
         }
 
         .status-inactive {
-            background: #fee2e2;
-            color: #991b1b;
+            color: var(--admin-danger-text);
+            background: var(--admin-danger-bg);
+            border-color: #fee2e2;
         }
 
         .status-unknown {
-            background: #f1f5f9;
             color: #475569;
+            background: #f1f5f9;
+            border-color: #e2e8f0;
         }
 
+        /* =========================
+           DỮ LIỆU TRỐNG
+           ========================= */
+
         .empty-row {
-            padding: 28px;
+            padding: 44px 24px !important;
             text-align: center;
-            color: #64748b;
+            color: var(--admin-text-secondary);
+            background: #ffffff;
+            font-size: 13px;
         }
+
+        /* =========================
+           CHÂN BẢNG
+           ========================= */
 
         .table-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 15px;
+            gap: 16px;
             flex-wrap: wrap;
             margin-top: 20px;
         }
 
         .muted {
-            color: #64748b;
-            font-size: 13px;
+            color: var(--admin-text-secondary);
+            font-size: 12px;
+            line-height: 1.8;
         }
+
+        .muted strong {
+            color: var(--admin-text);
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* =========================
+           PHÂN TRANG
+           ========================= */
 
         .pagination {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
         .pagination a,
-        .pagination span {
+        .pagination > span {
             display: inline-flex;
+            min-width: 38px;
             min-height: 36px;
             align-items: center;
             justify-content: center;
-            padding: 8px 12px;
-            border-radius: 6px;
+            gap: 4px;
+            padding: 7px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            background: #ffffff;
+            color: #475569;
+            font-size: 12px;
             text-decoration: none;
-        }
-
-        .pagination a {
-            background: #e2e8f0;
-            color: #1e293b;
+            white-space: nowrap;
+            transition:
+                    background 0.15s ease,
+                    border-color 0.15s ease,
+                    color 0.15s ease;
         }
 
         .pagination a:hover {
-            background: #cbd5e1;
+            background: #f8fafc;
+            border-color: var(--admin-border-hover);
+            color: var(--admin-text);
         }
 
         .pagination .current {
-            background: #2563eb;
-            color: #fff;
-            font-weight: 700;
+            color: #ffffff;
+            background: var(--admin-primary);
+            border-color: var(--admin-primary);
+            font-weight: 600;
+        }
+
+        .pagination .current span {
+            display: inline;
+            min-height: auto;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font-size: inherit;
         }
 
         .pagination .disabled {
             color: #94a3b8;
-            background: #f1f5f9;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            cursor: not-allowed;
         }
 
-        @media (max-width: 900px) {
+        /* =========================
+           RESPONSIVE
+           ========================= */
+
+        @media (max-width: 1100px) {
+            .admin-container {
+                padding: 26px;
+            }
+
             .form-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             .sort-row {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
-            .sort-row button {
+            .sort-row > button {
                 grid-column: 1 / -1;
+                justify-self: start;
+            }
+
+            .panel {
+                padding: 22px;
             }
         }
 
-        @media (max-width: 760px) {
+        @media (max-width: 768px) {
             .admin-container {
-                margin-top: 20px;
-                padding: 0 12px 25px;
+                padding: 22px 16px 30px;
+            }
+
+            .breadcrumb {
+                margin-bottom: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 18px;
+                margin-bottom: 26px;
+            }
+
+            .page-header h1 {
+                font-size: 25px;
+            }
+
+            .page-header > .btn {
+                align-self: flex-start;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .stat-card strong {
+                font-size: 28px;
+            }
+
+            .panel {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .panel h2 {
+                font-size: 17px;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 18px 14px;
+            }
+
+            .sort-row {
+                gap: 16px;
+            }
+
+            .table-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .admin-container {
+                padding: 18px 12px 24px;
+            }
+
+            .page-header h1 {
+                font-size: 23px;
             }
 
             .stats,
@@ -381,25 +716,63 @@
                 padding: 16px;
             }
 
-            .page-header h1 {
-                font-size: 23px;
+            .search-row {
+                align-items: stretch;
             }
 
             .search-row input[type="text"] {
-                min-width: 100%;
+                flex-basis: 100%;
+                min-width: 0;
             }
 
             .search-row .btn,
             .filter-actions .btn,
-            .sort-row button {
+            .sort-row > button {
                 width: 100%;
+            }
+
+            .sort-row > button {
+                grid-column: auto;
+            }
+
+            .filter-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .table-wrapper {
+                border-radius: 8px;
+            }
+
+            .pagination {
+                width: 100%;
+            }
+        }
+
+        /* =========================
+           ACCESSIBILITY
+           ========================= */
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
             }
         }
     </style>
 </head>
 
 <body>
-<div class="admin-container">
+<div class="admin-layout">
+
+    <!-- SIDEBAR ADMIN: THƯƠNG HIỆU -->
+    <div th:replace="~{fragments/admin-sidebar :: sidebar('thuonghieu')}"></div>
+
+    <main class="admin-main">
+        <div class="admin-container">
 
     <!-- ĐIỀU HƯỚNG -->
     <div class="breadcrumb">
@@ -415,9 +788,6 @@
             <p>Danh sách thương hiệu và số sản phẩm đang sử dụng từng thương hiệu.</p>
         </div>
 
-        <a class="btn" th:href="@{/admin}">
-            ← Quay lại trang ADMIN
-        </a>
     </div>
 
     <!-- THỐNG KÊ -->
@@ -840,6 +1210,13 @@
         </div>
     </div>
 
+        </div>
+        <!-- END .admin-container -->
+    </main>
+    <!-- END .admin-main -->
+
 </div>
+<!-- END .admin-layout -->
+
 </body>
 </html>

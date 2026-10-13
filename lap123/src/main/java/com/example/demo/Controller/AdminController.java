@@ -25,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.LocalDate;
 
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -254,8 +255,9 @@ public class AdminController {
         } catch (DataIntegrityViolationException ex) {
             redirect.addFlashAttribute(
                     "error",
-                    "Số điện thoại hoặc email nhân viên đã được sử dụng.");
-        } catch (Exception ex) {
+                    "Không thể lưu hồ sơ do dữ liệu vi phạm ràng buộc trong database.");
+        }
+        catch (Exception ex) {
             redirect.addFlashAttribute(
                     "error",
                     "Không thể lưu hồ sơ. Hãy kiểm tra dữ liệu nhập.");
@@ -300,12 +302,19 @@ public class AdminController {
             nhanvien.setTRANGTHAI(1);
             nhanvien.setGHICHU(lyDo.trim());
 
-            // Nghỉ việc thì tự động khóa tài khoản liên kết.
-            Taikhoan taiKhoan = nhanvien.getTaikhoan();
+// Nghỉ việc thì tự động khóa tất cả tài khoản của nhân viên.
+            List<Taikhoan> taiKhoanCuaNhanVien = taikhoanRepository.findAll()
+                    .stream()
+                    .filter(tk -> tk.getNhanvien() != null
+                            && tk.getNhanvien().getMANV() == nhanvien.getMANV())
+                    .collect(Collectors.toList());
 
-            if (taiKhoan != null) {
+            for (Taikhoan taiKhoan : taiKhoanCuaNhanVien) {
                 taiKhoan.setLocked(true);
-                taikhoanRepository.save(taiKhoan);
+            }
+
+            if (!taiKhoanCuaNhanVien.isEmpty()) {
+                taikhoanRepository.saveAll(taiKhoanCuaNhanVien);
             }
 
         } else if (trangthai == 0) {
@@ -428,22 +437,38 @@ public class AdminController {
                 "danhSachVaiTro",
                 vaitroRepository.findAll());
 
+        List<Taikhoan> tatCaTaiKhoan = taikhoanRepository.findAll();
+
         List<Nhanvien> nhanVienCoTheGan =
                 nhanvienRepository.findAllExceptAdmin()
                         .stream()
-                        .filter(n -> n.getTaikhoan() == null
-                                || (tk != null
-                                && tk.getNhanvien() != null
-                                && n.getMANV()
-                                == tk.getNhanvien().getMANV()))
+
+                        // Chỉ cho chọn nhân viên còn đang làm
+                        .filter(n -> n.getTRANGTHAI() == 0)
+
+                        // Không cho chọn nhân viên đã có tài khoản chưa khóa
+                        // Ngoại lệ: tài khoản đang được chỉnh sửa
+                        .filter(n -> {
+                            boolean coTaiKhoanDangHoatDong =
+                                    tatCaTaiKhoan.stream()
+                                            .anyMatch(existing ->
+                                                    existing.getNhanvien() != null
+                                                            && existing.getNhanvien().getMANV()
+                                                            == n.getMANV()
+                                                            && !existing.isLocked()
+                                                            && (id == null
+                                                            || existing.getTaikhoan_id()
+                                                            != id));
+
+                            return !coTaiKhoanDangHoatDong;
+                        })
+
                         .sorted(Comparator.comparing(
                                 n -> safe(n.getHOTEN()),
                                 String.CASE_INSENSITIVE_ORDER))
                         .collect(Collectors.toList());
 
-        model.addAttribute(
-                "danhSachNhanVien",
-                nhanVienCoTheGan);
+        model.addAttribute("danhSachNhanVien", nhanVienCoTheGan);
 
         return "admin/form-taikhoan";
     }
@@ -522,22 +547,41 @@ public class AdminController {
                 return "redirect:/admin/taikhoan";
             }
 
+// Không cấp hoặc chỉnh sửa tài khoản cho nhân viên đã nghỉ việc.
+            if (nhanvien.getTRANGTHAI() != 0) {
+                redirect.addFlashAttribute(
+                        "error",
+                        "Không thể cấp tài khoản cho nhân viên đã nghỉ việc.");
+
+                return "redirect:/admin/taikhoan";
+            }
+
             if (isAdminEmployee(nhanvien)) {
                 redirect.addFlashAttribute(
                         "error",
                         "Không thể gán tài khoản qua màn hình này cho nhân viên ADMIN.");
+
                 return "redirect:/admin/taikhoan";
             }
 
-            if (nhanvien.getTaikhoan() != null
-                    && (id == null
-                    || nhanvien.getTaikhoan().getTaikhoan_id() != id)) {
+            boolean daCoTaiKhoanChuaKhoa = taikhoanRepository.findAll()
+                    .stream()
+                    .anyMatch(existing ->
+                            existing.getNhanvien() != null
+                                    && existing.getNhanvien().getMANV() == manv
+                                    && !existing.isLocked()
+                                    && (id == null
+                                    || existing.getTaikhoan_id() != id));
 
+            if (daCoTaiKhoanChuaKhoa) {
                 redirect.addFlashAttribute(
                         "error",
-                        "Nhân viên này đã được liên kết với tài khoản khác.");
-                return "redirect:/admin/taikhoan";
+                        "Nhân viên này đã có tài khoản chưa bị khóa.");
+
+                return "redirect:/admin/taikhoan/form"
+                        + (id != null ? "?id=" + id : "");
             }
+
 
             tk.setEmail(emailValue);
             tk.setNhanvien(nhanvien);

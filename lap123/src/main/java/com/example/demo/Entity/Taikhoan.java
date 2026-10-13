@@ -26,7 +26,7 @@ public class Taikhoan {
     @Column(name = "reset_token")
     private String resetToken;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manv")
     private Nhanvien nhanvien;
 

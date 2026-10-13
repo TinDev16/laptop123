@@ -2,7 +2,9 @@ package com.example.demo.Entity;
 
 import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Comparator;
 import javax.lang.model.element.Name;
 import java.util.Date;
 
@@ -38,8 +40,8 @@ public class Nhanvien {
     @Column(name = "GHICHU")
     private String GHICHU;
 
-    @OneToOne(mappedBy = "nhanvien")
-    private Taikhoan taikhoan;
+    @OneToMany(mappedBy = "nhanvien", fetch = FetchType.LAZY)
+    private List<Taikhoan> danhSachTaiKhoan = new ArrayList<>();
 
     @Column(name = "email", unique = true)
     private String EMAIL;
@@ -122,12 +124,47 @@ public class Nhanvien {
         this.TRANGTHAI = TRANGTHAI;
     }
 
-    public Taikhoan getTaikhoan() {
-        return taikhoan;
+    public List<Taikhoan> getDanhSachTaiKhoan() {
+        return danhSachTaiKhoan;
     }
 
+    public void setDanhSachTaiKhoan(List<Taikhoan> danhSachTaiKhoan) {
+        this.danhSachTaiKhoan = danhSachTaiKhoan;
+    }
+
+    /**
+     * Lấy tài khoản chưa khóa nếu có.
+     * Nếu tất cả tài khoản đều khóa thì lấy tài khoản có ID lớn nhất.
+     * Giữ lại để tương thích với code cũ đang gọi getTaikhoan().
+     */
+    @Transient
+    public Taikhoan getTaikhoan() {
+        if (danhSachTaiKhoan == null || danhSachTaiKhoan.isEmpty()) {
+            return null;
+        }
+
+        return danhSachTaiKhoan.stream()
+                .filter(tk -> !tk.isLocked())
+                .max(Comparator.comparingInt(Taikhoan::getTaikhoan_id))
+                .orElseGet(() -> danhSachTaiKhoan.stream()
+                        .max(Comparator.comparingInt(
+                                Taikhoan::getTaikhoan_id))
+                        .orElse(null));
+    }
+
+    /**
+     * Giữ tương thích với code cũ nếu có chỗ gọi setTaikhoan().
+     */
+    @Transient
     public void setTaikhoan(Taikhoan taikhoan) {
-        this.taikhoan = taikhoan;
+        if (danhSachTaiKhoan == null) {
+            danhSachTaiKhoan = new ArrayList<>();
+        }
+
+        if (taikhoan != null) {
+            danhSachTaiKhoan.add(taikhoan);
+            taikhoan.setNhanvien(this);
+        }
     }
 
     public String getGHICHU() {

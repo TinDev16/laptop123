@@ -27,7 +27,7 @@ public class QuanlytaikhoanServiceImpl implements QuanlytaikhoanService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Override public List<Nhanvien> getNhanvienChuaCoTaiKhoan() { return employees.findByTaikhoanIsNull(); }
+    @Override public List<Nhanvien> getNhanvienChuaCoTaiKhoan() { return employees.findNhanVienChuaCoTaiKhoan(); }
     @Override public List<Taikhoan> getAllTaiKhoan() { return accounts.findAll(); }
 
     @Override

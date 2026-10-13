@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import com.example.demo.Entity.Taikhoan;
 
 public class CustomEmployee implements UserDetails {
 
@@ -20,17 +19,17 @@ public class CustomEmployee implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
-        String role = null;
-
-        if (taikhoan.getVaitro() != null) {
-            role = taikhoan.getVaitro().getMaVaitro();
+        if (taikhoan.getVaitro() == null) {
+            throw new IllegalStateException(
+                    "Tài khoản không có vai trò hợp lệ."
+            );
         }
+
+        String role = taikhoan.getVaitro().getMaVaitro();
 
         if (!"ADMIN".equals(role)
                 && !"QUAN_LY_KHO".equals(role)
                 && !"NHAN_VIEN".equals(role)) {
-
             throw new IllegalStateException(
                     "Tài khoản không có vai trò hợp lệ."
             );

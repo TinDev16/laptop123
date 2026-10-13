@@ -643,6 +643,8 @@
 
                                 <th>Đơn vị</th>
 
+                                <th>Tổng sản phẩm</th>
+
                                 <th>Phiên bản BOM</th>
 
                                 <th>Tồn kho nơi sản xuất</th>
@@ -724,6 +726,18 @@
                                             Cái
                                         </td>
 
+                                        <!-- TỔNG SẢN PHẨM -->
+                                        <td>
+    <span class="stock-cell"
+          th:classappend="${p.tong_san_pham == null or p.tong_san_pham <= 0}
+              ? ' stock-empty'
+              : ' stock-ok'"
+          th:text="${#numbers.formatDecimal(p.tong_san_pham, 1, 2)}">
+        0
+    </span>
+                                            <span th:text="${p.donvitinh}">Cái</span>
+                                        </td>
+
 
                                         <!-- BOM -->
 
@@ -795,7 +809,7 @@
                                     <tr class="bom-version-row"
                                         th:attr="data-product-id=${p.masp}">
 
-                                        <td colspan="8">
+                                        <td colspan="9">
 
                                             <div class="bom-version-container">
 
@@ -918,6 +932,8 @@
 
                                 <th>Đơn vị</th>
 
+                                <th>Tổng sản phẩm</th>
+
                                 <th>Phiên bản BOM</th>
 
                                 <th>Tồn kho nơi sản xuất</th>
@@ -997,6 +1013,17 @@
 
                                         <td th:text="${p.donvitinh}">
                                             Cái
+                                        </td>
+
+                                        <td>
+    <span class="stock-cell"
+          th:classappend="${p.tong_san_pham == null or p.tong_san_pham <= 0}
+              ? ' stock-empty'
+              : ' stock-ok'"
+          th:text="${#numbers.formatDecimal(p.tong_san_pham, 1, 2)}">
+        0
+    </span>
+                                            <span th:text="${p.donvitinh}">Cái</span>
                                         </td>
 
 

@@ -80,15 +80,30 @@ public class KhoSanXuatController {
 
         List<Map<String, Object>> products = jdbc.queryForList(
                 """
-                SELECT DISTINCT
+                SELECT
                     s.masp,
                     s.tensp,
                     s.hinhanhsp,
                     s.donvitinh,
-                    s.trangthai AS trangthai_sp
-                FROM kho_thanhpham_san_xuat k
-                JOIN sanpham s
-                    ON s.masp = k.masp
+                    s.trangthai AS trangthai_sp,
+        
+                    COALESCE(
+                        (
+                            SELECT SUM(k2.soluongton)
+                            FROM kho_thanhpham_san_xuat k2
+                            WHERE k2.masp = s.masp
+                        ),
+                        0
+                    ) AS tong_san_pham
+        
+                FROM sanpham s
+        
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM kho_thanhpham_san_xuat k
+                    WHERE k.masp = s.masp
+                )
+        
                 ORDER BY s.tensp
                 """
         );

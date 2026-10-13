@@ -58,4 +58,19 @@ public class KhachhangServiceImpl implements KhachhangService {
         khachhangRepository.save(kh);
     }
 
+    @Override
+    public void restoreKhachhang(int id) {
+        Khachhang kh = khachhangRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Không tìm thấy khách hàng với id=" + id
+                        )
+                );
+
+        kh.setTRANGTHAI(0);
+        kh.setGHICHU(null);
+
+        khachhangRepository.save(kh);
+    }
+
 }

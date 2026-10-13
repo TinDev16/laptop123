@@ -13,50 +13,81 @@ public class KhachhangController {
     @Autowired
     private KhachhangService khachhangService;
 
+    // Khách hàng đang hoạt động
     @GetMapping("/khachhang")
     public String khachhang(Model model) {
-        model.addAttribute("khachhang", new Khachhang()); // tránh null
-        model.addAttribute("khachhang", khachhangService.getAllKhachhang());
+        model.addAttribute("khachhang", new Khachhang());
+        model.addAttribute("danhSachKhachHang",
+                khachhangService.getAllKhachhang());
+        model.addAttribute("trangThaiDanhSach", 0);
+
+        return "khachhang/index";
+    }
+
+    // Khách hàng không còn sử dụng
+    @GetMapping("/khachhang/ngung-su-dung")
+    public String khachhangNgungSuDung(Model model) {
+        model.addAttribute("khachhang", new Khachhang());
+        model.addAttribute("danhSachKhachHang",
+                khachhangService.getAllKhachhang());
+        model.addAttribute("trangThaiDanhSach", 1);
+
         return "khachhang/index";
     }
 
     @GetMapping("/khachhang/create")
     public String khachhangCreate(Model model) {
-        Khachhang khachhang = new Khachhang();
-        model.addAttribute("khachhang", khachhang);
+        model.addAttribute("khachhang", new Khachhang());
         return "khachhang/add";
     }
 
     @PostMapping("/khachhang")
-    public String saveKhachhang(@ModelAttribute("khachhang") Khachhang khachhang) {
+    public String saveKhachhang(
+            @ModelAttribute("khachhang") Khachhang khachhang) {
+
         khachhangService.saveKhachhang(khachhang);
         return "redirect:/khachhang";
     }
 
     @GetMapping("/edit-khachhang/{id}")
-    public String editKhachhang(@PathVariable("id") int id, Model model) {
-        model.addAttribute("khachhang", khachhangService.getKhachhangById(id));
+    public String editKhachhang(
+            @PathVariable("id") int id, Model model) {
+
+        model.addAttribute("khachhang",
+                khachhangService.getKhachhangById(id));
+
         return "khachhang/edit";
     }
 
     @PostMapping("/update-khachhang")
-    public String updateKhachhang(@ModelAttribute Khachhang khachhang) {
+    public String updateKhachhang(
+            @ModelAttribute Khachhang khachhang) {
+
         khachhangService.updateKhachhang(khachhang);
         return "redirect:/khachhang";
     }
 
-    @GetMapping("/delete-khachhang/{id}")
-    public String deleteKhachhang(@PathVariable("id") int id, Model model) {
-        Khachhang khachhang = khachhangService.getKhachhangById(id);
-        model.addAttribute("khachhang", khachhang);
-        return "redirect:/delete";
-    }
-
+    // Ngừng sử dụng khách hàng
     @PostMapping("/delete-khachhang")
-    public String deleteKhachhang(@RequestParam("id") int id,
-                                  @RequestParam("GHICHU") String GHICHU) {
+    public String deleteKhachhang(
+            @RequestParam("id") int id,
+            @RequestParam("GHICHU") String GHICHU) {
+
+        System.out.println("MAKH nhận được: " + id);
+        System.out.println("GHICHU nhận được: [" + GHICHU + "]");
+
         khachhangService.deleteKhachhang(id, GHICHU);
+
         return "redirect:/khachhang";
     }
 
+    // Khôi phục khách hàng
+    @PostMapping("/khachhang/khoi-phuc")
+    public String khoiPhucKhachhang(
+            @RequestParam("id") int id) {
+
+        khachhangService.restoreKhachhang(id);
+
+        return "redirect:/khachhang";
+    }
 }

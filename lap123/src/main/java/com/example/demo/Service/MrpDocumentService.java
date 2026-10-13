@@ -29,7 +29,14 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> suppliers() {
-        return jdbc.queryForList("SELECT mancc, tenncc FROM ncc ORDER BY tenncc");
+        return jdbc.queryForList(
+                """
+                SELECT mancc, tenncc
+                FROM ncc
+                WHERE trangthai = 0
+                ORDER BY tenncc
+                """
+        );
     }
 
     public List<Map<String, Object>> materials() {
@@ -93,6 +100,7 @@ public class MrpDocumentService {
     @Transactional
     public long createReceipt(String email, int supplierId, String note, List<Long> materialIds,
                               List<Integer> quantities, List<BigDecimal> prices) {
+        validateActiveSupplier(supplierId);
         validateLines(materialIds, quantities);
         validateActiveMaterials(materialIds);
         validateNote(note);
@@ -229,6 +237,7 @@ public class MrpDocumentService {
                     email,
                     diachi
                 FROM khachhang
+                WHERE trangthai = 0
                 ORDER BY hoten
                 """
         );
@@ -835,13 +844,14 @@ public class MrpDocumentService {
                 SELECT makh, hoten
                 FROM khachhang
                 WHERE makh = ?
+                  AND trangthai = 0
                 """,
                 customerId
         );
 
         if (customerRows.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Người nhận không tồn tại."
+                    "Người nhận không tồn tại hoặc đã ngừng sử dụng."
             );
         }
 
@@ -1076,6 +1086,24 @@ public class MrpDocumentService {
                                 + "\" đã ngừng sử dụng, không thể tạo nghiệp vụ mới."
                 );
             }
+        }
+    }
+
+    private void validateActiveSupplier(int supplierId) {
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                """
+                SELECT mancc, tenncc
+                FROM ncc
+                WHERE mancc = ?
+                  AND trangthai = 0
+                """,
+                supplierId
+        );
+
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Nhà cung cấp không tồn tại hoặc đã ngừng hoạt động."
+            );
         }
     }
 }

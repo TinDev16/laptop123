@@ -1,14 +1,565 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quản lý thương hiệu</title><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><link rel="stylesheet" th:href="@{/style.css}"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('thuonghieu')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Quản lý Thương hiệu', 'Đối tác / Thương hiệu')}"></div>
-<main class="content-body directory-page">
-<div class="page-header"><div><h1 class="page-title">Thương hiệu</h1><p class="page-description">Danh mục thương hiệu đang hợp tác và được sử dụng cho thành phẩm.</p></div><div class="page-actions"><a th:href="@{/thuonghieu/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm thương hiệu</a><button type="button" class="btn btn-success" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button></div></div>
-<div class="search-filters"><div class="search-input"><i class="fas fa-search"></i><input type="search" id="directory-search" placeholder="Tìm theo mã hoặc tên thương hiệu" oninput="filterDirectory()"></div></div>
-<div class="content-card"><div class="table-container"><table id="brand-table" class="table directory-table"><thead><tr><th>Mã thương hiệu</th><th>Tên thương hiệu</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-<tbody><tr th:each="brand : ${thuonghieu}" th:if="${brand.TRANGTHAI == 0}"><td class="font-semibold" th:text="${brand.MATHUONGHIEU}"></td><td th:text="${brand.TENTHUONGHIEU}"></td><td><span class="directory-status status-badge status-success"><i class="fas fa-circle"></i> Hoạt động</span></td><td><div class="table-actions"><a class="btn btn-icon btn-outline" title="Sửa thương hiệu" th:href="@{/edit-thuonghieu/{id}(id=${brand.MATHUONGHIEU})}"><i class="fas fa-edit"></i></a></div></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(thuonghieu)}"><td colspan="4">Chưa có thương hiệu đang hoạt động.</td></tr><tr id="no-result-row" class="empty-row" hidden><td colspan="4">Không có thương hiệu phù hợp.</td></tr></tbody></table></div></div>
-</main></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script>
-function filterDirectory(){const query=document.getElementById('directory-search').value.trim().toLowerCase();let visible=0;document.querySelectorAll('#brand-table tbody tr:not(.empty-row)').forEach(row=>{const match=row.textContent.toLowerCase().includes(query);row.hidden=!match;if(match)visible++});document.getElementById('no-result-row').hidden=visible!==0}
-function exportExcel(){const book=XLSX.utils.book_new();const sheet=XLSX.utils.table_to_sheet(document.getElementById('brand-table'));XLSX.utils.book_append_sheet(book,sheet,'ThuongHieu');XLSX.writeFile(book,'thuong-hieu.xlsx')}
-</script></body></html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý thương hiệu</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .brand-section {
+            margin-bottom: 24px;
+        }
+
+        .brand-section-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .brand-section-title {
+            margin: 0 0 6px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .brand-section-description {
+            margin: 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .brand-section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .brand-section-badge.inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .brand-count {
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .brand-count strong {
+            color: #334155;
+        }
+
+        .brand-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .brand-status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .brand-status.inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .brand-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .brand-actions form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .brand-empty {
+            padding: 24px 12px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .brand-empty i {
+            display: block;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            font-size: 22px;
+        }
+
+        .brand-note {
+            min-width: 220px;
+            max-width: 360px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .brand-row[hidden] {
+            display: none !important;
+        }
+
+        .brand-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, .45);
+        }
+
+        .brand-modal-panel {
+            width: 100%;
+            max-width: 460px;
+            padding: 24px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, .15);
+        }
+
+        .brand-modal-panel h3 {
+            margin: 0 0 8px;
+            color: #1e293b;
+        }
+
+        .brand-modal-panel p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .brand-modal-panel label {
+            display: block;
+            margin: 16px 0 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .brand-modal-panel textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            resize: vertical;
+            font: inherit;
+        }
+
+        .brand-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .brand-section-header {
+                flex-direction: column;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .directory-table {
+                min-width: 850px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('thuonghieu')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Quản lý Thương hiệu', 'Đối tác / Thương hiệu')}"></div>
+
+        <main class="content-body directory-page">
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Quản lý thương hiệu</h1>
+                    <p class="page-description">
+                        Quản lý thương hiệu đang hoạt động và hồ sơ đã ngừng sử dụng.
+                    </p>
+                </div>
+
+                <div class="page-actions">
+                    <a th:href="@{/thuonghieu/create}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Thêm thương hiệu
+                    </a>
+
+                    <button type="button" class="btn btn-success"
+                            onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        Xuất Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- TÌM KIẾM -->
+            <div class="search-filters">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="search"
+                           id="brand-search"
+                           placeholder="Tìm theo mã hoặc tên thương hiệu..."
+                           oninput="filterBrands()"
+                           aria-label="Tìm kiếm thương hiệu">
+                </div>
+            </div>
+
+            <!-- THƯƠNG HIỆU ĐANG HOẠT ĐỘNG -->
+            <section class="brand-section">
+
+                <div class="brand-section-header">
+                    <div>
+                        <h2 class="brand-section-title">Thương hiệu đang hoạt động</h2>
+                        <p class="brand-section-description">
+                            Các thương hiệu hiện được sử dụng trong nghiệp vụ.
+                        </p>
+                    </div>
+
+                    <span class="brand-section-badge">
+                        <i class="fas fa-circle"></i>
+                        Đang hoạt động
+                    </span>
+                </div>
+
+                <div class="content-card">
+                    <div class="brand-count">
+                        Số thương hiệu:
+                        <strong id="active-count">0</strong>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="active-table" class="table directory-table">
+                            <thead>
+                            <tr>
+                                <th>Mã thương hiệu</th>
+                                <th>Tên thương hiệu</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr class="brand-row"
+                                th:each="brand : ${thuonghieu}"
+                                th:if="${brand.TRANGTHAI == 0}">
+
+                                <td class="font-semibold"
+                                    th:text="${brand.MATHUONGHIEU}"></td>
+
+                                <td th:text="${brand.TENTHUONGHIEU}"></td>
+
+                                <td>
+                                    <span class="brand-status active">
+                                        <i class="fas fa-circle"></i>
+                                        Hoạt động
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="brand-actions">
+                                        <a class="btn btn-icon btn-outline"
+                                           title="Sửa thương hiệu"
+                                           th:href="@{/edit-thuonghieu/{id}(id=${brand.MATHUONGHIEU})}">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <button type="button"
+                                                class="btn btn-icon btn-outline"
+                                                title="Ngừng sử dụng"
+                                                th:attr="data-id=${brand.MATHUONGHIEU},
+                                                         data-name=${brand.TENTHUONGHIEU}"
+                                                onclick="openDeactivateModal(this)">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="brand-empty" hidden>
+                                <td colspan="4">
+                                    <div class="brand-empty">
+                                        <i class="fas fa-search"></i>
+                                        Không có thương hiệu phù hợp.
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- THƯƠNG HIỆU ĐÃ NGỪNG -->
+            <section class="brand-section">
+
+                <div class="brand-section-header">
+                    <div>
+                        <h2 class="brand-section-title">Thương hiệu đã ngừng sử dụng</h2>
+                        <p class="brand-section-description">
+                            Hồ sơ được lưu lại để tra cứu; có thể khôi phục khi cần.
+                        </p>
+                    </div>
+
+                    <span class="brand-section-badge inactive">
+                        <i class="fas fa-archive"></i>
+                        Đã ngừng sử dụng
+                    </span>
+                </div>
+
+                <div class="content-card">
+                    <div class="brand-count">
+                        Số thương hiệu:
+                        <strong id="inactive-count">0</strong>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="inactive-table" class="table directory-table">
+                            <thead>
+                            <tr>
+                                <th>Mã thương hiệu</th>
+                                <th>Tên thương hiệu</th>
+                                <th>Trạng thái</th>
+                                <th>Lý do / ghi chú</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr class="brand-row"
+                                th:each="brand : ${thuonghieu}"
+                                th:if="${brand.TRANGTHAI == 1}">
+
+                                <td class="font-semibold"
+                                    th:text="${brand.MATHUONGHIEU}"></td>
+
+                                <td th:text="${brand.TENTHUONGHIEU}"></td>
+
+                                <td>
+                                    <span class="brand-status inactive">
+                                        <i class="fas fa-circle"></i>
+                                        Đã ngừng sử dụng
+                                    </span>
+                                </td>
+
+                                <td class="brand-note"
+                                    th:text="${brand.GHICHU != null and !#strings.isEmpty(#strings.trim(brand.GHICHU))
+                                        ? brand.GHICHU
+                                        : 'Không có lý do'}"></td>
+
+                                <td>
+                                    <div class="brand-actions">
+                                        <form th:action="@{/thuonghieu/khoi-phuc}"
+                                              method="post"
+                                              onsubmit="return confirm('Khôi phục thương hiệu này?')">
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   th:value="${brand.MATHUONGHIEU}">
+
+                                            <button type="submit"
+                                                    class="btn btn-outline btn-compact">
+                                                <i class="fas fa-undo"></i>
+                                                Khôi phục
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="brand-empty" hidden>
+                                <td colspan="5">
+                                    <div class="brand-empty">
+                                        <i class="fas fa-search"></i>
+                                        Không có thương hiệu phù hợp.
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- MODAL NGỪNG SỬ DỤNG -->
+<div id="deactivate-modal" class="brand-modal">
+
+    <div class="brand-modal-panel">
+        <h3>Ngừng sử dụng thương hiệu</h3>
+
+        <p>
+            Thương hiệu:
+            <strong id="deactivate-brand-name"></strong>
+        </p>
+
+        <form th:action="@{/delete-thuonghieu}" method="post">
+
+            <input type="hidden"
+                   name="id"
+                   id="deactivate-brand-id">
+
+            <label for="deactivate-reason">Lý do / ghi chú</label>
+
+            <textarea id="deactivate-reason"
+                      name="GHICHU"
+                      rows="3"
+                      maxlength="500"
+                      required
+                      placeholder="Nhập lý do ngừng sử dụng thương hiệu..."></textarea>
+
+            <div class="brand-modal-actions">
+                <button type="button"
+                        class="btn btn-outline"
+                        onclick="closeDeactivateModal()">
+                    Hủy
+                </button>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-ban"></i>
+                    Xác nhận
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    function openDeactivateModal(button) {
+        document.getElementById('deactivate-brand-id').value =
+            button.dataset.id;
+
+        document.getElementById('deactivate-brand-name').textContent =
+            button.dataset.name || '';
+
+        document.getElementById('deactivate-reason').value = '';
+
+        document.getElementById('deactivate-modal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeactivateModal() {
+        document.getElementById('deactivate-modal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('deactivate-modal')
+        .addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeDeactivateModal();
+            }
+        });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeactivateModal();
+        }
+    });
+
+    function filterBrands() {
+        const query = document.getElementById('brand-search')
+            .value.trim().toLocaleLowerCase('vi');
+
+        [
+            { tableId: 'active-table', countId: 'active-count' },
+            { tableId: 'inactive-table', countId: 'inactive-count' }
+        ].forEach(config => {
+            const table = document.getElementById(config.tableId);
+            const rows = table.querySelectorAll('tbody tr.brand-row');
+            let visible = 0;
+
+            rows.forEach(row => {
+                const match = row.textContent
+                    .toLocaleLowerCase('vi')
+                    .includes(query);
+
+                row.hidden = !match;
+
+                if (match) visible++;
+            });
+
+            table.querySelector('.brand-empty').hidden = visible !== 0;
+            document.getElementById(config.countId).textContent = visible;
+        });
+    }
+
+    function exportExcel() {
+        if (typeof XLSX === 'undefined') {
+            alert('Không tải được thư viện Excel. Vui lòng thử lại.');
+            return;
+        }
+
+        const workbook = XLSX.utils.book_new();
+
+        [
+            { id: 'active-table', name: 'DangHoatDong' },
+            { id: 'inactive-table', name: 'NgungSuDung' }
+        ].forEach(config => {
+            const original = document.getElementById(config.id);
+            const cloned = original.cloneNode(true);
+
+            cloned.querySelectorAll('tr').forEach(row => {
+                if (row.classList.contains('brand-empty') || row.hidden) {
+                    row.remove();
+                    return;
+                }
+
+                // Bỏ cột thao tác khỏi Excel.
+                row.lastElementChild?.remove();
+            });
+
+            const sheet = XLSX.utils.table_to_sheet(cloned);
+            XLSX.utils.book_append_sheet(workbook, sheet, config.name);
+        });
+
+        XLSX.writeFile(workbook, 'danh-sach-thuong-hieu.xlsx');
+    }
+
+    document.addEventListener('DOMContentLoaded', filterBrands);
+</script>
+
+</body>
+</html>

@@ -15,14 +15,13 @@ public class ThuonghieuController {
 
     @GetMapping("/thuonghieu")
     public String thuonghieu(Model model) {
-        model.addAttribute("thuonghieu",thuonghieuService.getAllThuonghieu());
+        model.addAttribute("thuonghieu", thuonghieuService.getAllThuonghieu());
         return "thuonghieu/index";
     }
 
     @GetMapping("/thuonghieu/create")
     public String thuonghieuCreate(Model model) {
-        Thuonghieu thuonghieu = new Thuonghieu();
-        model.addAttribute("thuonghieu",thuonghieu);
+        model.addAttribute("thuonghieu", new Thuonghieu());
         return "thuonghieu/add";
     }
 
@@ -34,10 +33,10 @@ public class ThuonghieuController {
 
     @GetMapping("/edit-thuonghieu/{id}")
     public String editThuonghieu(@PathVariable int id, Model model) {
-        model.addAttribute("thuonghieu",thuonghieuService.getThuonghieuById(id));
+        model.addAttribute("thuonghieu",
+                thuonghieuService.getThuonghieuById(id));
         return "thuonghieu/edit";
     }
-
 
     @PostMapping("/update-thuonghieu")
     public String updateThuonghieu(@ModelAttribute Thuonghieu thuonghieu) {
@@ -45,18 +44,20 @@ public class ThuonghieuController {
         return "redirect:/thuonghieu";
     }
 
-    @GetMapping("/delete-thuonghieu/{id}")
-    public String deleteThuonghieu(@PathVariable int id, Model model) {
+    // Ngừng sử dụng thương hiệu và lưu lý do.
+    @PostMapping("/delete-thuonghieu")
+    public String deleteThuonghieu(
+            @RequestParam("id") int id,
+            @RequestParam("GHICHU") String GHICHU) {
 
-        Thuonghieu thuonghieu = thuonghieuService.getThuonghieuById(id);
-        model.addAttribute("thuonghieu",thuonghieu);
-        return "redirect:/delete";
+        thuonghieuService.deleteThuonghieu(id, GHICHU);
+        return "redirect:/thuonghieu";
     }
 
-    @PostMapping("/delete-thuonghieu")
-    public String deleteSanpham(@RequestParam("id") int id,
-                                @RequestParam("GHICHU") String GHICHU) {
-        thuonghieuService.deleteThuonghieu(id, GHICHU);
+    // Khôi phục thương hiệu.
+    @PostMapping("/thuonghieu/khoi-phuc")
+    public String restoreThuonghieu(@RequestParam("id") int id) {
+        thuonghieuService.restoreThuonghieu(id);
         return "redirect:/thuonghieu";
     }
 }

@@ -1,14 +1,598 @@
+
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quản lý khách hàng</title><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><link rel="stylesheet" th:href="@{/style.css}"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('khachhang')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Quản lý Khách hàng', 'Đối tác / Khách hàng')}"></div>
-<main class="content-body directory-page">
-<div class="page-header"><div><h1 class="page-title">Khách hàng</h1><p class="page-description">Danh sách khách hàng đang hoạt động và thông tin liên hệ.</p></div><div class="page-actions"><a th:href="@{/khachhang/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm khách hàng</a><button type="button" class="btn btn-success" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Xuất Excel</button></div></div>
-<div class="search-filters"><div class="search-input"><i class="fas fa-search"></i><input type="search" id="directory-search" placeholder="Tìm theo mã, họ tên hoặc số điện thoại" oninput="filterDirectory()"></div></div>
-<div class="content-card"><div class="table-container"><table id="customer-table" class="table directory-table"><thead><tr><th>Mã KH</th><th>Họ tên</th><th>Giới tính</th><th>Ngày sinh</th><th>Số điện thoại</th><th>Ngày tham gia</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-<tbody><tr th:each="kh : ${khachhang}" th:if="${kh.TRANGTHAI == 0}"><td class="font-semibold" th:text="${kh.MAKH}"></td><td th:text="${kh.HOTEN}"></td><td th:text="${kh.GIOITINH}"></td><td th:text="${kh.NGAYSINH != null ? #dates.format(kh.NGAYSINH,'dd/MM/yyyy') : '—'}"></td><td th:text="${kh.SDT}"></td><td th:text="${kh.NGAYTHAMGIA != null ? #dates.format(kh.NGAYTHAMGIA,'dd/MM/yyyy') : '—'}"></td><td><span class="directory-status status-badge status-success"><i class="fas fa-circle"></i> Hoạt động</span></td><td><div class="table-actions"><a class="btn btn-icon btn-outline" title="Sửa khách hàng" th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}"><i class="fas fa-edit"></i></a></div></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(khachhang)}"><td colspan="8">Chưa có khách hàng đang hoạt động.</td></tr><tr id="no-result-row" class="empty-row" hidden><td colspan="8">Không có khách hàng phù hợp.</td></tr></tbody></table></div></div>
-</main></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script>
-function filterDirectory(){const query=document.getElementById('directory-search').value.trim().toLowerCase();let visible=0;document.querySelectorAll('#customer-table tbody tr:not(.empty-row)').forEach(row=>{const match=row.textContent.toLowerCase().includes(query);row.hidden=!match;if(match)visible++});document.getElementById('no-result-row').hidden=visible!==0}
-function exportExcel(){const book=XLSX.utils.book_new();const sheet=XLSX.utils.table_to_sheet(document.getElementById('customer-table'));XLSX.utils.book_append_sheet(book,sheet,'KhachHang');XLSX.writeFile(book,'khach-hang.xlsx')}
-</script></body></html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý khách hàng</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .customer-section {
+            margin-bottom: 24px;
+        }
+
+        .customer-section-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .customer-section-title {
+            margin: 0 0 6px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .customer-section-description {
+            margin: 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .customer-section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .customer-section-badge.inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .customer-search {
+            margin-bottom: 16px;
+        }
+
+        .customer-search .search-input {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .customer-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .customer-status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .customer-status.inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .customer-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .customer-actions form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .customer-actions button,
+        .customer-actions a {
+            cursor: pointer;
+        }
+
+        .customer-empty {
+            padding: 24px 12px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .customer-empty i {
+            display: block;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            font-size: 22px;
+        }
+
+        .customer-count {
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .customer-count strong {
+            color: #334155;
+        }
+
+        tr[hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .customer-section-header {
+                flex-direction: column;
+            }
+
+            .customer-search .search-input {
+                max-width: 100%;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .directory-table {
+                min-width: 950px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('khachhang')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Quản lý Khách hàng', 'Đối tác / Khách hàng')}"></div>
+
+        <main class="content-body directory-page">
+
+            <!-- Tiêu đề trang -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Quản lý khách hàng</h1>
+                    <p class="page-description">
+                        Theo dõi hồ sơ khách hàng hiện tại và hồ sơ không còn sử dụng.
+                    </p>
+                </div>
+
+                <div class="page-actions">
+                    <a th:href="@{/khachhang/create}"
+                       class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Thêm khách hàng
+                    </a>
+
+                    <button type="button"
+                            class="btn btn-success"
+                            onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        Xuất Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================================================== -->
+            <!-- DANH SÁCH KHÁCH HÀNG ĐANG HOẠT ĐỘNG -->
+            <!-- ================================================== -->
+
+            <section class="customer-section">
+
+                <div class="customer-section-header">
+                    <div>
+                        <h2 class="customer-section-title">
+                            Khách hàng đang hoạt động
+                        </h2>
+
+                        <p class="customer-section-description">
+                            Danh sách khách hàng đang được sử dụng trong nghiệp vụ.
+                        </p>
+                    </div>
+
+                    <span class="customer-section-badge">
+                        <i class="fas fa-circle"></i>
+                        Đang hoạt động
+                    </span>
+                </div>
+
+                <div class="content-card">
+
+                    <div class="customer-count">
+                        Số khách hàng:
+                        <strong id="active-count">0</strong>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="active-table"
+                               class="table directory-table">
+
+                            <thead>
+                            <tr>
+                                <th>Mã KH</th>
+                                <th>Họ tên</th>
+                                <th>Giới tính</th>
+                                <th>Ngày sinh</th>
+                                <th>Số điện thoại</th>
+                                <th>Ngày tham gia</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+
+                            <tr th:each="kh : ${danhSachKhachHang}"
+                                th:if="${kh.TRANGTHAI == 0}"
+                                class="customer-row">
+
+                                <td class="font-semibold"
+                                    th:text="${kh.MAKH}"></td>
+
+                                <td th:text="${kh.HOTEN}"></td>
+
+                                <td th:text="${kh.GIOITINH}"></td>
+
+                                <td th:text="${kh.NGAYSINH != null
+                                    ? #dates.format(kh.NGAYSINH, 'dd/MM/yyyy')
+                                    : '—'}"></td>
+
+                                <td th:text="${kh.SDT}"></td>
+
+                                <td th:text="${kh.NGAYTHAMGIA != null
+                                    ? #dates.format(kh.NGAYTHAMGIA, 'dd/MM/yyyy')
+                                    : '—'}"></td>
+
+                                <td>
+                                    <span class="customer-status active">
+                                        <i class="fas fa-circle"></i>
+                                        Hoạt động
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="customer-actions">
+
+                                        <a class="btn btn-icon btn-outline"
+                                           title="Sửa khách hàng"
+                                           th:href="@{/edit-khachhang/{id}(id=${kh.MAKH})}">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <button type="button"
+                                                class="btn btn-icon btn-outline"
+                                                title="Ngừng sử dụng"
+                                                th:attr="data-id=${kh.MAKH},
+                                                         data-name=${kh.HOTEN}"
+                                                onclick="openDeactivateModal(this)">
+                                            <i class="fas fa-user-slash"></i>
+                                        </button>
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="empty-row" hidden>
+                                <td colspan="8">
+                                    <div class="customer-empty">
+                                        <i class="fas fa-search"></i>
+                                        Không có khách hàng phù hợp.
+                                    </div>
+                                </td>
+                            </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================================== -->
+            <!-- DANH SÁCH KHÁCH HÀNG KHÔNG CÒN SỬ DỤNG -->
+            <!-- ================================================== -->
+
+            <section class="customer-section">
+
+                <div class="customer-section-header">
+                    <div>
+                        <h2 class="customer-section-title">
+                            Khách hàng không còn sử dụng
+                        </h2>
+
+                        <p class="customer-section-description">
+                            Hồ sơ khách hàng đã ngừng sử dụng nhưng vẫn được giữ lại
+                            để tra cứu thông tin và lịch sử giao dịch.
+                        </p>
+                    </div>
+
+                    <span class="customer-section-badge inactive">
+                        <i class="fas fa-archive"></i>
+                        Đã ngừng sử dụng
+                    </span>
+                </div>
+
+                <div class="content-card">
+
+
+                    <div class="customer-count">
+                        Số khách hàng:
+                        <strong id="inactive-count">0</strong>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="inactive-table"
+                               class="table directory-table">
+
+                            <thead>
+                            <tr>
+                                <th>Mã KH</th>
+                                <th>Họ tên</th>
+                                <th>Giới tính</th>
+                                <th>Ngày sinh</th>
+                                <th>Số điện thoại</th>
+                                <th>Ngày tham gia</th>
+                                <th>Trạng thái</th>
+                                <th>Lý do ngừng sử dụng</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+
+                            <tr th:each="kh : ${danhSachKhachHang}"
+                                th:if="${kh.TRANGTHAI == 1}"
+                                class="customer-row">
+
+                                <td class="font-semibold"
+                                    th:text="${kh.MAKH}"></td>
+
+                                <td th:text="${kh.HOTEN}"></td>
+
+                                <td th:text="${kh.GIOITINH}"></td>
+
+                                <td th:text="${kh.NGAYSINH != null
+                                    ? #dates.format(kh.NGAYSINH, 'dd/MM/yyyy')
+                                    : '—'}"></td>
+
+                                <td th:text="${kh.SDT}"></td>
+
+                                <td th:text="${kh.NGAYTHAMGIA != null
+                                    ? #dates.format(kh.NGAYTHAMGIA, 'dd/MM/yyyy')
+                                    : '—'}"></td>
+
+                                <td>
+    <span class="customer-status inactive">
+        <i class="fas fa-circle"></i>
+        Không còn sử dụng
+    </span>
+                                </td>
+
+                                <!-- Lý do ngừng sử dụng -->
+                                <td style="min-width: 220px; max-width: 350px; white-space: normal;
+           overflow-wrap: anywhere; color: #64748b;">
+    <span th:text="${kh.GHICHU != null and !#strings.isEmpty(#strings.trim(kh.GHICHU))
+        ? kh.GHICHU
+        : 'Không có lý do'}">
+    </span>
+                                </td>
+
+                                <td>
+                                    <div class="customer-actions">
+
+                                        <form th:action="@{/khachhang/khoi-phuc}"
+                                              method="post"
+                                              onsubmit="return confirm('Khôi phục khách hàng này?')">
+
+                                            <input type="hidden" name="id" th:value="${kh.MAKH}">
+
+                                            <button type="submit"
+                                                    class="btn btn-icon btn-outline"
+                                                    title="Khôi phục khách hàng">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="empty-row" hidden>
+                                <td colspan="9">
+                                    <div class="customer-empty">
+                                        <i class="fas fa-search"></i>
+                                        Không có khách hàng phù hợp.
+                                    </div>
+                                </td>
+                            </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ================================================== -->
+<!-- MODAL NGỪNG SỬ DỤNG KHÁCH HÀNG -->
+<!-- ================================================== -->
+
+<div id="deactivate-modal"
+     style="display:none; position:fixed; inset:0; z-index:9999;
+            background:rgba(15,23,42,.45); align-items:center;
+            justify-content:center; padding:20px;">
+
+    <div style="width:100%; max-width:460px; background:#fff;
+                border-radius:12px; padding:24px;
+                box-shadow:0 20px 40px rgba(15,23,42,.15);">
+
+        <h3 style="margin:0 0 8px; color:#1e293b;">
+            Ngừng sử dụng khách hàng
+        </h3>
+
+        <p style="color:#64748b; font-size:14px; line-height:1.6;">
+            Khách hàng:
+            <strong id="deactivate-customer-name"></strong>
+        </p>
+
+        <form th:action="@{/delete-khachhang}" method="post">
+
+            <input type="hidden"
+                   name="id"
+                   id="deactivate-customer-id">
+
+            <label for="deactivate-note"
+                   style="display:block; margin:16px 0 8px;
+                          font-weight:600; color:#334155;">
+                Lý do / ghi chú
+            </label>
+
+            <textarea id="deactivate-note"
+                      name="GHICHU"
+                      rows="3"
+                      required
+                      maxlength="500"
+                      placeholder="Nhập lý do ngừng sử dụng khách hàng..."
+                      style="width:100%; padding:12px; border:1px solid #cbd5e1;
+                             border-radius:8px; resize:vertical;"></textarea>
+
+            <div style="display:flex; justify-content:flex-end;
+                        gap:10px; margin-top:20px;">
+
+                <button type="button"
+                        class="btn btn-outline"
+                        onclick="closeDeactivateModal()">
+                    Hủy
+                </button>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    <i class="fas fa-user-slash"></i>
+                    Xác nhận
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    function updateCustomerCounts() {
+        const tables = [
+            {
+                tableId: 'active-table',
+                countId: 'active-count'
+            },
+            {
+                tableId: 'inactive-table',
+                countId: 'inactive-count'
+            }
+        ];
+
+        tables.forEach(item => {
+            const table = document.getElementById(item.tableId);
+            const countElement = document.getElementById(item.countId);
+
+            if (!table || !countElement) return;
+
+            const rows = table.querySelectorAll(
+                'tbody tr.customer-row'
+            );
+
+            // Đếm các khách hàng thực sự có trong bảng.
+            countElement.textContent = rows.length;
+        });
+    }
+
+    function openDeactivateModal(button) {
+        const modal = document.getElementById('deactivate-modal');
+
+        document.getElementById('deactivate-customer-id').value =
+            button.dataset.id;
+
+        document.getElementById('deactivate-customer-name').textContent =
+            button.dataset.name || '';
+
+        document.getElementById('deactivate-note').value = '';
+
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeactivateModal() {
+        document.getElementById('deactivate-modal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('deactivate-modal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeDeactivateModal();
+        }
+    });
+
+    function exportExcel() {
+        if (typeof XLSX === 'undefined') {
+            alert('Không tải được thư viện Excel. Vui lòng thử lại.');
+            return;
+        }
+
+        const workbook = XLSX.utils.book_new();
+
+        [
+            { id: 'active-table', name: 'DangHoatDong' },
+            { id: 'inactive-table', name: 'NgungSuDung' }
+        ].forEach(item => {
+            const original = document.getElementById(item.id);
+            const cloned = original.cloneNode(true);
+
+            cloned.querySelectorAll('tbody tr').forEach(row => {
+                if (row.classList.contains('empty-row') || row.hidden) {
+                    row.remove();
+                }
+            });
+
+            cloned.querySelectorAll('tr').forEach(row => {
+                if (row.lastElementChild) {
+                    row.removeChild(row.lastElementChild);
+                }
+            });
+
+            const sheet = XLSX.utils.table_to_sheet(cloned);
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                sheet,
+                item.name
+            );
+        });
+
+        XLSX.writeFile(workbook, 'danh-sach-khach-hang.xlsx');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCustomerCounts();
+    });
+</script>
+
+</body>
+</html>

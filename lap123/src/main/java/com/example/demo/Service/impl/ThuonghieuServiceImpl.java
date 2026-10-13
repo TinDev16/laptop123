@@ -61,5 +61,17 @@ public class ThuonghieuServiceImpl implements ThuonghieuService {
         thuonghieuRepository.save(thuonghieu);
     }
 
+    @Override
+    public void restoreThuonghieu(int id) {
+        Thuonghieu thuonghieu = thuonghieuRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Không tìm thấy thương hiệu với id=" + id));
+
+        thuonghieu.setTRANGTHAI(0);
+        thuonghieu.setGHICHU(null);
+
+        thuonghieuRepository.save(thuonghieu);
+    }
+
 
 }

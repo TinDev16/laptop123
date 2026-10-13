@@ -16,4 +16,6 @@ public interface ThuonghieuService {
     Thuonghieu updateThuonghieu(Thuonghieu thuonghieu);
 
     void deleteThuonghieu(int id, String GHICHU);
+
+    void restoreThuonghieu(int id);
 }

@@ -73,4 +73,15 @@ public class NCCServiceImpl implements NCCService {
         nccRepository.delete(ncc);
         nccRepository.flush();
     }
+
+    @Override
+    public void restoreNCC(int id) {
+        NCC ncc = getNCCById(id);
+
+        ncc.setTRANGTHAI(0);
+        ncc.setGHICHU(null);
+
+        // Giữ nguyên thông tin nhà cung cấp, chỉ khôi phục trạng thái.
+        saveNCC(ncc);
+    }
 }

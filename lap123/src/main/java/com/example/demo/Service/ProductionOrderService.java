@@ -3,12 +3,16 @@ package com.example.demo.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,10 +36,11 @@ public class ProductionOrderService {
     ) {
         String sql = "SELECT y.maycsx AS mayeucau, y.soluongyeucau, " +
                 "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
-                "y.trangthai, s.tensp, n.hoten " +
+                "y.trangthai, s.tensp, n.hoten, d.madot, d.madot_code, d.tendot " +
                 "FROM yeucausanxuat y " +
                 "JOIN sanpham s ON s.masp = y.masp " +
-                "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach ";
+                "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach " +
+                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
 
         List<Map<String, Object>> rows;
 
@@ -66,9 +71,73 @@ public class ProductionOrderService {
 
                 return ((Number) value).longValue() <= 0;
             });
+        } else if (search != null && !search.isBlank()) {
+            String keyword = search.trim().toLowerCase();
+            rows.removeIf(row -> !contains(row.get("madot_code"), keyword)
+                    && !contains(row.get("tendot"), keyword)
+                    && !contains(row.get("mayeucau"), keyword)
+                    && !contains("YCSX-" + row.get("mayeucau"), keyword)
+                    && !contains(row.get("tensp"), keyword)
+                    && !contains(row.get("hoten"), keyword));
         }
 
         return rows;
+    }
+
+    public List<Map<String, Object>> aggregateMaterialShortages(String email) {
+        return jdbc.queryForList(
+                """
+                SELECT
+                    requirements.manvl,
+                    requirements.manvl_code,
+                    requirements.tennvl,
+                    requirements.donvitinh,
+                    requirements.soyeucau,
+                    requirements.tongnhucau,
+                    COALESCE(k.soluongton, 0) AS soluongton,
+                    GREATEST(
+                        requirements.tongnhucau - COALESCE(k.soluongton, 0),
+                        0
+                    ) AS tongthieu
+                FROM (
+                    SELECT
+                        n.manvl,
+                        n.manvl_code,
+                        n.tennvl,
+                        n.donvitinh,
+                        COUNT(DISTINCT y.maycsx) AS soyeucau,
+                        SUM(
+                            CEIL(
+                                GREATEST(
+                                    y.soluongyeucau
+                                    - y.soluonghoanthanh
+                                    - COALESCE(g.daghi, 0),
+                                    0
+                                )
+                                * c.soluong_dinhmuc
+                                * (1 + c.tyle_haohut / 100)
+                            )
+                        ) AS tongnhucau
+                    FROM yeucausanxuat y
+                    JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                    JOIN bom_chitiet c ON c.mabom = y.mabom
+                    JOIN nguyenvatlieu n ON n.manvl = c.manvl
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluong) AS daghi
+                        FROM ghi_nhan_san_xuat
+                        GROUP BY maycsx
+                    ) g ON g.maycsx = y.maycsx
+                    WHERE t.email = ?
+                      AND y.trangthai NOT IN ('HOAN_THANH', 'HUY')
+                      AND y.soluonghoanthanh + COALESCE(g.daghi, 0) < y.soluongyeucau
+                    GROUP BY n.manvl, n.manvl_code, n.tennvl, n.donvitinh
+                ) requirements
+                LEFT JOIN kho_nvl_san_xuat k ON k.manvl = requirements.manvl
+                WHERE requirements.tongnhucau > COALESCE(k.soluongton, 0)
+                ORDER BY tongthieu DESC, requirements.tennvl
+                """,
+                email
+        );
     }
 
     // =========================================================
@@ -80,10 +149,11 @@ public class ProductionOrderService {
                 "y.nguoiphutrach AS manv, y.soluongyeucau, " +
                 "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
                 "y.trangthai, y.ghichu, " +
-                "s.tensp, n.hoten " +
+                "s.tensp, n.hoten, d.madot, d.madot_code, d.tendot, d.ghichu AS ghichu_dot " +
                 "FROM yeucausanxuat y " +
                 "JOIN sanpham s ON s.masp = y.masp " +
-                "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach ";
+                "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach " +
+                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
 
         List<Map<String, Object>> rows = manager
                 ? jdbc.queryForList(
@@ -187,6 +257,82 @@ public class ProductionOrderService {
     // =========================================================
 
     @Transactional
+    public int createBatch(
+            String creatorEmail,
+            String batchName,
+            List<Long> bomIds,
+            List<Integer> employeeIds,
+            List<Integer> quantities,
+            List<LocalDate> deadlines,
+            String note
+    ) {
+        String normalizedName = batchName == null ? "" : batchName.trim();
+        if (normalizedName.length() < 3 || normalizedName.length() > 150) {
+            throw new IllegalArgumentException("Tên đợt sản xuất phải từ 3 đến 150 ký tự.");
+        }
+        if (note != null && note.length() > 255) {
+            throw new IllegalArgumentException("Ghi chú tối đa 255 ký tự.");
+        }
+        if (bomIds == null || bomIds.isEmpty()) {
+            throw new IllegalArgumentException("Yêu cầu phải có ít nhất một thành phẩm.");
+        }
+
+        int size = bomIds.size();
+        if (employeeIds == null || quantities == null || deadlines == null ||
+                employeeIds.size() != size || quantities.size() != size || deadlines.size() != size) {
+            throw new IllegalArgumentException("Thông tin các dòng thành phẩm không đầy đủ.");
+        }
+
+        if (bomIds.stream().distinct().count() != size) {
+            throw new IllegalArgumentException("Không được chọn trùng thành phẩm/BOM trong cùng yêu cầu.");
+        }
+
+        Integer creator = jdbc.queryForObject(
+                "SELECT manv FROM taikhoan WHERE email = ?",
+                Integer.class,
+                creatorEmail
+        );
+        if (creator == null) {
+            throw new IllegalArgumentException("Tài khoản quản lý chưa liên kết với nhân viên.");
+        }
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            var statement = connection.prepareStatement(
+                    "INSERT INTO dot_san_xuat (tendot, nguoitao, ghichu) VALUES (?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
+            );
+            statement.setString(1, normalizedName);
+            statement.setInt(2, creator);
+            statement.setString(3, note);
+            return statement;
+        }, keyHolder);
+
+        Number generatedKey = keyHolder.getKey();
+        if (generatedKey == null) {
+            throw new IllegalStateException("Không thể tạo mã đợt sản xuất.");
+        }
+        long batchId = generatedKey.longValue();
+        String batchCode = "SX-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                + "-" + String.format("%06d", batchId);
+        jdbc.update("UPDATE dot_san_xuat SET madot_code = ? WHERE madot = ?", batchCode, batchId);
+
+        for (int index = 0; index < size; index++) {
+            createInternal(
+                    creatorEmail,
+                    bomIds.get(index),
+                    employeeIds.get(index),
+                    quantities.get(index),
+                    deadlines.get(index),
+                    note,
+                    batchId
+            );
+        }
+
+        return size;
+    }
+
+    @Transactional
     public void create(
             String creatorEmail,
             long bomId,
@@ -194,6 +340,18 @@ public class ProductionOrderService {
             int quantity,
             LocalDate deadline,
             String note
+    ) {
+        createInternal(creatorEmail, bomId, employeeId, quantity, deadline, note, null);
+    }
+
+    private void createInternal(
+            String creatorEmail,
+            long bomId,
+            int employeeId,
+            int quantity,
+            LocalDate deadline,
+            String note,
+            Long batchId
     ) {
         if (note != null && note.length() > 255) {
             throw new IllegalArgumentException(
@@ -281,16 +439,21 @@ public class ProductionOrderService {
         jdbc.update(
                 "INSERT INTO yeucausanxuat " +
                         "(masp, mabom, nguoitao, nguoiphutrach, " +
-                        "soluongyeucau, hanhoanthanh, trangthai, ghichu) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, 'DA_GIAO', ?)",
+                        "soluongyeucau, hanhoanthanh, trangthai, ghichu, madot) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 'DA_GIAO', ?, ?)",
                 productIds.get(0),
                 bomId,
                 creator,
                 employeeId,
                 quantity,
                 deadline,
-                note
+                note,
+                batchId
         );
+    }
+
+    private boolean contains(Object value, String keyword) {
+        return value != null && String.valueOf(value).toLowerCase().contains(keyword);
     }
 
     // =========================================================
@@ -683,7 +846,7 @@ public class ProductionOrderService {
     }
 
     // =========================================================
-    // LỊCH SỬ CHỈNH SỬA
+    // LỊCH SỬ HOẠT ĐỘNG
     // =========================================================
 
     public List<Map<String, Object>> history(long id) {
@@ -703,27 +866,94 @@ public class ProductionOrderService {
         }
 
         return jdbc.queryForList(
-                "SELECT l.id, " +
-                        "l.maycsx, " +
-                        "l.nguoisua, " +
-                        "ns.hoten AS tennguoisua, " +
-                        "l.thoigian, " +
-                        "l.soluongcu, " +
-                        "l.soluongmoi, " +
-                        "l.han_cu, " +
-                        "l.han_moi, " +
-                        "l.nhanvien_cu, " +
-                        "l.nhanvien_moi, " +
-                        "ncu.hoten AS ten_nhanvien_cu, " +
-                        "nmoi.hoten AS ten_nhanvien_moi, " +
-                        "l.lydodieuchinh " +
-                        "FROM lichsu_dieuchinh_yeucau l " +
-                        "JOIN nhanvien ns ON ns.manv = l.nguoisua " +
-                        "LEFT JOIN nhanvien ncu ON ncu.manv = l.nhanvien_cu " +
-                        "LEFT JOIN nhanvien nmoi ON nmoi.manv = l.nhanvien_moi " +
-                        "WHERE l.maycsx = ? " +
-                        "ORDER BY l.thoigian DESC, l.id DESC",
-                id
+                """
+                SELECT timeline.*
+                FROM (
+                    SELECT
+                        CONCAT('CREATE-', y.maycsx) AS event_key,
+                        'TAO_YEU_CAU' AS loaisukien,
+                        y.ngayyeucau AS thoigian,
+                        creator.hoten AS tennguoithuchien,
+                        'Tạo yêu cầu sản xuất' AS tieude,
+                        CONCAT('Giao sản xuất ', y.soluongyeucau, ' ', s.tensp,
+                               IF(assignee.hoten IS NULL, '', CONCAT(' cho ', assignee.hoten)), '.') AS noidung,
+                        y.soluongyeucau AS soluong,
+                        'DA_TAO' AS trangthai
+                    FROM yeucausanxuat y
+                    JOIN sanpham s ON s.masp = y.masp
+                    LEFT JOIN nhanvien creator ON creator.manv = y.nguoitao
+                    LEFT JOIN nhanvien assignee ON assignee.manv = y.nguoiphutrach
+                    WHERE y.maycsx = ?
+
+                    UNION ALL
+
+                    SELECT
+                        CONCAT('EDIT-', l.id),
+                        'DIEU_CHINH',
+                        l.thoigian,
+                        editor.hoten,
+                        'Điều chỉnh yêu cầu',
+                        l.lydodieuchinh,
+                        NULL,
+                        'DA_CAP_NHAT'
+                    FROM lichsu_dieuchinh_yeucau l
+                    LEFT JOIN nhanvien editor ON editor.manv = l.nguoisua
+                    WHERE l.maycsx = ?
+
+                    UNION ALL
+
+                    SELECT
+                        CONCAT('RECORD-', g.id),
+                        'GHI_NHAN_SAN_XUAT',
+                        g.ngayghi,
+                        worker.hoten,
+                        'Ghi nhận sản lượng tại xưởng',
+                        CONCAT('Đã ghi nhận ', g.soluong, ' thành phẩm hoàn thành',
+                               IF(g.ghichu IS NULL OR TRIM(g.ghichu) = '', '.', CONCAT('. Ghi chú: ', TRIM(g.ghichu)))),
+                        g.soluong,
+                        'DA_GHI_NHAN'
+                    FROM ghi_nhan_san_xuat g
+                    LEFT JOIN nhanvien worker ON worker.manv = g.nguoighi
+                    WHERE g.maycsx = ?
+
+                    UNION ALL
+
+                    SELECT
+                        CONCAT('RESULT-', k.makqsx),
+                        'KET_QUA_SAN_XUAT',
+                        k.ngayhoanthanh,
+                        worker.hoten,
+                        CASE k.trangthai
+                            WHEN 'CHO_XAC_NHAN' THEN 'Gửi kết quả chờ xác nhận'
+                            WHEN 'DA_NHAP_KHO' THEN 'Kết quả đã được xác nhận'
+                            WHEN 'HUY' THEN 'Kết quả đã hủy'
+                            ELSE 'Cập nhật kết quả sản xuất'
+                        END,
+                        CONCAT('Số lượng hoàn thành: ', k.soluonghoanthanh,
+                               IF(k.ghichu IS NULL OR TRIM(k.ghichu) = '', '.', CONCAT('. Ghi chú: ', TRIM(k.ghichu)))),
+                        k.soluonghoanthanh,
+                        k.trangthai
+                    FROM ketqua_sanxuat k
+                    LEFT JOIN nhanvien worker ON worker.manv = k.nguoithuchien
+                    WHERE k.maycsx = ?
+
+                    UNION ALL
+
+                    SELECT
+                        CONCAT('CANCEL-', y.maycsx),
+                        'HUY_YEU_CAU',
+                        y.ngayhuy,
+                        NULL,
+                        'Hủy yêu cầu sản xuất',
+                        CONCAT('Lý do: ', COALESCE(y.lydohuy, 'Không có lý do')),
+                        NULL,
+                        'HUY'
+                    FROM yeucausanxuat y
+                    WHERE y.maycsx = ? AND y.ngayhuy IS NOT NULL
+                ) timeline
+                ORDER BY timeline.thoigian DESC, timeline.event_key DESC
+                """,
+                id, id, id, id, id
         );
     }
 
@@ -738,7 +968,7 @@ public class ProductionOrderService {
                 "mabom"
         )).longValue();
 
-        int remaining =
+        int confirmedRemaining =
                 ((Number) order.get(
                         "soluongyeucau"
                 )).intValue()
@@ -747,15 +977,28 @@ public class ProductionOrderService {
                                 "soluonghoanthanh"
                         )).intValue();
 
+        Integer recordedQuantity = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluong), 0) FROM ghi_nhan_san_xuat WHERE maycsx = ?",
+                Integer.class,
+                ((Number) order.get("mayeucau")).longValue()
+        );
+
+        int remaining = Math.max(
+                confirmedRemaining - (recordedQuantity == null ? 0 : recordedQuantity),
+                0
+        );
+
         List<Map<String, Object>> lines =
                 jdbc.queryForList(
                         "SELECT n.manvl_code, n.tennvl, n.donvitinh, " +
-                                "n.soluongton, " +
+                                "COALESCE(k.soluongton, 0) AS soluongton, " +
                                 "c.soluong_dinhmuc, " +
                                 "c.tyle_haohut " +
                                 "FROM bom_chitiet c " +
                                 "JOIN nguyenvatlieu n " +
                                 "ON n.manvl = c.manvl " +
+                                "LEFT JOIN kho_nvl_san_xuat k " +
+                                "ON k.manvl = c.manvl " +
                                 "WHERE c.mabom = ? " +
                                 "ORDER BY n.tennvl",
                         bomId
@@ -835,7 +1078,7 @@ public class ProductionOrderService {
         boolean completed =
                 "HOAN_THANH".equals(
                         order.get("trangthai")
-                );
+                ) || isQuantityCompleted(order);
 
         boolean cancelled =
                 "HUY".equals(
@@ -856,6 +1099,18 @@ public class ProductionOrderService {
         }
 
         order.put("overdueDays", overdueDays);
+    }
+
+    private boolean isQuantityCompleted(Map<String, Object> order) {
+        Object requestedValue = order.get("soluongyeucau");
+        Object completedValue = order.get("soluonghoanthanh");
+
+        if (!(requestedValue instanceof Number requested) ||
+                !(completedValue instanceof Number completed)) {
+            return false;
+        }
+
+        return completed.doubleValue() >= requested.doubleValue();
     }
 
     // =========================================================

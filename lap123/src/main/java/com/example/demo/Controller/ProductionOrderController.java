@@ -3,6 +3,7 @@ package com.example.demo.Controller;
 import com.example.demo.Service.ProductionOrderService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -72,6 +73,13 @@ public class ProductionOrderController {
         );
 
         model.addAttribute(
+                "materialShortages",
+                isManager
+                        ? List.of()
+                        : service.aggregateMaterialShortages(auth.getName())
+        );
+
+        model.addAttribute(
                 "search",
                 search
         );
@@ -112,14 +120,15 @@ public class ProductionOrderController {
     @PostMapping
     public String create(
             Authentication auth,
-            @RequestParam long bomId,
-            @RequestParam int employeeId,
-            @RequestParam int quantity,
+            @RequestParam String batchName,
+            @RequestParam List<Long> bomId,
+            @RequestParam List<Integer> employeeId,
+            @RequestParam List<Integer> quantity,
             @RequestParam
             @DateTimeFormat(
                     iso = DateTimeFormat.ISO.DATE
             )
-            LocalDate deadline,
+            List<LocalDate> deadline,
             @RequestParam(required = false) String note,
             RedirectAttributes redirect
     ) {
@@ -130,14 +139,17 @@ public class ProductionOrderController {
         }
 
         try {
-            service.create(
+            int created = service.createBatch(
                     auth.getName(),
+                    batchName,
                     bomId,
                     employeeId,
                     quantity,
                     deadline,
                     note
             );
+
+            redirect.addFlashAttribute("createdCount", created);
 
             redirect.addFlashAttribute(
                     "success",
@@ -181,10 +193,14 @@ public class ProductionOrderController {
                 order
         );
 
-        model.addAttribute(
-                "needs",
-                service.materialNeeds(order)
-        );
+        var needs = service.materialNeeds(order);
+        long shortageCount = needs.stream()
+                .filter(need -> need.shortage().signum() > 0)
+                .count();
+
+        model.addAttribute("needs", needs);
+        model.addAttribute("shortageCount", shortageCount);
+        model.addAttribute("hasMaterialShortage", shortageCount > 0);
 
         model.addAttribute(
                 "manager",
@@ -352,7 +368,7 @@ public class ProductionOrderController {
     }
 
     // =========================================================
-    // LỊCH SỬ CHỈNH SỬA
+    // LỊCH SỬ HOẠT ĐỘNG
     // GET /san-xuat/yeu-cau/{id}/history
     // =========================================================
 
@@ -365,7 +381,7 @@ public class ProductionOrderController {
     ) {
         if (!manager(auth)) {
             throw new AccessDeniedException(
-                    "Không có quyền xem lịch sử chỉnh sửa."
+                "Không có quyền xem lịch sử hoạt động."
             );
         }
 

@@ -316,18 +316,18 @@ public class MrpWorkflowController {
     @PostMapping("/kho/xuat-thanh-pham")
     public String createFinishedIssue(
             Authentication auth,
-            @RequestParam int productId,
-            @RequestParam int bomId,
-            @RequestParam int quantity,
+            @RequestParam List<Integer> productId,
+            @RequestParam List<Integer> bomId,
+            @RequestParam List<Integer> quantity,
             @RequestParam int customerId,
             @RequestParam String address,
-            @RequestParam BigDecimal unitPrice,
-            @RequestParam(defaultValue = "false") boolean priceFixed,
+            @RequestParam List<BigDecimal> unitPrice,
+            @RequestParam List<Boolean> priceFixed,
             @RequestParam(required = false) String note,
             RedirectAttributes flash) {
 
         try {
-            long id = documents.createFinishedIssue(
+            long id = documents.createFinishedIssueBatch(
                     auth.getName(),
                     productId,
                     bomId,
@@ -360,6 +360,7 @@ public class MrpWorkflowController {
     @GetMapping("/kho/xuat-thanh-pham/{id}")
     public String finishedIssue(@PathVariable long id, Authentication auth, Model model) {
         model.addAttribute("issue", documents.finishedIssue(id, auth.getName(), manager(auth)));
+        model.addAttribute("lines", documents.finishedIssueLines(id));
         model.addAttribute("manager", manager(auth));
         return "mrp/finished-issue-detail";
     }

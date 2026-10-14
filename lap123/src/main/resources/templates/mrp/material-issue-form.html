@@ -42,7 +42,10 @@
               <option value="">-- Chọn yêu cầu sản xuất --</option>
               <option th:each="o : ${orders}"
                       th:value="${o.mayeucau}"
-                      th:text="${'#' + o.mayeucau + ' - ' + o.tensp}"
+                      th:text="${(o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau)
+                          + (o.tendot != null ? ' · ' + o.tendot : '')
+                          + ' · ' + o.tensp + ' · YC #' + o.mayeucau
+                          + (o.overdueDays > 0 ? ' · QUÁ HẠN ' + o.overdueDays + ' NGÀY' : '')}"
                       th:selected="${selectedOrder != null and selectedOrder == o.mayeucau}"></option>
             </select>
           </div>

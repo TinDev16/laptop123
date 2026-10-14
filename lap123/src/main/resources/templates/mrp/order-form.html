@@ -12,6 +12,15 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet"
     >
+    <style>
+        .production-lines { display:grid;gap:14px;margin-top:16px; }
+        .production-line { display:grid;grid-template-columns:minmax(250px,1.5fr) minmax(180px,1fr) 150px 180px 44px;gap:12px;align-items:end;padding:16px;border:1px solid #dbe4ee;border-radius:10px;background:#f8fafc; }
+        .production-line .ceo-field { margin:0;min-width:0; }
+        .production-line-number { grid-column:1/-1;font-size:.78rem;font-weight:800;color:#60758a;text-transform:uppercase;letter-spacing:.05em; }
+        .remove-production-line { width:44px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center; }
+        @media (max-width:1100px) { .production-line { grid-template-columns:1fr 1fr; } }
+        @media (max-width:650px) { .production-line { grid-template-columns:1fr; } .remove-production-line { width:100%; } }
+    </style>
 </head>
 
 <body>
@@ -76,14 +85,38 @@
                             th:if="${_csrf != null}"
                     >
 
+                    <div class="ceo-field ceo-field-full" style="margin-bottom:20px;">
+                        <label for="batchName">
+                            Tên đợt sản xuất
+                            <span class="ceo-required">*</span>
+                        </label>
+                        <input id="batchName"
+                               name="batchName"
+                               type="text"
+                               minlength="3"
+                               maxlength="150"
+                               required
+                               class="form-control"
+                               placeholder="Ví dụ: Sản xuất bổ sung hàng tháng 10">
+                        <small>Dùng chung cho tất cả thành phẩm được thêm trong lần giao việc này.</small>
+                    </div>
+
 
                     <h2 class="ceo-section-title">
                         <i class="fas fa-clipboard-list"></i>
-                        Thông tin giao việc
+                        Thành phẩm cần sản xuất
                     </h2>
 
+                    <button type="button" id="addProductionLine" class="btn btn-outline">
+                        <i class="fas fa-plus"></i> Thêm thành phẩm
+                    </button>
 
-                    <div class="ceo-form-grid">
+
+                    <div id="productionLines" class="production-lines">
+
+                    <div class="production-line">
+
+                        <div class="production-line-number">Thành phẩm 1</div>
 
 
                         <!-- BOM -->
@@ -191,10 +224,18 @@
 
                         </div>
 
+                        <button type="button" class="btn btn-danger remove-production-line" aria-label="Xóa thành phẩm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+
+                    </div>
+
+                    </div>
+
 
                         <!-- GHI CHÚ -->
 
-                        <div class="ceo-field ceo-field-full">
+                        <div class="ceo-field ceo-field-full" style="margin-top:20px;">
 
                             <label for="orderNote">
                                 Ghi chú
@@ -210,9 +251,6 @@
                             ></textarea>
 
                         </div>
-
-                    </div>
-
 
                     <!-- ACTION -->
 
@@ -246,6 +284,69 @@
 
 </div>
 
+
+<script>
+    (function () {
+        const container = document.getElementById("productionLines");
+        const addButton = document.getElementById("addProductionLine");
+        const form = document.getElementById("productionOrderForm");
+        const template = container.querySelector(".production-line").cloneNode(true);
+
+        function localToday() {
+            const now = new Date();
+            return now.getFullYear() + "-" +
+                String(now.getMonth() + 1).padStart(2, "0") + "-" +
+                String(now.getDate()).padStart(2, "0");
+        }
+
+        function prepareLine(line, reset) {
+            if (reset) {
+                line.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
+                line.querySelectorAll("label[for]").forEach(label => label.removeAttribute("for"));
+                line.querySelector('select[name="bomId"]').value = "";
+                line.querySelector('select[name="employeeId"]').value = "";
+                line.querySelector('input[name="quantity"]').value = "1";
+            }
+
+            const deadline = line.querySelector('input[name="deadline"]');
+            deadline.min = localToday();
+            if (reset || !deadline.value) deadline.value = localToday();
+
+            line.querySelector(".remove-production-line").onclick = function () {
+                line.remove();
+                renumber();
+            };
+        }
+
+        function renumber() {
+            const lines = container.querySelectorAll(".production-line");
+            lines.forEach((line, index) => {
+                line.querySelector(".production-line-number").textContent = "Thành phẩm " + (index + 1);
+                line.querySelector(".remove-production-line").disabled = lines.length === 1;
+            });
+        }
+
+        prepareLine(container.querySelector(".production-line"), false);
+        renumber();
+
+        addButton.addEventListener("click", function () {
+            const line = template.cloneNode(true);
+            prepareLine(line, true);
+            container.appendChild(line);
+            window.Lap123Number?.enhance(line);
+            renumber();
+        });
+
+        form.addEventListener("submit", function (event) {
+            const selected = Array.from(form.querySelectorAll('select[name="bomId"]')).map(input => input.value);
+            const hasDuplicate = selected.some((value, index) => value && selected.indexOf(value) !== index);
+            if (hasDuplicate) {
+                event.preventDefault();
+                alert("Không được chọn trùng thành phẩm/BOM trong cùng yêu cầu.");
+            }
+        });
+    })();
+</script>
 
 <script>
     (function () {

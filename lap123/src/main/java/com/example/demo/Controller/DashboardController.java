@@ -137,6 +137,7 @@ public class DashboardController {
                                     "ON t.manv = y.nguoiphutrach " +
                                     "WHERE t.email = ? " +
                                     "AND y.trangthai NOT IN ('HOAN_THANH', 'HUY') " +
+                                    "AND y.soluonghoanthanh < y.soluongyeucau " +
                                     "AND y.hanhoanthanh IS NOT NULL " +
                                     "AND y.hanhoanthanh < CURDATE()",
                             Integer.class,
@@ -222,6 +223,7 @@ public class DashboardController {
                             "SELECT COUNT(*) " +
                                     "FROM yeucausanxuat " +
                                     "WHERE trangthai NOT IN ('HOAN_THANH', 'HUY') " +
+                                    "AND soluonghoanthanh < soluongyeucau " +
                                     "AND hanhoanthanh IS NOT NULL " +
                                     "AND hanhoanthanh < CURDATE()",
                             Integer.class

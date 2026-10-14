@@ -12,6 +12,66 @@
   <link
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet">
+  <style>
+    .manager-overdue-card {
+      position: relative;
+      overflow: hidden;
+      border-color: #fecaca;
+      background: linear-gradient(135deg, #fff 0%, #fff7f7 100%);
+    }
+    .manager-overdue-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: #dc2626;
+    }
+    .manager-overdue-card--active {
+      box-shadow: 0 8px 22px rgba(185, 28, 28, .12);
+    }
+    .manager-overdue-card--active:hover {
+      border-color: #fca5a5;
+      box-shadow: 0 12px 26px rgba(185, 28, 28, .18);
+    }
+    .manager-overdue-card .kpi-title,
+    .manager-overdue-card .kpi-value { color: #b91c1c; }
+    .manager-overdue-card .kpi-sub { color: #7f1d1d; }
+    .manager-overdue-card .kpi-icon {
+      border: 1px solid #fecaca;
+      background: #fee2e2;
+      color: #dc2626;
+      box-shadow: 0 5px 14px rgba(220, 38, 38, .14);
+    }
+    .manager-overdue-card--clear {
+      border-color: #d1fae5;
+      background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+    }
+    .manager-overdue-card--clear::before { background: #16a34a; }
+    .manager-overdue-card--clear .kpi-title,
+    .manager-overdue-card--clear .kpi-value,
+    .manager-overdue-card--clear .kpi-sub { color: #166534; }
+    .manager-overdue-card--clear .kpi-icon {
+      border-color: #bbf7d0;
+      background: #dcfce7;
+      color: #16a34a;
+      box-shadow: none;
+    }
+    .dashboard-overdue-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      width: max-content;
+      margin-top: 6px;
+      padding: 5px 9px;
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: .74rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+  </style>
 </head>
 
 <body>
@@ -187,7 +247,8 @@
         <!-- YÊU CẦU QUÁ HẠN -->
         <!-- ================================================= -->
         <a
-                class="kpi-card kpi-link"
+                class="kpi-card kpi-link manager-overdue-card"
+                th:classappend="${overdueOrders > 0 ? ' manager-overdue-card--active' : ' manager-overdue-card--clear'}"
                 th:href="@{/san-xuat/yeu-cau(search='quá hạn')}">
 
           <div>
@@ -203,13 +264,13 @@
             </div>
 
             <div class="kpi-sub">
-              Cần xử lý ngay
+              <span th:text="${overdueOrders > 0 ? 'Cần xử lý ngay' : 'Không có yêu cầu trễ hạn'}"></span>
             </div>
 
           </div>
 
           <span class="kpi-icon red">
-            !
+            <i th:class="${overdueOrders > 0 ? 'fas fa-triangle-exclamation' : 'fas fa-check'}"></i>
           </span>
 
         </a>
@@ -395,6 +456,36 @@
         </a>
 
 
+        <!-- YÊU CẦU QUÁ HẠN CỦA NHÂN VIÊN -->
+        <a
+                class="kpi-card kpi-link"
+                th:href="@{/san-xuat/yeu-cau(search='quá hạn')}">
+
+          <div>
+
+            <div class="kpi-title">
+              Yêu cầu quá hạn
+            </div>
+
+            <div
+                    class="kpi-value"
+                    th:text="${overdueOrders}">
+              0
+            </div>
+
+            <div class="kpi-sub">
+              Còn dang dở, cần xử lý
+            </div>
+
+          </div>
+
+          <span class="kpi-icon red">
+            !
+          </span>
+
+        </a>
+
+
         <!-- ĐÃ HOÀN THÀNH -->
         <a
                 class="kpi-card kpi-link"
@@ -456,7 +547,7 @@
 
             <tr>
 
-              <th>Mã</th>
+              <th>Đợt / yêu cầu</th>
 
               <th>Sản phẩm</th>
 
@@ -467,6 +558,8 @@
               <th>Tiến độ</th>
 
               <th>Nhân viên</th>
+
+              <th>Hạn hoàn thành</th>
 
               <th>Trạng thái</th>
 
@@ -482,8 +575,9 @@
             <tr
                     th:each="order : ${orders}">
 
-              <td
-                      th:text="${order.mayeucau}">
+              <td>
+                <strong th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></strong><br>
+                <span th:text="${order.tendot != null ? order.tendot : 'Yêu cầu #' + order.mayeucau}"></span>
               </td>
 
               <td
@@ -524,6 +618,16 @@
               </td>
 
               <td>
+                <span data-date-time th:text="${order.hanhoanthanh}"></span>
+                <span
+                        th:if="${order.overdueDays > 0}"
+                        class="dashboard-overdue-badge">
+                  <i class="fas fa-clock"></i>
+                  <span th:text="'Quá hạn ' + ${order.overdueDays} + ' ngày'"></span>
+                </span>
+              </td>
+
+              <td>
 
                 <span
                         class="status-pill"
@@ -549,7 +653,7 @@
                     class="empty-row"
                     th:if="${#lists.isEmpty(orders)}">
 
-              <td colspan="8">
+              <td colspan="9">
                 Chưa có yêu cầu sản xuất nào.
               </td>
 

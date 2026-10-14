@@ -178,6 +178,36 @@
       opacity: 0.8;
     }
 
+    .orders-table { min-width: 1450px; }
+    .orders-table th:nth-child(1), .orders-table td:nth-child(1) { width:9%; }
+    .orders-table th:nth-child(2), .orders-table td:nth-child(2) { width:13%; text-align:left; }
+    .orders-table th:nth-child(3), .orders-table td:nth-child(3) { width:5%; text-align:center; }
+    .orders-table th:nth-child(4), .orders-table td:nth-child(4) { width:12%; text-align:left; }
+    .orders-table th:nth-child(5), .orders-table td:nth-child(5),
+    .orders-table th:nth-child(6), .orders-table td:nth-child(6),
+    .orders-table th:nth-child(7), .orders-table td:nth-child(7) { width:5%; text-align:center; }
+    .orders-table th:nth-child(8), .orders-table td:nth-child(8),
+    .orders-table th:nth-child(9), .orders-table td:nth-child(9),
+    .orders-table th:nth-child(11), .orders-table td:nth-child(11),
+    .orders-table th:nth-child(12), .orders-table td:nth-child(12),
+    .orders-table th:nth-child(13), .orders-table td:nth-child(13) { width:8%; text-align:center; }
+    .orders-table th:nth-child(10), .orders-table td:nth-child(10) { width:9%; text-align:left; }
+    .orders-table th:nth-child(14), .orders-table td:nth-child(14) { width:11%; }
+    .batch-code { font-weight:750;color:#1d4ed8; }
+    .aggregate-shortage-card { margin:0 0 18px;border:1px solid #fdba74;border-left:5px solid #f97316;background:#fffaf5;overflow:hidden; }
+    .aggregate-shortage-card .content-card-header { background:#fff7ed;border-bottom-color:#fed7aa; }
+    .aggregate-shortage-title { display:flex;align-items:center;gap:10px;color:#9a3412; }
+    .aggregate-shortage-title i { display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c; }
+    .aggregate-shortage-card .content-card-subtitle { margin:5px 0 0;color:#9a3412; }
+    .aggregate-shortage-table th { background:#fff7ed; }
+    .aggregate-shortage-value { color:#b91c1c;font-weight:800; }
+    .aggregate-shortage-actions { display:flex;justify-content:flex-end;padding:14px 18px;border-top:1px solid #fed7aa;background:#fff; }
+    .orders-table tr.manager-order-overdue td { background:#fffafa; }
+    .orders-table tr.manager-order-overdue td:first-child { box-shadow:inset 4px 0 #dc2626; }
+    .orders-table tr.manager-order-overdue:hover td { background:#fef2f2; }
+    .order-overdue-badge { display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:5px 8px;border:1px solid #fecaca;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:800;line-height:1.2;white-space:normal; }
+    .order-overdue-badge i { flex:0 0 auto; }
+
   </style>
 
 </head>
@@ -219,6 +249,48 @@
            th:text="${error}">
       </div>
 
+      <section th:if="${!manager and not #lists.isEmpty(materialShortages)}"
+               class="content-card aggregate-shortage-card">
+        <div class="content-card-header">
+          <div>
+            <h2 class="content-card-title aggregate-shortage-title">
+              <i class="fas fa-box-open"></i>
+              Tổng hợp nguyên vật liệu đang thiếu
+            </h2>
+            <p class="content-card-subtitle">
+              Nhu cầu đã được cộng từ toàn bộ yêu cầu còn dang dở của bạn và trừ tồn kho sản xuất một lần theo từng loại NVL.
+            </p>
+          </div>
+          <span class="record-count" th:text="${#lists.size(materialShortages) + ' loại đang thiếu'}"></span>
+        </div>
+        <div class="table-container">
+          <table class="aggregate-shortage-table">
+            <thead>
+            <tr>
+              <th>Nguyên vật liệu</th>
+              <th>Số yêu cầu cần dùng</th>
+              <th>Tổng nhu cầu</th>
+              <th>Tồn kho sản xuất</th>
+              <th>Tổng còn thiếu</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${materialShortages}">
+              <td><strong th:text="${item.manvl_code + ' - ' + item.tennvl}"></strong></td>
+              <td><span data-number th:text="${item.soyeucau}"></span> yêu cầu</td>
+              <td><span data-number th:text="${item.tongnhucau}"></span> <span th:text="${item.donvitinh}"></span></td>
+              <td><span data-number th:text="${item.soluongton}"></span> <span th:text="${item.donvitinh}"></span></td>
+              <td class="aggregate-shortage-value"><span data-number th:text="${item.tongthieu}"></span> <span th:text="${item.donvitinh}"></span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="aggregate-shortage-actions">
+          <a class="btn btn-primary" th:href="@{/kho/xuat-nvl/create}">
+            <i class="fas fa-paper-plane"></i> Lập đề nghị xuất NVL
+          </a>
+        </div>
+      </section>
 
       <div class="content-card">
 
@@ -240,7 +312,9 @@
 
             <thead>
             <tr>
-              <th>Mã</th>
+              <th>Mã đợt</th>
+              <th>Tên đợt</th>
+              <th>Mã YC</th>
               <th>Sản phẩm</th>
               <th>SL</th>
               <th>Đã Xong</th>
@@ -258,7 +332,11 @@
 
             <tbody>
 
-            <tr th:each="order : ${orders}">
+            <tr th:each="order : ${orders}"
+                th:classappend="${manager and order.overdueDays > 0 ? 'manager-order-overdue' : ''}">
+
+              <td class="batch-code" th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></td>
+              <td th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất cũ'}"></td>
 
               <!-- Mã -->
               <td th:text="${order.mayeucau}">
@@ -286,7 +364,7 @@
 
 
               <!-- Ngày giao -->
-              <td th:text="${order.ngayyeucau}">
+              <td data-date-time th:text="${order.ngayyeucau}">
               </td>
 
 
@@ -313,7 +391,7 @@
 
 
               <!-- Hạn -->
-              <td th:text="${order.hanhoanthanh}">
+              <td data-date-time th:text="${order.hanhoanthanh}">
               </td>
 
 
@@ -336,9 +414,9 @@
 
                                 <span
                                         th:if="${order.overdueDays > 0}"
-                                        class="status-pill"
-                                        style="background-color:#fee2e2;color:#b91c1c;"
-                                        th:text="'Quá hạn ' + ${order.overdueDays} + ' ngày'">
+                                        class="order-overdue-badge">
+                                  <i class="fas fa-clock"></i>
+                                  <span th:text="'Quá hạn ' + ${order.overdueDays} + ' ngày'"></span>
                                 </span>
 
                 <span
@@ -414,7 +492,7 @@
                     class="empty-row"
                     th:if="${#lists.isEmpty(orders)}">
 
-              <td colspan="12">
+              <td colspan="14">
                 Chưa có dữ liệu để hiển thị.
               </td>
 

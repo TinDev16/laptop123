@@ -64,6 +64,44 @@
             justify-content: flex-end;
             margin-top: 20px;
         }
+
+        .result-entry-page .content-card { max-width: none; }
+        .result-workspace { display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.55fr);gap:20px;align-items:start; }
+        .result-form-card { max-width:none!important;overflow:hidden; }
+        .result-form-card .content-card-header { align-items:flex-start; }
+        .result-section { padding:2px 0; }
+        .result-section + .result-section { margin-top:24px;padding-top:24px;border-top:1px solid #e5ebf2; }
+        .result-section-heading { display:flex;gap:12px;align-items:flex-start;margin-bottom:18px; }
+        .result-step { display:inline-flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:#1d67ca;color:#fff;font-weight:800;font-size:.82rem; }
+        .result-section-heading h3 { margin:0;color:#172b43;font-size:1rem; }
+        .result-section-heading p { margin:4px 0 0;color:#6b7e93;font-size:.84rem; }
+        .result-filter-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px; }
+        .result-order-field { margin-top:16px; }
+        .result-summary { position:sticky;top:18px;overflow:hidden; }
+        .result-summary-empty { padding:34px 22px;text-align:center;color:#6b7e93; }
+        .result-summary-empty i { display:block;margin-bottom:12px;color:#9eb0c3;font-size:2rem; }
+        .result-summary-body { padding:18px; }
+        .result-summary-code { color:#1d67ca;font-size:.8rem;font-weight:800;letter-spacing:.04em; }
+        .result-summary-name { margin:5px 0 18px;color:#172b43;font-size:1.08rem; }
+        .result-summary-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+        .result-summary-item { padding:12px;border:1px solid #e4eaf1;border-radius:9px;background:#f8fafc; }
+        .result-summary-item span { display:block;margin-bottom:5px;color:#718297;font-size:.72rem;font-weight:700;text-transform:uppercase; }
+        .result-summary-item strong { color:#20364f;font-size:.92rem; }
+        .result-summary-item--remaining { background:#eff6ff;border-color:#bfdbfe; }
+        .result-summary-item--remaining strong { color:#1d4ed8;font-size:1.15rem; }
+        .result-overdue-alert { display:flex;align-items:center;gap:8px;margin-top:14px;padding:11px 12px;border:1px solid #fecaca;border-radius:9px;background:#fef2f2;color:#b91c1c;font-size:.84rem;font-weight:700; }
+        .result-overdue-badge { display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:4px 8px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:.73rem;font-weight:800;white-space:nowrap; }
+        .result-input-help { display:flex;justify-content:space-between;gap:10px;margin-top:7px;color:#6b7e93;font-size:.78rem; }
+        .result-orders-card { margin-top:20px; }
+        .result-orders-tools { display:flex;align-items:center;gap:12px; }
+        .result-orders-search { position:relative;min-width:290px; }
+        .result-orders-search i { position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8393a6; }
+        .result-orders-search .form-control { width:100%;min-height:39px;padding:8px 12px 8px 35px;border:1px solid #cbd6e2;border-radius:8px; }
+        .order-row { cursor:pointer; }
+        .order-row.is-selected { background:#eff6ff!important;box-shadow:inset 3px 0 #2563eb; }
+        .select-order-btn { white-space:nowrap; }
+        @media (max-width:1050px) { .result-workspace{grid-template-columns:1fr}.result-summary{position:static}.result-summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+        @media (max-width:720px) { .result-filter-grid,.result-summary-grid{grid-template-columns:1fr}.result-orders-tools{align-items:stretch;flex-direction:column}.result-orders-search{min-width:0;width:100%} }
     </style>
 </head>
 
@@ -77,7 +115,7 @@
 
         <div th:replace="~{fragments/sidebar :: topbar('Ghi kết quả sản xuất', 'Sản xuất / Kết quả')}"></div>
 
-        <main class="content-body mrp-entry-page">
+        <main class="content-body mrp-entry-page result-entry-page">
 
             <!-- HEADER -->
             <div class="page-header">
@@ -88,334 +126,139 @@
                     </p>
                 </div>
 
-                <a class="btn btn-outline"
+                <a class="btn btn-back"
                    th:href="@{/san-xuat/ket-qua}">
-                    Về danh sách
+                    <i class="fas fa-arrow-left"></i> Về danh sách
                 </a>
             </div>
 
+            <div th:if="${#lists.isEmpty(orders)}" class="directory-alert" style="margin-bottom:18px;">
+                <i class="fas fa-circle-info"></i>
+                Bạn chưa có yêu cầu sản xuất nào có thể ghi kết quả.
+            </div>
 
+            <div class="result-workspace">
+                <form th:action="@{/san-xuat/ket-qua}" method="post"
+                      class="content-card ceo-form result-form-card" id="resultForm">
+                    <div class="content-card-header">
+                        <div>
+                            <h2 class="content-card-title">Thông tin kết quả</h2>
+                            <p class="content-card-subtitle">Chọn đúng yêu cầu và nhập sản lượng hoàn thành trong lần này.</p>
+                        </div>
+                    </div>
 
-            <!-- ===================================================== -->
-            <!-- DANH SÁCH YÊU CẦU -->
-            <!-- ===================================================== -->
+                    <div class="content-card-body">
+                        <section class="result-section">
+                            <div class="result-section-heading">
+                                <span class="result-step">1</span>
+                                <div><h3>Chọn yêu cầu sản xuất</h3><p>Lọc theo sản phẩm hoặc BOM nếu danh sách có nhiều yêu cầu.</p></div>
+                            </div>
 
-            <section class="content-card">
+                            <div class="result-filter-grid">
+                                <div class="ceo-field">
+                                    <label for="productFilter">Sản phẩm</label>
+                                    <select id="productFilter" class="form-control">
+                                        <option value="">-- Tất cả sản phẩm --</option>
+                                    </select>
+                                </div>
+                                <div class="ceo-field">
+                                    <label for="bomFilter">Phiên bản BOM</label>
+                                    <select id="bomFilter" class="form-control" disabled>
+                                        <option value="">-- Tất cả phiên bản --</option>
+                                    </select>
+                                </div>
+                            </div>
 
+                            <div class="ceo-field result-order-field">
+                                <label for="orderId">Yêu cầu sản xuất <span class="ceo-required">*</span></label>
+                                <select id="orderId" name="orderId" class="form-control" required>
+                                    <option value="" disabled selected>-- Chọn yêu cầu sản xuất --</option>
+                                    <option th:each="o : ${orders}"
+                                            th:value="${o.mayeucau}"
+                                            th:attr="data-masp=${o.masp},data-mabom=${o.mabom},data-phienban=${o.phienban},data-tensp=${o.tensp},data-batch-code=${o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau},data-batch-name=${o.tendot != null ? o.tendot : 'Yêu cầu #' + o.mayeucau},data-requested=${o.soluongyeucau},data-completed=${o.soluonghoanthanh},data-remaining=${o.soluongyeucau - o.soluonghoanthanh},data-deadline=${o.ngaydenhan != null ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy') : '-'},data-overdue-days=${o.overdueDays}"
+                                            th:text="${(o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau) + ' · ' + o.tensp + ' · BOM ' + o.phienban + ' · Còn ' + (o.soluongyeucau - o.soluonghoanthanh)}">
+                                    </option>
+                                </select>
+                            </div>
+                        </section>
+
+                        <section class="result-section">
+                            <div class="result-section-heading">
+                                <span class="result-step">2</span>
+                                <div><h3>Nhập kết quả lần này</h3><p>Số lượng không được vượt quá phần còn lại của yêu cầu.</p></div>
+                            </div>
+
+                            <div class="ceo-field">
+                                <label for="completed">Số lượng hoàn thành <span class="ceo-required">*</span></label>
+                                <input id="completed" name="completed" type="number" min="1" step="1" required
+                                       class="form-control" placeholder="Chọn yêu cầu trước" disabled>
+                                <div class="result-input-help"><span>Nhập sản lượng đạt yêu cầu.</span><strong id="remainingHint">Còn lại: —</strong></div>
+                            </div>
+
+                            <div class="ceo-field" style="margin-top:16px;">
+                                <label for="note">Ghi chú</label>
+                                <textarea id="note" name="note" maxlength="255" rows="3" class="form-control"
+                                          placeholder="Ca sản xuất, tình trạng hoặc lưu ý bàn giao (không bắt buộc)"></textarea>
+                            </div>
+                        </section>
+
+                        <div class="ceo-form-actions">
+                            <button type="submit" class="btn btn-primary" id="submitResult"
+                                    th:disabled="${#lists.isEmpty(orders)}">
+                                <i class="fas fa-paper-plane"></i> Gửi kết quả
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <aside class="content-card result-summary" aria-live="polite">
+                    <div class="content-card-header"><h2 class="content-card-title">Yêu cầu đã chọn</h2></div>
+                    <div id="summaryEmpty" class="result-summary-empty"><i class="fas fa-clipboard-check"></i>Chọn một yêu cầu để xem thông tin.</div>
+                    <div id="summaryBody" class="result-summary-body" hidden>
+                        <div id="summaryCode" class="result-summary-code"></div>
+                        <h3 id="summaryName" class="result-summary-name"></h3>
+                        <div class="result-summary-grid">
+                            <div class="result-summary-item"><span>Sản phẩm</span><strong id="summaryProduct"></strong></div>
+                            <div class="result-summary-item"><span>BOM</span><strong id="summaryBom"></strong></div>
+                            <div class="result-summary-item"><span>Yêu cầu</span><strong id="summaryRequested"></strong></div>
+                            <div class="result-summary-item"><span>Đã hoàn thành</span><strong id="summaryCompleted"></strong></div>
+                            <div class="result-summary-item result-summary-item--remaining"><span>Còn lại</span><strong id="summaryRemaining"></strong></div>
+                            <div class="result-summary-item"><span>Hạn hoàn thành</span><strong id="summaryDeadline"></strong></div>
+                        </div>
+                        <div id="summaryOverdue" class="result-overdue-alert" hidden>
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <span id="summaryOverdueText"></span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <section class="content-card result-orders-card">
                 <div class="content-card-header">
-
-                    <h2 class="content-card-title">
-                        Yêu cầu của tôi
-                    </h2>
-
-                    <span class="record-count"
-                          th:text="${#lists.size(orders) + ' yêu cầu'}">
-                    </span>
-
+                    <div><h2 class="content-card-title">Yêu cầu có thể ghi kết quả</h2><p class="content-card-subtitle">Nhấn Chọn để đưa yêu cầu vào biểu mẫu phía trên.</p></div>
+                    <div class="result-orders-tools">
+                        <div class="result-orders-search"><i class="fas fa-search"></i><input id="searchOrders" class="form-control" type="search" placeholder="Tìm mã đợt, sản phẩm, BOM..."></div>
+                        <span class="record-count" th:text="${#lists.size(orders) + ' yêu cầu'}"></span>
+                    </div>
                 </div>
-
-
-
-
-                <!-- BẢNG -->
                 <div class="table-container">
-
                     <table id="ordersTable">
-
-                        <thead>
-                        <tr>
-                            <th>Yêu cầu</th>
-                            <th>Sản phẩm</th>
-                            <th>Phiên bản BOM</th>
-                            <th>Mã BOM</th>
-                            <th>Số lượng yêu cầu</th>
-                            <th>Đã hoàn thành</th>
-                            <th>Còn lại</th>
-                            <th>Ngày đến hạn</th>
-                        </tr>
-                        </thead>
-
-
+                        <thead><tr><th>Yêu cầu</th><th>Sản phẩm</th><th>BOM</th><th>SL yêu cầu</th><th>Đã hoàn thành</th><th>Còn lại</th><th>Hạn</th><th>Cảnh báo</th><th>Thao tác</th></tr></thead>
                         <tbody>
-
-                        <tr th:each="o : ${orders}"
-                            class="order-row">
-
-                            <td th:text="${o.mayeucau}">
-                            </td>
-
-                            <td th:text="${o.tensp}">
-                            </td>
-
-                            <td th:text="${'BOM ' + o.phienban}">
-                            </td>
-
-                            <td th:text="${o.mabom}">
-                            </td>
-
-                            <td th:text="${o.soluongyeucau}">
-                            </td>
-
-                            <td th:text="${o.soluonghoanthanh}">
-                            </td>
-
-                            <td th:text="${o.soluongyeucau - o.soluonghoanthanh}">
-                            </td>
-
-                            <td th:text="${o.ngaydenhan != null
-                                ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy')
-                                : '-'}"></td>
-                            </td>
-
+                        <tr th:each="o : ${orders}" class="order-row" th:attr="data-order-id=${o.mayeucau}">
+                            <td><strong th:text="${o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau}"></strong><br><span th:text="${o.tendot != null ? o.tendot : 'Yêu cầu #' + o.mayeucau}"></span></td>
+                            <td th:text="${o.tensp}"></td><td th:text="${'BOM ' + o.phienban + ' · #' + o.mabom}"></td>
+                            <td data-number th:text="${o.soluongyeucau}"></td><td data-number th:text="${o.soluonghoanthanh}"></td><td data-number th:text="${o.soluongyeucau - o.soluonghoanthanh}"></td>
+                            <td th:text="${o.ngaydenhan != null ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy') : '-'}"></td>
+                            <td><span th:if="${o.overdueDays > 0}" class="result-overdue-badge"><i class="fas fa-triangle-exclamation"></i><span th:text="'Quá hạn ' + ${o.overdueDays} + ' ngày'"></span></span><span th:if="${o.overdueDays == 0}">-</span></td>
+                            <td><button type="button" class="btn btn-outline select-order-btn" th:attr="data-order-id=${o.mayeucau}"><i class="fas fa-check"></i> Chọn</button></td>
                         </tr>
-
-
-                        <!-- Không có yêu cầu -->
-                        <tr class="empty-row"
-                            th:if="${#lists.isEmpty(orders)}">
-
-                            <td colspan="8">
-                                Bạn chưa có yêu cầu đang thực hiện.
-                            </td>
-
-                        </tr>
-
-
-                        <!-- Không tìm thấy -->
-                        <tr id="noSearchResult"
-                            style="display:none;">
-
-                            <td colspan="8">
-                                Không có dữ liệu phù hợp.
-                            </td>
-
-                        </tr>
-
+                        <tr class="empty-row" th:if="${#lists.isEmpty(orders)}"><td colspan="9">Bạn chưa có yêu cầu đang thực hiện.</td></tr>
+                        <tr id="noSearchResult" style="display:none;"><td colspan="9">Không có dữ liệu phù hợp.</td></tr>
                         </tbody>
-
                     </table>
-
                 </div>
-
             </section>
-
-
-
-            <!-- ===================================================== -->
-            <!-- FORM GHI KẾT QUẢ -->
-            <!-- ===================================================== -->
-
-            <form
-                    th:action="@{/san-xuat/ket-qua}"
-                    method="post"
-                    class="content-card ceo-form">
-
-
-
-                <div class="content-card-body">
-
-                    <!-- BỘ LỌC -->
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="margin: 0 0 6px 0;">
-                            Lọc yêu cầu sản xuất
-                        </h3>
-
-                        <p style="margin: 0;">
-                            Tùy chọn bộ lọc để tìm nhanh yêu cầu sản xuất cần ghi kết quả.
-                        </p>
-                    </div>
-
-                    <div class="ceo-form-grid">
-
-
-                        <!-- ================================================= -->
-                        <!-- BỘ LỌC SẢN PHẨM -->
-                        <!-- ================================================= -->
-
-                        <div class="ceo-field ceo-field-full">
-
-                            <label for="productFilter">
-                                Sản phẩm
-                            </label>
-
-                            <select
-                                    id="productFilter"
-                                    class="form-control">
-
-                                <option value="">
-                                    -- Tất cả sản phẩm --
-                                </option>
-                            </select>
-
-                        </div>
-
-
-
-                        <!-- ================================================= -->
-                        <!-- BỘ LỌC BOM -->
-                        <!-- ================================================= -->
-
-                        <div class="ceo-field ceo-field-full">
-
-                            <label for="bomFilter">
-                                Phiên bản sản phẩm
-                            </label>
-
-                            <select
-                                    id="bomFilter"
-                                    class="form-control"
-                                    disabled>
-
-                                <option value="">
-                                    -- Tất cả phiên bản --
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-
-                        <!-- ================================================= -->
-                        <!-- YÊU CẦU SẢN XUẤT -->
-                        <!-- ================================================= -->
-
-                        <h2 class="content-card-title">
-                            Thông tin kết quả
-                        </h2>
-
-                        <div class="ceo-field ceo-field-full">
-
-                            <label for="orderId">
-
-                                Yêu cầu sản xuất
-
-                                <span class="ceo-required">
-                                    *
-                                </span>
-
-                            </label>
-
-
-                            <select
-                                    id="orderId"
-                                    name="orderId"
-                                    class="form-control"
-                                    required>
-
-                                <option value=""
-                                        disabled
-                                        selected>
-
-                                    Chọn yêu cầu sản xuất
-
-                                </option>
-
-
-                                <option
-                                        th:each="o : ${orders}"
-
-                                        th:value="${o.mayeucau}"
-
-                                        th:attr="
-                                            data-masp=${o.masp},
-                                            data-mabom=${o.mabom},
-                                            data-phienban=${o.phienban},
-                                            data-tensp=${o.tensp}
-                                        "
-
-                                        th:text="${'#' + o.mayeucau
-                                            + ' - ' + o.tensp
-                                            + ' - BOM ' + o.phienban
-                                            + ' (Mã BOM: ' + o.mabom + ')'
-                                            + ' (' + o.soluonghoanthanh
-                                            + '/' + o.soluongyeucau + ')'}">
-
-                                </option>
-
-                            </select>
-
-
-                            <small>
-                                Chỉ hiển thị yêu cầu đã phân công cho bạn.
-                            </small>
-
-                        </div>
-
-
-
-                        <!-- ================================================= -->
-                        <!-- SỐ LƯỢNG -->
-                        <!-- ================================================= -->
-
-                        <div class="ceo-field ceo-field-full">
-
-                            <label for="completed">
-
-                                Số lượng hoàn thành lần này
-
-                                <span class="ceo-required">
-                                    *
-                                </span>
-
-                            </label>
-
-
-                            <input
-                                    id="completed"
-                                    name="completed"
-                                    type="number"
-                                    min="1"
-                                    required
-                                    class="form-control"
-                                    placeholder="Nhập số lượng hoàn thành">
-
-                        </div>
-
-
-
-                        <!-- ================================================= -->
-                        <!-- GHI CHÚ -->
-                        <!-- ================================================= -->
-
-                        <div class="ceo-field ceo-field-full">
-
-                            <label for="note">
-                                Ghi chú
-                            </label>
-
-                            <textarea
-                                    id="note"
-                                    name="note"
-                                    maxlength="255"
-                                    rows="3"
-                                    class="form-control"
-                                    placeholder="Mô tả tình trạng sản xuất nếu cần">
-                            </textarea>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- BUTTON -->
-                    <div class="ceo-form-actions">
-
-                        <button
-                                type="submit"
-                                class="btn btn-primary"
-                                th:disabled="${#lists.isEmpty(orders)}">
-
-                            Gửi kết quả
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </form>
 
         </main>
 
@@ -512,6 +355,13 @@
 
         const orderSelect =
             document.getElementById("orderId");
+
+        const completedInput = document.getElementById("completed");
+        const remainingHint = document.getElementById("remainingHint");
+        const summaryEmpty = document.getElementById("summaryEmpty");
+        const summaryBody = document.getElementById("summaryBody");
+        const summaryOverdue = document.getElementById("summaryOverdue");
+        const summaryOverdueText = document.getElementById("summaryOverdueText");
 
 
         if (!ordersTable || !orderSelect) {
@@ -614,6 +464,51 @@
                 "option[data-masp]"
             )
         );
+
+        function updateOrderSummary() {
+            const selected = orderSelect.options[orderSelect.selectedIndex];
+            const hasOrder = selected && selected.dataset.masp;
+
+            summaryEmpty.hidden = Boolean(hasOrder);
+            summaryBody.hidden = !hasOrder;
+
+            document.querySelectorAll(".order-row").forEach(function (row) {
+                row.classList.toggle("is-selected", hasOrder && row.dataset.orderId === selected.value);
+            });
+
+            if (!hasOrder) {
+                completedInput.value = "";
+                completedInput.disabled = true;
+                completedInput.removeAttribute("max");
+                completedInput.placeholder = "Chọn yêu cầu trước";
+                remainingHint.textContent = "Còn lại: —";
+                summaryOverdue.hidden = true;
+                return;
+            }
+
+            document.getElementById("summaryCode").textContent = selected.dataset.batchCode;
+            document.getElementById("summaryName").textContent = selected.dataset.batchName;
+            document.getElementById("summaryProduct").textContent = selected.dataset.tensp;
+            document.getElementById("summaryBom").textContent = "BOM " + selected.dataset.phienban + " · #" + selected.dataset.mabom;
+            document.getElementById("summaryRequested").textContent = selected.dataset.requested;
+            document.getElementById("summaryCompleted").textContent = selected.dataset.completed;
+            document.getElementById("summaryRemaining").textContent = selected.dataset.remaining;
+            document.getElementById("summaryDeadline").textContent = selected.dataset.deadline;
+
+            const overdueDays = Number(selected.dataset.overdueDays || 0);
+            summaryOverdue.hidden = overdueDays <= 0;
+            summaryOverdueText.textContent = overdueDays > 0
+                ? "Yêu cầu đã quá hạn " + overdueDays + " ngày và vẫn còn dang dở."
+                : "";
+
+            completedInput.disabled = false;
+            completedInput.max = selected.dataset.remaining;
+            completedInput.placeholder = "Tối đa " + selected.dataset.remaining;
+            remainingHint.textContent = "Còn lại: " + selected.dataset.remaining;
+            if (Number(completedInput.value) > Number(selected.dataset.remaining)) {
+                completedInput.value = "";
+            }
+        }
 
 
 
@@ -827,6 +722,8 @@
 
             }
 
+            updateOrderSummary();
+
         }
 
 
@@ -846,6 +743,8 @@
                 orderSelect.value = "";
 
                 filterOrders();
+
+                updateOrderSummary();
 
             }
         );
@@ -885,6 +784,25 @@
         orderSelect.value = "";
 
         filterOrders();
+
+        orderSelect.addEventListener("change", updateOrderSummary);
+
+        document.querySelectorAll(".select-order-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const orderId = this.dataset.orderId;
+                const matchingOption = allOptions.find(option => option.value === orderId);
+                if (!matchingOption) return;
+
+                productFilter.value = matchingOption.dataset.masp;
+                loadBomVersions();
+                bomFilter.value = matchingOption.dataset.mabom;
+                filterOrders();
+                orderSelect.value = orderId;
+                updateOrderSummary();
+                document.getElementById("resultForm").scrollIntoView({ behavior: "smooth", block: "start" });
+                window.setTimeout(() => completedInput.focus(), 350);
+            });
+        });
 
         // Hiện modal nếu server trả lỗi sau khi gửi kết quả
         if (serverError) {

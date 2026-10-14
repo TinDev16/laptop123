@@ -11,6 +11,13 @@
     <link rel="stylesheet" th:href="@{/style.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet">
+    <style>
+        .finished-lines-card { margin-top:20px;border:1px solid #dbe4ee;border-radius:10px;overflow:hidden; }
+        .finished-lines-header { display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#f8fafc;border-bottom:1px solid #dbe4ee; }
+        .finished-lines-table { width:100%; }
+        .finished-lines-empty { padding:24px;text-align:center;color:#6b7280; }
+        .line-total { font-weight:750;white-space:nowrap; }
+    </style>
 </head>
 
 <body>
@@ -94,9 +101,7 @@
                             </label>
 
                             <select id="productId"
-                                    name="productId"
-                                    class="form-control"
-                                    required>
+                                    class="form-control">
 
                                 <option value=""
                                         disabled
@@ -126,9 +131,7 @@
                             </label>
 
                             <select id="bomId"
-                                    name="bomId"
                                     class="form-control"
-                                    required
                                     disabled>
 
                                 <option value="">
@@ -222,11 +225,9 @@
                             </label>
 
                             <input id="quantity"
-                                   name="quantity"
                                    type="number"
                                    min="1"
                                    step="1"
-                                   required
                                    class="form-control"
                                    placeholder="Nhập số lượng">
 
@@ -251,10 +252,8 @@
                             ">
 
                                 <input id="unitPrice"
-                                       name="unitPrice"
                                        type="text"
                                        inputmode="numeric"
-                                       required
                                        class="form-control"
                                        placeholder="Giá BOM"
                                        disabled>
@@ -356,8 +355,24 @@
 
                     <input type="hidden"
                            id="priceFixed"
-                           name="priceFixed"
                            value="false">
+
+                    <button type="button" class="btn btn-outline" id="addFinishedLine">
+                        <i class="fas fa-plus"></i> Thêm thành phẩm vào phiếu
+                    </button>
+
+                    <div class="finished-lines-card">
+                        <div class="finished-lines-header">
+                            <strong>Thành phẩm trong phiếu xuất</strong>
+                            <strong id="finishedGrandTotal">0 VNĐ</strong>
+                        </div>
+                        <div class="table-container">
+                            <table class="finished-lines-table">
+                                <thead><tr><th>Thành phẩm</th><th>BOM</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th><th>Thao tác</th></tr></thead>
+                                <tbody id="finishedLinesBody"><tr><td colspan="6" class="finished-lines-empty">Chưa thêm thành phẩm.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
 
 
                     <!-- =========================
@@ -388,6 +403,84 @@
 
 </div>
 
+
+<script>
+    (() => {
+        const lines = [];
+        const body = document.getElementById('finishedLinesBody');
+        const grandTotal = document.getElementById('finishedGrandTotal');
+        const addButton = document.getElementById('addFinishedLine');
+        const form = document.getElementById('finishedIssueForm');
+
+        const escapeHtml = value => String(value ?? '')
+            .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+
+        function renderLines() {
+            if (!lines.length) {
+                body.innerHTML = '<tr><td colspan="6" class="finished-lines-empty">Chưa thêm thành phẩm.</td></tr>';
+                grandTotal.textContent = '0 VNĐ';
+                return;
+            }
+
+            body.innerHTML = lines.map((line, index) => `
+                <tr>
+                    <td>${escapeHtml(line.productName)}<input type="hidden" name="productId" value="${line.productId}"></td>
+                    <td>${escapeHtml(line.bomName)}<input type="hidden" name="bomId" value="${line.bomId}"></td>
+                    <td data-number>${line.quantity}<input type="hidden" name="quantity" value="${line.quantity}"></td>
+                    <td>${formatMoney(line.unitPrice)}<input type="hidden" name="unitPrice" value="${line.unitPrice}"><input type="hidden" name="priceFixed" value="${line.priceFixed}"></td>
+                    <td class="line-total">${formatMoney(line.quantity * line.unitPrice)}</td>
+                    <td><button type="button" class="btn btn-danger remove-finished-line" data-index="${index}" aria-label="Xóa"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('');
+
+            grandTotal.textContent = formatMoney(lines.reduce((sum, line) => sum + line.quantity * line.unitPrice, 0));
+            body.querySelectorAll('.remove-finished-line').forEach(button => {
+                button.addEventListener('click', () => {
+                    lines.splice(Number(button.dataset.index), 1);
+                    renderLines();
+                });
+            });
+        }
+
+        addButton.addEventListener('click', () => {
+            const product = document.getElementById('productId');
+            const bom = document.getElementById('bomId');
+            const quantityInput = document.getElementById('quantity');
+            const priceInput = document.getElementById('unitPrice');
+            const productId = Number(product.value);
+            const bomId = Number(bom.value);
+            const quantity = window.Lap123Number?.parse(quantityInput.value) ?? Number(quantityInput.value);
+            const unitPrice = parseVietnameseMoney(priceInput.value);
+
+            if (!productId || !bomId || !Number.isInteger(quantity) || quantity <= 0 || !Number.isFinite(unitPrice) || unitPrice < 0) {
+                alert('Vui lòng chọn thành phẩm, BOM, số lượng và đơn giá hợp lệ.');
+                return;
+            }
+            if (lines.some(line => line.productId === productId)) {
+                alert('Thành phẩm này đã có trong phiếu xuất.');
+                return;
+            }
+
+            lines.push({
+                productId,
+                productName: product.options[product.selectedIndex].textContent.split('·')[0].trim(),
+                bomId,
+                bomName: bom.options[bom.selectedIndex].textContent.trim(),
+                quantity,
+                unitPrice,
+                priceFixed: document.getElementById('priceFixed').value === 'true'
+            });
+            renderLines();
+        });
+
+        form.addEventListener('submit', event => {
+            if (!lines.length) {
+                event.preventDefault();
+                alert('Vui lòng thêm ít nhất một thành phẩm vào phiếu xuất.');
+            }
+        });
+    })();
+</script>
 
 <script th:inline="javascript">
 

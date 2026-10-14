@@ -185,11 +185,21 @@ public class MrpDocumentService {
                     y.maycsx AS mayeucau,
                     y.masp,
                     y.mabom,
+                    d.madot_code,
+                    d.tendot,
                     s.tensp,
                     b.phienban,
                     y.soluongyeucau,
                     LEAST(y.soluongyeucau, y.soluonghoanthanh + COALESCE(g.daghi, 0)) AS soluonghoanthanh,
                     y.hanhoanthanh AS ngaydenhan,
+                    CASE
+                        WHEN y.trangthai NOT IN ('HOAN_THANH', 'HUY')
+                         AND y.soluonghoanthanh < y.soluongyeucau
+                         AND y.hanhoanthanh IS NOT NULL
+                         AND y.hanhoanthanh < CURDATE()
+                        THEN DATEDIFF(CURDATE(), y.hanhoanthanh)
+                        ELSE 0
+                    END AS overdueDays,
                     COALESCE(g.daghi, 0) AS soluong_daghi_nhan,
                     COALESCE(p.dagui, 0) AS soluong_da_gui,
                     GREATEST(
@@ -204,6 +214,7 @@ public class MrpDocumentService {
                 JOIN sanpham s ON s.masp = y.masp
                 JOIN bom b ON b.mabom = y.mabom
                 JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                LEFT JOIN dot_san_xuat d ON d.madot = y.madot
                 LEFT JOIN (
                     SELECT maycsx, SUM(soluong) AS daghi
                     FROM ghi_nhan_san_xuat
@@ -728,23 +739,21 @@ public class MrpDocumentService {
                         "p.mapxtp AS maphieu, " +
                         "p.ngaylap AS ngaytao, " +
                         "n.hoten, " +
-                        "s.tensp, " +
-                        "c.soluong, " +
-                        "c.mabom, " +
-                        "b.phienban " +
+                        "GROUP_CONCAT(s.tensp ORDER BY c.id SEPARATOR ', ') AS tensp, " +
+                        "SUM(c.soluong) AS soluong, " +
+                        "COUNT(c.id) AS sodong " +
                         "FROM phieuxuat_thanhpham p " +
                         "JOIN nhanvien n ON n.manv = p.nguoilap " +
                         "JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
-                        "JOIN sanpham s ON s.masp = c.masp " +
-                        "JOIN bom b ON b.mabom = c.mabom ";
+                        "JOIN sanpham s ON s.masp = c.masp ";
 
         return manager
-                ? jdbc.queryForList(sql + "ORDER BY p.mapxtp DESC")
+                ? jdbc.queryForList(sql + "GROUP BY p.mapxtp, n.hoten ORDER BY p.mapxtp DESC")
                 : jdbc.queryForList(
                 sql +
                 "JOIN taikhoan t ON t.manv = p.nguoilap " +
                 "WHERE t.email = ? " +
-                "ORDER BY p.mapxtp DESC",
+                        "GROUP BY p.mapxtp, n.hoten ORDER BY p.mapxtp DESC",
                 email
         );
     }
@@ -758,21 +767,18 @@ public class MrpDocumentService {
                 "SELECT p.*, " +
                         "p.mapxtp AS maphieu, " +
                         "n.hoten, " +
-                        "s.tensp, " +
-                        "c.soluong, " +
-                        "c.mabom, " +
-                        "c.dongia, " +
-                        "CAST(c.gia_da_fix AS UNSIGNED) AS gia_da_fix, " +
-                        "c.thanhtien, " +
-                        "b.phienban, " +
+                        "(SELECT GROUP_CONCAT(s.tensp ORDER BY c.id SEPARATOR ', ') FROM ct_phieuxuat_thanhpham c JOIN sanpham s ON s.masp = c.masp WHERE c.mapxtp = p.mapxtp) AS tensp, " +
+                        "(SELECT GROUP_CONCAT(b.phienban ORDER BY c.id SEPARATOR ', ') FROM ct_phieuxuat_thanhpham c JOIN bom b ON b.mabom = c.mabom WHERE c.mapxtp = p.mapxtp) AS phienban, " +
+                        "(SELECT GROUP_CONCAT(c.mabom ORDER BY c.id SEPARATOR ', ') FROM ct_phieuxuat_thanhpham c WHERE c.mapxtp = p.mapxtp) AS mabom, " +
+                        "(SELECT SUM(c.soluong) FROM ct_phieuxuat_thanhpham c WHERE c.mapxtp = p.mapxtp) AS soluong, " +
+                        "(SELECT SUM(c.dongia) FROM ct_phieuxuat_thanhpham c WHERE c.mapxtp = p.mapxtp) AS dongia, " +
+                        "(SELECT MAX(c.gia_da_fix) FROM ct_phieuxuat_thanhpham c WHERE c.mapxtp = p.mapxtp) AS gia_da_fix, " +
+                        "(SELECT SUM(c.thanhtien) FROM ct_phieuxuat_thanhpham c WHERE c.mapxtp = p.mapxtp) AS thanhtien, " +
                         "kh.hoten AS nguoinhan, " +
                         "kh.sdt AS sdt_nguoinhan, " +
                         "kh.email AS email_nguoinhan " +
                         "FROM phieuxuat_thanhpham p " +
                         "JOIN nhanvien n ON n.manv = p.nguoilap " +
-                        "JOIN ct_phieuxuat_thanhpham c ON c.mapxtp = p.mapxtp " +
-                        "JOIN sanpham s ON s.masp = c.masp " +
-                        "JOIN bom b ON b.mabom = c.mabom " +
                         "LEFT JOIN khachhang kh ON kh.makh = p.makh ";
 
         return manager
@@ -789,6 +795,88 @@ public class MrpDocumentService {
                 id,
                 email
         );
+    }
+
+    public List<Map<String, Object>> finishedIssueLines(long id) {
+        return jdbc.queryForList(
+                """
+                SELECT c.*, s.tensp, b.phienban
+                FROM ct_phieuxuat_thanhpham c
+                JOIN sanpham s ON s.masp = c.masp
+                JOIN bom b ON b.mabom = c.mabom
+                WHERE c.mapxtp = ?
+                ORDER BY c.id
+                """,
+                id
+        );
+    }
+
+    @Transactional
+    public long createFinishedIssueBatch(
+            String email,
+            List<Integer> productIds,
+            List<Integer> bomIds,
+            List<Integer> quantities,
+            int customerId,
+            String address,
+            List<BigDecimal> unitPrices,
+            List<Boolean> priceFixedValues,
+            String note) {
+
+        if (productIds == null || productIds.isEmpty()) {
+            throw new IllegalArgumentException("Phiếu xuất phải có ít nhất một thành phẩm.");
+        }
+
+        int size = productIds.size();
+        if (bomIds == null || quantities == null || unitPrices == null || priceFixedValues == null ||
+                bomIds.size() != size || quantities.size() != size ||
+                unitPrices.size() != size || priceFixedValues.size() != size) {
+            throw new IllegalArgumentException("Thông tin các dòng thành phẩm không đầy đủ.");
+        }
+
+        if (productIds.stream().distinct().count() != size) {
+            throw new IllegalArgumentException("Không được chọn trùng thành phẩm trong cùng phiếu xuất.");
+        }
+
+        long issueId = createFinishedIssue(
+                email, productIds.get(0), bomIds.get(0), quantities.get(0), customerId,
+                address, unitPrices.get(0), Boolean.TRUE.equals(priceFixedValues.get(0)), note
+        );
+
+        for (int index = 1; index < size; index++) {
+            int productId = productIds.get(index);
+            int bomId = bomIds.get(index);
+            int quantity = quantities.get(index);
+            BigDecimal unitPrice = unitPrices.get(index);
+
+            validateFinishedIssueLine(productId, bomId, quantity, unitPrice);
+            jdbc.update(
+                    "INSERT INTO ct_phieuxuat_thanhpham " +
+                            "(mapxtp, masp, mabom, soluong, dongia, gia_da_fix) VALUES (?, ?, ?, ?, ?, ?)",
+                    issueId, productId, bomId, quantity, unitPrice,
+                    Boolean.TRUE.equals(priceFixedValues.get(index)) ? 1 : 0
+            );
+        }
+
+        return issueId;
+    }
+
+    private void validateFinishedIssueLine(int productId, int bomId, int quantity, BigDecimal unitPrice) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Số lượng xuất phải lớn hơn 0.");
+        }
+        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Đơn giá không hợp lệ.");
+        }
+
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM bom b JOIN sanpham s ON s.masp = b.masp " +
+                        "WHERE b.mabom = ? AND b.masp = ? AND b.trangthai = 'HIEU_LUC'",
+                Integer.class, bomId, productId
+        );
+        if (count == null || count == 0) {
+            throw new IllegalArgumentException("BOM không hợp lệ hoặc không thuộc thành phẩm đã chọn.");
+        }
     }
 
     @Transactional

@@ -33,6 +33,8 @@ public class GhiNhanSanXuatService {
                     CONCAT('YCSX-', y.maycsx) AS maycsxCode,
                     y.masp,
                     y.mabom,
+                    d.madot_code,
+                    d.tendot,
                     s.tensp AS tenSp,
                     y.soluongyeucau,
 
@@ -46,6 +48,13 @@ public class GhiNhanSanXuatService {
                         AS soluonghoanthanh_da_xac_nhan,
 
                     y.trangthai,
+                    y.hanhoanthanh AS ngaydenhan,
+                    CASE
+                        WHEN y.hanhoanthanh IS NOT NULL
+                         AND y.hanhoanthanh < CURDATE()
+                        THEN DATEDIFF(CURDATE(), y.hanhoanthanh)
+                        ELSE 0
+                    END AS overdueDays,
                     b.phienban,
 
                     COALESCE(g.daghi,0)
@@ -68,6 +77,9 @@ public class GhiNhanSanXuatService {
 
                 JOIN taikhoan t
                     ON t.manv = y.nguoiphutrach
+
+                LEFT JOIN dot_san_xuat d
+                    ON d.madot = y.madot
 
                 LEFT JOIN
                 (

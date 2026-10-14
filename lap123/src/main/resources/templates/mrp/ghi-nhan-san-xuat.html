@@ -243,6 +243,20 @@
 
         }
 
+        .production-page .overdue-alert {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 15px;
+            padding: 12px 14px;
+            border: 1px solid #fecaca;
+            border-radius: 9px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
 
         /* =========================================================
            MATERIAL TABLE
@@ -703,10 +717,12 @@
 
                                     <option th:each="order : ${orders}"
                                             th:value="${order.maycsx}"
-                                            th:text="${'YCSX-' + order.maycsx
-                                                + ' - ' + order.tenSp
+                                            th:text="${(order.madot_code != null ? order.madot_code : 'YCSX-' + order.maycsx)
+                                                + (order.tendot != null ? ' · ' + order.tendot : '')
+                                                + ' · ' + order.tenSp
                                                 + ' - Còn lại: '
-                                                + (order.soluongyeucau - order.soluonghoanthanh)}">
+                                                + (order.soluongyeucau - order.soluonghoanthanh)
+                                                + (order.overdueDays > 0 ? ' · QUÁ HẠN ' + order.overdueDays + ' NGÀY' : '')}">
 
                                     </option>
 
@@ -776,6 +792,11 @@
                             </div>
 
 
+                        </div>
+
+                        <div id="overdueAlert" class="overdue-alert" hidden>
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <span id="overdueAlertText"></span>
                         </div>
 
                     </div>
@@ -1097,6 +1118,12 @@
     const remainingQuantity =
         document.getElementById('remainingQuantity');
 
+    const overdueAlert =
+        document.getElementById('overdueAlert');
+
+    const overdueAlertText =
+        document.getElementById('overdueAlertText');
+
 
     const materialTableBody =
         document.getElementById('materialTableBody');
@@ -1250,6 +1277,9 @@
             quantityInput.disabled =
                 true;
 
+            overdueAlert.hidden =
+                true;
+
 
             return;
         }
@@ -1290,6 +1320,17 @@
             formatNumber(
                 remaining
             );
+
+        const overdueDays =
+            number(order.overdueDays);
+
+        overdueAlert.hidden =
+            overdueDays <= 0;
+
+        overdueAlertText.textContent =
+            overdueDays > 0
+                ? 'Yêu cầu đã quá hạn ' + formatNumber(overdueDays) + ' ngày và vẫn còn dang dở.'
+                : '';
 
 
         quantityInput.max =

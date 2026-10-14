@@ -1,7 +1,19 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chi tiết yêu cầu sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
+<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chi tiết yêu cầu sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><style>
+    .material-shortage-alert{margin:16px 0;padding:18px;border:1px solid #fdba74;border-left:5px solid #f97316;border-radius:10px;background:#fff7ed;color:#7c2d12}
+    .material-shortage-alert__header{display:flex;gap:12px;align-items:flex-start}
+    .material-shortage-alert__icon{display:flex;align-items:center;justify-content:center;flex:0 0 38px;height:38px;border-radius:50%;background:#ffedd5;color:#c2410c;font-size:1.05rem}
+    .material-shortage-alert h2{margin:0 0 5px;font-size:1rem;color:#9a3412}
+    .material-shortage-alert p{margin:0;line-height:1.5}
+    .material-shortage-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px;margin:14px 0 0;padding:0;list-style:none}
+    .material-shortage-list li{padding:10px 12px;border:1px solid #fed7aa;border-radius:8px;background:#fff}
+    .material-shortage-list strong{display:block;margin-bottom:3px;color:#7c2d12}
+    .material-shortage-list span{font-size:.86rem;color:#9a3412}
+    .material-shortage-actions{display:flex;justify-content:flex-end;margin-top:15px}
+    .shortage-number{font-weight:800;color:#b91c1c}
+</style></head><body>
 <div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết yêu cầu sản xuất', 'MRP / Yêu cầu sản xuất')}"></div><main class="content-body">
-<div class="page-header"><h1 class="page-title" th:text="${'Yêu cầu #' + order.mayeucau}"></h1><a th:href="@{/san-xuat/yeu-cau}" class="btn btn-back"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Thông tin yêu cầu</h2></div><div class="content-card-body"><p><strong>Sản phẩm:</strong> <span th:text="${order.tensp}"></span></p><p><strong>Số lượng cần:</strong> <span th:text="${order.soluongyeucau}"></span> &nbsp; <strong>Đã hoàn thành:</strong> <span th:text="${order.soluonghoanthanh}"></span> &nbsp; <strong>Còn lại:</strong> <span th:text="${order.soluongyeucau - order.soluonghoanthanh}"></span></p><p><strong>BOM áp dụng:</strong> <span th:text="${order.mabom}"></span> &nbsp; <strong>Nhân viên:</strong> <span th:text="${order.hoten}"></span></p><p><strong>Ngày giao:</strong> <span data-date-time th:text="${order.ngayyeucau}"></span> &nbsp; <strong>Hạn:</strong> <span data-date-time th:text="${order.hanhoanthanh}"></span> &nbsp; <strong>Trạng thái:</strong> <span class="status-pill" th:text="${order.trangthai}"></span></p></div></div>
+<div class="page-header"><div><h1 class="page-title" th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất #' + order.mayeucau}"></h1><p class="page-description" th:text="${(order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau) + ' · Yêu cầu #' + order.mayeucau}"></p></div><a th:href="@{/san-xuat/yeu-cau}" class="btn btn-back"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
+<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Thông tin yêu cầu</h2></div><div class="content-card-body"><p><strong>Đợt sản xuất:</strong> <span th:text="${order.tendot != null ? order.tendot : 'Dữ liệu cũ chưa phân đợt'}"></span></p><p><strong>Sản phẩm:</strong> <span th:text="${order.tensp}"></span></p><p><strong>Số lượng cần:</strong> <span th:text="${order.soluongyeucau}"></span> &nbsp; <strong>Đã hoàn thành:</strong> <span th:text="${order.soluonghoanthanh}"></span> &nbsp; <strong>Còn lại:</strong> <span th:text="${order.soluongyeucau - order.soluonghoanthanh}"></span></p><p><strong>BOM áp dụng:</strong> <span th:text="${order.mabom}"></span> &nbsp; <strong>Nhân viên:</strong> <span th:text="${order.hoten}"></span></p><p><strong>Ngày giao:</strong> <span data-date-time th:text="${order.ngayyeucau}"></span> &nbsp; <strong>Hạn:</strong> <span data-date-time th:text="${order.hanhoanthanh}"></span> &nbsp; <strong>Trạng thái:</strong> <span class="status-pill" th:text="${order.trangthai}"></span></p><p th:if="${order.ghichu_dot != null and !order.ghichu_dot.isBlank()}"><strong>Ghi chú đợt:</strong> <span th:text="${order.ghichu_dot}"></span></p></div></div>
     <!-- Cảnh báo quá hạn sản xuất -->
     <div th:if="${order.overdueDays > 0}"
          class="directory-alert directory-alert--error"
@@ -15,5 +27,25 @@
 
         ngày.
     </div>
+    <section th:if="${hasMaterialShortage}" class="material-shortage-alert" aria-labelledby="material-shortage-title">
+        <div class="material-shortage-alert__header">
+            <span class="material-shortage-alert__icon"><i class="fas fa-box-open"></i></span>
+            <div>
+                <h2 id="material-shortage-title">Chưa đủ nguyên vật liệu để sản xuất</h2>
+                <p>Yêu cầu này đang thiếu <strong th:text="${shortageCount}"></strong> loại nguyên vật liệu tại kho sản xuất. Hãy lập đề nghị xuất NVL trước khi tiếp tục.</p>
+            </div>
+        </div>
+        <ul class="material-shortage-list">
+            <li th:each="need : ${needs}" th:if="${need.shortage > 0}">
+                <strong th:text="${need.code + ' - ' + need.name}"></strong>
+                <span>Thiếu <b class="shortage-number" data-number th:text="${need.shortage}"></b> <span th:text="${need.unit}"></span> · Cần <span data-number th:text="${need.needed}"></span> · Hiện có <span data-number th:text="${need.available}"></span></span>
+            </li>
+        </ul>
+        <div class="material-shortage-actions" th:unless="${manager}">
+            <a class="btn btn-primary" th:href="@{/kho/xuat-nvl/create(orderId=${order.mayeucau})}">
+                <i class="fas fa-paper-plane"></i> Tạo đề nghị xuất NVL
+            </a>
+        </div>
+    </section>
 <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">BOM và nhu cầu nguyên vật liệu</h2></div><div class="table-container"><table><thead><tr><th>NVL</th><th>Định mức</th><th>Hao hụt (%)</th><th>Nhu cầu thực tế</th><th>Tồn hiện tại</th><th>Thiếu hụt</th></tr></thead><tbody><tr th:each="need : ${needs}"><td th:text="${need.code + ' - ' + need.name}"></td><td><span data-number th:text="${need.standard}"></span> <span th:text="${need.unit}"></span></td><td data-number th:text="${need.waste}"></td><td data-number th:text="${need.needed}"></td><td data-number th:text="${need.available}"></td><td data-number th:text="${need.shortage}"></td></tr><tr class="empty-row" th:if="${#lists.isEmpty(needs)}"><td colspan="6">BOM chưa có nguyên vật liệu.</td></tr></tbody></table></div></div>
 </main></div></div></body></html>

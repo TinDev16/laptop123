@@ -450,6 +450,7 @@
                 grid-template-columns: 1fr;
             }
 
+
         }
 
     </style>
@@ -910,6 +911,7 @@
                                                         value="1"
                                                         min="0.0001"
                                                         step="0.0001"
+                                                        data-button-step="1"
                                                         disabled>
 
 
@@ -992,9 +994,7 @@
                          DANH SÁCH ĐÃ CHỌN
                          ================================================= -->
 
-                    <div
-                            class="selected-materials-card"
-                            style="margin-top: 20px;">
+                    <div class="selected-materials-card">
 
 
                         <div class="selected-materials-header">
@@ -1617,7 +1617,7 @@
 
             const step =
                 parseFloat(
-                    input.step
+                    input.dataset.buttonStep
                 ) || 1;
 
 
@@ -1695,7 +1695,7 @@
 
             const step =
                 parseFloat(
-                    input.step
+                    input.dataset.buttonStep
                 ) || 1;
 
 
@@ -1903,16 +1903,38 @@
                     </label>
 
 
-                    <input
-                            name="quantity"
-                            type="number"
-                            min="0.0001"
-                            step="0.0001"
-                            required
-                            value="${escapeHtml(
-                        quantity
-                    )}"
-                            class="form-control line-quantity">
+                    <div class="quantity-control selected-line-quantity-control">
+
+                        <button
+                                type="button"
+                                class="quantity-btn line-quantity-btn"
+                                data-line-quantity-step="-1"
+                                aria-label="Giảm định mức">
+                            −
+                        </button>
+
+                        <input
+                                name="quantity"
+                                type="number"
+                                min="0.0001"
+                                step="0.0001"
+                                data-button-step="1"
+                                data-quantity-stepper="off"
+                                required
+                                value="${escapeHtml(
+                            quantity
+                        )}"
+                                class="form-control line-quantity">
+
+                        <button
+                                type="button"
+                                class="quantity-btn line-quantity-btn"
+                                data-line-quantity-step="1"
+                                aria-label="Tăng định mức">
+                            +
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -2120,7 +2142,103 @@
 
 
     /* =============================================================
-       9. BỎ CHỌN NVL
+       9. TĂNG / GIẢM ĐỊNH MỨC Ở BẢNG CHI TIẾT
+       ============================================================= */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest(
+                    "[data-line-quantity-step]"
+                );
+
+            if (!button) {
+                return;
+            }
+
+            const control =
+                button.closest(
+                    ".selected-line-quantity-control"
+                );
+
+            const input =
+                control?.querySelector(
+                    ".line-quantity"
+                );
+
+            if (!input) {
+                return;
+            }
+
+            const parseNumber = function (value) {
+                if (window.Lap123Number) {
+                    return window.Lap123Number.parse(value);
+                }
+
+                const parsed = Number(
+                    String(value).replace(",", ".")
+                );
+
+                return Number.isFinite(parsed) ? parsed : null;
+            };
+
+            const direction =
+                Number(button.dataset.lineQuantityStep);
+
+            const step =
+                Number(
+                    input.dataset.buttonStep
+                ) || 1;
+
+            const min =
+                Number(
+                    input.dataset.numberMin ||
+                    input.getAttribute("min")
+                ) || 0.0001;
+
+            const current =
+                parseNumber(input.value) ?? min;
+
+            const next =
+                Math.max(
+                    min,
+                    current + direction * step
+                );
+
+            const stepText = String(
+                input.dataset.buttonStep ||
+                "1"
+            );
+
+            const decimalIndex = stepText.indexOf(".");
+
+            const fractionDigits =
+                decimalIndex < 0
+                    ? 0
+                    : stepText.length - decimalIndex - 1;
+
+            input.value = window.Lap123Number
+                ? window.Lap123Number.format(
+                    next,
+                    fractionDigits
+                )
+                : cleanNumber(next).replace(".", ",");
+
+            input.dispatchEvent(
+                new Event("input", { bubbles: true })
+            );
+
+            input.dispatchEvent(
+                new Event("change", { bubbles: true })
+            );
+        }
+    );
+
+
+    /* =============================================================
+       10. BỎ CHỌN NVL
        ============================================================= */
 
     function uncheckMaterial(

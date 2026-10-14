@@ -1533,3 +1533,412 @@ td .quantity-stepper,
 .report-details-heading h2,.report-details-heading p { margin:0; }
 .report-details-heading p { margin-top:.25rem;color:#64748b; }
 @media (max-width:640px) { .report-details-heading { align-items:stretch;flex-direction:column; }.report-details-heading .btn { align-self:flex-start; } }
+
+/* Ranh giới trung tính cho các trang có nhiều bảng trạng thái */
+.status-section {
+    margin-bottom: 1.75rem;
+    padding: 1rem;
+    overflow: hidden;
+    border: 1px solid #d9e1ea;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 16px rgba(15, 23, 42, 0.06);
+}
+
+.status-section .section-title {
+    margin: 0 0 1rem;
+    padding: 0 0 .85rem;
+    border-bottom: 1px solid #d9e1ea;
+}
+
+.status-section .table-container {
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .status-section {
+        margin-bottom: 1rem;
+        padding: .75rem;
+        border-radius: 10px;
+    }
+}
+
+/* Đồng bộ màu cho trạng thái đang hoạt động và đang bán. */
+.status-badge.status-success,
+.status-badge.status-active,
+.status.status-active,
+.status.active,
+.directory-state.directory-state--active,
+.directory-status.status-success,
+.customer-section-badge:not(.inactive),
+.customer-status.active,
+.brand-section-badge:not(.inactive),
+.brand-status.active,
+.account-status-active,
+.bom-status-active,
+[data-status="HOAT_DONG"],
+[data-status="DANG_BAN"] {
+    color: #176b47 !important;
+    background: #e8f5ee !important;
+    border-color: #b9e2ce !important;
+}
+
+/* Trang quản lý loại nguyên vật liệu. */
+.material-type-page .page-description {
+    margin: -.55rem 0 0;
+    color: #64748b;
+    font-size: .92rem;
+}
+
+.material-type-page .alert {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin: 0 0 1rem;
+    padding: .78rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: .88rem;
+    font-weight: 650;
+}
+
+.material-type-page .alert-success {
+    color: #176b47;
+    background: #e8f5ee;
+    border-color: #b9e2ce;
+}
+
+.material-type-page .alert-error {
+    color: #a51f2d;
+    background: #fff0f1;
+    border-color: #f0b8be;
+}
+
+.material-type-card {
+    overflow: hidden;
+}
+
+.material-type-card .content-card-header > div,
+.material-type-edit-card .content-card-header > div {
+    min-width: 0;
+}
+
+.content-card-subtitle {
+    margin: .28rem 0 0;
+    color: #64748b;
+    font-size: .84rem;
+    font-weight: 400;
+}
+
+.material-type-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e5eaf0;
+    background: #fbfcfe;
+}
+
+.material-type-toolbar-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    color: #263b55;
+    font-size: .9rem;
+    font-weight: 750;
+}
+
+.material-type-toolbar-copy i {
+    color: #2b72ce;
+}
+
+.material-type-add-panel {
+    padding: 1.35rem 1.5rem 1.5rem;
+    border-bottom: 1px solid #d7e2ee;
+    background: #f7faff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75);
+}
+
+.material-type-add-panel[hidden] {
+    display: none;
+}
+
+.material-type-form-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+    margin-bottom: 1.1rem;
+}
+
+.material-type-form-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 9px;
+    color: #1f63a9;
+    background: #e5f1ff;
+}
+
+.material-type-form-heading h3 {
+    margin: 0;
+    color: #17324f;
+    font-size: 1rem;
+}
+
+.material-type-form-heading p {
+    margin: .28rem 0 0;
+    color: #64748b;
+    font-size: .84rem;
+    line-height: 1.45;
+}
+
+.material-type-inline-form {
+    max-width: 760px;
+}
+
+.material-type-inline-form .ceo-field {
+    max-width: 620px;
+}
+
+.material-type-form-actions {
+    gap: .65rem;
+}
+
+.material-type-edit-card {
+    max-width: 900px;
+}
+
+.material-type-record-id {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: .3rem .65rem;
+    border: 1px solid #d7e1ec;
+    border-radius: 999px;
+    background: #f5f8fb;
+    color: #52677f;
+    font-size: .75rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.material-type-readonly-wrap {
+    position: relative;
+}
+
+.material-type-readonly-wrap > i {
+    position: absolute;
+    top: 50%;
+    left: .85rem;
+    z-index: 1;
+    color: #718196;
+    transform: translateY(-50%);
+}
+
+.ceo-field .material-type-readonly {
+    padding-left: 2.15rem;
+    border-color: #dce3eb;
+    background: #f3f6f9;
+    color: #526276;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .material-type-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .material-type-toolbar .btn,
+    .material-type-form-actions .btn,
+    .material-type-form-actions .btn-back {
+        width: 100%;
+    }
+
+    .material-type-add-panel {
+        padding: 1.1rem 1rem 1.25rem;
+    }
+
+    .material-type-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+}
+
+/* Nút mở các danh sách đã ngừng hoạt động. */
+.archive-section[hidden] {
+    display: none !important;
+}
+
+.archive-section-access {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 1rem;
+}
+
+.archive-section-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .55rem;
+    min-height: 42px;
+    padding: .58rem .9rem;
+    border: 1px solid #cbd6e2;
+    border-radius: 8px;
+    background: #fff;
+    color: #29415f;
+    font: inherit;
+    font-size: .84rem;
+    font-weight: 750;
+    line-height: 1.25;
+    box-shadow: 0 1px 2px rgba(20, 38, 61, .04);
+    cursor: pointer;
+    transition: border-color .16s, background .16s, color .16s, box-shadow .16s;
+}
+
+.archive-section-toggle:hover {
+    border-color: #8fa6bf;
+    background: #f5f8fb;
+    color: #163a63;
+}
+
+.archive-section-toggle:focus-visible {
+    outline: 0;
+    border-color: #2b72ce;
+    box-shadow: 0 0 0 3px rgba(43, 114, 206, .14);
+}
+
+.archive-section-toggle > .fa-eye,
+.archive-section-toggle > .fa-eye-slash {
+    color: #2b72ce;
+}
+
+.archive-section-toggle__chevron {
+    margin-left: .15rem;
+    font-size: .7rem;
+    transition: transform .18s ease;
+}
+
+.archive-section-toggle.is-expanded .archive-section-toggle__chevron {
+    transform: rotate(180deg);
+}
+
+@media (max-width: 640px) {
+    .archive-section-toggle {
+        width: 100%;
+    }
+}
+
+/* Nút xem, chi tiết và sửa trong cột thao tác. */
+.table-action-cell {
+    min-width: 112px;
+}
+
+.table-action-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .4rem !important;
+    min-height: 34px !important;
+    margin: .12rem .18rem .12rem 0;
+    padding: .4rem .68rem !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-radius: 7px !important;
+    font-size: .78rem !important;
+    font-weight: 750 !important;
+    line-height: 1.2 !important;
+    text-decoration: none !important;
+    white-space: nowrap;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s, transform .15s;
+}
+
+.table-action-button--view {
+    border-color: #b9d4f2 !important;
+    background: #eef6ff !important;
+    color: #1f5f9e !important;
+}
+
+.table-action-button--view:hover {
+    border-color: #79acde !important;
+    background: #dfeeff !important;
+    color: #174c80 !important;
+}
+
+.table-action-button--edit {
+    border-color: #ead49b !important;
+    background: #fff8e7 !important;
+    color: #805615 !important;
+}
+
+.table-action-button--edit:hover {
+    border-color: #d7b75f !important;
+    background: #fff0c7 !important;
+    color: #68430d !important;
+}
+
+.table-action-button--approve,
+.table-action-button--restore {
+    border-color: #b9e2ce !important;
+    background: #e8f5ee !important;
+    color: #176b47 !important;
+}
+
+.table-action-button--approve:hover,
+.table-action-button--restore:hover {
+    border-color: #82c9a4 !important;
+    background: #d8efe3 !important;
+    color: #105538 !important;
+}
+
+.table-action-button--danger {
+    border-color: #f0b8be !important;
+    background: #fff0f1 !important;
+    color: #a51f2d !important;
+}
+
+.table-action-button--danger:hover {
+    border-color: #df8d96 !important;
+    background: #ffe1e4 !important;
+    color: #861521 !important;
+}
+
+.table-action-button--permission,
+.table-action-button--reference {
+    border-color: #cec4ef !important;
+    background: #f5f1ff !important;
+    color: #6145a5 !important;
+}
+
+.table-action-button--permission:hover,
+.table-action-button--reference:hover {
+    border-color: #aa98df !important;
+    background: #ebe4ff !important;
+    color: #4e358d !important;
+}
+
+.table-action-button:hover {
+    transform: translateY(-1px);
+}
+
+.table-action-button:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(43, 114, 206, .14) !important;
+}
+
+.table-action-button__icon {
+    width: 1em;
+    flex: 0 0 1em;
+    text-align: center;
+}
+
+.table-action-cell > form {
+    display: inline-flex;
+    margin: 0;
+}

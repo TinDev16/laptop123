@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Quản lý Cửa hàng Laptop</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" th:href="@{/style.css(v='20261014-2')}">
 </head>
 <style>
     .section-title i { margin-right: 8px; }
@@ -90,7 +90,7 @@
                             <td th:text="${px.MAPHIEUXUAT}"></td>
                             <td th:text="${px.nhanvien != null ? px.nhanvien.HOTEN : 'Không xác định'}"></td>
                             <td th:text="${px.khachhang != null ? px.khachhang.HOTEN : 'Không xác định'}"></td>
-                            <td th:text="${#dates.format(px.THOIGIAN, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#dates.format(px.THOIGIAN, 'dd/MM/yyyy HH:mm:ss')}"></td>
                             <td th:text="${#numbers.formatDecimal(px.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
                             <td>
                                 <div class="table-actions flex gap-2">
@@ -110,7 +110,6 @@
                 </table>
             </div>
         </section>
-        <br><br><br>
         <!-- Bảng HOÀN TẤT -->
         <section class="status-section mb-8">
             <h3 class="section-title text-xl font-semibold text-green-700 mb-2">
@@ -133,7 +132,7 @@
                             <td th:text="${px.MAPHIEUXUAT}"></td>
                             <td th:text="${px.nhanvien != null ? px.nhanvien.HOTEN : 'Không xác định'}"></td>
                             <td th:text="${px.khachhang != null ? px.khachhang.HOTEN : 'Không xác định'}"></td>
-                            <td th:text="${#dates.format(px.THOIGIAN, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#dates.format(px.THOIGIAN, 'dd/MM/yyyy HH:mm:ss')}"></td>
                             <td th:text="${#numbers.formatDecimal(px.TONGTIEN, 0, 'POINT', 0, 'COMMA')} + ' VND'"></td>
                             <td>
                                 <div class="table-actions flex gap-2">

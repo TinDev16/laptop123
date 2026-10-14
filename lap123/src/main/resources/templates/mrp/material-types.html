@@ -1,302 +1,132 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Loại nguyên vật liệu</title>
-
-    <link rel="stylesheet"
-          th:href="@{/style.css(v='20261001-2')}">
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-          rel="stylesheet">
-
+    <link rel="stylesheet" th:href="@{/style.css(v='20261014-3')}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-
 <body>
-
 <div class="app-container">
-
-    <!-- SIDEBAR -->
     <div th:replace="~{fragments/sidebar :: sidebar('loai-nvl')}"></div>
-
     <div class="main-wrapper">
-
-        <!-- TOPBAR -->
         <div th:replace="~{fragments/sidebar :: topbar('Loại nguyên vật liệu', 'Kho / NVL / Loại NVL')}"></div>
-
-        <main class="content-body">
-
-            <h1>Loại nguyên vật liệu</h1>
-
-            <!-- THÔNG BÁO THÀNH CÔNG -->
-            <p th:if="${success}"
-               th:text="${success}"
-               style="color:#15803d;">
-            </p>
-
-            <!-- THÔNG BÁO LỖI -->
-            <p th:if="${error}"
-               th:text="${error}"
-               style="color:#dc2626;">
-            </p>
-
-
-            <!-- ============================== -->
-            <!-- DANH SÁCH LOẠI NVL -->
-            <!-- ============================== -->
-
-            <div class="content-card">
-
-                <div class="content-card-header">
-
-                    <h2 class="content-card-title">
-                        Quản lý loại nguyên vật liệu
-                    </h2>
-
-                    <span class="record-count"
-                          th:text="${#lists.size(types) + ' loại'}">
-                        0 loại
-                    </span>
-
+        <main class="content-body material-type-page">
+            <div class="page-header">
+                <div>
+                    <h1>Loại nguyên vật liệu</h1>
+                    <p class="page-description">Quản lý nhóm phân loại dùng trong danh mục nguyên vật liệu.</p>
                 </div>
-
-
-                <!-- THANH CÔNG CỤ -->
-
-                <div style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                    padding:20px;
-                    border-bottom:1px solid #e5e7eb;
-                ">
-
-                    <h3 style="
-                        margin:0;
-                        font-size:16px;
-                        font-weight:600;
-                    ">
-                        Tất cả loại nguyên vật liệu
-                    </h3>
-
-
-                    <!-- NÚT HIỆN FORM THÊM -->
-
-                    <button type="button"
-                            class="btn btn-primary"
-                            onclick="showAddTypeForm()">
-
-                        <i class="fas fa-plus"></i>
-                        Thêm loại nguyên vật liệu
-
-                    </button>
-
-                </div>
-
-
-                <!-- ============================== -->
-                <!-- FORM THÊM - MẶC ĐỊNH ẨN -->
-                <!-- ============================== -->
-
-                <div id="addTypeForm"
-                     style="
-                         display:none;
-                         padding:20px;
-                         border-bottom:1px solid #e5e7eb;
-                         background:#f9fafb;
-                     ">
-
-                    <h3 style="
-                        margin:0 0 20px 0;
-                        font-size:16px;
-                        font-weight:600;
-                    ">
-                        Thêm loại nguyên vật liệu
-                    </h3>
-
-
-                    <form method="post"
-                          th:action="@{/nguyen-vat-lieu/loai}">
-
-                        <div class="form-group">
-
-                            <label for="name">
-                                Tên loại nguyên vật liệu
-                            </label>
-
-                            <input type="text"
-                                   id="name"
-                                   name="name"
-                                   maxlength="255"
-                                   required
-                                   placeholder="Nhập tên loại NVL"
-                                   class="form-control">
-
-                        </div>
-
-
-                        <div style="margin-top:20px;">
-
-                            <button type="submit"
-                                    class="btn btn-primary">
-
-                                <i class="fas fa-plus"></i>
-                                Thêm
-
-                            </button>
-
-
-                            <button type="button"
-                                    class="btn btn-secondary"
-                                    onclick="hideAddTypeForm()"
-                                    style="margin-left:8px;">
-
-                                Hủy
-
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-
-                <!-- ============================== -->
-                <!-- BẢNG DANH SÁCH -->
-                <!-- ============================== -->
-
-                <div class="table-container">
-
-                    <table>
-
-                        <thead>
-
-                        <tr>
-
-                            <th>Mã loại</th>
-
-                            <th>Tên loại nguyên vật liệu</th>
-
-                            <th>Trạng thái</th>
-
-                            <th>Thao tác</th>
-
-                        </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                        <tr th:each="type : ${types}">
-
-                            <!-- MÃ LOẠI -->
-
-                            <td th:text="${type.maloai}">
-                                1
-                            </td>
-
-
-                            <!-- TÊN LOẠI -->
-
-                            <td th:text="${type.tenloai}">
-                                CPU
-                            </td>
-
-
-                            <!-- TRẠNG THÁI -->
-
-                            <!-- TRẠNG THÁI -->
-
-                            <!-- TRẠNG THÁI -->
-
-                            <!-- TRẠNG THÁI -->
-                            <td>
-
-                                <span th:if="${type.trangthai == 1}"
-                                      class="status-badge status-success">
-                                    Hoạt động
-                                </span>
-
-                                <span th:if="${type.trangthai == 0}"
-                                      class="status-badge status-danger">
-                                    Ngừng sử dụng
-                                </span>
-
-                            </td>
-
-
-                            <!-- THAO TÁC -->
-
-                            <td>
-
-                                <a th:href="@{/nguyen-vat-lieu/loai/{id}(id=${type.maloai})}"
-                                   style="
-                                       color:#2563eb;
-                                       text-decoration:none;
-                                   ">
-                                    Sửa
-                                </a>
-
-                            </td>
-
-                        </tr>
-
-
-                        <!-- KHÔNG CÓ DỮ LIỆU -->
-
-                        <tr class="empty-row"
-                            th:if="${#lists.isEmpty(types)}">
-
-                            <td colspan="4">
-                                Chưa có loại nguyên vật liệu.
-                            </td>
-
-                        </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
             </div>
 
+            <div class="alert alert-success" th:if="${success}">
+                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                <span th:text="${success}"></span>
+            </div>
+            <div class="alert alert-error" th:if="${error}">
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <section class="content-card material-type-card">
+                <div class="content-card-header">
+                    <div>
+                        <h2 class="content-card-title">Danh sách loại nguyên vật liệu</h2>
+                        <p class="content-card-subtitle">Theo dõi và cập nhật các loại đang được sử dụng.</p>
+                    </div>
+                    <span class="record-count" th:text="${#lists.size(types) + ' loại'}">0 loại</span>
+                </div>
+                <div class="material-type-toolbar">
+                    <div class="material-type-toolbar-copy">
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        <span>Tất cả loại nguyên vật liệu</span>
+                    </div>
+                    <button type="button" id="addTypeButton" class="btn btn-primary"
+                            aria-controls="addTypeForm" aria-expanded="false" onclick="showAddTypeForm()">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Thêm loại nguyên vật liệu
+                    </button>
+                </div>
+
+                <section id="addTypeForm" class="material-type-add-panel" hidden>
+                    <div class="material-type-form-heading">
+                        <span class="material-type-form-icon"><i class="fas fa-folder-plus" aria-hidden="true"></i></span>
+                        <div>
+                            <h3>Thêm loại nguyên vật liệu</h3>
+                            <p>Tạo một nhóm mới để phân loại nguyên vật liệu trong kho.</p>
+                        </div>
+                    </div>
+                    <form method="post" th:action="@{/nguyen-vat-lieu/loai}" class="ceo-form material-type-inline-form">
+                        <div class="ceo-field">
+                            <label for="name">Tên loại nguyên vật liệu <span class="ceo-required">*</span></label>
+                            <input type="text" id="name" name="name" maxlength="255" required autocomplete="off"
+                                   placeholder="Ví dụ: Pin, màn hình, bàn phím" class="form-control">
+                            <small>Tên loại nên ngắn gọn, rõ nghĩa và không trùng với loại đã có.</small>
+                        </div>
+                        <div class="ceo-form-actions material-type-form-actions">
+                            <button type="button" class="btn btn-back" onclick="hideAddTypeForm()">
+                                <i class="fas fa-xmark" aria-hidden="true"></i> Hủy
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-floppy-disk" aria-hidden="true"></i> Lưu loại nguyên vật liệu
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Mã loại</th>
+                            <th>Tên loại nguyên vật liệu</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="type : ${types}">
+                            <td><strong th:text="${type.maloai}">1</strong></td>
+                            <td th:text="${type.tenloai}">CPU</td>
+                            <td>
+                                <span th:if="${type.trangthai == 1}" class="status-badge status-success" data-status="HOAT_DONG">Hoạt động</span>
+                                <span th:if="${type.trangthai == 0}" class="status-badge status-danger" data-status="NGUNG_SU_DUNG">Ngừng sử dụng</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/nguyen-vat-lieu/loai/{id}(id=${type.maloai})}" class="btn btn-outline btn-compact">
+                                    <i class="fas fa-pen" aria-hidden="true"></i> Sửa
+                                </a>
+                            </td>
+                        </tr>
+                        <tr class="empty-row" th:if="${#lists.isEmpty(types)}">
+                            <td colspan="4">Chưa có loại nguyên vật liệu.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
-
     </div>
-
 </div>
-
-
-<!-- ============================== -->
-<!-- JAVASCRIPT HIỆN / ẨN FORM -->
-<!-- ============================== -->
-
 <script>
-
     function showAddTypeForm() {
-
-        const form = document.getElementById("addTypeForm");
-
-        form.style.display = "block";
-
-        document.getElementById("name").focus();
+        const panel = document.getElementById('addTypeForm');
+        const button = document.getElementById('addTypeButton');
+        panel.hidden = false;
+        button.setAttribute('aria-expanded', 'true');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        window.setTimeout(() => document.getElementById('name').focus(), 180);
     }
-
 
     function hideAddTypeForm() {
-
-        const form = document.getElementById("addTypeForm");
-
-        form.style.display = "none";
+        const panel = document.getElementById('addTypeForm');
+        const button = document.getElementById('addTypeButton');
+        panel.hidden = true;
+        button.setAttribute('aria-expanded', 'false');
+        document.getElementById('name').value = '';
+        button.focus();
     }
-
 </script>
-
 </body>
 </html>

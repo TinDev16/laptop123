@@ -12,7 +12,7 @@
     <title>Kho thành phẩm nơi sản xuất</title>
 
     <link rel="stylesheet"
-          th:href="@{/style.css(v='20261004-2')}">
+          th:href="@{/style.css(v='20261014-2')}">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet">
@@ -505,6 +505,32 @@
 
         }
 
+
+        /* Tách rõ hai khu vực bảng, giữ nguyên màu sắc hiện tại */
+        .production-product-sections {
+            display: grid;
+            gap: 22px;
+            padding: 22px;
+        }
+
+        .production-product-sections .directory-section {
+            margin-bottom: 0;
+            border-color: #d9e1ea;
+            box-shadow: 0 5px 16px rgba(15, 23, 42, 0.06);
+        }
+
+        @media (max-width: 820px) {
+            .production-product-sections {
+                gap: 16px;
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .production-product-sections {
+                padding: 10px;
+            }
+        }
     </style>
 
 </head>
@@ -577,7 +603,7 @@
                  CONTENT CARD
                  ===================================================== -->
 
-            <div class="content-card">
+            <div class="content-card production-product-sections">
 
 
                 <!-- =================================================

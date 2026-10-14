@@ -8,7 +8,7 @@
     <title>Nguyên vật liệu</title>
 
     <link rel="stylesheet"
-          th:href="@{/style.css(v='20261001-2')}">
+          th:href="@{/style.css(v='20261014-2')}">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet">
@@ -34,6 +34,73 @@
         .inventory-empty {
             color: #dc2626;
             font-weight: 600;
+        }
+
+        /* Chỉ tạo ranh giới giữa các bảng, giữ nguyên bảng màu hệ thống */
+        .material-category-list {
+            display: grid;
+            gap: 22px;
+            padding: 22px;
+        }
+
+        .material-category-group {
+            overflow: hidden;
+            border: 1px solid #d9e1ea;
+            border-radius: 12px;
+            box-shadow: 0 5px 16px rgba(15, 23, 42, 0.06);
+        }
+
+        .material-category-group .material-category-header {
+            box-sizing: border-box;
+            min-height: 64px;
+            padding-top: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #d9e1ea;
+        }
+
+        .material-category-group .material-category-table {
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .material-category-group table {
+            margin: 0;
+        }
+
+        .material-category-group tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        @media (max-width: 820px) {
+            .material-category-list {
+                gap: 16px;
+                padding: 14px;
+            }
+
+            .material-category-group .material-category-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .material-category-group .material-category-title {
+                flex-wrap: wrap;
+            }
+
+            .material-category-group .material-category-count {
+                margin-left: 46px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .material-category-list {
+                padding: 10px;
+            }
+
+            .material-category-group {
+                border-radius: 10px;
+            }
         }
     </style>
 </head>
@@ -140,10 +207,9 @@
                                     <th>Tên</th>
                                     <th>Đơn vị</th>
                                     <th>Tồn</th>
-                                    <th>Tồn tối thiểu</th>
                                     <th>Giá nhập</th>
                                     <th>Trạng thái</th>
-                                    <th></th>
+                                    <th>Thao tác</th>
                                 </tr>
 
                                 </thead>
@@ -193,12 +259,6 @@
 
                                         </div>
 
-                                    </td>
-
-
-                                    <!-- Tồn tối thiểu -->
-                                    <td data-number
-                                        th:text="${m.ton_toithieu}">
                                     </td>
 
 

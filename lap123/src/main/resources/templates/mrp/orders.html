@@ -258,7 +258,7 @@
               Tổng hợp nguyên vật liệu đang thiếu
             </h2>
             <p class="content-card-subtitle">
-              Nhu cầu đã được cộng từ toàn bộ yêu cầu còn dang dở của bạn và trừ tồn kho sản xuất một lần theo từng loại NVL.
+              Nhu cầu đã trừ tồn kho sản xuất và số lượng đang có phiếu đề nghị chờ duyệt.
             </p>
           </div>
           <span class="record-count" th:text="${#lists.size(materialShortages) + ' loại đang thiếu'}"></span>
@@ -271,6 +271,7 @@
               <th>Số yêu cầu cần dùng</th>
               <th>Tổng nhu cầu</th>
               <th>Tồn kho sản xuất</th>
+              <th>Đang chờ xuất</th>
               <th>Tổng còn thiếu</th>
             </tr>
             </thead>
@@ -280,6 +281,7 @@
               <td><span data-number th:text="${item.soyeucau}"></span> yêu cầu</td>
               <td><span data-number th:text="${item.tongnhucau}"></span> <span th:text="${item.donvitinh}"></span></td>
               <td><span data-number th:text="${item.soluongton}"></span> <span th:text="${item.donvitinh}"></span></td>
+              <td><span data-number th:text="${item.tongdangdenghi}"></span> <span th:text="${item.donvitinh}"></span></td>
               <td class="aggregate-shortage-value"><span data-number th:text="${item.tongthieu}"></span> <span th:text="${item.donvitinh}"></span></td>
             </tr>
             </tbody>

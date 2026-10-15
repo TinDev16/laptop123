@@ -150,9 +150,12 @@ public class MrpDocumentService {
     }
 
     public Map<String, Object> materialIssue(long id, String email, boolean manager) {
-        String sql = "SELECT p.*, p.mapx AS maphieu, p.maycsx AS mayeucau, n.hoten, s.tensp FROM phieuxuat_nvl p " +
+        String sql = "SELECT p.*, p.mapx AS maphieu, p.maycsx AS mayeucau, n.hoten, s.tensp, " +
+                "b.mabom, b.phienban, CONCAT(s.tensp, ' / BOM ', b.phienban) AS tenbom, " +
+                "d.madot_code, d.tendot FROM phieuxuat_nvl p " +
                 "JOIN nhanvien n ON n.manv = p.nguoilap JOIN yeucausanxuat y ON y.maycsx = p.maycsx " +
-                "JOIN sanpham s ON s.masp = y.masp ";
+                "JOIN sanpham s ON s.masp = y.masp JOIN bom b ON b.mabom = y.mabom " +
+                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
         return manager ? one(sql + "WHERE p.mapx = ?", id) :
                 ownedOne(sql + "WHERE p.mapx = ? AND EXISTS (SELECT 1 FROM taikhoan t WHERE t.email = ? AND (t.manv = p.nguoilap OR t.manv = y.nguoiphutrach))", id, email);
     }
@@ -315,6 +318,7 @@ public class MrpDocumentService {
                         n.tennvl,
                         n.donvitinh,
                         COALESCE(k.soluongton, 0) AS soluongton,
+                        COALESCE(pending.soluong, 0) AS dang_de_nghi,
                         n.trangthai AS nvl_trangthai,
                         l.trangthai AS loai_trangthai,
                         c.soluong_dinhmuc,
@@ -341,7 +345,9 @@ public class MrpDocumentService {
                                 )
                                 * c.soluong_dinhmuc
                                 * (1 + c.tyle_haohut / 100)
-                            ) - COALESCE(k.soluongton, 0),
+                            )
+                                - COALESCE(k.soluongton, 0)
+                                - COALESCE(pending.soluong, 0),
                             0
                         ) AS thieu_hut
                 FROM yeucausanxuat y
@@ -354,6 +360,14 @@ public class MrpDocumentService {
                     FROM ghi_nhan_san_xuat
                     GROUP BY maycsx
                 ) g ON g.maycsx = y.maycsx
+                LEFT JOIN (
+                    SELECT p.maycsx, c.manvl, SUM(c.soluong) AS soluong
+                    FROM phieuxuat_nvl p
+                    JOIN ct_phieuxuat_nvl c ON c.mapx = p.mapx
+                    WHERE p.trangthai IN ('CHO_DUYET', 'DA_DUYET')
+                    GROUP BY p.maycsx, c.manvl
+                ) pending ON pending.maycsx = y.maycsx
+                         AND pending.manvl = n.manvl
                 WHERE y.maycsx = ?
                 ORDER BY n.tennvl
                 """,
@@ -386,7 +400,7 @@ public class MrpDocumentService {
         validateNote(note);
 
         Map<String, Object> order =
-                orderOwned(orderId, email);
+                orderOwnedForUpdate(orderId, email);
 
         if ("HOAN_THANH".equals(order.get("trangthai"))
                 || "HUY".equals(order.get("trangthai"))) {
@@ -539,6 +553,19 @@ public class MrpDocumentService {
                             0
                     );
 
+            if (max <= 0) {
+                throw new IllegalArgumentException(
+                        "NVL này đã đủ hoặc đã có đề nghị xuất đang chờ duyệt."
+                );
+            }
+
+            if (quantity > max) {
+                throw new IllegalArgumentException(
+                        "Số lượng đề nghị vượt quá phần NVL còn thiếu (tối đa "
+                                + max
+                                + ")."
+                );
+            }
         }
 
         // =====================================================

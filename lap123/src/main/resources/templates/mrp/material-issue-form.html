@@ -74,7 +74,8 @@
                 <th class="numeric-column">Hao hụt (%)</th>
                 <th class="numeric-column">Nhu cầu</th>
                 <th class="numeric-column">Tồn hiện tại</th>
-                <th class="numeric-column">Thiếu hụt</th>
+                <th class="numeric-column">Đang chờ xuất</th>
+                <th class="numeric-column">Còn thiếu</th>
                 <th class="quantity-column">SL đề nghị</th>
               </tr>
               </thead>
@@ -94,6 +95,7 @@
                         th:classappend="${l.soluongton < l.nhu_cau ? ' stock-chip--low' : ' stock-chip--enough'}"
                         data-number th:text="${l.soluongton}"></span>
                 </td>
+                <td class="numeric-column" data-number th:text="${l.dang_de_nghi}"></td>
                 <td class="numeric-column">
                       <span class="shortage-value"
                             th:classappend="${l.thieu_hut > 0 ? ' shortage-value--alert' : ' shortage-value--ok'}"
@@ -107,7 +109,7 @@
                 </td>
               </tr>
               <tr class="empty-row" th:if="${#lists.isEmpty(lines)}">
-                <td colspan="7">Yêu cầu này chưa có định mức nguyên vật liệu để lập phiếu xuất.</td>
+                <td colspan="8">Yêu cầu này chưa có định mức nguyên vật liệu để lập phiếu xuất.</td>
               </tr>
               </tbody>
             </table>

@@ -175,7 +175,7 @@
                                     <option value="" disabled selected>-- Chọn yêu cầu sản xuất --</option>
                                     <option th:each="o : ${orders}"
                                             th:value="${o.mayeucau}"
-                                            th:attr="data-masp=${o.masp},data-mabom=${o.mabom},data-phienban=${o.phienban},data-tensp=${o.tensp},data-batch-code=${o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau},data-batch-name=${o.tendot != null ? o.tendot : 'Yêu cầu #' + o.mayeucau},data-requested=${o.soluongyeucau},data-completed=${o.soluonghoanthanh},data-remaining=${o.soluongyeucau - o.soluonghoanthanh},data-deadline=${o.ngaydenhan != null ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy') : '-'},data-overdue-days=${o.overdueDays}"
+                                            th:attr="data-masp=${o.masp},data-mabom=${o.mabom},data-phienban=${o.phienban},data-tensp=${o.tensp},data-batch-code=${o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau},data-batch-name=${o.tendot != null ? o.tendot : 'Yêu cầu #' + o.mayeucau},data-requested=${o.soluongyeucau},data-completed=${o.soluonghoanthanh},data-remaining=${o.soluongyeucau - o.soluonghoanthanh},data-deadline=${o.ngaydenhan != null ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy HH:mm:ss') : '-'},data-overdue-days=${o.overdueDays}"
                                             th:text="${(o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau) + ' · ' + o.tensp + ' · BOM ' + o.phienban + ' · Còn ' + (o.soluongyeucau - o.soluonghoanthanh)}">
                                     </option>
                                 </select>
@@ -249,7 +249,7 @@
                             <td><strong th:text="${o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau}"></strong><br><span th:text="${o.tendot != null ? o.tendot : 'Yêu cầu #' + o.mayeucau}"></span></td>
                             <td th:text="${o.tensp}"></td><td th:text="${'BOM ' + o.phienban + ' · #' + o.mabom}"></td>
                             <td data-number th:text="${o.soluongyeucau}"></td><td data-number th:text="${o.soluonghoanthanh}"></td><td data-number th:text="${o.soluongyeucau - o.soluonghoanthanh}"></td>
-                            <td th:text="${o.ngaydenhan != null ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy') : '-'}"></td>
+                            <td data-date-time th:text="${o.ngaydenhan != null ? #dates.format(o.ngaydenhan, 'dd/MM/yyyy HH:mm:ss') : '-'}"></td>
                             <td><span th:if="${o.overdueDays > 0}" class="result-overdue-badge"><i class="fas fa-triangle-exclamation"></i><span th:text="'Quá hạn ' + ${o.overdueDays} + ' ngày'"></span></span><span th:if="${o.overdueDays == 0}">-</span></td>
                             <td><button type="button" class="btn btn-outline select-order-btn" th:attr="data-order-id=${o.mayeucau}"><i class="fas fa-check"></i> Chọn</button></td>
                         </tr>

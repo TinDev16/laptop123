@@ -176,16 +176,31 @@
 
                     <div class="detail-meta">
 
-                        <span
-                                th:text="${'Yêu cầu #' + issue.mayeucau}">
+                        <span>
+                            <strong>Yêu cầu sản xuất:</strong>
+                            <a th:href="@{/san-xuat/yeu-cau/{id}(id=${issue.mayeucau})}"
+                               th:text="${issue.tendot != null
+                                   ? issue.tendot + ' (' + (issue.madot_code != null ? issue.madot_code : 'YCSX-' + issue.mayeucau) + ')'
+                                   : 'Yêu cầu #' + issue.mayeucau}">
+                            </a>
                         </span>
 
                         <span
                                 th:text="${'Sản phẩm: ' + issue.tensp}">
                         </span>
 
+                        <span>
+                            <strong>BOM áp dụng:</strong>
+                            <span th:text="${issue.tenbom}"></span>
+                        </span>
+
                         <span
                                 th:text="${'Người lập: ' + issue.hoten}">
+                        </span>
+
+                        <span>
+                            <strong>Ngày lập:</strong>
+                            <span data-date-time th:text="${issue.ngaylap}"></span>
                         </span>
 
                         <span>

@@ -94,9 +94,12 @@ public class ProductionOrderService {
                     requirements.donvitinh,
                     requirements.soyeucau,
                     requirements.tongnhucau,
+                    requirements.tongdangdenghi,
                     COALESCE(k.soluongton, 0) AS soluongton,
                     GREATEST(
-                        requirements.tongnhucau - COALESCE(k.soluongton, 0),
+                        requirements.tongnhucau
+                            - COALESCE(k.soluongton, 0)
+                            - requirements.tongdangdenghi,
                         0
                     ) AS tongthieu
                 FROM (
@@ -117,7 +120,8 @@ public class ProductionOrderService {
                                 * c.soluong_dinhmuc
                                 * (1 + c.tyle_haohut / 100)
                             )
-                        ) AS tongnhucau
+                        ) AS tongnhucau,
+                        SUM(COALESCE(pending.soluong, 0)) AS tongdangdenghi
                     FROM yeucausanxuat y
                     JOIN taikhoan t ON t.manv = y.nguoiphutrach
                     JOIN bom_chitiet c ON c.mabom = y.mabom
@@ -127,13 +131,22 @@ public class ProductionOrderService {
                         FROM ghi_nhan_san_xuat
                         GROUP BY maycsx
                     ) g ON g.maycsx = y.maycsx
+                    LEFT JOIN (
+                        SELECT p.maycsx, c.manvl, SUM(c.soluong) AS soluong
+                        FROM phieuxuat_nvl p
+                        JOIN ct_phieuxuat_nvl c ON c.mapx = p.mapx
+                        WHERE p.trangthai IN ('CHO_DUYET', 'DA_DUYET')
+                        GROUP BY p.maycsx, c.manvl
+                    ) pending ON pending.maycsx = y.maycsx
+                             AND pending.manvl = n.manvl
                     WHERE t.email = ?
                       AND y.trangthai NOT IN ('HOAN_THANH', 'HUY')
                       AND y.soluonghoanthanh + COALESCE(g.daghi, 0) < y.soluongyeucau
                     GROUP BY n.manvl, n.manvl_code, n.tennvl, n.donvitinh
                 ) requirements
                 LEFT JOIN kho_nvl_san_xuat k ON k.manvl = requirements.manvl
-                WHERE requirements.tongnhucau > COALESCE(k.soluongton, 0)
+                WHERE requirements.tongnhucau
+                        > COALESCE(k.soluongton, 0) + requirements.tongdangdenghi
                 ORDER BY tongthieu DESC, requirements.tennvl
                 """,
                 email
@@ -149,9 +162,11 @@ public class ProductionOrderService {
                 "y.nguoiphutrach AS manv, y.soluongyeucau, " +
                 "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
                 "y.trangthai, y.ghichu, " +
-                "s.tensp, n.hoten, d.madot, d.madot_code, d.tendot, d.ghichu AS ghichu_dot " +
+                "s.tensp, b.phienban, CONCAT(s.tensp, ' / BOM ', b.phienban) AS tenbom, " +
+                "n.hoten, d.madot, d.madot_code, d.tendot, d.ghichu AS ghichu_dot " +
                 "FROM yeucausanxuat y " +
                 "JOIN sanpham s ON s.masp = y.masp " +
+                "JOIN bom b ON b.mabom = y.mabom " +
                 "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach " +
                 "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
 
@@ -967,6 +982,9 @@ public class ProductionOrderService {
         long bomId = ((Number) order.get(
                 "mabom"
         )).longValue();
+        long orderId = ((Number) order.get(
+                "mayeucau"
+        )).longValue();
 
         int confirmedRemaining =
                 ((Number) order.get(
@@ -992,6 +1010,7 @@ public class ProductionOrderService {
                 jdbc.queryForList(
                         "SELECT n.manvl_code, n.tennvl, n.donvitinh, " +
                                 "COALESCE(k.soluongton, 0) AS soluongton, " +
+                                "COALESCE(pending.soluong, 0) AS dang_de_nghi, " +
                                 "c.soluong_dinhmuc, " +
                                 "c.tyle_haohut " +
                                 "FROM bom_chitiet c " +
@@ -999,8 +1018,16 @@ public class ProductionOrderService {
                                 "ON n.manvl = c.manvl " +
                                 "LEFT JOIN kho_nvl_san_xuat k " +
                                 "ON k.manvl = c.manvl " +
+                                "LEFT JOIN (" +
+                                "SELECT cpx.manvl, SUM(cpx.soluong) AS soluong " +
+                                "FROM phieuxuat_nvl px " +
+                                "JOIN ct_phieuxuat_nvl cpx ON cpx.mapx = px.mapx " +
+                                "WHERE px.maycsx = ? AND px.trangthai IN ('CHO_DUYET', 'DA_DUYET') " +
+                                "GROUP BY cpx.manvl" +
+                                ") pending ON pending.manvl = c.manvl " +
                                 "WHERE c.mabom = ? " +
                                 "ORDER BY n.tennvl",
+                        orderId,
                         bomId
                 );
 
@@ -1038,6 +1065,10 @@ public class ProductionOrderService {
                     (BigDecimal) line.get(
                             "soluongton"
                     );
+            BigDecimal pending =
+                    (BigDecimal) line.get(
+                            "dang_de_nghi"
+                    );
 
             result.add(
                     new MaterialNeed(
@@ -1048,7 +1079,8 @@ public class ProductionOrderService {
                             waste,
                             needed,
                             available,
-                            needed.subtract(available)
+                            pending,
+                            needed.subtract(available).subtract(pending)
                                     .max(BigDecimal.ZERO)
                     )
             );
@@ -1173,6 +1205,7 @@ public class ProductionOrderService {
             BigDecimal waste,
             BigDecimal needed,
             BigDecimal available,
+            BigDecimal pending,
             BigDecimal shortage
     ) {
     }

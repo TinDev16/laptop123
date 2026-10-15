@@ -6,9 +6,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.format.annotation.DateTimeFormat;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -100,17 +103,23 @@ public class ProductionOrderController {
             return "redirect:/san-xuat/yeu-cau";
         }
 
-        model.addAttribute(
-                "boms",
-                service.activeBoms()
-        );
-
-        model.addAttribute(
-                "employees",
-                service.employees()
-        );
+        model.addAttribute("products", service.activeProducts());
+        model.addAttribute("employees", service.employees());
 
         return "mrp/order-form";
+    }
+
+    @GetMapping("/products/{productId}/boms")
+    @ResponseBody
+    public List<Map<String, Object>> getBomsByProduct(
+            @PathVariable long productId,
+            Authentication auth
+    ) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException("Không có quyền xem BOM sản xuất.");
+        }
+
+        return service.activeBomsByProduct(productId);
     }
 
     // =========================================================

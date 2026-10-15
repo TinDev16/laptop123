@@ -235,6 +235,43 @@ public class ProductionOrderService {
         );
     }
 
+    public List<Map<String, Object>> activeProducts() {
+        return jdbc.queryForList("""
+        SELECT DISTINCT s.masp, s.tensp
+        FROM sanpham s
+        JOIN bom b ON b.masp = s.masp
+        WHERE b.trangthai = 'HIEU_LUC'
+          AND NOT EXISTS (
+              SELECT 1
+              FROM bom_chitiet bc
+              JOIN nguyenvatlieu n ON n.manvl = bc.manvl
+              JOIN loai_nguyen_vat_lieu l ON l.maloai = n.maloai
+              WHERE bc.mabom = b.mabom
+                AND (n.trangthai <> 1 OR l.trangthai <> 1)
+          )
+        ORDER BY s.tensp
+        """);
+    }
+
+    public List<Map<String, Object>> activeBomsByProduct(long productId) {
+        return jdbc.queryForList("""
+        SELECT b.mabom, b.phienban, s.tensp
+        FROM bom b
+        JOIN sanpham s ON s.masp = b.masp
+        WHERE b.masp = ?
+          AND b.trangthai = 'HIEU_LUC'
+          AND NOT EXISTS (
+              SELECT 1
+              FROM bom_chitiet bc
+              JOIN nguyenvatlieu n ON n.manvl = bc.manvl
+              JOIN loai_nguyen_vat_lieu l ON l.maloai = n.maloai
+              WHERE bc.mabom = b.mabom
+                AND (n.trangthai <> 1 OR l.trangthai <> 1)
+          )
+        ORDER BY b.phienban DESC
+        """, productId);
+    }
+
     // =========================================================
     // NHÂN VIÊN
     // =========================================================

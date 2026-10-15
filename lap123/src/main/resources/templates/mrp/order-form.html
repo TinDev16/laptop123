@@ -112,145 +112,155 @@
                     </button>
 
 
-                    <div id="productionLines" class="production-lines">
+                    <div id="productionLines"
+                         class="production-lines"
+                         th:data-boms-url="@{/san-xuat/yeu-cau/products}">
 
-                    <div class="production-line">
+                        <div class="production-line">
 
-                        <div class="production-line-number">Thành phẩm 1</div>
+                            <div class="production-line-number">Thành phẩm 1</div>
+
+                            <!-- CHỌN SẢN PHẨM -->
+                            <div class="ceo-field ceo-field-full">
+                                <label for="productId">
+                                    Sản phẩm
+                                    <span class="ceo-required">*</span>
+                                </label>
+
+                                <select
+                                        id="productId"
+                                        class="form-control product-select"
+                                        required
+                                >
+                                    <option value="">-- Chọn sản phẩm trước --</option>
+                                    <option
+                                            th:each="product : ${products}"
+                                            th:value="${product.masp}"
+                                            th:text="${product.tensp}"
+                                    ></option>
+                                </select>
+                            </div>
+
+                            <!-- CHỌN BOM THEO SẢN PHẨM -->
+                            <div class="ceo-field">
+                                <label for="bomId">
+                                    Phiên bản BOM
+                                    <span class="ceo-required">*</span>
+                                </label>
+
+                                <select
+                                        id="bomId"
+                                        name="bomId"
+                                        class="form-control bom-select"
+                                        required
+                                        disabled
+                                >
+                                    <option value="">-- Vui lòng chọn sản phẩm trước --</option>
+                                </select>
+                            </div>
 
 
-                        <!-- BOM -->
+                            <!-- NHÂN VIÊN -->
 
-                        <div class="ceo-field ceo-field-full">
+                            <div class="ceo-field">
 
-                            <label for="bomId">
-                                Thành phẩm / BOM
-                                <span class="ceo-required">*</span>
-                            </label>
+                                <label for="employeeId">
+                                    Nhân viên phụ trách
+                                    <span class="ceo-required">*</span>
+                                </label>
 
-                            <select
-                                    id="bomId"
-                                    name="bomId"
-                                    required
-                                    class="form-control"
-                            >
+                                <select
+                                        id="employeeId"
+                                        name="employeeId"
+                                        required
+                                        class="form-control"
+                                >
 
-                                <option value="">
-                                    -- Chọn BOM sản xuất --
-                                </option>
+                                    <option value="">
+                                        -- Chọn nhân viên --
+                                    </option>
 
-                                <option
-                                        th:each="bom : ${boms}"
-                                        th:value="${bom.mabom}"
-                                        th:text="${bom.tensp + ' / ' + bom.phienban}"
-                                ></option>
+                                    <option
+                                            th:each="employee : ${employees}"
+                                            th:value="${employee.manv}"
+                                            th:text="${employee.hoten}"
+                                    ></option>
 
-                            </select>
+                                </select>
+
+                            </div>
+
+
+                            <!-- SỐ LƯỢNG -->
+
+                            <div class="ceo-field">
+
+                                <label for="quantity">
+                                    Số lượng cần sản xuất
+                                    <span class="ceo-required">*</span>
+                                </label>
+
+                                <input
+                                        id="quantity"
+                                        name="quantity"
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        required
+                                        class="form-control"
+                                        placeholder="Nhập số lượng"
+                                >
+
+                            </div>
+
+
+                            <!-- DEADLINE -->
+
+                            <div class="ceo-field">
+
+                                <label for="deadline">
+                                    Hạn hoàn thành
+                                    <span class="ceo-required">*</span>
+                                </label>
+
+                                <input
+                                        id="deadline"
+                                        name="deadline"
+                                        type="date"
+                                        required
+                                        class="form-control"
+                                        autocomplete="off"
+                                >
+
+                            </div>
+
+                            <button type="button" class="btn btn-danger remove-production-line" aria-label="Xóa thành phẩm">
+                                <i class="fas fa-trash"></i>
+                            </button>
 
                         </div>
-
-
-                        <!-- NHÂN VIÊN -->
-
-                        <div class="ceo-field">
-
-                            <label for="employeeId">
-                                Nhân viên phụ trách
-                                <span class="ceo-required">*</span>
-                            </label>
-
-                            <select
-                                    id="employeeId"
-                                    name="employeeId"
-                                    required
-                                    class="form-control"
-                            >
-
-                                <option value="">
-                                    -- Chọn nhân viên --
-                                </option>
-
-                                <option
-                                        th:each="employee : ${employees}"
-                                        th:value="${employee.manv}"
-                                        th:text="${employee.hoten}"
-                                ></option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- SỐ LƯỢNG -->
-
-                        <div class="ceo-field">
-
-                            <label for="quantity">
-                                Số lượng cần sản xuất
-                                <span class="ceo-required">*</span>
-                            </label>
-
-                            <input
-                                    id="quantity"
-                                    name="quantity"
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    required
-                                    class="form-control"
-                                    placeholder="Nhập số lượng"
-                            >
-
-                        </div>
-
-
-                        <!-- DEADLINE -->
-
-                        <div class="ceo-field">
-
-                            <label for="deadline">
-                                Hạn hoàn thành
-                                <span class="ceo-required">*</span>
-                            </label>
-
-                            <input
-                                    id="deadline"
-                                    name="deadline"
-                                    type="date"
-                                    required
-                                    class="form-control"
-                                    autocomplete="off"
-                            >
-
-                        </div>
-
-                        <button type="button" class="btn btn-danger remove-production-line" aria-label="Xóa thành phẩm">
-                            <i class="fas fa-trash"></i>
-                        </button>
 
                     </div>
 
+
+                    <!-- GHI CHÚ -->
+
+                    <div class="ceo-field ceo-field-full" style="margin-top:20px;">
+
+                        <label for="orderNote">
+                            Ghi chú
+                        </label>
+
+                        <textarea
+                                id="orderNote"
+                                name="note"
+                                maxlength="255"
+                                rows="3"
+                                class="form-control"
+                                placeholder="Yêu cầu kỹ thuật hoặc ưu tiên sản xuất"
+                        ></textarea>
+
                     </div>
-
-
-                        <!-- GHI CHÚ -->
-
-                        <div class="ceo-field ceo-field-full" style="margin-top:20px;">
-
-                            <label for="orderNote">
-                                Ghi chú
-                            </label>
-
-                            <textarea
-                                    id="orderNote"
-                                    name="note"
-                                    maxlength="255"
-                                    rows="3"
-                                    class="form-control"
-                                    placeholder="Yêu cầu kỹ thuật hoặc ưu tiên sản xuất"
-                            ></textarea>
-
-                        </div>
 
                     <!-- ACTION -->
 
@@ -290,6 +300,7 @@
         const container = document.getElementById("productionLines");
         const addButton = document.getElementById("addProductionLine");
         const form = document.getElementById("productionOrderForm");
+        const bomsUrl = container.dataset.bomsUrl;
         const template = container.querySelector(".production-line").cloneNode(true);
 
         function localToday() {
@@ -299,18 +310,108 @@
                 String(now.getDate()).padStart(2, "0");
         }
 
+        async function loadBoms(line) {
+            const productSelect = line.querySelector(".product-select");
+            const bomSelect = line.querySelector(".bom-select");
+            const productId = productSelect.value;
+
+            bomSelect.replaceChildren();
+            bomSelect.disabled = true;
+
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+
+            if (!productId) {
+                placeholder.textContent = "-- Vui lòng chọn sản phẩm trước --";
+                bomSelect.appendChild(placeholder);
+                return;
+            }
+
+            placeholder.textContent = "-- Đang tải BOM --";
+            bomSelect.appendChild(placeholder);
+
+            try {
+                const response = await fetch(
+                    bomsUrl + "/" + encodeURIComponent(productId) + "/boms",
+                    {
+                        method: "GET",
+                        headers: { "Accept": "application/json" }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Không thể tải danh sách BOM.");
+                }
+
+                const boms = await response.json();
+
+                // Nếu người dùng đổi sản phẩm trong lúc đang tải, bỏ kết quả cũ.
+                if (productSelect.value !== productId) {
+                    return;
+                }
+
+                bomSelect.replaceChildren();
+
+                const firstOption = document.createElement("option");
+                firstOption.value = "";
+                firstOption.textContent = boms.length > 0
+                    ? "-- Chọn phiên bản BOM --"
+                    : "-- Sản phẩm chưa có BOM hợp lệ --";
+                bomSelect.appendChild(firstOption);
+
+                boms.forEach(function (bom) {
+                    const option = document.createElement("option");
+                    option.value = bom.mabom;
+                    option.textContent = bom.phienban + " — " + bom.tensp;
+                    bomSelect.appendChild(option);
+                });
+
+                bomSelect.disabled = boms.length === 0;
+            } catch (error) {
+                bomSelect.replaceChildren();
+
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "-- Lỗi tải BOM, vui lòng thử lại --";
+                bomSelect.appendChild(option);
+
+                alert(error.message || "Không thể tải danh sách BOM.");
+            }
+        }
+
         function prepareLine(line, reset) {
             if (reset) {
-                line.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
-                line.querySelectorAll("label[for]").forEach(label => label.removeAttribute("for"));
-                line.querySelector('select[name="bomId"]').value = "";
+                line.querySelectorAll("[id]").forEach(function (element) {
+                    element.removeAttribute("id");
+                });
+
+                line.querySelectorAll("label[for]").forEach(function (label) {
+                    label.removeAttribute("for");
+                });
+
+                line.querySelector(".product-select").value = "";
+
+                const bomSelect = line.querySelector(".bom-select");
+                bomSelect.replaceChildren();
+                const bomPlaceholder = document.createElement("option");
+                bomPlaceholder.value = "";
+                bomPlaceholder.textContent = "-- Vui lòng chọn sản phẩm trước --";
+                bomSelect.appendChild(bomPlaceholder);
+                bomSelect.disabled = true;
+
                 line.querySelector('select[name="employeeId"]').value = "";
                 line.querySelector('input[name="quantity"]').value = "1";
             }
 
             const deadline = line.querySelector('input[name="deadline"]');
             deadline.min = localToday();
-            if (reset || !deadline.value) deadline.value = localToday();
+            if (reset || !deadline.value) {
+                deadline.value = localToday();
+            }
+
+            line.querySelector(".product-select").onchange = function () {
+                loadBoms(line);
+            };
 
             line.querySelector(".remove-production-line").onclick = function () {
                 line.remove();
@@ -320,8 +421,9 @@
 
         function renumber() {
             const lines = container.querySelectorAll(".production-line");
-            lines.forEach((line, index) => {
-                line.querySelector(".production-line-number").textContent = "Thành phẩm " + (index + 1);
+            lines.forEach(function (line, index) {
+                line.querySelector(".production-line-number").textContent =
+                    "Thành phẩm " + (index + 1);
                 line.querySelector(".remove-production-line").disabled = lines.length === 1;
             });
         }
@@ -338,8 +440,16 @@
         });
 
         form.addEventListener("submit", function (event) {
-            const selected = Array.from(form.querySelectorAll('select[name="bomId"]')).map(input => input.value);
-            const hasDuplicate = selected.some((value, index) => value && selected.indexOf(value) !== index);
+            const selected = Array.from(
+                form.querySelectorAll('select[name="bomId"]')
+            ).map(function (select) {
+                return select.value;
+            });
+
+            const hasDuplicate = selected.some(function (value, index) {
+                return value && selected.indexOf(value) !== index;
+            });
+
             if (hasDuplicate) {
                 event.preventDefault();
                 alert("Không được chọn trùng thành phẩm/BOM trong cùng yêu cầu.");

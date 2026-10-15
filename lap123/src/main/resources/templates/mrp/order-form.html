@@ -441,9 +441,11 @@
 
         form.addEventListener("submit", function (event) {
             const selected = Array.from(
-                form.querySelectorAll('select[name="bomId"]')
-            ).map(function (select) {
-                return select.value;
+                form.querySelectorAll(".production-line")
+            ).map(function (line) {
+                const bomId = line.querySelector('select[name="bomId"]').value;
+                const employeeId = line.querySelector('select[name="employeeId"]').value;
+                return bomId && employeeId ? bomId + ":" + employeeId : "";
             });
 
             const hasDuplicate = selected.some(function (value, index) {
@@ -452,7 +454,7 @@
 
             if (hasDuplicate) {
                 event.preventDefault();
-                alert("Không được chọn trùng thành phẩm/BOM trong cùng yêu cầu.");
+                alert("Không được giao trùng cùng thành phẩm/BOM cho cùng một nhân viên trong một yêu cầu.");
             }
         });
     })();

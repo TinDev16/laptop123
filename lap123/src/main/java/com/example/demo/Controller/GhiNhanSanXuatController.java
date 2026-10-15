@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Service.GhiNhanSanXuatService;
+import com.example.demo.Service.MrpDocumentService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.security.core.Authentication;
@@ -16,14 +17,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class GhiNhanSanXuatController {
 
     private final GhiNhanSanXuatService service;
+    private final MrpDocumentService documents;
 
-    public GhiNhanSanXuatController(GhiNhanSanXuatService service) {
+    public GhiNhanSanXuatController(
+            GhiNhanSanXuatService service,
+            MrpDocumentService documents) {
         this.service = service;
+        this.documents = documents;
     }
 
     @GetMapping
     public String index(Authentication auth, Model model) {
         model.addAttribute("orders", service.getOrders(auth.getName()));
+        model.addAttribute("results", documents.results(auth.getName(), false));
         return "mrp/ghi-nhan-san-xuat";
     }
 
@@ -38,18 +44,22 @@ public class GhiNhanSanXuatController {
                          @RequestParam long orderId,
                          @RequestParam long bomId,
                          @RequestParam int quantity,
+                         @RequestParam(required = false) String note,
                          RedirectAttributes flash) {
         try {
-            service.recordProduction(
+            long resultId = service.recordProduction(
                     auth.getName(),
                     orderId,
                     bomId,
-                    quantity
+                    quantity,
+                    note
             );
 
             flash.addFlashAttribute(
                     "success",
-                    "Ghi nhận sản xuất thành công. NVL đã được trừ và thành phẩm đã được nhập vào kho sản xuất. Tiến độ YCSX sẽ chỉ cập nhật sau khi quản lý xác nhận kết quả."
+                    "Ghi nhận thành công. Thành phẩm đã vào kho sản xuất và kết quả #"
+                            + resultId
+                            + " đã được gửi quản lý xác nhận chuyển sang kho tổng."
             );
 
         } catch (IllegalArgumentException | IllegalStateException e) {

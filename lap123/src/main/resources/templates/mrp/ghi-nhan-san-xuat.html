@@ -604,8 +604,8 @@
              ===================================================== -->
 
         <div th:replace="~{fragments/sidebar :: topbar(
-                'Ghi nhận - nhập kho sản xuất',
-                'Ghi nhận sản xuất'
+                'Ghi nhận và gửi kết quả sản xuất',
+                'Sản xuất / Ghi nhận'
         )}"></div>
 
 
@@ -629,15 +629,15 @@
 
                         <i class="fas fa-industry"></i>
 
-                        Ghi nhận - nhập kho sản xuất
+                        Ghi nhận sản xuất
 
                     </h1>
 
 
                     <p>
 
-                        Ghi nhận số lượng thành phẩm đã sản xuất
-                        và cập nhật tồn kho sản xuất.
+                        Nhập sản lượng một lần. Hệ thống sẽ trừ NVL, nhập kho sản xuất
+                        và tự động gửi kết quả cho quản lý xác nhận chuyển sang kho tổng.
 
                     </p>
 
@@ -928,6 +928,19 @@
 
                         </div>
 
+                        <div class="form-group" style="margin-top:18px;">
+                            <label for="note">Ghi chú</label>
+                            <textarea id="note"
+                                      name="note"
+                                      class="form-control"
+                                      rows="3"
+                                      maxlength="255"
+                                      placeholder="Thông tin ca sản xuất, tình trạng thành phẩm hoặc nội dung cần quản lý lưu ý"></textarea>
+                            <small style="color:#777;">
+                                Ghi chú sẽ đi cùng kết quả chờ quản lý xác nhận.
+                            </small>
+                        </div>
+
                     </div>
 
 
@@ -1031,7 +1044,7 @@
 
                             <i class="fas fa-check"></i>
 
-                            Ghi nhận sản xuất
+                            Ghi nhận và gửi xác nhận
 
                         </button>
 
@@ -1040,6 +1053,59 @@
 
 
                 </form>
+
+                <div class="card" style="margin-top:24px;">
+                    <div class="card-title">
+                        <i class="fas fa-clipboard-check"></i>
+                        Kết quả sản xuất đã gửi
+                    </div>
+
+                    <p style="margin:0 0 16px;color:#64748b;">
+                        Theo dõi các lần ghi nhận và trạng thái chuyển thành phẩm từ kho sản xuất sang kho tổng.
+                    </p>
+
+                    <div style="overflow-x:auto;">
+                        <table class="material-table">
+                            <thead>
+                            <tr>
+                                <th>Mã kết quả</th>
+                                <th>Yêu cầu</th>
+                                <th>Sản phẩm</th>
+                                <th>BOM</th>
+                                <th class="number">Số lượng</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="result : ${results}">
+                                <td th:text="${'#' + result.maketqua}"></td>
+                                <td>
+                                    <strong th:text="${result.madot_code != null ? result.madot_code : 'YCSX-' + result.mayeucau}"></strong><br>
+                                    <span th:text="${result.tendot != null ? result.tendot : 'Yêu cầu #' + result.mayeucau}"></span>
+                                </td>
+                                <td th:text="${result.tensp}"></td>
+                                <td th:text="${result.tensp + ' / BOM ' + result.phienban}"></td>
+                                <td class="number" data-number th:text="${result.soluonghoanthanh}"></td>
+                                <td data-date-time th:text="${result.ngayhoanthanh}"></td>
+                                <td><span class="status-pill" th:text="${result.trangthai}"></span></td>
+                                <td>
+                                    <a class="btn btn-outline btn-compact"
+                                       th:href="@{/san-xuat/ket-qua/{id}(id=${result.maketqua})}">
+                                        <i class="fas fa-eye"></i> Xem
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(results)}">
+                                <td colspan="8" class="empty-material">
+                                    Chưa có kết quả sản xuất nào được ghi nhận.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
 
             </div>

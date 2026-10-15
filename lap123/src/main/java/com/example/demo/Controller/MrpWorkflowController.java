@@ -206,71 +206,27 @@ public class MrpWorkflowController {
 
     @GetMapping("/san-xuat/ket-qua")
     public String results(Authentication auth, Model model) {
-        model.addAttribute("manager", manager(auth));
-        model.addAttribute("results", documents.results(auth.getName(), manager(auth)));
+        if (!manager(auth)) {
+            return "redirect:/san-xuat/ghi-nhan";
+        }
+        model.addAttribute("manager", true);
+        model.addAttribute("results", documents.results(auth.getName(), true));
         return "mrp/results";
     }
 
     @GetMapping("/san-xuat/ket-qua/create")
-    public String resultForm(Authentication auth, Model model) {
-        model.addAttribute("orders", documents.assignedOrders(auth.getName()));
-        return "mrp/result-form";
+    public String resultForm() {
+        return "redirect:/san-xuat/ghi-nhan";
     }
 
     @PostMapping("/san-xuat/ket-qua")
     public String createResult(
-            Authentication auth,
-            @RequestParam long orderId,
-            @RequestParam int completed,
-            @RequestParam(required = false) String note,
             RedirectAttributes flash) {
-
-        try {
-            long id = documents.createResult(
-                    auth.getName(),
-                    orderId,
-                    completed,
-                    0,
-                    note
-            );
-
-            flash.addFlashAttribute(
-                    "success",
-                    "Đã gửi kết quả sản xuất để xác nhận."
-            );
-
-            return "redirect:/san-xuat/ket-qua/" + id;
-
-        } catch (IllegalArgumentException | IllegalStateException exception) {
-
-            String message = exception.getMessage();
-
-            if (message == null || message.isBlank()) {
-                message = "Không thể ghi nhận kết quả sản xuất.";
-            }
-
-            String normalized = message.toLowerCase();
-
-            if (normalized.contains("tồn kho")
-                    || normalized.contains("ton kho")
-                    || normalized.contains("thành phẩm")
-                    || normalized.contains("thanh pham")
-                    || normalized.contains("không đủ")
-                    || normalized.contains("khong du")
-                    || normalized.contains("stock")) {
-
-                flash.addFlashAttribute(
-                        "error",
-                        "Thành phẩm trong kho sản xuất không đủ cho số lượng gửi xác nhận. "
-                                + "Vui lòng kiểm tra số lượng có sẵn và giảm số lượng gửi."
-                );
-
-            } else {
-                flash.addFlashAttribute("error", message);
-            }
-
-            return "redirect:/san-xuat/ket-qua/create";
-        }
+        flash.addFlashAttribute(
+                "error",
+                "Kết quả được tạo tự động khi ghi nhận sản xuất. Không cần nhập lại sản lượng."
+        );
+        return "redirect:/san-xuat/ghi-nhan";
     }
 
     @GetMapping("/san-xuat/ket-qua/{id}")

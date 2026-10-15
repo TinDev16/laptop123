@@ -51,7 +51,7 @@
             <div class="menu-heading">MRP</div>
             <a th:href="@{/bom}" class="menu-item" th:classappend="${activeTab == 'bom' ? 'active' : ''}"><i class="fas fa-sitemap"></i><span>BOM</span></a>
             <a th:href="@{/san-xuat/yeu-cau}" class="menu-item" th:classappend="${activeTab == 'mrp' ? 'active' : ''}"><i class="fas fa-tasks"></i><span>Yêu cầu sản xuất</span></a>
-            <a th:href="@{/san-xuat/ket-qua}" class="menu-item" th:classappend="${activeTab == 'ket-qua' ? 'active' : ''}"><i class="fas fa-check-circle"></i><span>Kết quả sản xuất</span></a>
+            <a th:href="@{/san-xuat/ket-qua}" class="menu-item" th:classappend="${activeTab == 'ket-qua' ? 'active' : ''}"><i class="fas fa-check-circle"></i><span>Duyệt kết quả sản xuất</span></a>
             <div class="menu-heading">ĐỐI TÁC</div>
             <a th:href="@{/ncc}" class="menu-item" th:classappend="${activeTab == 'ncc' ? 'active' : ''}"><i class="fas fa-building"></i><span>Nhà cung cấp</span></a>
             <a th:href="@{/khachhang}" class="menu-item" th:classappend="${activeTab == 'khachhang' ? 'active' : ''}"><i class="fas fa-users"></i><span>Khách hàng</span></a>
@@ -71,7 +71,6 @@
                 <span>Ghi nhận - nhập kho sản xuất</span>
             </a>
             <a th:href="@{/kho/xuat-nvl}" class="menu-item" th:classappend="${activeTab == 'xuat-nvl' ? 'active' : ''}"><i class="fas fa-cubes"></i><span>Đề nghị xuất NVL</span></a>
-            <a th:href="@{/san-xuat/ket-qua}" class="menu-item" th:classappend="${activeTab == 'ket-qua' ? 'active' : ''}"><i class="fas fa-check-circle"></i><span>Kết quả sản xuất</span></a>
             <a th:href="@{/kho/xuat-thanh-pham}" class="menu-item" th:classappend="${activeTab == 'xuat-tp' ? 'active' : ''}"><i class="fas fa-truck"></i><span>Đề nghị xuất thành phẩm</span></a>
             <div class="menu-heading">TÀI KHOẢN</div>
             <a th:href="@{/tai-khoan/ca-nhan}" class="menu-item" th:classappend="${activeTab == 'ca-nhan' ? 'active' : ''}"><i class="fas fa-user"></i><span>Thông tin cá nhân</span></a>

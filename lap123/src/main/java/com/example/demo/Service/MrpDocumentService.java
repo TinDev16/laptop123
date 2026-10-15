@@ -633,6 +633,7 @@ public class MrpDocumentService {
                         "y.mabom, " +
                         "s.tensp, " +
                         "b.phienban, " +
+                        "d.madot_code, d.tendot, " +
                         "n.hoten " +
                         "FROM ketqua_sanxuat k " +
                         "JOIN yeucausanxuat y " +
@@ -641,6 +642,8 @@ public class MrpDocumentService {
                         "    ON s.masp = y.masp " +
                         "JOIN bom b " +
                         "    ON b.mabom = y.mabom " +
+                        "LEFT JOIN dot_san_xuat d " +
+                        "    ON d.madot = y.madot " +
                         "JOIN nhanvien n " +
                         "    ON n.manv = k.nguoithuchien ";
 
@@ -672,6 +675,7 @@ public class MrpDocumentService {
                         "y.mabom, " +
                         "s.tensp, " +
                         "b.phienban, " +
+                        "d.madot_code, d.tendot, " +
                         "n.hoten " +
                         "FROM ketqua_sanxuat k " +
                         "JOIN yeucausanxuat y " +
@@ -680,6 +684,8 @@ public class MrpDocumentService {
                         "    ON s.masp = y.masp " +
                         "JOIN bom b " +
                         "    ON b.mabom = y.mabom " +
+                        "LEFT JOIN dot_san_xuat d " +
+                        "    ON d.madot = y.madot " +
                         "JOIN nhanvien n " +
                         "    ON n.manv = k.nguoithuchien ";
 

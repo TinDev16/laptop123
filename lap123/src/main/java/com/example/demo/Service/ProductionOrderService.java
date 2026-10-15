@@ -7,8 +7,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -335,8 +337,15 @@ public class ProductionOrderService {
             throw new IllegalArgumentException("Thông tin các dòng thành phẩm không đầy đủ.");
         }
 
-        if (bomIds.stream().distinct().count() != size) {
-            throw new IllegalArgumentException("Không được chọn trùng thành phẩm/BOM trong cùng yêu cầu.");
+        Set<String> assignments = new HashSet<>();
+        for (int i = 0; i < size; i++) {
+            Long bomId = bomIds.get(i);
+            Integer employeeId = employeeIds.get(i);
+            if (bomId != null && employeeId != null && !assignments.add(bomId + ":" + employeeId)) {
+                throw new IllegalArgumentException(
+                        "Không được giao trùng cùng thành phẩm/BOM cho cùng một nhân viên trong một yêu cầu."
+                );
+            }
         }
 
         Integer creator = jdbc.queryForObject(

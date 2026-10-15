@@ -160,16 +160,25 @@ public class GhiNhanSanXuatService {
     // =====================================================
 
     @Transactional(rollbackFor = Exception.class)
-    public void recordProduction(
+    public long recordProduction(
             String email,
             long orderId,
             long bomId,
-            int quantity) {
+            int quantity,
+            String note) {
 
         if (quantity <= 0) {
             throw new IllegalArgumentException(
                     "Số lượng sản xuất phải lớn hơn 0."
             );
+        }
+
+        String normalizedNote = note == null ? null : note.trim();
+        if (normalizedNote != null && normalizedNote.length() > 255) {
+            throw new IllegalArgumentException("Ghi chú tối đa 255 ký tự.");
+        }
+        if (normalizedNote != null && normalizedNote.isEmpty()) {
+            normalizedNote = null;
         }
 
 
@@ -658,6 +667,31 @@ public class GhiNhanSanXuatService {
                 "ghi_nhan_san_xuat",
                 recordId
         );
+
+        // Tạo kết quả chờ quản lý xác nhận ngay trong cùng giao dịch.
+        // Nhân viên chỉ nhập sản lượng một lần tại trang ghi nhận.
+        jdbc.update(
+                """
+                INSERT INTO ketqua_sanxuat
+                    (maycsx, nguoithuchien, soluonghoanthanh, soluongloi, trangthai, ghichu)
+                VALUES (?, ?, ?, 0, 'CHO_XAC_NHAN', ?)
+                """,
+                orderId,
+                actor,
+                quantity,
+                normalizedNote
+        );
+
+        Long resultId = jdbc.queryForObject(
+                "SELECT LAST_INSERT_ID()",
+                Long.class
+        );
+
+        if (resultId == null) {
+            throw new IllegalStateException("Không tạo được kết quả sản xuất chờ xác nhận.");
+        }
+
+        return resultId;
     }
 
 

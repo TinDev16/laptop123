@@ -112,11 +112,13 @@ public class WarehouseProductionHistoryController {
                         documentId
                 );
 
-        Map<String, Object> documentInfo =
-                service.documentInfo(
-                        sourceTable,
-                        documentId
-                );
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy lịch sử của chứng từ."
+            );
+        }
+
+        Map<String, Object> documentInfo = rows.get(0);
 
         model.addAttribute("rows", rows);
 
@@ -133,6 +135,15 @@ public class WarehouseProductionHistoryController {
         model.addAttribute(
                 "documentId",
                 documentId
+        );
+        model.addAttribute(
+                "documentTypeLabel",
+                switch (sourceTable) {
+                    case "phieuxuat_nvl" -> "Nhận nguyên vật liệu từ kho tổng";
+                    case "ghi_nhan_san_xuat" -> "Ghi nhận sản xuất";
+                    case "ketqua_sanxuat" -> "Bàn giao thành phẩm về kho tổng";
+                    default -> "Chứng từ kho sản xuất";
+                }
         );
 
         return "mrp/warehouse-production-history-detail";

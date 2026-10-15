@@ -51,13 +51,35 @@ public class WarehouseReportService {
 
                 COALESCE(SUM(h.soluong), 0) AS tong_so_luong,
 
+                GROUP_CONCAT(
+                    DISTINCT COALESCE(n.tennvl, s.tensp)
+                    ORDER BY COALESCE(n.tennvl, s.tensp)
+                    SEPARATOR ', '
+                ) AS hanghoa,
+
                 MIN(h.nguoi_thuchien) AS ma_nguoi_thuc_hien,
-                MIN(v.hoten) AS nguoithuchien
+                MIN(v.hoten) AS nguoithuchien,
+                MIN(worker.hoten) AS nguoisanxuat
 
             FROM lich_su_kho h
 
             LEFT JOIN nhanvien v
                 ON v.manv = h.nguoi_thuchien
+
+            LEFT JOIN nguyenvatlieu n
+                ON h.loai_hang = 'NVL'
+                AND n.manvl = h.ma_hang
+
+            LEFT JOIN sanpham s
+                ON h.loai_hang = 'THANH_PHAM'
+                AND s.masp = h.ma_hang
+
+            LEFT JOIN ketqua_sanxuat k
+                ON h.bang_tham_chieu = 'ketqua_sanxuat'
+                AND k.makqsx = h.ma_tham_chieu
+
+            LEFT JOIN nhanvien worker
+                ON worker.manv = k.nguoithuchien
 
             WHERE 1 = 1
             """);
@@ -160,12 +182,36 @@ public class WarehouseReportService {
                 h.bang_tham_chieu,
                 h.ghichu,
 
-                COALESCE(
-                    n.tennvl,
-                    s.tensp
-                ) AS tenhang,
+                COALESCE(n.tennvl, s.tensp) AS tenhang,
+                COALESCE(n.donvitinh, s.donvitinh, 'Cái') AS donvitinh,
+                v.hoten AS nguoithuchien,
 
-                v.hoten AS nguoithuchien
+                COALESCE(k.trangthai, pn.trangthai, px.trangthai, pxtp.trangthai)
+                    AS trangthai_chungtu,
+                COALESCE(k.ghichu, pn.ghichu, px.ghichu, pxtp.ghichu, h.ghichu)
+                    AS ghichu_chungtu,
+                COALESCE(px.lydo, pxtp.lydo) AS lydo,
+
+                worker.hoten AS nguoisanxuat,
+                COALESCE(pn_creator.hoten, px_creator.hoten, pxtp_creator.hoten)
+                    AS nguoilap,
+                COALESCE(px_approver.hoten, pxtp_approver.hoten)
+                    AS nguoiduyet,
+
+                supplier.tenncc AS nhacungcap,
+                customer.hoten AS khachhang,
+                pxtp.diachi_giaohang,
+
+                COALESCE(k.maycsx, px.maycsx) AS mayeucau,
+                COALESCE(dk.madot_code, dx.madot_code) AS madot_code,
+                COALESCE(dk.tendot, dx.tendot) AS tendot,
+                b.mabom,
+                b.phienban AS phienban_bom,
+
+                COALESCE(k.ngayhoanthanh, pn.ngaylap, px.ngaylap, pxtp.ngaylap)
+                    AS ngaylap_chungtu,
+                COALESCE(px.ngayduyet, pxtp.ngayduyet) AS ngayduyet_chungtu,
+                k.soluongloi AS soluongloi
 
             FROM lich_su_kho h
 
@@ -179,6 +225,65 @@ public class WarehouseReportService {
 
             LEFT JOIN nhanvien v
                 ON v.manv = h.nguoi_thuchien
+
+            LEFT JOIN ketqua_sanxuat k
+                ON h.bang_tham_chieu = 'ketqua_sanxuat'
+                AND k.makqsx = h.ma_tham_chieu
+
+            LEFT JOIN yeucausanxuat yk
+                ON yk.maycsx = k.maycsx
+
+            LEFT JOIN dot_san_xuat dk
+                ON dk.madot = yk.madot
+
+            LEFT JOIN nhanvien worker
+                ON worker.manv = k.nguoithuchien
+
+            LEFT JOIN phieunhap_nvl pn
+                ON h.bang_tham_chieu = 'phieunhap_nvl'
+                AND pn.mapn = h.ma_tham_chieu
+
+            LEFT JOIN ncc supplier
+                ON supplier.mancc = pn.mancc
+
+            LEFT JOIN nhanvien pn_creator
+                ON pn_creator.manv = pn.nguoilap
+
+            LEFT JOIN phieuxuat_nvl px
+                ON h.bang_tham_chieu = 'phieuxuat_nvl'
+                AND px.mapx = h.ma_tham_chieu
+
+            LEFT JOIN yeucausanxuat yx
+                ON yx.maycsx = px.maycsx
+
+            LEFT JOIN dot_san_xuat dx
+                ON dx.madot = yx.madot
+
+            LEFT JOIN nhanvien px_creator
+                ON px_creator.manv = px.nguoilap
+
+            LEFT JOIN nhanvien px_approver
+                ON px_approver.manv = px.nguoiduyet
+
+            LEFT JOIN phieuxuat_thanhpham pxtp
+                ON h.bang_tham_chieu = 'phieuxuat_thanhpham'
+                AND pxtp.mapxtp = h.ma_tham_chieu
+
+            LEFT JOIN ct_phieuxuat_thanhpham ctpxtp
+                ON ctpxtp.mapxtp = pxtp.mapxtp
+                AND ctpxtp.masp = h.ma_hang
+
+            LEFT JOIN khachhang customer
+                ON customer.makh = pxtp.makh
+
+            LEFT JOIN nhanvien pxtp_creator
+                ON pxtp_creator.manv = pxtp.nguoilap
+
+            LEFT JOIN nhanvien pxtp_approver
+                ON pxtp_approver.manv = pxtp.nguoiduyet
+
+            LEFT JOIN bom b
+                ON b.mabom = COALESCE(ctpxtp.mabom, yk.mabom, yx.mabom)
 
             WHERE h.bang_tham_chieu = ?
               AND h.ma_tham_chieu = ?

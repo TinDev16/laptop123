@@ -17,6 +17,32 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        .production-history-items {
+            min-width: 220px;
+            max-width: 360px;
+            white-space: normal;
+            line-height: 1.45;
+        }
+
+        .production-history-person {
+            min-width: 145px;
+        }
+
+        .production-document-code {
+            display: block;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .production-document-type {
+            display: block;
+            margin-top: 0.2rem;
+            color: #64748b;
+            font-size: 0.78rem;
+        }
+    </style>
+
 </head>
 
 
@@ -281,7 +307,23 @@
                             </th>
 
                             <th>
-                                Người thực hiện
+                                Hàng hóa
+                            </th>
+
+                            <th>
+                                Tổng số lượng
+                            </th>
+
+                            <th>
+                                Người thao tác
+                            </th>
+
+                            <th>
+                                Nhân viên sản xuất
+                            </th>
+
+                            <th>
+                                Yêu cầu sản xuất
                             </th>
 
                             <th>
@@ -394,12 +436,42 @@
                             </td>
 
 
+                            <!-- HÀNG HÓA -->
+
+                            <td class="production-history-items"
+                                th:text="${row.hanghoa ?: '-'}">
+                                -
+                            </td>
+
+
+                            <!-- TỔNG SỐ LƯỢNG -->
+
+                            <td data-number
+                                th:text="${row.tong_so_luong}">
+                                0
+                            </td>
+
+
                             <!-- NGƯỜI THỰC HIỆN -->
 
-                            <td
-                                    th:text="${row.nguoithuchien}"
+                            <td class="production-history-person"
+                                    th:text="${row.nguoithuchien ?: '-'}"
                             >
                                 -
+                            </td>
+
+
+                            <td class="production-history-person"
+                                th:text="${row.nhanviensanxuat ?: '-'}">
+                                -
+                            </td>
+
+
+                            <td>
+                                <a th:if="${row.mayeucau != null}"
+                                   th:href="@{/san-xuat/yeu-cau/{id}(id=${row.mayeucau})}"
+                                   th:text="${'YCSX-' + row.mayeucau}">-</a>
+                                <span th:if="${row.mayeucau == null}">-</span>
                             </td>
 
 
@@ -407,12 +479,17 @@
 
                             <td>
 
-                                <span
-                                        th:if="${row.bang_tham_chieu != null
-                                           and row.ma_tham_chieu != null}"
-                                        th:text="${row.bang_tham_chieu + ' #' + row.ma_tham_chieu}"
-                                >
-                                    -
+                                <span th:if="${row.bang_tham_chieu != null and row.ma_tham_chieu != null}"
+                                      class="production-document-code"
+                                      th:text="${'#' + row.ma_tham_chieu}">-</span>
+
+                                <span th:if="${row.bang_tham_chieu != null and row.ma_tham_chieu != null}"
+                                      class="production-document-type"
+                                      th:switch="${row.bang_tham_chieu}">
+                                    <span th:case="'phieuxuat_nvl'">Nhận NVL từ kho tổng</span>
+                                    <span th:case="'ghi_nhan_san_xuat'">Ghi nhận sản xuất</span>
+                                    <span th:case="'ketqua_sanxuat'">Bàn giao thành phẩm</span>
+                                    <span th:case="*" th:text="${row.bang_tham_chieu}">Chứng từ</span>
                                 </span>
 
                                 <span
@@ -464,7 +541,7 @@
                                 th:if="${#lists.isEmpty(rows)}"
                         >
 
-                            <td colspan="8">
+                            <td colspan="12">
                                 Chưa có dữ liệu để hiển thị.
                             </td>
 

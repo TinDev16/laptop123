@@ -14,6 +14,66 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        .document-heading {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .document-id {
+            color: #2563eb;
+        }
+
+        .document-summary {
+            padding: 1.25rem;
+        }
+
+        .document-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1rem;
+        }
+
+        .document-meta-item {
+            min-height: 76px;
+            padding: 0.85rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .document-meta-label {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: #64748b;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .document-meta-value {
+            color: #0f172a;
+            font-weight: 650;
+            line-height: 1.4;
+        }
+
+        .document-note {
+            margin-top: 1rem;
+            padding: 0.9rem 1rem;
+            border-left: 4px solid #94a3b8;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .quantity-with-unit {
+            white-space: nowrap;
+        }
+    </style>
+
 </head>
 
 
@@ -31,9 +91,9 @@
 
         <main class="content-body">
 
-            <h1>
-                Chi tiết chứng từ
-                <span th:text="${documentId}">
+            <h1 class="document-heading">
+                <span th:text="${documentTypeLabel}">Chi tiết chứng từ</span>
+                <span class="document-id" th:text="${'#' + documentId}">
                     -
                 </span>
             </h1>
@@ -54,51 +114,122 @@
                 </div>
 
 
-                <div style="padding:1rem;">
+                <div class="document-summary">
 
-                    <p>
-                        <strong>Mã chứng từ:</strong>
+                    <div class="document-meta-grid">
 
-                        <span th:text="${documentId}">
-                            -
-                        </span>
-                    </p>
+                        <div class="document-meta-item">
+                            <span class="document-meta-label">Mã chứng từ</span>
+                            <span class="document-meta-value" th:text="${documentId}">-</span>
+                        </div>
 
+                        <div class="document-meta-item">
+                            <span class="document-meta-label">Loại giao dịch</span>
+                            <span class="document-meta-value" th:text="${document.loai_giao_dich}">-</span>
+                        </div>
 
-                    <p>
-                        <strong>Loại giao dịch:</strong>
+                        <div class="document-meta-item">
+                            <span class="document-meta-label">Trạng thái chứng từ</span>
+                            <span class="badge-status success"
+                                  th:text="${document.trangthai_chungtu ?: '-'}">-</span>
+                        </div>
 
-                        <span th:text="${document.loai_giao_dich}">
-                            -
-                        </span>
-                    </p>
+                        <div class="document-meta-item">
+                            <span class="document-meta-label"
+                                  th:text="${sourceTable == 'ketqua_sanxuat' ? 'Người xác nhận nhập kho' : 'Người xử lý kho'}">
+                                Người xử lý kho
+                            </span>
+                            <span class="document-meta-value"
+                                  th:text="${document.nguoithuchien ?: '-'}">-</span>
+                        </div>
 
+                        <div class="document-meta-item" th:if="${document.nguoisanxuat != null}">
+                            <span class="document-meta-label">Người sản xuất</span>
+                            <span class="document-meta-value" th:text="${document.nguoisanxuat}">-</span>
+                        </div>
 
-                    <p>
-                        <strong>Loại hàng:</strong>
+                        <div class="document-meta-item" th:if="${document.nguoilap != null}">
+                            <span class="document-meta-label">Người lập chứng từ</span>
+                            <span class="document-meta-value" th:text="${document.nguoilap}">-</span>
+                        </div>
 
-                        <span th:text="${document.loai_hang}">
-                            -
-                        </span>
-                    </p>
+                        <div class="document-meta-item" th:if="${document.nguoiduyet != null}">
+                            <span class="document-meta-label">Người duyệt</span>
+                            <span class="document-meta-value" th:text="${document.nguoiduyet}">-</span>
+                        </div>
 
+                        <div class="document-meta-item" th:if="${document.nhacungcap != null}">
+                            <span class="document-meta-label">Nhà cung cấp</span>
+                            <span class="document-meta-value" th:text="${document.nhacungcap}">-</span>
+                        </div>
 
-                    <p>
-                        <strong>Người thực hiện:</strong>
+                        <div class="document-meta-item" th:if="${document.khachhang != null}">
+                            <span class="document-meta-label">Khách hàng</span>
+                            <span class="document-meta-value" th:text="${document.khachhang}">-</span>
+                        </div>
 
-                        <span th:text="${document.nguoithuchien}">
-                            -
-                        </span>
-                    </p>
+                        <div class="document-meta-item" th:if="${document.diachi_giaohang != null and !#strings.isEmpty(document.diachi_giaohang)}">
+                            <span class="document-meta-label">Địa chỉ giao hàng</span>
+                            <span class="document-meta-value" th:text="${document.diachi_giaohang}">-</span>
+                        </div>
 
+                        <div class="document-meta-item" th:if="${document.mayeucau != null}">
+                            <span class="document-meta-label">Yêu cầu sản xuất</span>
+                            <a class="document-meta-value"
+                               th:href="@{/san-xuat/yeu-cau/{id}(id=${document.mayeucau})}"
+                               th:text="${'YCSX-' + document.mayeucau}">-</a>
+                        </div>
 
-                    <p>
-                        <strong>Thời gian:</strong>
+                        <div class="document-meta-item" th:if="${document.tendot != null or document.madot_code != null}">
+                            <span class="document-meta-label">Đợt sản xuất</span>
+                            <span class="document-meta-value"
+                                  th:text="${(document.madot_code != null ? document.madot_code + ' - ' : '') + (document.tendot ?: '')}">-</span>
+                        </div>
 
-                        <span data-date-time th:text="${document.ngay_giao_dich}">
-                            -
-                        </span>
-                    </p>
+                        <div class="document-meta-item" th:if="${document.mabom != null}">
+                            <span class="document-meta-label">BOM áp dụng</span>
+                            <a class="document-meta-value"
+                               th:href="@{/bom/{id}(id=${document.mabom})}"
+                               th:text="${'BOM #' + document.mabom + (document.phienban_bom != null ? ' - ' + document.phienban_bom : '')}">-</a>
+                        </div>
+
+                        <div class="document-meta-item" th:if="${document.soluongloi != null}">
+                            <span class="document-meta-label">Số lượng lỗi ghi nhận</span>
+                            <span class="document-meta-value" data-number
+                                  th:text="${document.soluongloi}">0</span>
+                        </div>
+
+                        <div class="document-meta-item" th:if="${document.ngaylap_chungtu != null}">
+                            <span class="document-meta-label">Thời gian lập chứng từ</span>
+                            <span class="document-meta-value" data-date-time
+                                  th:text="${document.ngaylap_chungtu}">-</span>
+                        </div>
+
+                        <div class="document-meta-item" th:if="${document.ngayduyet_chungtu != null}">
+                            <span class="document-meta-label">Thời gian duyệt</span>
+                            <span class="document-meta-value" data-date-time
+                                  th:text="${document.ngayduyet_chungtu}">-</span>
+                        </div>
+
+                        <div class="document-meta-item">
+                            <span class="document-meta-label">Thời gian ghi sổ kho</span>
+                            <span class="document-meta-value" data-date-time
+                                  th:text="${document.ngay_giao_dich}">-</span>
+                        </div>
+
+                    </div>
+
+                    <div class="document-note"
+                         th:if="${document.lydo != null and !#strings.isEmpty(document.lydo)}">
+                        <strong>Lý do:</strong>
+                        <span th:text="${document.lydo}"></span>
+                    </div>
+
+                    <div class="document-note"
+                         th:if="${document.ghichu_chungtu != null and !#strings.isEmpty(#strings.trim(document.ghichu_chungtu))}">
+                        <strong>Ghi chú:</strong>
+                        <span th:text="${document.ghichu_chungtu}"></span>
+                    </div>
 
                 </div>
 
@@ -142,6 +273,10 @@
                             </th>
 
                             <th>
+                                BOM
+                            </th>
+
+                            <th>
                                 Loại hàng
                             </th>
 
@@ -176,14 +311,19 @@
                             </td>
 
 
+                            <td th:text="${r.mabom != null ? 'BOM #' + r.mabom + (r.phienban_bom != null ? ' - ' + r.phienban_bom : '') : '-'}">
+                                -
+                            </td>
+
+
                             <td th:text="${r.loai_hang}">
                                 -
                             </td>
 
 
-                            <td data-number
-                                th:text="${r.so_luong}">
-                                0
+                            <td class="quantity-with-unit">
+                                <span data-number th:text="${r.so_luong}">0</span>
+                                <span th:text="${r.donvitinh}">Cái</span>
                             </td>
 
 
@@ -204,7 +344,7 @@
                         <tr class="empty-row"
                             th:if="${#lists.isEmpty(rows)}">
 
-                            <td colspan="6">
+                            <td colspan="7">
                                 Không có chi tiết.
                             </td>
 

@@ -119,6 +119,16 @@ public class WarehouseReportController {
                 "document",
                 first
         );
+        model.addAttribute(
+                "documentTypeLabel",
+                switch (sourceTable) {
+                    case "phieunhap_nvl" -> "Phiếu nhập nguyên vật liệu";
+                    case "phieuxuat_nvl" -> "Phiếu xuất nguyên vật liệu";
+                    case "ketqua_sanxuat" -> "Nhập kho thành phẩm sản xuất";
+                    case "phieuxuat_thanhpham" -> "Phiếu xuất thành phẩm";
+                    default -> "Chứng từ kho";
+                }
+        );
 
         return "mrp/warehouse-history-detail";
     }

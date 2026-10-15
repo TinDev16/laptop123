@@ -71,6 +71,27 @@
       font-weight: 800;
       white-space: nowrap;
     }
+    .dashboard-orders-table { min-width:980px;table-layout:fixed; }
+    .dashboard-orders-table th:nth-child(1), .dashboard-orders-table td:nth-child(1) { width:17%; }
+    .dashboard-orders-table th:nth-child(2), .dashboard-orders-table td:nth-child(2) { width:18%; }
+    .dashboard-orders-table th:nth-child(3), .dashboard-orders-table td:nth-child(3) { width:16%;text-align:center; }
+    .dashboard-orders-table th:nth-child(4), .dashboard-orders-table td:nth-child(4) { width:13%; }
+    .dashboard-orders-table th:nth-child(5), .dashboard-orders-table td:nth-child(5) { width:14%;text-align:center; }
+    .dashboard-orders-table th:nth-child(6), .dashboard-orders-table td:nth-child(6) { width:10%;text-align:center; }
+    .dashboard-orders-table th:nth-child(7), .dashboard-orders-table td:nth-child(7) { width:12%; }
+    .dashboard-batch-code { display:block;color:#1d4ed8;font-weight:800; }
+    .dashboard-batch-name { display:block;margin-top:3px;color:#334155;font-weight:600; }
+    .dashboard-order-reference { display:block;margin-top:3px;color:#94a3b8;font-size:11px; }
+    .dashboard-progress-total { display:block;margin-bottom:5px;color:#334155;font-weight:700; }
+    .dashboard-progress-cell progress { width:100%;max-width:120px;height:8px; }
+    .dashboard-progress-breakdown { display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:5px;font-size:11px; }
+    .dashboard-progress-confirmed { color:#15803d;font-weight:700; }
+    .dashboard-progress-pending { display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;background:#fef3c7;color:#92400e;font-weight:800; }
+    .dashboard-progress-remaining { color:#64748b; }
+    .dashboard-order-actions { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px; }
+    .dashboard-order-actions--single { grid-template-columns:1fr; }
+    .dashboard-action { display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:30px;padding:5px 7px;border:0;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap; }
+    .dashboard-action-record { background:#dcfce7;color:#166534; }
   </style>
 </head>
 
@@ -541,19 +562,15 @@
 
         <div class="table-container">
 
-          <table>
+          <table class="dashboard-orders-table">
 
             <thead>
 
             <tr>
 
-              <th>Đợt / yêu cầu</th>
+              <th>Đợt sản xuất</th>
 
               <th>Sản phẩm</th>
-
-              <th>Yêu cầu</th>
-
-              <th>Hoàn thành</th>
 
               <th>Tiến độ</th>
 
@@ -563,7 +580,7 @@
 
               <th>Trạng thái</th>
 
-              <th>Chi tiết</th>
+              <th>Thao tác</th>
 
             </tr>
 
@@ -576,28 +593,26 @@
                     th:each="order : ${orders}">
 
               <td>
-                <strong th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></strong><br>
-                <span th:text="${order.tendot != null ? order.tendot : 'Yêu cầu #' + order.mayeucau}"></span>
+                <span class="dashboard-batch-code"
+                      th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></span>
+                <span class="dashboard-batch-name"
+                      th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất cũ'}"></span>
+                <span class="dashboard-order-reference" th:text="${'Yêu cầu #' + order.mayeucau}"></span>
               </td>
 
               <td
                       th:text="${order.tensp}">
               </td>
 
-              <td
-                      th:text="${order.soluongyeucau}">
-              </td>
-
-              <td
-                      th:text="${order.soluonghoanthanh}">
-              </td>
-
               <td>
 
-                <div class="progress-cell">
+                <div class="dashboard-progress-cell">
+
+                  <span class="dashboard-progress-total"
+                        th:text="${(order.soluonghoanthanh + order.soluongchoduyet) + ' / ' + order.soluongyeucau + ' đã sản xuất'}"></span>
 
                   <progress
-                          th:value="${order.soluonghoanthanh}"
+                          th:value="${order.soluonghoanthanh + order.soluongchoduyet}"
                           th:max="${order.soluongyeucau > 0
                             ? order.soluongyeucau
                             : 1}">
@@ -605,9 +620,21 @@
 
                   <span
                           th:text="${order.soluongyeucau > 0
-                            ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%'
+                            ? (order.soluonghoanthanh + order.soluongchoduyet) * 100 / order.soluongyeucau + '%'
                             : '0%'}">
                   </span>
+
+                  <div class="dashboard-progress-breakdown">
+                    <span class="dashboard-progress-confirmed"
+                          th:text="${'Đã duyệt: ' + order.soluonghoanthanh}"></span>
+                    <span class="dashboard-progress-pending" th:if="${order.soluongchoduyet > 0}">
+                      <i class="fas fa-hourglass-half"></i>
+                      <span th:text="${'Chờ duyệt: ' + order.soluongchoduyet}"></span>
+                    </span>
+                    <span class="dashboard-progress-remaining"
+                          th:text="${'Còn sản xuất: ' + (order.soluongyeucau > order.soluonghoanthanh + order.soluongchoduyet
+                            ? order.soluongyeucau - order.soluonghoanthanh - order.soluongchoduyet : 0)}"></span>
+                  </div>
 
                 </div>
 
@@ -631,17 +658,35 @@
 
                 <span
                         class="status-pill"
-                        th:text="${order.trangthai}">
+                        th:text="${
+                          order.trangthai == 'HUY' ? 'Hủy' :
+                          order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
+                          order.trangthai
+                        }">
                 </span>
 
               </td>
 
               <td>
 
-                <a
-                        th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}">
-                  Xem
-                </a>
+                <div class="dashboard-order-actions"
+                     th:classappend="${manager ? 'dashboard-order-actions--single' : ''}">
+                  <a th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
+                     class="dashboard-action"
+                     title="Xem chi tiết yêu cầu sản xuất">
+                    Xem
+                  </a>
+
+                  <a th:unless="${manager}"
+                     th:if="${order.trangthai != 'HOAN_THANH'
+                       and order.trangthai != 'HUY'
+                       and order.soluonghoanthanh + order.soluongchoduyet < order.soluongyeucau}"
+                     th:href="@{/san-xuat/ghi-nhan(orderId=${order.mayeucau})}"
+                     class="dashboard-action dashboard-action-record"
+                     title="Ghi nhận thành phẩm và nhập kho sản xuất">
+                    <i class="fas fa-box-open"></i> Ghi nhận
+                  </a>
+                </div>
 
               </td>
 
@@ -653,7 +698,7 @@
                     class="empty-row"
                     th:if="${#lists.isEmpty(orders)}">
 
-              <td colspan="9">
+              <td colspan="7">
                 Chưa có yêu cầu sản xuất nào.
               </td>
 

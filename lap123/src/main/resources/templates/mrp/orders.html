@@ -10,100 +10,47 @@
         rel="stylesheet">
 
   <style>
-    /* Bảng yêu cầu sản xuất luôn nằm trong chiều rộng màn hình */
+    /* Bảng danh sách chỉ giữ các thông tin cần cho việc theo dõi nhanh */
     .orders-table {
       width: 100%;
+      min-width: 980px;
       table-layout: fixed;
       border-collapse: collapse;
     }
 
     .orders-table th,
     .orders-table td {
-      padding: 7px 5px;
-      font-size: 12px;
+      padding: 10px 8px;
+      font-size: 13px;
       word-break: break-word;
       overflow-wrap: anywhere;
       vertical-align: middle;
     }
 
-    /* Mã */
-    .orders-table th:nth-child(1),
-    .orders-table td:nth-child(1) {
-      width: 5%;
-      text-align: center;
-    }
-
-    /* Sản phẩm */
-    .orders-table th:nth-child(2),
-    .orders-table td:nth-child(2) {
-      width: 12%;
-    }
-
-    /* Số lượng */
-    .orders-table th:nth-child(3),
-    .orders-table td:nth-child(3),
-      /* Hoàn thành */
-    .orders-table th:nth-child(4),
-    .orders-table td:nth-child(4),
-      /* Còn lại */
-    .orders-table th:nth-child(5),
-    .orders-table td:nth-child(5) {
-      width: 6%;
-      text-align: center;
-    }
-
-    /* Ngày giao */
-    .orders-table th:nth-child(6),
-    .orders-table td:nth-child(6) {
-      width: 9%;
-      text-align: center;
-    }
-
-    /* Tiến độ */
-    .orders-table th:nth-child(7),
-    .orders-table td:nth-child(7) {
-      width: 9%;
-      text-align: center;
-    }
+    .orders-table th:nth-child(1), .orders-table td:nth-child(1) { width:17%; }
+    .orders-table th:nth-child(2), .orders-table td:nth-child(2) { width:18%; }
+    .orders-table th:nth-child(3), .orders-table td:nth-child(3) { width:16%; text-align:center; }
+    .orders-table th:nth-child(4), .orders-table td:nth-child(4) { width:13%; }
+    .orders-table th:nth-child(5), .orders-table td:nth-child(5) { width:14%; text-align:center; }
+    .orders-table th:nth-child(6), .orders-table td:nth-child(6) { width:10%; text-align:center; }
+    .orders-table th:nth-child(7), .orders-table td:nth-child(7) { width:12%; }
 
     .orders-table progress {
       width: 100%;
-      max-width: 70px;
+      max-width: 120px;
       height: 8px;
     }
 
-    /* Nhân viên */
-    .orders-table th:nth-child(8),
-    .orders-table td:nth-child(8) {
-      width: 9%;
-    }
-
-    /* Hạn */
-    .orders-table th:nth-child(9),
-    .orders-table td:nth-child(9) {
-      width: 8%;
-      text-align: center;
-    }
-
-    /* Trạng thái */
-    .orders-table th:nth-child(10),
-    .orders-table td:nth-child(10) {
-      width: 8%;
-      text-align: center;
-    }
-
-    /* Cảnh báo */
-    .orders-table th:nth-child(11),
-    .orders-table td:nth-child(11) {
-      width: 9%;
-      text-align: center;
-    }
-
-    /* Thao tác */
-    .orders-table th:nth-child(12),
-    .orders-table td:nth-child(12) {
-      width: 13%;
-    }
+    .batch-code { display:block;font-weight:750;color:#1d4ed8; }
+    .batch-name { display:block;margin-top:3px;color:#334155;font-weight:600; }
+    .order-reference { display:block;margin-top:3px;color:#94a3b8;font-size:11px; }
+    .progress-numbers { display:block;margin-bottom:5px;color:#334155;font-weight:700; }
+    .progress-breakdown { display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:5px;font-size:11px; }
+    .progress-confirmed { color:#15803d;font-weight:700; }
+    .progress-pending { display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;background:#fef3c7;color:#92400e;font-weight:800; }
+    .progress-remaining { color:#64748b; }
+    .deadline-value { display:block; }
+    .deadline-warning { margin-top:7px; }
 
     /* Các nút */
     .orders-table .btn {
@@ -169,6 +116,11 @@
       color: #475569;
     }
 
+    .orders-table .action-record {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
     .orders-table .action-cancel {
       background-color: #fee2e2;
       color: #b91c1c;
@@ -178,22 +130,6 @@
       opacity: 0.8;
     }
 
-    .orders-table { min-width: 1450px; }
-    .orders-table th:nth-child(1), .orders-table td:nth-child(1) { width:9%; }
-    .orders-table th:nth-child(2), .orders-table td:nth-child(2) { width:13%; text-align:left; }
-    .orders-table th:nth-child(3), .orders-table td:nth-child(3) { width:5%; text-align:center; }
-    .orders-table th:nth-child(4), .orders-table td:nth-child(4) { width:12%; text-align:left; }
-    .orders-table th:nth-child(5), .orders-table td:nth-child(5),
-    .orders-table th:nth-child(6), .orders-table td:nth-child(6),
-    .orders-table th:nth-child(7), .orders-table td:nth-child(7) { width:5%; text-align:center; }
-    .orders-table th:nth-child(8), .orders-table td:nth-child(8),
-    .orders-table th:nth-child(9), .orders-table td:nth-child(9),
-    .orders-table th:nth-child(11), .orders-table td:nth-child(11),
-    .orders-table th:nth-child(12), .orders-table td:nth-child(12),
-    .orders-table th:nth-child(13), .orders-table td:nth-child(13) { width:8%; text-align:center; }
-    .orders-table th:nth-child(10), .orders-table td:nth-child(10) { width:9%; text-align:left; }
-    .orders-table th:nth-child(14), .orders-table td:nth-child(14) { width:11%; }
-    .batch-code { font-weight:750;color:#1d4ed8; }
     .aggregate-shortage-card { margin:0 0 18px;border:1px solid #fdba74;border-left:5px solid #f97316;background:#fffaf5;overflow:hidden; }
     .aggregate-shortage-card .content-card-header { background:#fff7ed;border-bottom-color:#fed7aa; }
     .aggregate-shortage-title { display:flex;align-items:center;gap:10px;color:#9a3412; }
@@ -314,19 +250,12 @@
 
             <thead>
             <tr>
-              <th>Mã đợt</th>
-              <th>Tên đợt</th>
-              <th>Mã YC</th>
+              <th>Đợt sản xuất</th>
               <th>Sản phẩm</th>
-              <th>SL</th>
-              <th>Đã Xong</th>
-              <th>Còn</th>
-              <th>Ngày giao</th>
               <th>Tiến độ</th>
               <th>Nhân viên</th>
-              <th>Hạn</th>
+              <th>Hạn hoàn thành</th>
               <th>Trạng thái</th>
-              <th>Cảnh báo</th>
               <th style="text-align: center;">Thao tác</th>
             </tr>
             </thead>
@@ -337,96 +266,64 @@
             <tr th:each="order : ${orders}"
                 th:classappend="${manager and order.overdueDays > 0 ? 'manager-order-overdue' : ''}">
 
-              <td class="batch-code" th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></td>
-              <td th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất cũ'}"></td>
-
-              <!-- Mã -->
-              <td th:text="${order.mayeucau}">
+              <!-- Đợt sản xuất -->
+              <td>
+                <span class="batch-code"
+                      th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></span>
+                <span class="batch-name"
+                      th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất cũ'}"></span>
+                <span class="order-reference" th:text="${'Yêu cầu #' + order.mayeucau}"></span>
               </td>
-
 
               <!-- Sản phẩm -->
-              <td th:text="${order.tensp}">
-              </td>
-
-
-              <!-- Số lượng -->
-              <td th:text="${order.soluongyeucau}">
-              </td>
-
-
-              <!-- Hoàn thành -->
-              <td th:text="${order.soluonghoanthanh}">
-              </td>
-
-
-              <!-- Còn lại -->
-              <td th:text="${order.soluongyeucau - order.soluonghoanthanh}">
-              </td>
-
-
-              <!-- Ngày giao -->
-              <td data-date-time th:text="${order.ngayyeucau}">
-              </td>
-
+              <td th:text="${order.tensp}"></td>
 
               <!-- Tiến độ -->
               <td>
-
+                <span class="progress-numbers"
+                      th:text="${(order.soluonghoanthanh + order.soluongchoduyet) + ' / ' + order.soluongyeucau + ' đã sản xuất'}"></span>
                 <progress
-                        th:value="${order.soluonghoanthanh}"
+                        th:value="${order.soluonghoanthanh + order.soluongchoduyet}"
                         th:max="${order.soluongyeucau > 0 ? order.soluongyeucau : 1}">
                 </progress>
-
-                <span
-                        th:text="${order.soluongyeucau > 0
-                                        ? order.soluonghoanthanh * 100 / order.soluongyeucau + '%'
-                                        : '0%'}">
-                                </span>
-
+                <span th:text="${order.soluongyeucau > 0
+                        ? (order.soluonghoanthanh + order.soluongchoduyet) * 100 / order.soluongyeucau + '%'
+                        : '0%'}"></span>
+                <div class="progress-breakdown">
+                  <span class="progress-confirmed"
+                        th:text="${'Đã duyệt: ' + order.soluonghoanthanh}"></span>
+                  <span class="progress-pending" th:if="${order.soluongchoduyet > 0}">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span th:text="${'Chờ duyệt: ' + order.soluongchoduyet}"></span>
+                  </span>
+                  <span class="progress-remaining"
+                        th:text="${'Còn sản xuất: ' + (order.soluongyeucau > order.soluonghoanthanh + order.soluongchoduyet
+                            ? order.soluongyeucau - order.soluonghoanthanh - order.soluongchoduyet : 0)}"></span>
+                </div>
               </td>
-
 
               <!-- Nhân viên -->
-              <td th:text="${order.hoten}">
+              <td th:text="${order.hoten}"></td>
+
+              <!-- Hạn và cảnh báo quá hạn -->
+              <td>
+                <span class="deadline-value" data-date-time th:text="${order.hanhoanthanh}"></span>
+                <span th:if="${order.overdueDays > 0}"
+                      class="order-overdue-badge deadline-warning">
+                  <i class="fas fa-clock"></i>
+                  <span th:text="${'Quá hạn ' + order.overdueDays + ' ngày'}"></span>
+                </span>
               </td>
-
-
-              <!-- Hạn -->
-              <td data-date-time th:text="${order.hanhoanthanh}">
-              </td>
-
 
               <!-- Trạng thái -->
               <td>
-                              <span
-                                      class="status-pill"
-                                      th:text="${
-                                      order.trangthai == 'HUY' ? 'Hủy' :
-                                      order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
-                                      order.trangthai
-                                  }">
-                              </span>
-
-              </td>
-
-
-              <!-- Cảnh báo quá hạn -->
-              <td>
-
-                                <span
-                                        th:if="${order.overdueDays > 0}"
-                                        class="order-overdue-badge">
-                                  <i class="fas fa-clock"></i>
-                                  <span th:text="'Quá hạn ' + ${order.overdueDays} + ' ngày'"></span>
-                                </span>
-
-                <span
-                        th:if="${order.overdueDays == 0}"
-                        style="color:#64748b;">
-                                    -
-                                </span>
-
+                <span class="status-pill"
+                      th:text="${
+                          order.trangthai == 'HUY' ? 'Hủy' :
+                          order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
+                          order.trangthai
+                      }">
+                </span>
               </td>
 
 
@@ -443,6 +340,17 @@
                           th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
                           class="action-btn action-view">
                     Xem
+                  </a>
+
+                  <!-- GHI NHẬN NHANH - CHỈ NHÂN VIÊN -->
+                  <a th:unless="${manager}"
+                     th:if="${order.trangthai != 'HOAN_THANH'
+                         and order.trangthai != 'HUY'
+                         and order.soluonghoanthanh + order.soluongchoduyet < order.soluongyeucau}"
+                     th:href="@{/san-xuat/ghi-nhan(orderId=${order.mayeucau})}"
+                     class="action-btn action-record"
+                     title="Ghi nhận thành phẩm và nhập kho sản xuất">
+                    <i class="fas fa-box-open"></i> Ghi nhận
                   </a>
 
 
@@ -494,7 +402,7 @@
                     class="empty-row"
                     th:if="${#lists.isEmpty(orders)}">
 
-              <td colspan="14">
+              <td colspan="7">
                 Chưa có dữ liệu để hiển thị.
               </td>
 

@@ -717,9 +717,11 @@
 
                                     <option th:each="order : ${orders}"
                                             th:value="${order.maycsx}"
+                                            th:selected="${selectedOrderId != null and selectedOrderId == order.maycsx}"
                                             th:text="${(order.madot_code != null ? order.madot_code : 'YCSX-' + order.maycsx)
                                                 + (order.tendot != null ? ' · ' + order.tendot : '')
                                                 + ' · ' + order.tenSp
+                                                 + ' · BOM ' + (order.phienban != null ? order.phienban : order.mabom)
                                                 + ' - Còn lại: '
                                                 + (order.soluongyeucau - order.soluonghoanthanh)
                                                 + (order.overdueDays > 0 ? ' · QUÁ HẠN ' + order.overdueDays + ' NGÀY' : '')}">
@@ -731,8 +733,7 @@
 
                                 <small style="color:#777;">
 
-                                    Chọn yêu cầu sản xuất để hệ thống
-                                    tự động lấy BOM.
+                                    Phiên bản BOM được hiển thị ngay trong từng yêu cầu để dễ phân biệt.
 
                                 </small>
 
@@ -747,7 +748,7 @@
 
                                 <label for="bomIdDisplay">
 
-                                    BOM
+                                    BOM áp dụng
 
                                     <span class="required">*</span>
 
@@ -784,8 +785,7 @@
 
                                 <small style="color:#777;">
 
-                                    BOM được tự động lấy theo
-                                    yêu cầu sản xuất.
+                                    BOM được khóa theo yêu cầu sản xuất và không thể thay đổi tại bước ghi nhận.
 
                                 </small>
 
@@ -2363,13 +2363,14 @@
        INITIALIZE
        ============================================================= */
 
-    updateSummary();
-
-    updateBomFromOrder();
-
-    renderMaterials();
-
-    updateSubmitButton();
+    if (orderSelect.value) {
+        orderSelect.dispatchEvent(new Event('change'));
+    } else {
+        updateSummary();
+        updateBomFromOrder();
+        renderMaterials();
+        updateSubmitButton();
+    }
 
     /* Hiện modal nếu Service trả lỗi sau khi submit */
     if (serverError) {

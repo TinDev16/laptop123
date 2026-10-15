@@ -37,12 +37,17 @@ public class ProductionOrderService {
             String search
     ) {
         String sql = "SELECT y.maycsx AS mayeucau, y.soluongyeucau, " +
-                "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
+                "y.soluonghoanthanh, COALESCE(p.soluongchoduyet, 0) AS soluongchoduyet, " +
+                "y.ngayyeucau, y.hanhoanthanh, " +
                 "y.trangthai, s.tensp, n.hoten, d.madot, d.madot_code, d.tendot " +
                 "FROM yeucausanxuat y " +
                 "JOIN sanpham s ON s.masp = y.masp " +
                 "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach " +
-                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
+                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot " +
+                "LEFT JOIN (" +
+                "SELECT maycsx, SUM(soluonghoanthanh) AS soluongchoduyet " +
+                "FROM ketqua_sanxuat WHERE trangthai = 'CHO_XAC_NHAN' GROUP BY maycsx" +
+                ") p ON p.maycsx = y.maycsx ";
 
         List<Map<String, Object>> rows;
 
@@ -202,6 +207,16 @@ public class ProductionOrderService {
         addOverdueInfo(order);
 
         return order;
+    }
+
+    public int pendingResultCount(long orderId) {
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM ketqua_sanxuat " +
+                        "WHERE maycsx = ? AND trangthai = 'CHO_XAC_NHAN'",
+                Integer.class,
+                orderId
+        );
+        return count == null ? 0 : count;
     }
 
     // =========================================================

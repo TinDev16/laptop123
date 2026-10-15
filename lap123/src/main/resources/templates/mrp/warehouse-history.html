@@ -12,6 +12,32 @@
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .warehouse-item-summary {
+            min-width: 220px;
+            max-width: 360px;
+            white-space: normal;
+            line-height: 1.45;
+        }
+
+        .warehouse-person {
+            min-width: 150px;
+        }
+
+        .document-code {
+            display: block;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .document-type {
+            display: block;
+            margin-top: 0.2rem;
+            color: #6b7280;
+            font-size: 0.78rem;
+        }
+    </style>
 </head>
 
 
@@ -147,6 +173,10 @@
                             </th>
 
                             <th>
+                                Hàng hóa
+                            </th>
+
+                            <th>
                                 Chứng từ
                             </th>
 
@@ -159,7 +189,11 @@
                             </th>
 
                             <th>
-                                Người thực hiện
+                                Người xử lý kho
+                            </th>
+
+                            <th>
+                                Người sản xuất
                             </th>
 
                             <th>
@@ -194,8 +228,23 @@
                             </td>
 
 
-                            <td th:text="${r.ma_chung_tu}">
+                            <td class="warehouse-item-summary"
+                                th:text="${r.hanghoa ?: '-'}">
                                 -
+                            </td>
+
+
+                            <td>
+                                <span class="document-code"
+                                      th:text="${r.ma_chung_tu}">-</span>
+                                <span class="document-type"
+                                      th:switch="${r.bang_tham_chieu}">
+                                    <span th:case="'phieunhap_nvl'">Phiếu nhập NVL</span>
+                                    <span th:case="'phieuxuat_nvl'">Phiếu xuất NVL</span>
+                                    <span th:case="'ketqua_sanxuat'">Nhập thành phẩm sản xuất</span>
+                                    <span th:case="'phieuxuat_thanhpham'">Phiếu xuất thành phẩm</span>
+                                    <span th:case="*" th:text="${r.bang_tham_chieu}">Chứng từ</span>
+                                </span>
                             </td>
 
 
@@ -211,7 +260,14 @@
                             </td>
 
 
-                            <td th:text="${r.nguoithuchien}">
+                            <td class="warehouse-person"
+                                th:text="${r.nguoithuchien ?: '-'}">
+                                -
+                            </td>
+
+
+                            <td class="warehouse-person"
+                                th:text="${r.nguoisanxuat ?: '-'}">
                                 -
                             </td>
 
@@ -242,7 +298,7 @@
                         <tr class="empty-row"
                             th:if="${#lists.isEmpty(rows)}">
 
-                            <td colspan="8">
+                            <td colspan="10">
 
                                 Chưa có dữ liệu để hiển thị.
 

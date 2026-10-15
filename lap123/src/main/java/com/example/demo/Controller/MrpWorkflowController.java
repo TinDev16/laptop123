@@ -205,12 +205,23 @@ public class MrpWorkflowController {
     }
 
     @GetMapping("/san-xuat/ket-qua")
-    public String results(Authentication auth, Model model) {
+    public String results(Authentication auth,
+                          @RequestParam(required = false) Long orderId,
+                          Model model) {
         if (!manager(auth)) {
             return "redirect:/san-xuat/ghi-nhan";
         }
+        List<Map<String, Object>> resultList = documents.results(auth.getName(), true);
+        if (orderId != null) {
+            resultList = resultList.stream()
+                    .filter(result -> result.get("mayeucau") instanceof Number number
+                            && number.longValue() == orderId
+                            && "CHO_XAC_NHAN".equals(String.valueOf(result.get("trangthai"))))
+                    .toList();
+        }
         model.addAttribute("manager", true);
-        model.addAttribute("results", documents.results(auth.getName(), true));
+        model.addAttribute("results", resultList);
+        model.addAttribute("selectedOrderId", orderId);
         return "mrp/results";
     }
 

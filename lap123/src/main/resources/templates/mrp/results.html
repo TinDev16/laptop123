@@ -1,6 +1,10 @@
 <!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Kết quả sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
 <div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Duyệt kết quả sản xuất', 'Sản xuất / Duyệt kết quả')}"></div><main class="content-body">
 <h1>Duyệt kết quả sản xuất</h1>
+<div th:if="${selectedOrderId != null}" class="directory-alert" style="margin:12px 0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <span><i class="fas fa-filter"></i> Kết quả đang chờ duyệt của <strong th:text="${'Yêu cầu #' + selectedOrderId}"></strong></span>
+    <a class="btn btn-secondary" th:href="@{/san-xuat/ket-qua}"><i class="fas fa-list"></i> Xem tất cả</a>
+</div>
 <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Kết quả sản xuất</h2><span class="record-count" th:text="${#lists.size(results) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead>
 <tr>
     <th>Mã</th>

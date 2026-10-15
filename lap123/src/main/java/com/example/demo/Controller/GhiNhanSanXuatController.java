@@ -27,9 +27,12 @@ public class GhiNhanSanXuatController {
     }
 
     @GetMapping
-    public String index(Authentication auth, Model model) {
+    public String index(Authentication auth,
+                        @RequestParam(required = false) Long orderId,
+                        Model model) {
         model.addAttribute("orders", service.getOrders(auth.getName()));
         model.addAttribute("results", documents.results(auth.getName(), false));
+        model.addAttribute("selectedOrderId", orderId);
         return "mrp/ghi-nhan-san-xuat";
     }
 

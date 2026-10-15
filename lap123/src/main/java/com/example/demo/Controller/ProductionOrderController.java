@@ -215,6 +215,10 @@ public class ProductionOrderController {
                 "manager",
                 isManager
         );
+        model.addAttribute(
+                "pendingResultCount",
+                isManager ? service.pendingResultCount(id) : 0
+        );
 
         return "mrp/order-detail";
     }

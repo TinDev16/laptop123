@@ -17,6 +17,60 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        .production-document-heading {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .production-document-id {
+            color: #2563eb;
+        }
+
+        .production-document-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1rem;
+            padding: 1.25rem;
+        }
+
+        .production-document-summary > p {
+            min-height: 76px;
+            margin: 0;
+            padding: 0.85rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .production-document-summary > p > strong {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: #64748b;
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .production-document-summary > p > span,
+        .production-document-summary > p > a {
+            color: #0f172a;
+            font-weight: 650;
+            line-height: 1.4;
+        }
+
+        .production-document-note {
+            grid-column: 1 / -1;
+            border-left: 4px solid #94a3b8 !important;
+        }
+
+        .quantity-with-unit {
+            white-space: nowrap;
+        }
+    </style>
+
 </head>
 
 
@@ -61,11 +115,11 @@
                  TIÊU ĐỀ
                  ================================================= -->
 
-            <h1>
+            <h1 class="production-document-heading">
 
-                Chi tiết chứng từ
+                <span th:text="${documentTypeLabel}">Chi tiết chứng từ</span>
 
-                <span th:text="${documentId}">
+                <span class="production-document-id" th:text="${'#' + documentId}">
                     -
                 </span>
 
@@ -90,7 +144,7 @@
                 </div>
 
 
-                <div style="padding:1rem;">
+                <div class="production-document-summary">
 
 
                     <!-- Mã chứng từ -->
@@ -113,12 +167,10 @@
                     <p>
 
                         <strong>
-                            Bảng chứng từ:
+                            Loại chứng từ:
                         </strong>
 
-                        <span th:text="${sourceTable}">
-                            -
-                        </span>
+                        <span th:text="${documentTypeLabel}">-</span>
 
                     </p>
 
@@ -128,7 +180,7 @@
                     <p>
 
                         <strong>
-                            Thời gian:
+                            Thời gian ghi sổ kho:
                         </strong>
 
                         <span data-date-time
@@ -150,7 +202,7 @@
                     <p>
 
                         <strong>
-                            Người thực hiện:
+                            Người thao tác kho:
                         </strong>
 
                         <span
@@ -164,6 +216,89 @@
                             -
                         </span>
 
+                    </p>
+
+
+                    <p th:if="${documentInfo['trangthai_chungtu'] != null}">
+                        <strong>Trạng thái chứng từ:</strong>
+                        <span class="badge-status success"
+                              th:text="${documentInfo['trangthai_chungtu']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['nhanviensanxuat'] != null}">
+                        <strong>Nhân viên sản xuất:</strong>
+                        <span th:text="${documentInfo['nhanviensanxuat']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['nguoidenghi'] != null}">
+                        <strong>Người đề nghị xuất NVL:</strong>
+                        <span th:text="${documentInfo['nguoidenghi']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['nguoiduyet'] != null}">
+                        <strong>Người duyệt:</strong>
+                        <span th:text="${documentInfo['nguoiduyet']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['mayeucau'] != null}">
+                        <strong>Yêu cầu sản xuất:</strong>
+                        <a th:href="@{/san-xuat/yeu-cau/{id}(id=${documentInfo['mayeucau']})}"
+                           th:text="${'YCSX-' + documentInfo['mayeucau']}">-</a>
+                    </p>
+
+
+                    <p th:if="${documentInfo['thanhpham_sanxuat'] != null}">
+                        <strong>Thành phẩm sản xuất:</strong>
+                        <span th:text="${documentInfo['thanhpham_sanxuat']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['mabom'] != null}">
+                        <strong>BOM áp dụng:</strong>
+                        <a th:href="@{/bom/{id}(id=${documentInfo['mabom']})}"
+                           th:text="${'BOM #' + documentInfo['mabom'] + (documentInfo['phienban_bom'] != null ? ' - ' + documentInfo['phienban_bom'] : '')}">-</a>
+                    </p>
+
+
+                    <p th:if="${documentInfo['tendot'] != null or documentInfo['madot_code'] != null}">
+                        <strong>Đợt sản xuất:</strong>
+                        <span th:text="${(documentInfo['madot_code'] != null ? documentInfo['madot_code'] + ' - ' : '') + (documentInfo['tendot'] != null ? documentInfo['tendot'] : '')}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['ngaylap_chungtu'] != null}">
+                        <strong>Thời gian lập/Ghi nhận:</strong>
+                        <span data-date-time th:text="${documentInfo['ngaylap_chungtu']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['ngayduyet_chungtu'] != null}">
+                        <strong>Thời gian duyệt:</strong>
+                        <span data-date-time th:text="${documentInfo['ngayduyet_chungtu']}">-</span>
+                    </p>
+
+
+                    <p th:if="${documentInfo['soluongloi'] != null}">
+                        <strong>Số lượng lỗi:</strong>
+                        <span data-number th:text="${documentInfo['soluongloi']}">0</span>
+                    </p>
+
+
+                    <p class="production-document-note"
+                       th:if="${documentInfo['lydo'] != null and !#strings.isEmpty(documentInfo['lydo'])}">
+                        <strong>Lý do:</strong>
+                        <span th:text="${documentInfo['lydo']}">-</span>
+                    </p>
+
+
+                    <p class="production-document-note"
+                       th:if="${documentInfo['ghichu_chungtu'] != null and !#strings.isEmpty(#strings.trim(documentInfo['ghichu_chungtu']))}">
+                        <strong>Ghi chú:</strong>
+                        <span th:text="${documentInfo['ghichu_chungtu']}">-</span>
                     </p>
 
 
@@ -249,6 +384,11 @@
 
                             <th>
                                 Tên hàng
+                            </th>
+
+
+                            <th>
+                                BOM
                             </th>
 
 
@@ -390,6 +530,11 @@
                             </td>
 
 
+                            <td th:text="${row['mabom'] != null ? 'BOM #' + row['mabom'] + (row['phienban_bom'] != null ? ' - ' + row['phienban_bom'] : '') : '-'}">
+                                -
+                            </td>
+
+
                             <!-- GIAO DỊCH -->
 
                             <td>
@@ -444,12 +589,9 @@
 
                             <!-- SỐ LƯỢNG -->
 
-                            <td
-                                    data-number
-                                    th:text="${row['soluong']}">
-
-                                0
-
+                            <td class="quantity-with-unit">
+                                <span data-number th:text="${row['soluong']}">0</span>
+                                <span th:text="${row['donvitinh']}">Cái</span>
                             </td>
 
 
@@ -499,7 +641,7 @@
                                 th:if="${rows == null or rows.isEmpty()}">
 
 
-                            <td colspan="10">
+                            <td colspan="11">
 
                                 Không có chi tiết giao dịch.
 

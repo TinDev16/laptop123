@@ -84,12 +84,12 @@ public class SecurityConfig {
                         /*
                          * =========================================================
                          * QUẢN LÝ TÀI KHOẢN
-                         * Chỉ QUẢN LÝ KHO
+                         * Chỉ ADMIN
                          * =========================================================
                          */
                         .requestMatchers(
                                 "/quanlytaikhoan/**"
-                        ).hasRole("QUAN_LY_KHO")
+                        ).hasRole("ADMIN")
 
 
                         /*

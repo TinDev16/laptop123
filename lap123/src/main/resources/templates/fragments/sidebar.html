@@ -57,7 +57,6 @@
       <a th:href="@{/thuonghieu}" class="menu-item" th:classappend="${activeTab == 'thuonghieu' ? 'active' : ''}"><i class="fas fa-tags"></i><span>Thương hiệu</span></a>
       <div class="menu-heading">HỆ THỐNG</div>
       <a th:href="@{/nhanvien}" class="menu-item" th:classappend="${activeTab == 'nhanvien' ? 'active' : ''}"><i class="fas fa-user-tie"></i><span>Nhân viên</span></a>
-      <a th:href="@{/quanlytaikhoan}" class="menu-item" th:classappend="${activeTab == 'taikhoan' ? 'active' : ''}"><i class="fas fa-user-shield"></i><span>Tài khoản</span></a>
       <a th:href="@{/baocao}" class="menu-item" th:classappend="${activeTab == 'baocao' ? 'active' : ''}"><i class="fas fa-chart-line"></i><span>Báo cáo</span></a>
     </div>
     <div sec:authorize="hasRole('NHAN_VIEN')">

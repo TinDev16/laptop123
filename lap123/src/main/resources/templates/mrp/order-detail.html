@@ -11,10 +11,34 @@
     .material-shortage-actions{display:flex;justify-content:flex-end;margin-top:15px}
     .shortage-number{font-weight:800;color:#b91c1c}
     .order-detail-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    .directory-alert--info{border-color:#93c5fd!important;border-left-color:#2563eb!important;background:#eff6ff!important;color:#1e3a8a!important}
+    .directory-alert--warning{border-color:#fcd34d!important;border-left-color:#d97706!important;background:#fffbeb!important;color:#78350f!important}
 </style></head><body>
 <div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết yêu cầu sản xuất', 'MRP / Yêu cầu sản xuất')}"></div><main class="content-body">
 <div class="page-header"><div><h1 class="page-title" th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất #' + order.mayeucau}"></h1><p class="page-description" th:text="${(order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau) + ' · Yêu cầu #' + order.mayeucau}"></p></div><div class="order-detail-actions"><a th:if="${manager}" th:href="@{/san-xuat/ket-qua(orderId=${order.mayeucau})}" class="btn" th:classappend="${pendingResultCount > 0 ? 'btn-primary' : 'btn-secondary'}"><i class="fas fa-clipboard-check"></i> Duyệt kết quả <span th:text="${'(' + pendingResultCount + ')'}"></span></a><a th:href="@{/san-xuat/yeu-cau}" class="btn btn-back"><i class="fas fa-arrow-left"></i> Về danh sách</a></div></div>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Thông tin yêu cầu</h2></div><div class="content-card-body"><p><strong>Đợt sản xuất:</strong> <span th:text="${order.tendot != null ? order.tendot : 'Dữ liệu cũ chưa phân đợt'}"></span></p><p><strong>Sản phẩm:</strong> <span th:text="${order.tensp}"></span></p><p><strong>Số lượng cần:</strong> <span th:text="${order.soluongyeucau}"></span> &nbsp; <strong>Đã hoàn thành:</strong> <span th:text="${order.soluonghoanthanh}"></span> &nbsp; <strong>Còn lại:</strong> <span th:text="${order.soluongyeucau - order.soluonghoanthanh}"></span></p><p><strong>BOM áp dụng:</strong> <span th:text="${order.tenbom}"></span> &nbsp; <strong>Nhân viên:</strong> <span th:text="${order.hoten}"></span></p><p><strong>Ngày giao:</strong> <span data-date-time th:text="${order.ngayyeucau}"></span> &nbsp; <strong>Hạn:</strong> <span data-date-time th:text="${order.hanhoanthanh}"></span> &nbsp; <strong>Trạng thái:</strong> <span class="status-pill" th:text="${order.trangthai}"></span></p><p th:if="${order.ghichu_dot != null and !order.ghichu_dot.isBlank()}"><strong>Ghi chú đợt:</strong> <span th:text="${order.ghichu_dot}"></span></p></div></div>
+<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Thông tin yêu cầu</h2></div><div class="content-card-body"><p><strong>Đợt sản xuất:</strong> <span th:text="${order.tendot != null ? order.tendot : 'Dữ liệu cũ chưa phân đợt'}"></span></p><p><strong>Sản phẩm:</strong> <span th:text="${order.tensp}"></span></p><p><strong>Số lượng cần:</strong> <span data-number th:text="${order.soluongyeucau}"></span> &nbsp; <strong>Đã ghi nhận tại xưởng:</strong> <span data-number th:text="${order.soluongdaghinhan}"></span> &nbsp; <strong>Chờ duyệt:</strong> <span data-number th:text="${order.soluongchoduyet}"></span> &nbsp; <strong>Đã xác nhận nhập kho:</strong> <span data-number th:text="${order.soluonghoanthanh}"></span> &nbsp; <strong>Còn phải sản xuất:</strong> <span data-number th:text="${order.soluongconphaisanxuat}"></span></p><p><strong>BOM áp dụng:</strong> <span th:text="${order.tenbom}"></span> &nbsp; <strong>Nhân viên:</strong> <span th:text="${order.hoten}"></span></p><p><strong>Ngày giao:</strong> <span data-date-time th:text="${order.ngayyeucau}"></span> &nbsp; <strong>Hạn:</strong> <span data-date-time th:text="${order.hanhoanthanh}"></span> &nbsp; <strong>Trạng thái:</strong> <span class="status-pill" th:text="${order.trangthai}"></span></p><p th:if="${order.ghichu_dot != null and !order.ghichu_dot.isBlank()}"><strong>Ghi chú đợt:</strong> <span th:text="${order.ghichu_dot}"></span></p></div></div>
+
+<div th:if="${order.soluongconphaisanxuat == 0 and order.soluongchoduyet > 0}"
+     class="directory-alert directory-alert--info" style="margin:16px 0;">
+    <i class="fas fa-clock"></i>
+    <strong>Đã ghi nhận đủ sản lượng tại xưởng.</strong>
+    Nguyên vật liệu đã được tiêu hao khi ghi nhận sản xuất; hiện còn
+    <span data-number th:text="${order.soluongchoduyet}"></span> thành phẩm chờ quản lý xác nhận nhập kho.
+</div>
+
+<div th:if="${order.soluongchuaguiketqua > 0}"
+     class="directory-alert directory-alert--warning" style="margin:16px 0;">
+    <i class="fas fa-triangle-exclamation"></i>
+    <strong>Đã ghi nhận đủ sản lượng tại xưởng nhưng chưa có kết quả chờ duyệt.</strong>
+    Có <span data-number th:text="${order.soluongchuaguiketqua}"></span> thành phẩm thuộc dữ liệu cũ cần tạo lại chứng từ chờ duyệt.
+    <form th:action="@{/san-xuat/yeu-cau/{id}/repair-result(id=${order.mayeucau})}"
+          method="post" style="display:inline-block;margin-left:12px"
+          onsubmit="return confirm('Tạo kết quả chờ duyệt từ sản lượng đã ghi nhận? Hệ thống sẽ không trừ NVL lần nữa.');">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-rotate"></i> Khôi phục kết quả chờ duyệt
+        </button>
+    </form>
+</div>
     <!-- Cảnh báo quá hạn sản xuất -->
     <div th:if="${order.overdueDays > 0}"
          class="directory-alert directory-alert--error"
@@ -39,7 +63,7 @@
         <ul class="material-shortage-list">
             <li th:each="need : ${needs}" th:if="${need.shortage > 0}">
                 <strong th:text="${need.code + ' - ' + need.name}"></strong>
-                <span>Còn thiếu <b class="shortage-number" data-number th:text="${need.shortage}"></b> <span th:text="${need.unit}"></span> · Cần <span data-number th:text="${need.needed}"></span> · Hiện có <span data-number th:text="${need.available}"></span> · Đang chờ xuất <span data-number th:text="${need.pending}"></span></span>
+                <span>Còn thiếu <b class="shortage-number" data-number th:text="${need.shortage}"></b> <span th:text="${need.unit}"></span> · Nhu cầu còn lại <span data-number th:text="${need.needed}"></span> · Hiện có <span data-number th:text="${need.available}"></span> · Đang chờ xuất <span data-number th:text="${need.pending}"></span></span>
             </li>
         </ul>
         <div class="material-shortage-actions" th:unless="${manager}">
@@ -48,5 +72,5 @@
             </a>
         </div>
     </section>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">BOM và nhu cầu nguyên vật liệu</h2></div><div class="table-container"><table><thead><tr><th>NVL</th><th>Định mức</th><th>Hao hụt (%)</th><th>Nhu cầu thực tế</th><th>Tồn hiện tại</th><th>Đang chờ xuất</th><th>Còn thiếu</th></tr></thead><tbody><tr th:each="need : ${needs}"><td th:text="${need.code + ' - ' + need.name}"></td><td><span data-number th:text="${need.standard}"></span> <span th:text="${need.unit}"></span></td><td data-number th:text="${need.waste}"></td><td data-number th:text="${need.needed}"></td><td data-number th:text="${need.available}"></td><td data-number th:text="${need.pending}"></td><td data-number th:text="${need.shortage}"></td></tr><tr class="empty-row" th:if="${#lists.isEmpty(needs)}"><td colspan="7">BOM chưa có nguyên vật liệu.</td></tr></tbody></table></div></div>
+<div class="content-card"><div class="content-card-header"><div><h2 class="content-card-title">BOM và nhu cầu nguyên vật liệu</h2><p class="page-description" style="margin:.35rem 0 0">Tổng nhu cầu được tính cho toàn bộ yêu cầu; nhu cầu còn lại chỉ tính phần chưa sản xuất hoặc chưa ghi nhận.</p></div></div><div class="table-container"><table><thead><tr><th>NVL</th><th>Định mức</th><th>Hao hụt (%)</th><th>Tổng nhu cầu BOM</th><th>Nhu cầu còn lại</th><th>Tồn hiện tại</th><th>Đang chờ xuất</th><th>Còn thiếu</th></tr></thead><tbody><tr th:each="need : ${needs}"><td th:text="${need.code + ' - ' + need.name}"></td><td><span data-number th:text="${need.standard}"></span> <span th:text="${need.unit}"></span></td><td data-number th:text="${need.waste}"></td><td data-number th:text="${need.totalNeeded}"></td><td data-number th:text="${need.needed}"></td><td data-number th:text="${need.available}"></td><td data-number th:text="${need.pending}"></td><td data-number th:text="${need.shortage}"></td></tr><tr class="empty-row" th:if="${#lists.isEmpty(needs)}"><td colspan="8">BOM chưa có nguyên vật liệu.</td></tr></tbody></table></div></div>
 </main></div></div></body></html>

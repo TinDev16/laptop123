@@ -380,6 +380,33 @@ public class ProductionOrderController {
         return "redirect:/san-xuat/yeu-cau/" + id;
     }
 
+    @PostMapping("/{id}/repair-result")
+    public String repairMissingResult(
+            @PathVariable long id,
+            Authentication auth,
+            RedirectAttributes redirect
+    ) {
+        try {
+            long resultId = service.repairMissingProductionResult(
+                    id,
+                    auth.getName(),
+                    manager(auth)
+            );
+            redirect.addFlashAttribute(
+                    "success",
+                    "Đã khôi phục kết quả sản xuất từ sản lượng ghi nhận tại xưởng."
+            );
+
+            return manager(auth)
+                    ? "redirect:/san-xuat/ket-qua/" + resultId
+                    : "redirect:/san-xuat/yeu-cau/" + id;
+
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirect.addFlashAttribute("error", exception.getMessage());
+            return "redirect:/san-xuat/yeu-cau/" + id;
+        }
+    }
+
     // =========================================================
     // LỊCH SỬ HOẠT ĐỘNG
     // GET /san-xuat/yeu-cau/{id}/history

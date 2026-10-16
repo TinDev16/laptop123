@@ -120,8 +120,10 @@ public class ProductionOrderService {
                             CEIL(
                                 GREATEST(
                                     y.soluongyeucau
-                                    - y.soluonghoanthanh
-                                    - COALESCE(g.daghi, 0),
+                                    - GREATEST(
+                                        COALESCE(g.daghi, 0),
+                                        y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                                    ),
                                     0
                                 )
                                 * c.soluong_dinhmuc
@@ -139,6 +141,12 @@ public class ProductionOrderService {
                         GROUP BY maycsx
                     ) g ON g.maycsx = y.maycsx
                     LEFT JOIN (
+                        SELECT maycsx, SUM(soluonghoanthanh) AS dangcho
+                        FROM ketqua_sanxuat
+                        WHERE trangthai = 'CHO_XAC_NHAN'
+                        GROUP BY maycsx
+                    ) r ON r.maycsx = y.maycsx
+                    LEFT JOIN (
                         SELECT p.maycsx, c.manvl, SUM(c.soluong) AS soluong
                         FROM phieuxuat_nvl p
                         JOIN ct_phieuxuat_nvl c ON c.mapx = p.mapx
@@ -148,7 +156,10 @@ public class ProductionOrderService {
                              AND pending.manvl = n.manvl
                     WHERE t.email = ?
                       AND y.trangthai NOT IN ('HOAN_THANH', 'HUY')
-                      AND y.soluonghoanthanh + COALESCE(g.daghi, 0) < y.soluongyeucau
+                      AND GREATEST(
+                            COALESCE(g.daghi, 0),
+                            y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                          ) < y.soluongyeucau
                     GROUP BY n.manvl, n.manvl_code, n.tennvl, n.donvitinh
                 ) requirements
                 LEFT JOIN kho_nvl_san_xuat k ON k.manvl = requirements.manvl
@@ -169,13 +180,20 @@ public class ProductionOrderService {
                 "y.nguoiphutrach AS manv, y.soluongyeucau, " +
                 "y.soluonghoanthanh, y.ngayyeucau, y.hanhoanthanh, " +
                 "y.trangthai, y.ghichu, " +
+                "COALESCE(g.soluongdaghinhan, 0) AS soluongdaghinhan, " +
+                "COALESCE(p.soluongchoduyet, 0) AS soluongchoduyet, " +
                 "s.tensp, b.phienban, CONCAT(s.tensp, ' / BOM ', b.phienban) AS tenbom, " +
                 "n.hoten, d.madot, d.madot_code, d.tendot, d.ghichu AS ghichu_dot " +
                 "FROM yeucausanxuat y " +
                 "JOIN sanpham s ON s.masp = y.masp " +
                 "JOIN bom b ON b.mabom = y.mabom " +
                 "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach " +
-                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
+                "LEFT JOIN dot_san_xuat d ON d.madot = y.madot " +
+                "LEFT JOIN (SELECT maycsx, SUM(soluong) AS soluongdaghinhan " +
+                "FROM ghi_nhan_san_xuat GROUP BY maycsx) g ON g.maycsx = y.maycsx " +
+                "LEFT JOIN (SELECT maycsx, SUM(soluonghoanthanh) AS soluongchoduyet " +
+                "FROM ketqua_sanxuat WHERE trangthai = 'CHO_XAC_NHAN' GROUP BY maycsx) p " +
+                "ON p.maycsx = y.maycsx ";
 
         List<Map<String, Object>> rows = manager
                 ? jdbc.queryForList(
@@ -204,9 +222,149 @@ public class ProductionOrderService {
 
         Map<String, Object> order = rows.get(0);
 
+        int requested = ((Number) order.get("soluongyeucau")).intValue();
+        int confirmed = ((Number) order.get("soluonghoanthanh")).intValue();
+        int recorded = ((Number) order.get("soluongdaghinhan")).intValue();
+        int pendingResult = ((Number) order.get("soluongchoduyet")).intValue();
+        int effectiveProduced = Math.max(recorded, confirmed + pendingResult);
+
+        order.put("soluongdasanxuat", effectiveProduced);
+        order.put(
+                "soluongchuaguiketqua",
+                Math.max(recorded - confirmed - pendingResult, 0)
+        );
+        order.put(
+                "soluongconphaisanxuat",
+                Math.max(requested - effectiveProduced, 0)
+        );
+
         addOverdueInfo(order);
 
         return order;
+    }
+
+    @Transactional
+    public long repairMissingProductionResult(
+            long orderId,
+            String email,
+            boolean manager
+    ) {
+        String baseSql = """
+                SELECT
+                    y.maycsx,
+                    y.masp,
+                    y.mabom,
+                    y.nguoiphutrach,
+                    y.soluongyeucau,
+                    y.soluonghoanthanh,
+                    y.trangthai
+                FROM yeucausanxuat y
+                """;
+
+        List<Map<String, Object>> orders = manager
+                ? jdbc.queryForList(
+                        baseSql + " WHERE y.maycsx = ? FOR UPDATE",
+                        orderId
+                )
+                : jdbc.queryForList(
+                        baseSql +
+                                " JOIN taikhoan t ON t.manv = y.nguoiphutrach " +
+                                " WHERE y.maycsx = ? AND t.email = ? FOR UPDATE",
+                        orderId,
+                        email
+                );
+
+        if (orders.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy yêu cầu sản xuất hoặc bạn không có quyền xử lý."
+            );
+        }
+
+        Map<String, Object> order = orders.get(0);
+        String status = String.valueOf(order.get("trangthai"));
+        if ("HUY".equals(status) || "HOAN_THANH".equals(status)) {
+            throw new IllegalStateException(
+                    "Yêu cầu sản xuất đã kết thúc, không thể khôi phục kết quả."
+            );
+        }
+
+        int requested = ((Number) order.get("soluongyeucau")).intValue();
+        int confirmed = ((Number) order.get("soluonghoanthanh")).intValue();
+
+        Integer recorded = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluong), 0) FROM ghi_nhan_san_xuat WHERE maycsx = ?",
+                Integer.class,
+                orderId
+        );
+        Integer pending = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluonghoanthanh), 0) FROM ketqua_sanxuat " +
+                        "WHERE maycsx = ? AND trangthai = 'CHO_XAC_NHAN'",
+                Integer.class,
+                orderId
+        );
+
+        int recordedValue = recorded == null ? 0 : recorded;
+        int pendingValue = pending == null ? 0 : pending;
+        int unmatchedRecorded = Math.max(
+                recordedValue - confirmed - pendingValue,
+                0
+        );
+        int remainingResultCapacity = Math.max(
+                requested - confirmed - pendingValue,
+                0
+        );
+        int quantity = Math.min(unmatchedRecorded, remainingResultCapacity);
+
+        if (quantity <= 0) {
+            throw new IllegalStateException(
+                    "Không còn sản lượng ghi nhận cũ nào cần tạo kết quả chờ duyệt."
+            );
+        }
+
+        int productId = ((Number) order.get("masp")).intValue();
+        int bomId = ((Number) order.get("mabom")).intValue();
+        Number stockValue = jdbc.queryForObject(
+                "SELECT COALESCE(soluongton, 0) FROM kho_thanhpham_san_xuat " +
+                        "WHERE masp = ? AND mabom = ? FOR UPDATE",
+                Number.class,
+                productId,
+                bomId
+        );
+        int productionStock = stockValue == null ? 0 : stockValue.intValue();
+        if (productionStock < quantity) {
+            throw new IllegalStateException(
+                    "Kho thành phẩm sản xuất không còn đủ số lượng để khôi phục kết quả."
+            );
+        }
+
+        List<Integer> workers = jdbc.queryForList(
+                "SELECT nguoighi FROM ghi_nhan_san_xuat " +
+                        "WHERE maycsx = ? ORDER BY ngayghi DESC, id DESC LIMIT 1",
+                Integer.class,
+                orderId
+        );
+        int workerId = workers.isEmpty()
+                ? ((Number) order.get("nguoiphutrach")).intValue()
+                : workers.get(0);
+
+        jdbc.update(
+                "INSERT INTO ketqua_sanxuat " +
+                        "(maycsx, nguoithuchien, soluonghoanthanh, soluongloi, trangthai, ghichu) " +
+                        "VALUES (?, ?, ?, 0, 'CHO_XAC_NHAN', ?)",
+                orderId,
+                workerId,
+                quantity,
+                "Khôi phục từ sản lượng đã ghi nhận tại xưởng trước khi hợp nhất quy trình."
+        );
+
+        Long resultId = jdbc.queryForObject(
+                "SELECT LAST_INSERT_ID()",
+                Long.class
+        );
+        if (resultId == null) {
+            throw new IllegalStateException("Không tạo được kết quả sản xuất chờ duyệt.");
+        }
+        return resultId;
     }
 
     public int pendingResultCount(long orderId) {
@@ -1047,14 +1205,15 @@ public class ProductionOrderService {
                 "mayeucau"
         )).longValue();
 
-        int confirmedRemaining =
+        int requestedQuantity =
                 ((Number) order.get(
                         "soluongyeucau"
-                )).intValue()
-                        -
-                        ((Number) order.get(
-                                "soluonghoanthanh"
-                        )).intValue();
+                )).intValue();
+
+        int confirmedQuantity =
+                ((Number) order.get(
+                        "soluonghoanthanh"
+                )).intValue();
 
         Integer recordedQuantity = jdbc.queryForObject(
                 "SELECT COALESCE(SUM(soluong), 0) FROM ghi_nhan_san_xuat WHERE maycsx = ?",
@@ -1062,8 +1221,21 @@ public class ProductionOrderService {
                 ((Number) order.get("mayeucau")).longValue()
         );
 
+        Integer pendingResultQuantity = jdbc.queryForObject(
+                "SELECT COALESCE(SUM(soluonghoanthanh), 0) " +
+                        "FROM ketqua_sanxuat " +
+                        "WHERE maycsx = ? AND trangthai = 'CHO_XAC_NHAN'",
+                Integer.class,
+                orderId
+        );
+
+        int effectiveProduced = Math.max(
+                recordedQuantity == null ? 0 : recordedQuantity,
+                confirmedQuantity + (pendingResultQuantity == null ? 0 : pendingResultQuantity)
+        );
+
         int remaining = Math.max(
-                confirmedRemaining - (recordedQuantity == null ? 0 : recordedQuantity),
+                requestedQuantity - effectiveProduced,
                 0
         );
 
@@ -1122,6 +1294,21 @@ public class ProductionOrderService {
                                     RoundingMode.CEILING
                             );
 
+            BigDecimal totalNeeded =
+                    standard
+                            .multiply(
+                                    BigDecimal.valueOf(requestedQuantity)
+                            )
+                            .multiply(
+                                    BigDecimal.ONE.add(
+                                            waste.movePointLeft(2)
+                                    )
+                            )
+                            .setScale(
+                                    0,
+                                    RoundingMode.CEILING
+                            );
+
             BigDecimal available =
                     (BigDecimal) line.get(
                             "soluongton"
@@ -1138,6 +1325,7 @@ public class ProductionOrderService {
                             (String) line.get("donvitinh"),
                             standard,
                             waste,
+                            totalNeeded,
                             needed,
                             available,
                             pending,
@@ -1264,6 +1452,7 @@ public class ProductionOrderService {
             String unit,
             BigDecimal standard,
             BigDecimal waste,
+            BigDecimal totalNeeded,
             BigDecimal needed,
             BigDecimal available,
             BigDecimal pending,

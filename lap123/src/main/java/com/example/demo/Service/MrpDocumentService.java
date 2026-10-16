@@ -193,7 +193,13 @@ public class MrpDocumentService {
                     s.tensp,
                     b.phienban,
                     y.soluongyeucau,
-                    LEAST(y.soluongyeucau, y.soluonghoanthanh + COALESCE(g.daghi, 0)) AS soluonghoanthanh,
+                    LEAST(
+                        y.soluongyeucau,
+                        GREATEST(
+                            COALESCE(g.daghi, 0),
+                            y.soluonghoanthanh + COALESCE(p.dagui, 0)
+                        )
+                    ) AS soluonghoanthanh,
                     y.hanhoanthanh AS ngaydenhan,
                     CASE
                         WHEN y.trangthai NOT IN ('HOAN_THANH', 'HUY')
@@ -210,7 +216,10 @@ public class MrpDocumentService {
                         0
                     ) AS soluong_co_the_gui,
                     GREATEST(
-                        y.soluongyeucau - y.soluonghoanthanh - COALESCE(g.daghi, 0),
+                        y.soluongyeucau - GREATEST(
+                            COALESCE(g.daghi, 0),
+                            y.soluonghoanthanh + COALESCE(p.dagui, 0)
+                        ),
                         0
                     ) AS soluong_con_lai
                 FROM yeucausanxuat y
@@ -232,7 +241,10 @@ public class MrpDocumentService {
                 WHERE t.email = ?
                   AND y.trangthai <> 'HUY'
                   AND (
-                      y.soluonghoanthanh + COALESCE(g.daghi, 0) < y.soluongyeucau
+                      GREATEST(
+                          COALESCE(g.daghi, 0),
+                          y.soluonghoanthanh + COALESCE(p.dagui, 0)
+                      ) < y.soluongyeucau
                       OR COALESCE(g.daghi, 0) > COALESCE(p.dagui, 0)
                   )
                 ORDER BY y.maycsx DESC
@@ -327,8 +339,10 @@ public class MrpDocumentService {
                         CEIL(
                             GREATEST(
                                 y.soluongyeucau
-                                - y.soluonghoanthanh
-                                - COALESCE(g.daghi, 0),
+                                - GREATEST(
+                                    COALESCE(g.daghi, 0),
+                                    y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                                ),
                                 0
                             )
                             * c.soluong_dinhmuc
@@ -339,8 +353,10 @@ public class MrpDocumentService {
                             CEIL(
                                 GREATEST(
                                     y.soluongyeucau
-                                    - y.soluonghoanthanh
-                                    - COALESCE(g.daghi, 0),
+                                    - GREATEST(
+                                        COALESCE(g.daghi, 0),
+                                        y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                                    ),
                                     0
                                 )
                                 * c.soluong_dinhmuc
@@ -360,6 +376,12 @@ public class MrpDocumentService {
                     FROM ghi_nhan_san_xuat
                     GROUP BY maycsx
                 ) g ON g.maycsx = y.maycsx
+                LEFT JOIN (
+                    SELECT maycsx, SUM(soluonghoanthanh) AS dangcho
+                    FROM ketqua_sanxuat
+                    WHERE trangthai = 'CHO_XAC_NHAN'
+                    GROUP BY maycsx
+                ) r ON r.maycsx = y.maycsx
                 LEFT JOIN (
                     SELECT p.maycsx, c.manvl, SUM(c.soluong) AS soluong
                     FROM phieuxuat_nvl p
@@ -730,7 +752,7 @@ public class MrpDocumentService {
                 Integer.class, orderId);
         if (pending == null) pending = 0;
 
-        int availableRecorded = recorded - pending;
+        int availableRecorded = recorded - confirmed - pending;
         int remainingOrder = requested - confirmed - pending;
         if (availableRecorded <= 0) {
             throw new IllegalStateException("Chưa có thành phẩm chưa gửi kết quả cho yêu cầu này.");

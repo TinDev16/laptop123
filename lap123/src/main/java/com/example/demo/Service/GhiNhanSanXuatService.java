@@ -40,8 +40,10 @@ public class GhiNhanSanXuatService {
 
                     LEAST(
                         y.soluongyeucau,
-                        y.soluonghoanthanh
-                        + COALESCE(g.daghi,0)
+                        GREATEST(
+                            COALESCE(g.daghi, 0),
+                            y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                        )
                     ) AS soluonghoanthanh,
 
                     y.soluonghoanthanh
@@ -62,8 +64,10 @@ public class GhiNhanSanXuatService {
 
                     GREATEST(
                         y.soluongyeucau
-                        - y.soluonghoanthanh
-                        - COALESCE(g.daghi,0),
+                        - GREATEST(
+                            COALESCE(g.daghi, 0),
+                            y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                        ),
                         0
                     ) AS soluong_con_lai
 
@@ -91,14 +95,26 @@ public class GhiNhanSanXuatService {
                 ) g
                     ON g.maycsx = y.maycsx
 
+                LEFT JOIN
+                (
+                    SELECT
+                        maycsx,
+                        SUM(soluonghoanthanh) AS dangcho
+                    FROM ketqua_sanxuat
+                    WHERE trangthai = 'CHO_XAC_NHAN'
+                    GROUP BY maycsx
+                ) r
+                    ON r.maycsx = y.maycsx
+
                 WHERE t.email = ?
                   AND y.trangthai IN (
                       'DA_GIAO',
                       'DANG_SAN_XUAT'
                   )
-                  AND y.soluonghoanthanh
-                      + COALESCE(g.daghi,0)
-                      < y.soluongyeucau
+                  AND GREATEST(
+                        COALESCE(g.daghi, 0),
+                        y.soluonghoanthanh + COALESCE(r.dangcho, 0)
+                      ) < y.soluongyeucau
 
                 ORDER BY y.maycsx DESC
                 """,
@@ -288,10 +304,26 @@ public class GhiNhanSanXuatService {
             recorded = 0;
         }
 
+        Integer pendingResult =
+                jdbc.queryForObject(
+                        """
+                        SELECT COALESCE(SUM(soluonghoanthanh), 0)
+                        FROM ketqua_sanxuat
+                        WHERE maycsx = ?
+                          AND trangthai = 'CHO_XAC_NHAN'
+                        """,
+                        Integer.class,
+                        orderId
+                );
+
+        int effectiveProduced = Math.max(
+                recorded,
+                confirmed + (pendingResult == null ? 0 : pendingResult)
+        );
+
         int remaining =
                 requested
-                        - confirmed
-                        - recorded;
+                        - effectiveProduced;
 
         if (remaining <= 0) {
 

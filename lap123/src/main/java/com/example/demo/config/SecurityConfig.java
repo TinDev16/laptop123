@@ -61,6 +61,12 @@ public class SecurityConfig {
                                 "/sidebar.js",
                                 "/number-format.js",
                                 "/status-format.js",
+
+                                // Các file JS đang bị 403
+                                "/archive-sections.js",
+                                "/date-time-format.js",
+                                "/table-action-buttons.js",
+
                                 "/uploads/**"
                         ).permitAll()
 

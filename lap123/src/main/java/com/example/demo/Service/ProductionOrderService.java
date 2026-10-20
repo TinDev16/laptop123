@@ -7,11 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -89,6 +86,223 @@ public class ProductionOrderService {
         }
 
         return rows;
+    }
+
+    public List<Map<String, Object>> listGrouped(
+            String email,
+            boolean manager,
+            String search
+    ) {
+        String sql = """
+        SELECT
+            COALESCE(y.madot, -y.maycsx) AS group_key,
+            d.madot,
+            d.madot_code,
+            d.tendot,
+            MIN(y.maycsx) AS mayeucau,
+            GROUP_CONCAT(
+                DISTINCT s.tensp
+                ORDER BY s.tensp SEPARATOR ', '
+            ) AS tensp,
+            COUNT(DISTINCT y.maycsx) AS soyeucau,
+SUM(
+    CASE
+        WHEN y.trangthai <> 'HUY' OR y.trangthai IS NULL
+        THEN y.soluongyeucau
+        ELSE 0
+    END
+) AS soluongyeucau,
+
+SUM(
+    CASE
+        WHEN y.trangthai <> 'HUY' OR y.trangthai IS NULL
+        THEN y.soluonghoanthanh
+        ELSE 0
+    END
+) AS soluonghoanthanh,
+
+SUM(
+    CASE
+        WHEN y.trangthai <> 'HUY' OR y.trangthai IS NULL
+        THEN COALESCE(p.soluongchoduyet, 0)
+        ELSE 0
+    END
+) AS soluongchoduyet,
+            GROUP_CONCAT(
+                DISTINCT n.hoten
+                ORDER BY n.hoten SEPARATOR ', '
+            ) AS hoten,
+            MAX(
+                        CASE
+                            WHEN y.trangthai <> 'HUY' OR y.trangthai IS NULL
+                            THEN y.hanhoanthanh
+                            ELSE NULL
+                        END
+                    ) AS hanhoanthanh,
+CASE
+    -- Tất cả sản phẩm đều bị hủy
+    WHEN SUM(
+        CASE
+            WHEN y.trangthai = 'HUY' THEN 0
+            ELSE 1
+        END
+    ) = 0 THEN 'HUY'
+
+    -- Tất cả sản phẩm còn hiệu lực đã hoàn thành
+    WHEN SUM(
+        CASE
+            WHEN y.trangthai <> 'HUY' OR y.trangthai IS NULL
+            THEN GREATEST(
+                COALESCE(y.soluongyeucau, 0)
+                - COALESCE(y.soluonghoanthanh, 0),
+                0
+            )
+            ELSE 0
+        END
+    ) = 0 THEN 'HOAN_THANH'
+
+    ELSE 'DANG_THUC_HIEN'
+END AS trangthai
+        FROM yeucausanxuat y
+        JOIN sanpham s ON s.masp = y.masp
+        LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach
+        LEFT JOIN dot_san_xuat d ON d.madot = y.madot
+        LEFT JOIN (
+            SELECT maycsx, SUM(soluonghoanthanh) AS soluongchoduyet
+            FROM ketqua_sanxuat
+            WHERE trangthai = 'CHO_XAC_NHAN'
+            GROUP BY maycsx
+        ) p ON p.maycsx = y.maycsx
+        """;
+
+        List<Map<String, Object>> rows;
+
+        if (manager) {
+            rows = jdbc.queryForList(
+                    sql + """
+                GROUP BY
+                    COALESCE(y.madot, -y.maycsx),
+                    d.madot, d.madot_code, d.tendot
+                ORDER BY MAX(y.maycsx) DESC
+                """
+            );
+        } else {
+            rows = jdbc.queryForList(
+                    sql + """
+                JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                WHERE t.email = ?
+                GROUP BY
+                    COALESCE(y.madot, -y.maycsx),
+                    d.madot, d.madot_code, d.tendot
+                ORDER BY MAX(y.maycsx) DESC
+                """,
+                    email
+            );
+        }
+
+        for (Map<String, Object> row : rows) {
+
+            // Chỉ tính tình trạng NVL cho tài khoản nhân viên.
+            if (!manager) {
+                row.put("tinhtrangnvl", getMaterialStatus(email, row));
+            }
+
+            int requested = ((Number) row.get("soluongyeucau")).intValue();
+            int confirmed = ((Number) row.get("soluonghoanthanh")).intValue();
+            int pending = ((Number) row.get("soluongchoduyet")).intValue();
+
+            row.put("soluongdahoanthanh", confirmed + pending);
+            row.put(
+                    "soluongconphaisanxuat",
+                    Math.max(requested - confirmed - pending, 0)
+            );
+
+            // Tính quá hạn theo tổng số lượng của đợt.
+            addOverdueInfo(row);
+
+            // Giữ tương thích với template và cách hiển thị cũ.
+            row.put(
+                    "tenhienthi",
+                    row.get("tendot") != null
+                            ? row.get("tendot")
+                            : "Yêu cầu sản xuất cũ"
+            );
+        }
+
+        if (search == null || search.isBlank()) {
+            return rows;
+        }
+
+        String keyword = search.trim().toLowerCase();
+
+        if ("quá hạn".equalsIgnoreCase(keyword)) {
+            rows.removeIf(row ->
+                    !(row.get("overdueDays") instanceof Number value)
+                            || value.longValue() <= 0
+            );
+            return rows;
+        }
+
+        rows.removeIf(row ->
+                !contains(row.get("madot_code"), keyword)
+                        && !contains(row.get("tendot"), keyword)
+                        && !contains(row.get("tensp"), keyword)
+                        && !contains(row.get("hoten"), keyword)
+                        && !contains("YCSX-" + row.get("mayeucau"), keyword)
+        );
+
+        return rows;
+    }
+
+    public List<Map<String, Object>> getBatchOrders(
+            long batchId,
+            String email,
+            boolean manager
+    ) {
+        List<Long> ids;
+
+        if (manager) {
+            ids = jdbc.queryForList(
+                    """
+                    SELECT maycsx
+                    FROM yeucausanxuat
+                    WHERE madot = ?
+                    ORDER BY maycsx
+                    """,
+                    Long.class,
+                    batchId
+            );
+        } else {
+            ids = jdbc.queryForList(
+                    """
+                    SELECT y.maycsx
+                    FROM yeucausanxuat y
+                    JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                    WHERE y.madot = ?
+                      AND t.email = ?
+                    ORDER BY y.maycsx
+                    """,
+                    Long.class,
+                    batchId,
+                    email
+            );
+        }
+
+        if (ids.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy đợt sản xuất hoặc bạn không có quyền xem đợt này."
+            );
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Long id : ids) {
+            Map<String, Object> order = get(id, email, manager);
+            order.put("needs", materialNeeds(order));
+            result.add(order);
+        }
+
+        return result;
     }
 
     public List<Map<String, Object>> aggregateMaterialShortages(String email) {
@@ -483,6 +697,10 @@ public class ProductionOrderService {
     // TẠO YÊU CẦU SẢN XUẤT
     // =========================================================
 
+// =========================================================
+// TẠO ĐỢT SẢN XUẤT - MỖI DÒNG CÓ NHÂN VIÊN VÀ HẠN RIÊNG
+// =========================================================
+
     @Transactional
     public int createBatch(
             String creatorEmail,
@@ -493,64 +711,150 @@ public class ProductionOrderService {
             List<LocalDate> deadlines,
             String note
     ) {
-        String normalizedName = batchName == null ? "" : batchName.trim();
-        if (normalizedName.length() < 3 || normalizedName.length() > 150) {
-            throw new IllegalArgumentException("Tên đợt sản xuất phải từ 3 đến 150 ký tự.");
+        // 1. Kiểm tra tên đợt và ghi chú
+        String normalizedName = batchName == null
+                ? ""
+                : batchName.trim();
+
+        if (normalizedName.length() < 3
+                || normalizedName.length() > 150) {
+            throw new IllegalArgumentException(
+                    "Tên đợt sản xuất phải từ 3 đến 150 ký tự."
+            );
         }
+
         if (note != null && note.length() > 255) {
-            throw new IllegalArgumentException("Ghi chú tối đa 255 ký tự.");
+            throw new IllegalArgumentException(
+                    "Ghi chú tối đa 255 ký tự."
+            );
         }
+
+        // 2. Kiểm tra số lượng dòng gửi lên
         if (bomIds == null || bomIds.isEmpty()) {
-            throw new IllegalArgumentException("Yêu cầu phải có ít nhất một thành phẩm.");
+            throw new IllegalArgumentException(
+                    "Yêu cầu phải có ít nhất một thành phẩm."
+            );
         }
 
         int size = bomIds.size();
-        if (employeeIds == null || quantities == null || deadlines == null ||
-                employeeIds.size() != size || quantities.size() != size || deadlines.size() != size) {
-            throw new IllegalArgumentException("Thông tin các dòng thành phẩm không đầy đủ.");
+
+        if (employeeIds == null || employeeIds.size() != size) {
+            throw new IllegalArgumentException(
+                    "Thông tin nhân viên phụ trách không đầy đủ."
+            );
         }
 
-        Set<String> assignments = new HashSet<>();
-        for (int i = 0; i < size; i++) {
-            Long bomId = bomIds.get(i);
-            Integer employeeId = employeeIds.get(i);
-            if (bomId != null && employeeId != null && !assignments.add(bomId + ":" + employeeId)) {
+        if (quantities == null || quantities.size() != size) {
+            throw new IllegalArgumentException(
+                    "Thông tin số lượng thành phẩm không đầy đủ."
+            );
+        }
+
+        if (deadlines == null || deadlines.size() != size) {
+            throw new IllegalArgumentException(
+                    "Thông tin hạn hoàn thành không đầy đủ."
+            );
+        }
+
+        // 3. Kiểm tra dữ liệu riêng của từng dòng
+        LocalDate today = LocalDate.now();
+
+        for (int index = 0; index < size; index++) {
+            Long bomId = bomIds.get(index);
+            Integer employeeId = employeeIds.get(index);
+            Integer quantity = quantities.get(index);
+            LocalDate deadline = deadlines.get(index);
+
+            if (bomId == null || bomId <= 0) {
                 throw new IllegalArgumentException(
-                        "Không được giao trùng cùng thành phẩm/BOM cho cùng một nhân viên trong một yêu cầu."
+                        "Vui lòng chọn BOM cho thành phẩm thứ "
+                                + (index + 1) + "."
+                );
+            }
+
+            if (employeeId == null || employeeId <= 0) {
+                throw new IllegalArgumentException(
+                        "Vui lòng chọn nhân viên cho thành phẩm thứ "
+                                + (index + 1) + "."
+                );
+            }
+
+            if (quantity == null || quantity <= 0) {
+                throw new IllegalArgumentException(
+                        "Số lượng thành phẩm thứ "
+                                + (index + 1)
+                                + " phải lớn hơn 0."
+                );
+            }
+
+            if (deadline == null || deadline.isBefore(today)) {
+                throw new IllegalArgumentException(
+                        "Hạn hoàn thành của thành phẩm thứ "
+                                + (index + 1)
+                                + " không được ở quá khứ."
                 );
             }
         }
 
+        // Không cấm trùng BOM:
+        // Cùng BOM có thể được giao cho nhiều nhân viên khác nhau,
+        // mỗi dòng có số lượng và hạn hoàn thành riêng.
+
+        // 4. Xác định người tạo đợt
         Integer creator = jdbc.queryForObject(
                 "SELECT manv FROM taikhoan WHERE email = ?",
                 Integer.class,
                 creatorEmail
         );
+
         if (creator == null) {
-            throw new IllegalArgumentException("Tài khoản quản lý chưa liên kết với nhân viên.");
+            throw new IllegalArgumentException(
+                    "Tài khoản quản lý chưa liên kết với nhân viên."
+            );
         }
 
+        // 5. Tạo đợt sản xuất dùng chung
         KeyHolder keyHolder = new GeneratedKeyHolder();
+
         jdbc.update(connection -> {
             var statement = connection.prepareStatement(
-                    "INSERT INTO dot_san_xuat (tendot, nguoitao, ghichu) VALUES (?, ?, ?)",
+                    """
+                    INSERT INTO dot_san_xuat
+                        (tendot, nguoitao, ghichu)
+                    VALUES (?, ?, ?)
+                    """,
                     Statement.RETURN_GENERATED_KEYS
             );
+
             statement.setString(1, normalizedName);
             statement.setInt(2, creator);
             statement.setString(3, note);
+
             return statement;
         }, keyHolder);
 
         Number generatedKey = keyHolder.getKey();
-        if (generatedKey == null) {
-            throw new IllegalStateException("Không thể tạo mã đợt sản xuất.");
-        }
-        long batchId = generatedKey.longValue();
-        String batchCode = "SX-" + LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                + "-" + String.format("%06d", batchId);
-        jdbc.update("UPDATE dot_san_xuat SET madot_code = ? WHERE madot = ?", batchCode, batchId);
 
+        if (generatedKey == null) {
+            throw new IllegalStateException(
+                    "Không thể tạo mã đợt sản xuất."
+            );
+        }
+
+        long batchId = generatedKey.longValue();
+
+        String batchCode = "SX-"
+                + today.format(DateTimeFormatter.BASIC_ISO_DATE)
+                + "-"
+                + String.format("%06d", batchId);
+
+        jdbc.update(
+                "UPDATE dot_san_xuat SET madot_code = ? WHERE madot = ?",
+                batchCode,
+                batchId
+        );
+
+        // 6. Tạo từng yêu cầu con với dữ liệu tương ứng theo chỉ số
         for (int index = 0; index < size; index++) {
             createInternal(
                     creatorEmail,
@@ -563,6 +867,7 @@ public class ProductionOrderService {
             );
         }
 
+        // Transaction sẽ rollback toàn bộ nếu một dòng tạo thất bại.
         return size;
     }
 
@@ -696,20 +1001,32 @@ public class ProductionOrderService {
 
     public Map<String, Object> getForEdit(long id) {
         List<Map<String, Object>> rows = jdbc.queryForList(
-                "SELECT y.maycsx AS mayeucau, " +
-                        "y.masp, y.mabom, " +
-                        "y.nguoiphutrach AS manv, " +
-                        "y.soluongyeucau, " +
-                        "y.soluonghoanthanh, " +
-                        "y.ngayyeucau, " +
-                        "y.hanhoanthanh, " +
-                        "y.trangthai, " +
-                        "y.ghichu, " +
-                        "s.tensp, n.hoten " +
-                        "FROM yeucausanxuat y " +
-                        "JOIN sanpham s ON s.masp = y.masp " +
-                        "LEFT JOIN nhanvien n ON n.manv = y.nguoiphutrach " +
-                        "WHERE y.maycsx = ?",
+                """
+                SELECT
+                    y.maycsx AS mayeucau,
+                    y.masp,
+                    y.mabom,
+                    y.madot,
+                    y.nguoiphutrach AS manv,
+                    y.soluongyeucau,
+                    y.soluonghoanthanh,
+                    y.ngayyeucau,
+                    y.hanhoanthanh,
+                    y.trangthai,
+                    y.ghichu,
+                    s.tensp,
+                    n.hoten,
+                    d.madot_code,
+                    d.tendot
+                FROM yeucausanxuat y
+                JOIN sanpham s
+                    ON s.masp = y.masp
+                LEFT JOIN nhanvien n
+                    ON n.manv = y.nguoiphutrach
+                LEFT JOIN dot_san_xuat d
+                    ON d.madot = y.madot
+                WHERE y.maycsx = ?
+                """,
                 id
         );
 
@@ -1070,13 +1387,265 @@ public class ProductionOrderService {
 
         jdbc.update(
                 "UPDATE yeucausanxuat " +
-                        "SET trangthai = 'HUY', " +
-                        "lydohuy = ?, " +
-                        "ngayhuy = NOW() " +
+                        "SET trangthai_truoc_khi_huy = trangthai, " +
+                        "    trangthai = 'HUY', " +
+                        "    lydohuy = ?, " +
+                        "    ngayhuy = NOW() " +
                         "WHERE maycsx = ?",
                 reason,
                 id
         );
+    }
+
+    @Transactional
+    public void cancelBatch(
+            String editorEmail,
+            Long batchId,
+            String reason
+    ) {
+        // -----------------------------------------------------
+        // 1. Kiểm tra lý do hủy
+        // -----------------------------------------------------
+
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Vui lòng nhập lý do hủy đợt sản xuất."
+            );
+        }
+
+        reason = reason.trim();
+
+        if (reason.length() > 255) {
+            throw new IllegalArgumentException(
+                    "Lý do hủy tối đa 255 ký tự."
+            );
+        }
+
+        // -----------------------------------------------------
+        // 2. Kiểm tra đợt sản xuất tồn tại
+        // -----------------------------------------------------
+
+        Integer batchExists = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM dot_san_xuat WHERE madot = ?",
+                Integer.class,
+                batchId
+        );
+
+        if (batchExists == null || batchExists == 0) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy đợt sản xuất."
+            );
+        }
+
+        // -----------------------------------------------------
+        // 3. Lấy tất cả yêu cầu trong đợt và khóa các dòng
+        // -----------------------------------------------------
+
+        List<Map<String, Object>> orders = jdbc.queryForList(
+                "SELECT maycsx, trangthai " +
+                        "FROM yeucausanxuat " +
+                        "WHERE madot = ? " +
+                        "FOR UPDATE",
+                batchId
+        );
+
+        if (orders.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Đợt sản xuất này không có yêu cầu nào."
+            );
+        }
+
+// -----------------------------------------------------
+// 4. Kiểm tra trạng thái các yêu cầu
+//    - Đã hoàn thành: không cho hủy đợt
+//    - Đã hủy: bỏ qua
+//    - Còn lại: tiếp tục xử lý
+// -----------------------------------------------------
+
+        boolean hasOrderToCancel = false;
+
+        for (Map<String, Object> order : orders) {
+            String status = String.valueOf(order.get("trangthai"));
+
+            if ("HOAN_THANH".equals(status)) {
+                throw new IllegalArgumentException(
+                        "Không thể hủy đợt vì có yêu cầu đã hoàn thành."
+                );
+            }
+
+            if (!"HUY".equals(status)) {
+                hasOrderToCancel = true;
+            }
+        }
+
+        if (!hasOrderToCancel) {
+            throw new IllegalArgumentException(
+                    "Tất cả yêu cầu trong đợt này đã bị hủy trước đó."
+            );
+        }
+
+        // -----------------------------------------------------
+        // 5. Xác định tài khoản người hủy
+        // -----------------------------------------------------
+
+        Integer editorId = jdbc.queryForObject(
+                "SELECT manv FROM taikhoan WHERE email = ?",
+                Integer.class,
+                editorEmail
+        );
+
+        if (editorId == null) {
+            throw new IllegalArgumentException(
+                    "Tài khoản quản lý chưa liên kết với nhân viên."
+            );
+        }
+
+// -----------------------------------------------------
+// 6. Chỉ hủy những yêu cầu chưa bị hủy
+//    Không tự động hoàn trả nguyên vật liệu.
+// -----------------------------------------------------
+
+        int updated = jdbc.update(
+                "UPDATE yeucausanxuat " +
+                        "SET trangthai_truoc_khi_huy = trangthai, " +
+                        "    trangthai = 'HUY', " +
+                        "    lydohuy = ?, " +
+                        "    ngayhuy = NOW() " +
+                        "WHERE madot = ? " +
+                        "AND (trangthai IS NULL OR trangthai <> 'HUY')",
+                reason,
+                batchId
+        );
+
+        if (updated != orders.stream()
+                .filter(order -> !"HUY".equals(
+                        String.valueOf(order.get("trangthai"))
+                ))
+                .count()) {
+            throw new IllegalStateException(
+                    "Số lượng yêu cầu được hủy không khớp. " +
+                            "Vui lòng tải lại trang và thử lại."
+            );
+        }
+    }
+
+    @Transactional
+    public void uncancelBatch(
+            String editorEmail,
+            Long batchId
+    ) {
+        Integer editorId = jdbc.queryForObject(
+                "SELECT manv FROM taikhoan WHERE email = ?",
+                Integer.class,
+                editorEmail
+        );
+
+        if (editorId == null) {
+            throw new IllegalArgumentException(
+                    "Tài khoản quản lý chưa liên kết với nhân viên."
+            );
+        }
+
+        List<Map<String, Object>> orders = jdbc.queryForList(
+                "SELECT maycsx, trangthai, trangthai_truoc_khi_huy " +
+                        "FROM yeucausanxuat WHERE madot = ? FOR UPDATE",
+                batchId
+        );
+
+        if (orders.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy yêu cầu trong đợt sản xuất."
+            );
+        }
+
+        for (Map<String, Object> order : orders) {
+            if (!"HUY".equals(
+                    String.valueOf(order.get("trangthai"))
+            )) {
+                throw new IllegalArgumentException(
+                        "Không thể bỏ hủy vì có yêu cầu chưa bị hủy."
+                );
+            }
+
+            if (order.get("trangthai_truoc_khi_huy") == null) {
+                throw new IllegalArgumentException(
+                        "Yêu cầu này đã bị hủy trước khi có chức năng lưu trạng thái cũ. " +
+                                "Không thể khôi phục chính xác trạng thái ban đầu."
+                );
+            }
+        }
+
+        for (Map<String, Object> order : orders) {
+            jdbc.update(
+                    "UPDATE yeucausanxuat " +
+                            "SET trangthai = trangthai_truoc_khi_huy, " +
+                            "    trangthai_truoc_khi_huy = NULL, " +
+                            "    lydohuy = NULL, " +
+                            "    ngayhuy = NULL " +
+                            "WHERE maycsx = ? AND trangthai = 'HUY'",
+                    order.get("maycsx")
+            );
+        }
+    }
+
+    @Transactional
+    public void uncancel(String editorEmail, long id) {
+        Integer editorId = jdbc.queryForObject(
+                "SELECT manv FROM taikhoan WHERE email = ?",
+                Integer.class,
+                editorEmail
+        );
+
+        if (editorId == null) {
+            throw new IllegalArgumentException(
+                    "Tài khoản quản lý chưa liên kết với nhân viên."
+            );
+        }
+
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT maycsx, trangthai, trangthai_truoc_khi_huy " +
+                        "FROM yeucausanxuat WHERE maycsx = ? FOR UPDATE",
+                id
+        );
+
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy yêu cầu sản xuất."
+            );
+        }
+
+        Map<String, Object> order = rows.get(0);
+
+        if (!"HUY".equals(String.valueOf(order.get("trangthai")))) {
+            throw new IllegalArgumentException(
+                    "Yêu cầu này chưa bị hủy."
+            );
+        }
+
+        Object oldStatus = order.get("trangthai_truoc_khi_huy");
+
+        if (oldStatus == null || String.valueOf(oldStatus).isBlank()) {
+            throw new IllegalArgumentException(
+                    "Không có trạng thái trước khi hủy để khôi phục. " +
+                            "Yêu cầu này có thể đã bị hủy trước khi có chức năng lưu trạng thái cũ."
+            );
+        }
+
+        int updated = jdbc.update(
+                "UPDATE yeucausanxuat " +
+                        "SET trangthai = trangthai_truoc_khi_huy, " +
+                        "    trangthai_truoc_khi_huy = NULL, " +
+                        "    lydohuy = NULL, " +
+                        "    ngayhuy = NULL " +
+                        "WHERE maycsx = ? AND trangthai = 'HUY'",
+                id
+        );
+
+        if (updated != 1) {
+            throw new IllegalStateException(
+                    "Không thể bỏ hủy yêu cầu sản xuất."
+            );
+        }
     }
 
     // =========================================================
@@ -1458,5 +2027,261 @@ public class ProductionOrderService {
             BigDecimal pending,
             BigDecimal shortage
     ) {
+    }
+
+    public Map<String, Object> getBatchInfo(
+            long batchId,
+            String email,
+            boolean manager
+    ) {
+        String sql = """
+        SELECT
+            d.madot,
+            d.madot_code,
+            d.tendot,
+            d.ghichu
+        FROM dot_san_xuat d
+        WHERE d.madot = ?
+        """;
+
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                sql,
+                batchId
+        );
+
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy đợt sản xuất."
+            );
+        }
+
+        // Xác minh người dùng có quyền xem ít nhất một yêu cầu
+        // thuộc đợt sản xuất này.
+        if (!manager) {
+            Integer count = jdbc.queryForObject(
+                    """
+                    SELECT COUNT(*)
+                    FROM yeucausanxuat y
+                    JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                    WHERE y.madot = ?
+                      AND t.email = ?
+                    """,
+                    Integer.class,
+                    batchId,
+                    email
+            );
+
+            if (count == null || count == 0) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "Bạn không có quyền xem đợt sản xuất này."
+                );
+            }
+        }
+
+        return rows.get(0);
+    }
+
+    // =========================================================
+// TÌNH TRẠNG NVL CỦA TOÀN BỘ YÊU CẦU TRONG ĐỢT
+// =========================================================
+
+    private String getMaterialStatus(
+            String email,
+            Map<String, Object> order
+    ) {
+        String status = String.valueOf(order.get("trangthai"));
+
+        if ("HUY".equals(status) || "HOAN_THANH".equals(status)) {
+            return "KHONG_CAN";
+        }
+
+        List<Map<String, Object>> materials;
+
+        Object batchValue = order.get("madot");
+
+        if (batchValue instanceof Number batchNumber) {
+            // Đợt có mã: tổng hợp tất cả yêu cầu trong đợt
+            // mà nhân viên hiện tại phụ trách.
+            materials = jdbc.queryForList(
+                    """
+                    SELECT
+                        c.manvl,
+                        SUM(
+                            CEIL(
+                                GREATEST(
+                                    y.soluongyeucau
+                                    - GREATEST(
+                                        COALESCE(g.daghi, 0),
+                                        y.soluonghoanthanh
+                                            + COALESCE(r.dangcho, 0)
+                                    ),
+                                    0
+                                )
+                                * c.soluong_dinhmuc
+                                * (1 + c.tyle_haohut / 100)
+                            )
+                        ) AS nhu_cau,
+                        COALESCE(k.soluongton, 0) AS ton_kho,
+                        SUM(COALESCE(px.soluong, 0)) AS dang_cho_xuat
+                    FROM yeucausanxuat y
+                    JOIN taikhoan t
+                        ON t.manv = y.nguoiphutrach
+                    JOIN bom_chitiet c
+                        ON c.mabom = y.mabom
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluong) AS daghi
+                        FROM ghi_nhan_san_xuat
+                        GROUP BY maycsx
+                    ) g ON g.maycsx = y.maycsx
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluonghoanthanh) AS dangcho
+                        FROM ketqua_sanxuat
+                        WHERE trangthai = 'CHO_XAC_NHAN'
+                        GROUP BY maycsx
+                    ) r ON r.maycsx = y.maycsx
+                    LEFT JOIN (
+                        SELECT
+                            p.maycsx,
+                            ct.manvl,
+                            SUM(ct.soluong) AS soluong
+                        FROM phieuxuat_nvl p
+                        JOIN ct_phieuxuat_nvl ct
+                            ON ct.mapx = p.mapx
+                        WHERE p.trangthai = 'CHO_DUYET'
+                        GROUP BY p.maycsx, ct.manvl
+                    ) px ON px.maycsx = y.maycsx
+                        AND px.manvl = c.manvl
+                    LEFT JOIN kho_nvl_san_xuat k
+                        ON k.manvl = c.manvl
+                    WHERE y.madot = ?
+                      AND t.email = ?
+                      AND (y.trangthai IS NULL
+                           OR y.trangthai NOT IN ('HUY', 'HOAN_THANH'))
+                    GROUP BY c.manvl, k.soluongton
+                    """,
+                    batchNumber.longValue(),
+                    email
+            );
+        } else {
+            // Yêu cầu cũ chưa thuộc đợt sản xuất.
+            Object orderValue = order.get("mayeucau");
+
+            if (!(orderValue instanceof Number orderNumber)) {
+                return "KHONG_CAN";
+            }
+
+            materials = jdbc.queryForList(
+                    """
+                    SELECT
+                        c.manvl,
+                        SUM(
+                            CEIL(
+                                GREATEST(
+                                    y.soluongyeucau
+                                    - GREATEST(
+                                        COALESCE(g.daghi, 0),
+                                        y.soluonghoanthanh
+                                            + COALESCE(r.dangcho, 0)
+                                    ),
+                                    0
+                                )
+                                * c.soluong_dinhmuc
+                                * (1 + c.tyle_haohut / 100)
+                            )
+                        ) AS nhu_cau,
+                        COALESCE(k.soluongton, 0) AS ton_kho,
+                        SUM(COALESCE(px.soluong, 0)) AS dang_cho_xuat
+                    FROM yeucausanxuat y
+                    JOIN taikhoan t
+                        ON t.manv = y.nguoiphutrach
+                    JOIN bom_chitiet c
+                        ON c.mabom = y.mabom
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluong) AS daghi
+                        FROM ghi_nhan_san_xuat
+                        GROUP BY maycsx
+                    ) g ON g.maycsx = y.maycsx
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluonghoanthanh) AS dangcho
+                        FROM ketqua_sanxuat
+                        WHERE trangthai = 'CHO_XAC_NHAN'
+                        GROUP BY maycsx
+                    ) r ON r.maycsx = y.maycsx
+                    LEFT JOIN (
+                        SELECT
+                            p.maycsx,
+                            ct.manvl,
+                            SUM(ct.soluong) AS soluong
+                        FROM phieuxuat_nvl p
+                        JOIN ct_phieuxuat_nvl ct
+                            ON ct.mapx = p.mapx
+                        WHERE p.trangthai = 'CHO_DUYET'
+                        GROUP BY p.maycsx, ct.manvl
+                    ) px ON px.maycsx = y.maycsx
+                        AND px.manvl = c.manvl
+                    LEFT JOIN kho_nvl_san_xuat k
+                        ON k.manvl = c.manvl
+                    WHERE y.maycsx = ?
+                      AND t.email = ?
+                      AND (y.trangthai IS NULL
+                           OR y.trangthai NOT IN ('HUY', 'HOAN_THANH'))
+                    GROUP BY c.manvl, k.soluongton
+                    """,
+                    orderNumber.longValue(),
+                    email
+            );
+        }
+
+        if (materials.isEmpty()) {
+            return "KHONG_CAN";
+        }
+
+        boolean hasDemand = false;
+        boolean hasPending = false;
+
+        for (Map<String, Object> material : materials) {
+            Number demandValue = (Number) material.get("nhu_cau");
+            Number stockValue = (Number) material.get("ton_kho");
+            Number pendingValue = (Number) material.get("dang_cho_xuat");
+
+            double demand = demandValue == null
+                    ? 0 : demandValue.doubleValue();
+
+            double stock = stockValue == null
+                    ? 0 : stockValue.doubleValue();
+
+            double pending = pendingValue == null
+                    ? 0 : pendingValue.doubleValue();
+
+            if (demand <= 0) {
+                continue;
+            }
+
+            hasDemand = true;
+
+            // Kho sản xuất đã có đủ NVL thực tế.
+            if (stock >= demand) {
+                continue;
+            }
+
+            // Chưa đủ NVL nhưng có phiếu xuất đang chờ duyệt.
+            if (pending > 0) {
+                hasPending = true;
+            } else {
+                // Thiếu NVL và không có phiếu nào chờ duyệt.
+                return "THIEU";
+            }
+        }
+
+        if (!hasDemand) {
+            return "KHONG_CAN";
+        }
+
+// Chỉ hiển thị đủ khi tồn kho thực tế đáp ứng đủ nhu cầu.
+        if (hasPending) {
+            return "DANG_CHO_DUYET";
+        }
+
+        return "DU";
     }
 }

@@ -1,6 +1,353 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Xuất NVL</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('xuat-nvl')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Đề nghị xuất NVL', 'Kho / Xuất NVL')}"></div><main class="content-body">
-<h1 th:text="${manager ? 'Phiếu đề nghị xuất NVL' : 'Phiếu xuất NVL của tôi'}"></h1><p th:unless="${manager}"><a th:href="@{/kho/xuat-nvl/create}" class="btn btn-primary">Lập đề nghị</a></p>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Phiếu xuất nguyên vật liệu</h2><span class="record-count" th:text="${#lists.size(issues) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead><tr><th>Mã phiếu</th><th>Yêu cầu</th><th>Sản phẩm</th><th>Người lập</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
-<tr th:each="i : ${issues}"><td th:text="${i.maphieu}"></td><td th:text="${i.mayeucau}"></td><td th:text="${i.tensp}"></td><td th:text="${i.hoten}"></td><td data-date-time th:text="${i.ngaytao}"></td><td><span th:text="${i.trangthai}" th:style="${i.trangthai == 'TU_CHOI' ? 'color:#b91c1c' : (i.trangthai == 'DA_XUAT' ? 'color:#15803d' : 'color:#a16207')}"></span></td><td><a th:href="@{/kho/xuat-nvl/{id}(id=${i.maphieu})}">Xem</a></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(issues)}"><td colspan="7">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div></main></div></div></body></html>
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Danh sách phiếu xuất NVL</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet">
+
+    <style>
+        .issue-summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .issue-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .issue-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .issue-subtitle {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .batch-name {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .request-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .issue-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-other {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-view-issue {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 12px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.2s ease;
+        }
+
+        .btn-view-issue:hover {
+            background: #dbeafe;
+        }
+
+        .empty-state {
+            padding: 36px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 32px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table-container table {
+                min-width: 850px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar('xuat-nvl')}"></div>
+
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Đề nghị xuất NVL', 'Kho / Xuất NVL')}"></div>
+
+        <main class="content-body">
+
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title"
+                        th:text="${manager
+                            ? 'Phiếu đề nghị xuất nguyên vật liệu'
+                            : 'Phiếu xuất nguyên vật liệu của tôi'}">
+                        Phiếu đề nghị xuất nguyên vật liệu
+                    </h1>
+
+                    <p class="page-description">
+                        Theo dõi các phiếu xuất nguyên vật liệu theo từng đợt sản xuất.
+                    </p>
+                </div>
+
+                <a
+                        th:unless="${manager}"
+                        th:href="@{/kho/xuat-nvl/create}"
+                        class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Lập đề nghị xuất NVL
+                </a>
+            </div>
+
+            <!-- SUCCESS MESSAGE -->
+            <div
+                    th:if="${success}"
+                    class="alert alert-success"
+                    th:text="${success}">
+            </div>
+
+            <!-- ERROR MESSAGE -->
+            <div
+                    th:if="${error}"
+                    class="alert alert-danger"
+                    th:text="${error}">
+            </div>
+
+            <!-- ISSUE TABLE -->
+            <div class="content-card">
+
+                <div class="content-card-header">
+                    <h2 class="content-card-title">
+                        <i class="fas fa-boxes-stacked"></i>
+                        Danh sách phiếu xuất NVL
+                    </h2>
+
+                    <span
+                            class="record-count"
+                            th:text="${#lists.size(issues) + ' phiếu'}">
+                        0 phiếu
+                    </span>
+                </div>
+
+                <div class="table-container">
+
+                    <table class="table">
+
+                        <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Đợt sản xuất</th>
+                            <th>Số yêu cầu</th>
+                            <th>Người lập</th>
+                            <th>Ngày lập</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <tr th:each="i : ${issues}">
+
+                            <!-- MÃ PHIẾU -->
+                            <td>
+                                <div class="issue-summary">
+                                    <div class="issue-icon">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </div>
+
+                                    <div>
+                                        <div
+                                                class="issue-title"
+                                                th:text="${'PXNVL-' + i.maphieu}">
+                                            PXNVL-1
+                                        </div>
+
+                                        <div class="issue-subtitle">
+                                            Phiếu xuất nguyên vật liệu
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- ĐỢT SẢN XUẤT -->
+                            <td>
+                                <div
+                                        class="batch-name"
+                                        th:text="${i.tendot != null
+                                        ? i.tendot
+                                        : (i.madot_code != null
+                                            ? i.madot_code
+                                            : 'Chưa xác định đợt')}">
+                                    Đợt sản xuất
+                                </div>
+
+                                <div
+                                        class="issue-subtitle"
+                                        th:if="${i.madot_code != null}"
+                                        th:text="${'Mã đợt: ' + i.madot_code}">
+                                </div>
+                            </td>
+
+                            <!-- SỐ YÊU CẦU -->
+                            <td>
+                                <span
+                                        class="request-count"
+                                        th:text="${i.soyeucau != null
+                                        ? i.soyeucau
+                                        : 1}">
+                                    1
+                                </span>
+                            </td>
+
+                            <!-- NGƯỜI LẬP -->
+                            <td th:text="${i.hoten != null
+                                ? i.hoten
+                                : 'Không xác định'}">
+                                Người lập
+                            </td>
+
+                            <!-- NGÀY LẬP -->
+                            <td
+                                    data-date-time
+                                    th:text="${i.ngaytao != null
+                                    ? i.ngaytao
+                                    : i.ngaylap}">
+                                Ngày lập
+                            </td>
+
+                            <!-- TRẠNG THÁI -->
+                            <td>
+                                <span
+                                        class="issue-status"
+                                        th:classappend="${i.trangthai == 'TU_CHOI'
+                                        ? ' status-rejected'
+                                        : (i.trangthai == 'DA_XUAT'
+                                            ? ' status-completed'
+                                            : (i.trangthai == 'CHO_DUYET'
+                                                ? ' status-pending'
+                                                : ' status-other'))}"
+                                        th:text="${i.trangthai == 'CHO_DUYET'
+                                        ? 'Chờ duyệt'
+                                        : (i.trangthai == 'DA_XUAT'
+                                            ? 'Đã xuất'
+                                            : (i.trangthai == 'TU_CHOI'
+                                                ? 'Từ chối'
+                                                : i.trangthai))}">
+                                    Chờ duyệt
+                                </span>
+                            </td>
+
+                            <!-- THAO TÁC -->
+                            <td>
+                                <a
+                                        class="btn-view-issue"
+                                        th:href="@{/kho/xuat-nvl/{id}(id=${i.maphieu})}">
+                                    <i class="fas fa-eye"></i>
+                                    Xem chi tiết
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        <!-- EMPTY STATE -->
+                        <tr th:if="${#lists.isEmpty(issues)}">
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <div>Chưa có phiếu xuất nguyên vật liệu.</div>
+                                    <p>
+                                        Các phiếu đề nghị xuất NVL sẽ xuất hiện tại đây.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

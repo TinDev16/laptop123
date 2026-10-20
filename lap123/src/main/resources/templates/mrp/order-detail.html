@@ -1,76 +1,824 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chi tiết yêu cầu sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><style>
-    .material-shortage-alert{margin:16px 0;padding:18px;border:1px solid #fdba74;border-left:5px solid #f97316;border-radius:10px;background:#fff7ed;color:#7c2d12}
-    .material-shortage-alert__header{display:flex;gap:12px;align-items:flex-start}
-    .material-shortage-alert__icon{display:flex;align-items:center;justify-content:center;flex:0 0 38px;height:38px;border-radius:50%;background:#ffedd5;color:#c2410c;font-size:1.05rem}
-    .material-shortage-alert h2{margin:0 0 5px;font-size:1rem;color:#9a3412}
-    .material-shortage-alert p{margin:0;line-height:1.5}
-    .material-shortage-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px;margin:14px 0 0;padding:0;list-style:none}
-    .material-shortage-list li{padding:10px 12px;border:1px solid #fed7aa;border-radius:8px;background:#fff}
-    .material-shortage-list strong{display:block;margin-bottom:3px;color:#7c2d12}
-    .material-shortage-list span{font-size:.86rem;color:#9a3412}
-    .material-shortage-actions{display:flex;justify-content:flex-end;margin-top:15px}
-    .shortage-number{font-weight:800;color:#b91c1c}
-    .order-detail-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-    .directory-alert--info{border-color:#93c5fd!important;border-left-color:#2563eb!important;background:#eff6ff!important;color:#1e3a8a!important}
-    .directory-alert--warning{border-color:#fcd34d!important;border-left-color:#d97706!important;background:#fffbeb!important;color:#78350f!important}
-</style></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết yêu cầu sản xuất', 'MRP / Yêu cầu sản xuất')}"></div><main class="content-body">
-<div class="page-header"><div><h1 class="page-title" th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất #' + order.mayeucau}"></h1><p class="page-description" th:text="${(order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau) + ' · Yêu cầu #' + order.mayeucau}"></p></div><div class="order-detail-actions"><a th:if="${manager}" th:href="@{/san-xuat/ket-qua(orderId=${order.mayeucau})}" class="btn" th:classappend="${pendingResultCount > 0 ? 'btn-primary' : 'btn-secondary'}"><i class="fas fa-clipboard-check"></i> Duyệt kết quả <span th:text="${'(' + pendingResultCount + ')'}"></span></a><a th:href="@{/san-xuat/yeu-cau}" class="btn btn-back"><i class="fas fa-arrow-left"></i> Về danh sách</a></div></div>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Thông tin yêu cầu</h2></div><div class="content-card-body"><p><strong>Đợt sản xuất:</strong> <span th:text="${order.tendot != null ? order.tendot : 'Dữ liệu cũ chưa phân đợt'}"></span></p><p><strong>Sản phẩm:</strong> <span th:text="${order.tensp}"></span></p><p><strong>Số lượng cần:</strong> <span data-number th:text="${order.soluongyeucau}"></span> &nbsp; <strong>Đã ghi nhận tại xưởng:</strong> <span data-number th:text="${order.soluongdaghinhan}"></span> &nbsp; <strong>Chờ duyệt:</strong> <span data-number th:text="${order.soluongchoduyet}"></span> &nbsp; <strong>Đã xác nhận nhập kho:</strong> <span data-number th:text="${order.soluonghoanthanh}"></span> &nbsp; <strong>Còn phải sản xuất:</strong> <span data-number th:text="${order.soluongconphaisanxuat}"></span></p><p><strong>BOM áp dụng:</strong> <span th:text="${order.tenbom}"></span> &nbsp; <strong>Nhân viên:</strong> <span th:text="${order.hoten}"></span></p><p><strong>Ngày giao:</strong> <span data-date-time th:text="${order.ngayyeucau}"></span> &nbsp; <strong>Hạn:</strong> <span data-date-time th:text="${order.hanhoanthanh}"></span> &nbsp; <strong>Trạng thái:</strong> <span class="status-pill" th:text="${order.trangthai}"></span></p><p th:if="${order.ghichu_dot != null and !order.ghichu_dot.isBlank()}"><strong>Ghi chú đợt:</strong> <span th:text="${order.ghichu_dot}"></span></p></div></div>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
-<div th:if="${order.soluongconphaisanxuat == 0 and order.soluongchoduyet > 0}"
-     class="directory-alert directory-alert--info" style="margin:16px 0;">
-    <i class="fas fa-clock"></i>
-    <strong>Đã ghi nhận đủ sản lượng tại xưởng.</strong>
-    Nguyên vật liệu đã được tiêu hao khi ghi nhận sản xuất; hiện còn
-    <span data-number th:text="${order.soluongchoduyet}"></span> thành phẩm chờ quản lý xác nhận nhập kho.
-</div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết yêu cầu sản xuất</title>
 
-<div th:if="${order.soluongchuaguiketqua > 0}"
-     class="directory-alert directory-alert--warning" style="margin:16px 0;">
-    <i class="fas fa-triangle-exclamation"></i>
-    <strong>Đã ghi nhận đủ sản lượng tại xưởng nhưng chưa có kết quả chờ duyệt.</strong>
-    Có <span data-number th:text="${order.soluongchuaguiketqua}"></span> thành phẩm thuộc dữ liệu cũ cần tạo lại chứng từ chờ duyệt.
-    <form th:action="@{/san-xuat/yeu-cau/{id}/repair-result(id=${order.mayeucau})}"
-          method="post" style="display:inline-block;margin-left:12px"
-          onsubmit="return confirm('Tạo kết quả chờ duyệt từ sản lượng đã ghi nhận? Hệ thống sẽ không trừ NVL lần nữa.');">
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-rotate"></i> Khôi phục kết quả chờ duyệt
-        </button>
-    </form>
-</div>
-    <!-- Cảnh báo quá hạn sản xuất -->
-    <div th:if="${order.overdueDays > 0}"
-         class="directory-alert directory-alert--error"
-         style="margin: 16px 0;">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-        <i class="fas fa-triangle-exclamation"></i>
+    <style>
+        /* ===== THÔNG TIN YÊU CẦU ===== */
+        .order-info-card {
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
 
-        <strong>Yêu cầu này đã quá hạn</strong>
+        .order-info-card .content-card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
 
-        <span th:text="${order.overdueDays}"></span>
+        .order-info-card .content-card-body {
+            padding: 22px 24px;
+        }
 
-        ngày.
-    </div>
-    <section th:if="${hasMaterialShortage}" class="material-shortage-alert" aria-labelledby="material-shortage-title">
-        <div class="material-shortage-alert__header">
-            <span class="material-shortage-alert__icon"><i class="fas fa-box-open"></i></span>
-            <div>
-                <h2 id="material-shortage-title">Chưa đủ nguyên vật liệu để sản xuất</h2>
-                <p>Yêu cầu này còn <strong th:text="${shortageCount}"></strong> loại nguyên vật liệu thiếu chưa được đề nghị xuất. Hãy lập đề nghị cho phần còn thiếu trước khi tiếp tục.</p>
+        .info-section-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0 0 14px;
+            color: #334155;
+            font-size: .95rem;
+            font-weight: 700;
+        }
+
+        .info-section-title i {
+            color: #2563eb;
+            width: 18px;
+            text-align: center;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .info-item {
+            min-width: 0;
+            padding: 14px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .info-item-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: .8rem;
+            font-weight: 500;
+        }
+
+        .info-item-label i {
+            color: #94a3b8;
+        }
+
+        .info-item-value {
+            color: #0f172a;
+            font-size: .95rem;
+            font-weight: 650;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .info-item-value.primary {
+            color: #2563eb;
+            font-size: 1.15rem;
+        }
+
+        .info-item-value.success {
+            color: #15803d;
+        }
+
+        .info-item-value.warning {
+            color: #b45309;
+        }
+
+        .info-item-value.danger {
+            color: #b91c1c;
+        }
+
+        .info-divider {
+            height: 1px;
+            margin: 4px 0 20px;
+            background: #e2e8f0;
+        }
+
+        .info-note {
+            display: flex;
+            gap: 10px;
+            padding: 13px 15px;
+            border: 1px solid #dbeafe;
+            border-radius: 9px;
+            background: #eff6ff;
+            color: #1e40af;
+            font-size: .9rem;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .info-note i {
+            margin-top: 3px;
+        }
+
+        .order-detail-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .order-detail-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        /* ===== CẢNH BÁO THIẾU NVL ===== */
+        .material-shortage-alert {
+            margin: 16px 0 22px;
+            padding: 18px;
+            border: 1px solid #fdba74;
+            border-left: 5px solid #f97316;
+            border-radius: 10px;
+            background: #fff7ed;
+            color: #7c2d12;
+        }
+
+        .material-shortage-alert__header {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .material-shortage-alert__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #ffedd5;
+            color: #c2410c;
+            font-size: 1.05rem;
+        }
+
+        .material-shortage-alert h2 {
+            margin: 0 0 5px;
+            font-size: 1rem;
+            color: #9a3412;
+        }
+
+        .material-shortage-alert p {
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .material-shortage-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 9px;
+            margin: 14px 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .material-shortage-list li {
+            padding: 10px 12px;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .material-shortage-list li > strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #7c2d12;
+        }
+
+        .material-shortage-list li > span {
+            font-size: .86rem;
+            color: #9a3412;
+            line-height: 1.7;
+        }
+
+        .shortage-number {
+            font-weight: 800;
+            color: #b91c1c;
+        }
+
+        .material-shortage-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        /* ===== CẢNH BÁO TRẠNG THÁI ===== */
+        .directory-alert--info {
+            border-color: #93c5fd !important;
+            border-left-color: #2563eb !important;
+            background: #eff6ff !important;
+            color: #1e3a8a !important;
+        }
+
+        .directory-alert--warning {
+            border-color: #fcd34d !important;
+            border-left-color: #d97706 !important;
+            background: #fffbeb !important;
+            color: #78350f !important;
+        }
+
+        .order-alert {
+            margin: 16px 0;
+            line-height: 1.7;
+        }
+
+        .order-alert form {
+            margin-top: 12px;
+        }
+
+        /* ===== BẢNG BOM ===== */
+        .bom-card {
+            overflow: hidden;
+        }
+
+        .bom-card .content-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .bom-description {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: .87rem;
+            line-height: 1.6;
+        }
+
+        .bom-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .bom-table-wrapper table {
+            min-width: 850px;
+            width: 100%;
+        }
+
+        .bom-table-wrapper th,
+        .bom-table-wrapper td {
+            padding: 12px 14px;
+            vertical-align: middle;
+        }
+
+        .bom-table-wrapper th {
+            white-space: nowrap;
+        }
+
+        .bom-table-wrapper td {
+            overflow-wrap: anywhere;
+        }
+
+        .bom-table-wrapper td:nth-child(n+2) {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .bom-table-wrapper .empty-row td {
+            padding: 28px 16px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        @media (max-width: 1100px) {
+            .info-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .order-detail-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .order-detail-actions .btn {
+                flex: 1 1 auto;
+            }
+
+            .order-info-card .content-card-header,
+            .order-info-card .content-card-body {
+                padding: 16px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 9px;
+                margin-bottom: 18px;
+            }
+
+            .info-item {
+                padding: 12px 13px;
+            }
+
+            .material-shortage-alert {
+                padding: 14px;
+            }
+
+            .material-shortage-list {
+                grid-template-columns: 1fr;
+            }
+
+            .material-shortage-actions {
+                justify-content: stretch;
+            }
+
+            .material-shortage-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Chi tiết yêu cầu sản xuất', 'MRP / Yêu cầu sản xuất')}"></div>
+
+        <main class="content-body">
+
+            <!-- ===== TIÊU ĐỀ TRANG ===== -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title"
+                        th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất #' + order.mayeucau}">
+                        Chi tiết yêu cầu sản xuất
+                    </h1>
+
+                    <p class="page-description"
+                       th:text="${(order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau) + ' · Yêu cầu #' + order.mayeucau}">
+                        Mã yêu cầu sản xuất
+                    </p>
+                </div>
+
+                <div class="order-detail-actions">
+
+                    <a th:if="${manager}"
+                       th:href="@{/san-xuat/ket-qua(orderId=${order.mayeucau})}"
+                       class="btn"
+                       th:classappend="${pendingResultCount > 0 ? 'btn-primary' : 'btn-secondary'}">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Duyệt kết quả</span>
+                        <span th:text="${'(' + pendingResultCount + ')'}">(0)</span>
+                    </a>
+
+                    <!-- Quay về trang xuất NVL -->
+                    <a th:href="@{/kho/xuat-nvl/2}" class="btn btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay về
+                    </a>
+
+                </div>
             </div>
-        </div>
-        <ul class="material-shortage-list">
-            <li th:each="need : ${needs}" th:if="${need.shortage > 0}">
-                <strong th:text="${need.code + ' - ' + need.name}"></strong>
-                <span>Còn thiếu <b class="shortage-number" data-number th:text="${need.shortage}"></b> <span th:text="${need.unit}"></span> · Nhu cầu còn lại <span data-number th:text="${need.needed}"></span> · Hiện có <span data-number th:text="${need.available}"></span> · Đang chờ xuất <span data-number th:text="${need.pending}"></span></span>
-            </li>
-        </ul>
-        <div class="material-shortage-actions" th:unless="${manager}">
-            <a class="btn btn-primary" th:href="@{/kho/xuat-nvl/create(orderId=${order.mayeucau})}">
-                <i class="fas fa-paper-plane"></i> Tạo đề nghị xuất NVL
-            </a>
-        </div>
-    </section>
-<div class="content-card"><div class="content-card-header"><div><h2 class="content-card-title">BOM và nhu cầu nguyên vật liệu</h2><p class="page-description" style="margin:.35rem 0 0">Tổng nhu cầu được tính cho toàn bộ yêu cầu; nhu cầu còn lại chỉ tính phần chưa sản xuất hoặc chưa ghi nhận.</p></div></div><div class="table-container"><table><thead><tr><th>NVL</th><th>Định mức</th><th>Hao hụt (%)</th><th>Tổng nhu cầu BOM</th><th>Nhu cầu còn lại</th><th>Tồn hiện tại</th><th>Đang chờ xuất</th><th>Còn thiếu</th></tr></thead><tbody><tr th:each="need : ${needs}"><td th:text="${need.code + ' - ' + need.name}"></td><td><span data-number th:text="${need.standard}"></span> <span th:text="${need.unit}"></span></td><td data-number th:text="${need.waste}"></td><td data-number th:text="${need.totalNeeded}"></td><td data-number th:text="${need.needed}"></td><td data-number th:text="${need.available}"></td><td data-number th:text="${need.pending}"></td><td data-number th:text="${need.shortage}"></td></tr><tr class="empty-row" th:if="${#lists.isEmpty(needs)}"><td colspan="8">BOM chưa có nguyên vật liệu.</td></tr></tbody></table></div></div>
-</main></div></div></body></html>
+
+            <!-- ===== THÔNG TIN YÊU CẦU ===== -->
+            <section class="content-card order-info-card">
+
+                <div class="content-card-header">
+                    <div>
+                        <h2 class="content-card-title">
+                            <i class="fas fa-clipboard-list" style="color:#2563eb;margin-right:7px;"></i>
+                            Thông tin yêu cầu
+                        </h2>
+                        <p class="bom-description">
+                            Thông tin chung và tiến độ thực hiện yêu cầu sản xuất.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="content-card-body">
+
+                    <!-- Nhóm 1: Thông tin chung -->
+                    <h3 class="info-section-title">
+                        <i class="fas fa-box"></i>
+                        Thông tin chung
+                    </h3>
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-layer-group"></i>
+                                Đợt sản xuất
+                            </div>
+                            <div class="info-item-value"
+                                 th:text="${order.tendot != null ? order.tendot : 'Dữ liệu cũ chưa phân đợt'}">
+                                Đợt sản xuất
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-hashtag"></i>
+                                Mã yêu cầu
+                            </div>
+                            <div class="info-item-value primary"
+                                 th:text="${order.mayeucau}">
+                                1
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-laptop"></i>
+                                Sản phẩm
+                            </div>
+                            <div class="info-item-value" th:text="${order.tensp}">
+                                Tên sản phẩm
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-user"></i>
+                                Nhân viên phụ trách
+                            </div>
+                            <div class="info-item-value" th:text="${order.hoten}">
+                                Tên nhân viên
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="info-divider"></div>
+
+                    <!-- Nhóm 2: Tiến độ sản xuất -->
+                    <h3 class="info-section-title">
+                        <i class="fas fa-chart-line"></i>
+                        Tiến độ sản xuất
+                    </h3>
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-bullseye"></i>
+                                Số lượng cần sản xuất
+                            </div>
+                            <div class="info-item-value primary"
+                                 data-number
+                                 th:text="${order.soluongyeucau}">
+                                0
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-industry"></i>
+                                Đã ghi nhận tại xưởng
+                            </div>
+                            <div class="info-item-value"
+                                 data-number
+                                 th:text="${order.soluongdaghinhan}">
+                                0
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-clock"></i>
+                                Chờ duyệt kết quả
+                            </div>
+                            <div class="info-item-value warning"
+                                 data-number
+                                 th:text="${order.soluongchoduyet}">
+                                0
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-warehouse"></i>
+                                Đã xác nhận nhập kho
+                            </div>
+                            <div class="info-item-value success"
+                                 data-number
+                                 th:text="${order.soluonghoanthanh}">
+                                0
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Tiến độ còn lại -->
+                    <div class="info-grid" style="margin-top:-10px;">
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-list-ol"></i>
+                                Còn phải sản xuất
+                            </div>
+                            <div class="info-item-value"
+                                 th:classappend="${order.soluongconphaisanxuat > 0 ? 'danger' : 'success'}"
+                                 data-number
+                                 th:text="${order.soluongconphaisanxuat}">
+                                0
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-check-circle"></i>
+                                Trạng thái yêu cầu
+                            </div>
+                            <div>
+                                <span class="status-pill" th:text="${order.trangthai}">
+                                    Trạng thái
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-calendar-day"></i>
+                                Ngày giao yêu cầu
+                            </div>
+                            <div class="info-item-value"
+                                 data-date-time
+                                 th:text="${order.ngayyeucau}">
+                                -
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-item-label">
+                                <i class="fas fa-calendar-check"></i>
+                                Hạn hoàn thành
+                            </div>
+                            <div class="info-item-value"
+                                 data-date-time
+                                 th:text="${order.hanhoanthanh}">
+                                -
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="info-divider"></div>
+
+                    <!-- Nhóm 3: BOM -->
+                    <h3 class="info-section-title">
+                        <i class="fas fa-sitemap"></i>
+                        Định mức nguyên vật liệu
+                    </h3>
+
+                    <div class="info-grid" style="margin-bottom:0;">
+
+                        <div class="info-item" style="grid-column:span 2;">
+                            <div class="info-item-label">
+                                <i class="fas fa-cubes"></i>
+                                BOM áp dụng
+                            </div>
+                            <div class="info-item-value"
+                                 th:text="${order.tenbom != null ? order.tenbom : 'Chưa xác định BOM'}">
+                                BOM
+                            </div>
+                        </div>
+
+                        <div class="info-item" style="grid-column:span 2;">
+                            <div class="info-item-label">
+                                <i class="fas fa-barcode"></i>
+                                Mã đợt sản xuất
+                            </div>
+                            <div class="info-item-value"
+                                 th:text="${order.madot_code != null ? order.madot_code : 'Không thuộc đợt sản xuất'}">
+                                Mã đợt
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Ghi chú -->
+                    <div th:if="${order.ghichu_dot != null and !order.ghichu_dot.isBlank()}"
+                         class="info-note"
+                         style="margin-top:16px;">
+                        <i class="fas fa-sticky-note"></i>
+                        <div>
+                            <strong>Ghi chú đợt sản xuất</strong>
+                            <div th:text="${order.ghichu_dot}"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ===== THÔNG BÁO ĐÃ GHI NHẬN ĐỦ SẢN LƯỢNG ===== -->
+            <div th:if="${order.soluongconphaisanxuat == 0 and order.soluongchoduyet > 0}"
+                 class="directory-alert directory-alert--info order-alert">
+
+                <i class="fas fa-clock"></i>
+
+                <strong>Đã ghi nhận đủ sản lượng tại xưởng.</strong>
+
+                Nguyên vật liệu đã được tiêu hao khi ghi nhận sản xuất; hiện còn
+                <strong data-number th:text="${order.soluongchoduyet}">0</strong>
+                thành phẩm chờ quản lý xác nhận nhập kho.
+            </div>
+
+            <!-- ===== THÔNG BÁO THIẾU KẾT QUẢ CHỜ DUYỆT ===== -->
+            <div th:if="${order.soluongchuaguiketqua > 0}"
+                 class="directory-alert directory-alert--warning order-alert">
+
+                <i class="fas fa-triangle-exclamation"></i>
+
+                <strong>
+                    Đã ghi nhận đủ sản lượng tại xưởng nhưng chưa có kết quả chờ duyệt.
+                </strong>
+
+                Có
+                <strong data-number th:text="${order.soluongchuaguiketqua}">0</strong>
+                thành phẩm thuộc dữ liệu cũ cần tạo lại chứng từ chờ duyệt.
+
+                <form th:action="@{/san-xuat/yeu-cau/{id}/repair-result(id=${order.mayeucau})}"
+                      method="post"
+                      onsubmit="return confirm('Tạo kết quả chờ duyệt từ sản lượng đã ghi nhận? Hệ thống sẽ không trừ NVL lần nữa.');">
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-rotate"></i>
+                        Khôi phục kết quả chờ duyệt
+                    </button>
+
+                </form>
+            </div>
+
+            <!-- ===== CẢNH BÁO QUÁ HẠN ===== -->
+            <div th:if="${order.overdueDays > 0}"
+                 class="directory-alert directory-alert--error order-alert">
+
+                <i class="fas fa-triangle-exclamation"></i>
+
+                <strong>Yêu cầu này đã quá hạn</strong>
+                <strong th:text="${order.overdueDays}">0</strong>
+                ngày.
+            </div>
+
+            <!-- ===== CẢNH BÁO THIẾU NVL ===== -->
+            <section th:if="${hasMaterialShortage}"
+                     class="material-shortage-alert"
+                     aria-labelledby="material-shortage-title">
+
+                <div class="material-shortage-alert__header">
+
+                    <span class="material-shortage-alert__icon">
+                        <i class="fas fa-box-open"></i>
+                    </span>
+
+                    <div>
+                        <h2 id="material-shortage-title">
+                            Chưa đủ nguyên vật liệu để sản xuất
+                        </h2>
+
+                        <p>
+                            Yêu cầu này còn
+                            <strong th:text="${shortageCount}">0</strong>
+                            loại nguyên vật liệu thiếu chưa được đề nghị xuất.
+                            Hãy lập đề nghị cho phần còn thiếu trước khi tiếp tục.
+                        </p>
+                    </div>
+
+                </div>
+
+                <ul class="material-shortage-list">
+
+                    <li th:each="need : ${needs}"
+                        th:if="${need.shortage > 0}">
+
+                        <strong th:text="${need.code + ' - ' + need.name}">
+                            Mã - Tên nguyên vật liệu
+                        </strong>
+
+                        <span>
+                            Còn thiếu
+                            <b class="shortage-number"
+                               data-number
+                               th:text="${need.shortage}">0</b>
+
+                            <span th:text="${need.unit}">đơn vị</span>
+
+                            <br>
+
+                            Nhu cầu còn lại:
+                            <span data-number th:text="${need.needed}">0</span>
+
+                            <br>
+
+                            Hiện có:
+                            <span data-number th:text="${need.available}">0</span>
+
+                            <br>
+
+                            Đang chờ xuất:
+                            <span data-number th:text="${need.pending}">0</span>
+                        </span>
+
+                    </li>
+
+                </ul>
+
+                <div class="material-shortage-actions" th:unless="${manager}">
+                    <a class="btn btn-primary"
+                       th:href="@{/kho/xuat-nvl/create(orderId=${order.mayeucau})}">
+
+                        <i class="fas fa-paper-plane"></i>
+                        Tạo đề nghị xuất NVL
+                    </a>
+                </div>
+
+            </section>
+
+            <!-- ===== BẢNG BOM VÀ NHU CẦU NVL ===== -->
+            <section class="content-card bom-card">
+
+                <div class="content-card-header">
+                    <div>
+                        <h2 class="content-card-title">
+                            <i class="fas fa-table-list"
+                               style="color:#2563eb;margin-right:7px;"></i>
+                            BOM và nhu cầu nguyên vật liệu
+                        </h2>
+
+                        <p class="bom-description">
+                            Tổng nhu cầu được tính cho toàn bộ yêu cầu;
+                            nhu cầu còn lại chỉ tính phần chưa sản xuất hoặc chưa ghi nhận.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bom-table-wrapper">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Nguyên vật liệu</th>
+                            <th>Định mức</th>
+                            <th>Hao hụt (%)</th>
+                            <th>Tổng nhu cầu BOM</th>
+                            <th>Nhu cầu còn lại</th>
+                            <th>Tồn hiện tại</th>
+                            <th>Đang chờ xuất</th>
+                            <th>Còn thiếu</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="need : ${needs}">
+
+                            <td th:text="${need.code + ' - ' + need.name}">
+                                Nguyên vật liệu
+                            </td>
+
+                            <td>
+                                <span data-number th:text="${need.standard}">0</span>
+                                <span th:text="${need.unit}"></span>
+                            </td>
+
+                            <td data-number th:text="${need.waste}">0</td>
+
+                            <td data-number th:text="${need.totalNeeded}">0</td>
+
+                            <td data-number th:text="${need.needed}">0</td>
+
+                            <td data-number th:text="${need.available}">0</td>
+
+                            <td data-number th:text="${need.pending}">0</td>
+
+                            <td>
+                                <span data-number th:text="${need.shortage}">0</span>
+                            </td>
+
+                        </tr>
+
+                        <tr class="empty-row" th:if="${#lists.isEmpty(needs)}">
+                            <td colspan="8">
+                                <i class="fas fa-inbox"
+                                   style="margin-right:6px;"></i>
+                                BOM chưa có nguyên vật liệu.
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+</div>
+</body>
+</html>

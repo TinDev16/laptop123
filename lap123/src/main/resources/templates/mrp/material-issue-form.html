@@ -4,12 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lập đề nghị xuất NVL</title>
+
   <link rel="stylesheet" th:href="@{/style.css}">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 <div class="app-container">
   <div th:replace="~{fragments/sidebar :: sidebar('xuat-nvl')}"></div>
+
   <div class="main-wrapper">
     <div th:replace="~{fragments/sidebar :: topbar('Lập đề nghị xuất NVL', 'Kho / Xuất NVL')}"></div>
 
@@ -17,51 +20,83 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">Lập đề nghị xuất nguyên vật liệu</h1>
-          <p class="page-description">Chọn yêu cầu sản xuất, kiểm tra tồn kho và xác nhận số lượng vật tư cần xuất.</p>
+          <p class="page-description">
+            Chọn đợt sản xuất để tổng hợp NVL của các yêu cầu được giao.
+          </p>
         </div>
-        <a class="btn btn-back" th:href="@{/kho/xuat-nvl}">
-          <i class="fas fa-arrow-left"></i> Về danh sách
+
+        <a class="btn btn-back"
+           th:href="${returnUrl != null and !#strings.isEmpty(returnUrl)}
+       ? ${returnUrl}
+       : @{/kho/xuat-nvl}">
+          <i class="fas fa-arrow-left"></i>
+          Về danh sách
         </a>
       </div>
 
       <p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
 
-      <section class="content-card material-order-selector" aria-labelledby="material-order-title">
+      <section class="content-card material-order-selector">
         <div class="content-card-body">
           <div class="material-order-selector__intro">
-            <span class="material-order-selector__icon"><i class="fas fa-clipboard-list"></i></span>
+                        <span class="material-order-selector__icon">
+                            <i class="fas fa-layer-group"></i>
+                        </span>
             <div>
-              <h2 id="material-order-title">Yêu cầu sản xuất được giao</h2>
-              <p>Chọn một yêu cầu để hệ thống tải định mức và số lượng tồn kho hiện tại.</p>
+              <h2>Đợt sản xuất được giao</h2>
+              <p>
+                Các yêu cầu cùng đợt sẽ được gom lại và tổng hợp NVL theo mã vật tư.
+              </p>
             </div>
           </div>
+
           <div class="ceo-field material-order-selector__field">
-            <label for="orderId">Yêu cầu sản xuất <span class="ceo-required">*</span></label>
-            <select id="orderId" class="form-control"
-                    onchange="location.href=this.value ? '/kho/xuat-nvl/create?orderId=' + encodeURIComponent(this.value) : '/kho/xuat-nvl/create'">
-              <option value="">-- Chọn yêu cầu sản xuất --</option>
-              <option th:each="o : ${orders}"
-                      th:value="${o.mayeucau}"
-                      th:text="${(o.madot_code != null ? o.madot_code : 'YCSX-' + o.mayeucau)
-                          + (o.tendot != null ? ' · ' + o.tendot : '')
-                          + ' · ' + o.tensp + ' · YC #' + o.mayeucau
-                          + (o.overdueDays > 0 ? ' · QUÁ HẠN ' + o.overdueDays + ' NGÀY' : '')}"
-                      th:selected="${selectedOrder != null and selectedOrder == o.mayeucau}"></option>
+            <label for="batchId">
+              Đợt sản xuất <span class="ceo-required">*</span>
+            </label>
+
+            <select id="batchId"
+                    class="form-control"
+                    onchange="window.location.href=this.value
+                                    ? '/kho/xuat-nvl/create?batchId=' + encodeURIComponent(this.value)
+                                    : '/kho/xuat-nvl/create'">
+              <option value="">-- Chọn đợt sản xuất --</option>
+
+              <option th:each="b : ${batches}"
+                      th:value="${b.batchId}"
+                      th:selected="${selectedBatch != null and selectedBatch == b.batchId}"
+                      th:text="${(b.madot_code != null ? b.madot_code : 'Đợt #' + b.batchId)
+                                        + ' · ' + b.tendot
+                                        + ' · ' + b.so_yeu_cau + ' yêu cầu'
+                                        + ' · ' + b.danh_sach_san_pham}">
+              </option>
             </select>
           </div>
         </div>
       </section>
 
-      <form th:if="${selectedOrder != null}" th:action="@{/kho/xuat-nvl}" method="post"
+      <form th:if="${selectedBatch != null}"
+            th:action="@{/kho/xuat-nvl}"
+            method="post"
             class="content-card ceo-form-card material-issue-card">
-        <input type="hidden" name="orderId" th:value="${selectedOrder}">
+
+        <input type="hidden" name="batchId" th:value="${selectedBatch}">
 
         <div class="content-card-header">
           <div>
-            <h2 class="content-card-title"><i class="fas fa-boxes"></i> Chi tiết vật tư đề nghị xuất</h2>
-            <p class="content-card-subtitle">Số lượng đề nghị có thể điều chỉnh theo thực tế cấp phát.</p>
+            <h2 class="content-card-title">
+              <i class="fas fa-boxes"></i>
+              Tổng hợp nguyên vật liệu
+            </h2>
+            <p class="content-card-subtitle">
+              Mỗi NVL chỉ xuất hiện một lần; số lượng đề nghị không được vượt phần còn thiếu.
+            </p>
           </div>
-          <span class="record-count" th:text="${#lists.size(lines) + ' vật tư'}">0 vật tư</span>
+
+          <span class="record-count"
+                th:text="${#lists.size(lines) + ' loại NVL'}">
+                        0 loại NVL
+                    </span>
         </div>
 
         <div class="content-card-body">
@@ -70,15 +105,16 @@
               <thead>
               <tr>
                 <th>Nguyên vật liệu</th>
-                <th class="numeric-column">Định mức</th>
+                <th class="numeric-column">Tổng định mức tham khảo</th>
                 <th class="numeric-column">Hao hụt (%)</th>
-                <th class="numeric-column">Nhu cầu</th>
+                <th class="numeric-column">Tổng nhu cầu</th>
                 <th class="numeric-column">Tồn hiện tại</th>
                 <th class="numeric-column">Đang chờ xuất</th>
                 <th class="numeric-column">Còn thiếu</th>
                 <th class="quantity-column">SL đề nghị</th>
               </tr>
               </thead>
+
               <tbody>
               <tr th:each="l : ${lines}">
                 <td>
@@ -87,29 +123,63 @@
                     <span th:text="${l.manvl_code}"></span>
                   </div>
                 </td>
-                <td class="numeric-column" data-number th:text="${l.soluong_dinhmuc}"></td>
-                <td class="numeric-column"><span data-number th:text="${l.tyle_haohut}"></span><span class="number-unit">%</span></td>
-                <td class="numeric-column" data-number th:text="${l.nhu_cau}"></td>
+
+                <td class="numeric-column"
+                    data-number
+                    th:text="${l.soluong_dinhmuc}"></td>
+
                 <td class="numeric-column">
-                  <span class="stock-chip"
-                        th:classappend="${l.soluongton < l.nhu_cau ? ' stock-chip--low' : ' stock-chip--enough'}"
-                        data-number th:text="${l.soluongton}"></span>
+                  <span data-number th:text="${l.tyle_haohut}"></span>
+                  <span class="number-unit">%</span>
                 </td>
-                <td class="numeric-column" data-number th:text="${l.dang_de_nghi}"></td>
+
+                <td class="numeric-column"
+                    data-number
+                    th:text="${l.nhu_cau}"></td>
+
                 <td class="numeric-column">
-                      <span class="shortage-value"
-                            th:classappend="${l.thieu_hut > 0 ? ' shortage-value--alert' : ' shortage-value--ok'}"
-                            data-number
-                            th:text="${l.thieu_hut}"></span>
+                                    <span class="stock-chip"
+                                          th:classappend="${l.soluongton < l.nhu_cau
+                                              ? ' stock-chip--low'
+                                              : ' stock-chip--enough'}"
+                                          data-number
+                                          th:text="${l.soluongton}"></span>
                 </td>
+
+                <td class="numeric-column"
+                    data-number
+                    th:text="${l.dang_de_nghi}"></td>
+
+                <td class="numeric-column">
+                                    <span class="shortage-value"
+                                          th:classappend="${l.thieu_hut > 0
+                                              ? ' shortage-value--alert'
+                                              : ' shortage-value--ok'}"
+                                          data-number
+                                          th:text="${l.thieu_hut}"></span>
+                </td>
+
                 <td class="quantity-column">
-                  <input type="hidden" name="materialId" th:value="${l.manvl}">
-                  <input name="quantity" type="number" min="0" required th:value="${l.thieu_hut}"
-                         class="form-control issue-quantity-input" aria-label="Số lượng đề nghị">
+                  <input type="hidden"
+                         name="materialId"
+                         th:value="${l.manvl}">
+
+                  <input name="quantity"
+                         type="number"
+                         min="0"
+                         step="1"
+                         required
+                         th:value="${l.thieu_hut}"
+                         class="form-control issue-quantity-input"
+                         aria-label="Số lượng đề nghị">
                 </td>
               </tr>
+
               <tr class="empty-row" th:if="${#lists.isEmpty(lines)}">
-                <td colspan="8">Yêu cầu này chưa có định mức nguyên vật liệu để lập phiếu xuất.</td>
+                <td colspan="8">
+                  Đợt này không có nguyên vật liệu cần lập đề nghị xuất,
+                  hoặc không có yêu cầu phù hợp được giao cho tài khoản của bạn.
+                </td>
               </tr>
               </tbody>
             </table>
@@ -117,27 +187,38 @@
 
           <div class="ceo-field material-issue-note">
             <label for="issueNote">Ghi chú</label>
-            <textarea id="issueNote" name="note" maxlength="255" rows="3" class="form-control"
-                      placeholder="Nhập lưu ý cấp phát, khu vực nhận hoặc thông tin nội bộ"></textarea>
+            <textarea id="issueNote"
+                      name="note"
+                      maxlength="255"
+                      rows="3"
+                      class="form-control"
+                      placeholder="Nhập lưu ý cấp phát hoặc thông tin nội bộ"></textarea>
             <small>Tối đa 255 ký tự.</small>
           </div>
 
           <div class="ceo-form-actions material-issue-actions">
-            <a class="btn btn-back" th:href="@{/kho/xuat-nvl}">
-              <i class="fas fa-arrow-left"></i> Trở lại
+            <a class="btn btn-back"
+               th:href="${returnUrl != null and !#strings.isEmpty(returnUrl)}
+       ? ${returnUrl}
+       : @{/kho/xuat-nvl}">
+              <i class="fas fa-arrow-left"></i>
+              trở lại
             </a>
-            <button class="btn btn-primary" type="submit" th:disabled="${#lists.isEmpty(lines)}">
-              <i class="fas fa-paper-plane"></i> Gửi đề nghị
+
+            <button class="btn btn-primary"
+                    type="submit"
+                    th:disabled="${#lists.isEmpty(lines)}">
+              <i class="fas fa-paper-plane"></i> Gửi đề nghị cho cả đợt
             </button>
           </div>
         </div>
       </form>
 
-      <section th:if="${selectedOrder == null}" class="material-issue-empty">
-        <i class="fas fa-arrow-up"></i>
+      <section th:if="${selectedBatch == null}" class="material-issue-empty">
+        <i class="fas fa-layer-group"></i>
         <div>
-          <strong>Chưa chọn yêu cầu sản xuất</strong>
-          <p>Chọn yêu cầu ở phía trên để xem danh sách nguyên vật liệu cần xuất.</p>
+          <strong>Chưa chọn đợt sản xuất</strong>
+          <p>Chọn một đợt ở phía trên để xem danh sách NVL đã tổng hợp.</p>
         </div>
       </section>
     </main>

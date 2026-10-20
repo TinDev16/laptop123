@@ -9,6 +9,9 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class GhiNhanSanXuatService {
@@ -30,6 +33,7 @@ public class GhiNhanSanXuatService {
                 """
                 SELECT
                     y.maycsx,
+                    y.madot,
                     CONCAT('YCSX-', y.maycsx) AS maycsxCode,
                     y.masp,
                     y.mabom,
@@ -160,6 +164,80 @@ public class GhiNhanSanXuatService {
         );
     }
 
+    public record ProductionItem(long orderId, long bomId, int quantity) {}
+
+    @Transactional(rollbackFor = Exception.class)
+    public List<Long> recordProductionBatch(
+            String email,
+            List<ProductionItem> items,
+            String note) {
+
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không có sản phẩm nào được chọn để ghi nhận."
+            );
+        }
+
+        String normalizedNote = note == null ? null : note.trim();
+
+        if (normalizedNote != null && normalizedNote.length() > 255) {
+            throw new IllegalArgumentException(
+                    "Ghi chú tối đa 255 ký tự."
+            );
+        }
+
+        if (normalizedNote != null && normalizedNote.isEmpty()) {
+            normalizedNote = null;
+        }
+
+        Set<Long> orderIds = new HashSet<>();
+        List<Long> resultIds = new ArrayList<>();
+
+// Mỗi lần nhấn gửi tạo một mã riêng.
+// Tất cả sản phẩm trong lần gửi này dùng chung mã.
+        String batchRecordId = UUID.randomUUID().toString();
+
+        for (ProductionItem item : items) {
+            if (item == null) {
+                throw new IllegalArgumentException(
+                        "Dòng sản phẩm không hợp lệ."
+                );
+            }
+
+            if (item.quantity() <= 0) {
+                throw new IllegalArgumentException(
+                        "Số lượng sản xuất phải lớn hơn 0."
+                );
+            }
+
+            if (!orderIds.add(item.orderId())) {
+                throw new IllegalArgumentException(
+                        "Một yêu cầu sản xuất không được xuất hiện nhiều lần."
+                );
+            }
+        }
+
+        /*
+         * Tất cả các lần ghi nhận đều nằm trong transaction này.
+         * Nếu một yêu cầu lỗi hoặc thiếu NVL, toàn bộ transaction
+         * sẽ rollback, kể cả những sản phẩm đã xử lý trước đó.
+         */
+        for (ProductionItem item : items) {
+            long resultId = recordProduction(
+                    email,
+                    item.orderId(),
+                    item.bomId(),
+                    item.quantity(),
+                    normalizedNote,
+                    batchRecordId
+            );
+
+            resultIds.add(resultId);
+        }
+
+        return resultIds;
+    }
+
 
     // =====================================================
     // GHI NHẬN SẢN XUẤT
@@ -181,7 +259,8 @@ public class GhiNhanSanXuatService {
             long orderId,
             long bomId,
             int quantity,
-            String note) {
+            String note,
+            String batchRecordId) {
 
         if (quantity <= 0) {
             throw new IllegalArgumentException(
@@ -705,13 +784,22 @@ public class GhiNhanSanXuatService {
         jdbc.update(
                 """
                 INSERT INTO ketqua_sanxuat
-                    (maycsx, nguoithuchien, soluonghoanthanh, soluongloi, trangthai, ghichu)
-                VALUES (?, ?, ?, 0, 'CHO_XAC_NHAN', ?)
+                    (
+                        maycsx,
+                        nguoithuchien,
+                        soluonghoanthanh,
+                        soluongloi,
+                        trangthai,
+                        ghichu,
+                        ma_dot_ghi_nhan
+                    )
+                VALUES (?, ?, ?, 0, 'CHO_XAC_NHAN', ?, ?)
                 """,
                 orderId,
                 actor,
                 quantity,
-                normalizedNote
+                normalizedNote,
+                batchRecordId
         );
 
         Long resultId = jdbc.queryForObject(

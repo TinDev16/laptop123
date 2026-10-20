@@ -1,44 +1,523 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Kết quả sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Duyệt kết quả sản xuất', 'Sản xuất / Duyệt kết quả')}"></div><main class="content-body">
-<h1>Duyệt kết quả sản xuất</h1>
-<div th:if="${selectedOrderId != null}" class="directory-alert" style="margin:12px 0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <span><i class="fas fa-filter"></i> Kết quả đang chờ duyệt của <strong th:text="${'Yêu cầu #' + selectedOrderId}"></strong></span>
-    <a class="btn btn-secondary" th:href="@{/san-xuat/ket-qua}"><i class="fas fa-list"></i> Xem tất cả</a>
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Duyệt kết quả sản xuất</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        .review-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .review-header h1 {
+            margin: 0;
+            font-size: 25px;
+            color: #1e293b;
+        }
+
+        .review-header p {
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .review-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+        }
+
+        .review-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .review-card-header h2 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 17px;
+        }
+
+        .review-count {
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .review-filter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding: 13px 16px;
+            border: 1px solid #bfdbfe;
+            border-radius: 9px;
+            background: #eff6ff;
+            color: #1e40af;
+            font-size: 14px;
+        }
+
+        .review-table-wrap {
+            overflow-x: auto;
+        }
+
+        .review-table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: collapse;
+        }
+
+        .review-table th,
+        .review-table td {
+            padding: 15px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .review-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .review-table tbody tr:hover td {
+            background: #fafcff;
+        }
+
+        .review-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .batch-name {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            min-width: 190px;
+        }
+
+        .batch-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .batch-name strong {
+            display: block;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .batch-name small {
+            display: block;
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .quantity-value {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .pending-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .btn-view-results {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 13px;
+            border: 1px solid #bfdbfe;
+            border-radius: 7px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: background .15s ease;
+        }
+
+        .btn-view-results:hover {
+            background: #dbeafe;
+        }
+
+        .empty-state {
+            padding: 48px 20px !important;
+            text-align: center !important;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: 12px;
+            color: #94a3b8;
+            font-size: 30px;
+        }
+
+        .empty-state strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #334155;
+            font-size: 15px;
+        }
+
+        .review-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .review-btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+        @media (max-width: 768px) {
+            .review-page {
+                padding: 14px;
+            }
+
+            .review-card-header {
+                padding: 16px;
+            }
+
+            .review-header h1 {
+                font-size: 21px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar(
+            'Duyệt kết quả sản xuất',
+            'Sản xuất / Duyệt kết quả'
+        )}"></div>
+
+        <main class="content-body">
+            <div class="review-page">
+
+                <div class="review-header">
+                    <div>
+                        <h1>
+                            <i class="fas fa-clipboard-check"
+                               style="color:#2563eb;"></i>
+                            Duyệt kết quả sản xuất
+                        </h1>
+
+                        <p>
+                            Theo dõi các lần ghi nhận và xem chi tiết
+                            những sản phẩm đang chờ xác nhận nhập kho.
+                        </p>
+                    </div>
+                </div>
+
+                <div th:if="${selectedOrderId != null}"
+                     class="review-filter">
+                    <span>
+                        <i class="fas fa-filter"></i>
+                        Đang lọc kết quả của
+                        <strong th:text="${'Yêu cầu #' + selectedOrderId}"></strong>
+                    </span>
+
+                    <a class="review-btn-secondary"
+                       th:href="@{/san-xuat/ket-qua}">
+                        <i class="fas fa-list"></i>
+                        Xem tất cả
+                    </a>
+                </div>
+
+                <section class="review-card" style="margin-bottom:24px;">
+
+                    <div class="review-card-header">
+                        <h2>
+                            <i class="fas fa-clock"
+                               style="color:#d97706;margin-right:7px;"></i>
+                            Kết quả chưa duyệt
+                        </h2>
+
+                        <span class="review-count"
+                              th:text="${#lists.size(pendingGroups) + ' nhóm ghi nhận'}">
+            0 nhóm ghi nhận
+        </span>
+                    </div>
+
+                    <div class="review-table-wrap">
+                        <table class="review-table">
+                            <thead>
+                            <tr>
+                                <th>Lần ghi nhận / Đợt sản xuất</th>
+                                <th>Số kết quả</th>
+                                <th>Tổng sản lượng</th>
+                                <th>Thời gian ghi nhận</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="g : ${pendingGroups}">
+                                <td>
+                                    <div class="batch-name">
+                                        <div class="batch-icon">
+                                            <i class="fas fa-boxes-stacked"></i>
+                                        </div>
+
+                                        <div>
+                                            <strong
+                                                    th:text="${g['madot_code'] != null
+                                    ? g['madot_code']
+                                    : (g['tendot'] != null
+                                        ? g['tendot']
+                                        : 'Đợt sản xuất riêng')}">
+                                                Đợt sản xuất
+                                            </strong>
+
+                                            <small th:if="${g['madot_code'] != null
+                                            and g['tendot'] != null}"
+                                                   th:text="${g['tendot']}">
+                                                Tên đợt
+                                            </small>
+
+                                            <small>
+                                                Mã nhóm:
+                                                <span th:text="${g['ma_nhom_ghi_nhan']}"></span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                    <span class="quantity-value"
+                          th:text="${g['soketqua']}">0</span>
+                                    <span style="color:#64748b;"> kết quả</span>
+                                </td>
+
+                                <td>
+                    <span class="quantity-value"
+                          th:text="${g['soluongtong']}">0</span>
+                                </td>
+
+                                <td>
+                    <span th:text="${g['ngayghi'] != null
+                        ? #temporals.format(g['ngayghi'], 'dd/MM/yyyy HH:mm')
+                        : '—'}">—</span>
+                                </td>
+
+                                <td>
+                    <span class="pending-badge">
+                        <i class="fas fa-clock"></i>
+                        Chờ duyệt
+                    </span>
+                                </td>
+
+                                <td>
+                                    <a class="btn-view-results"
+                                       th:href="@{/san-xuat/ket-qua/nhom/{groupKey}(
+       groupKey=${g['ma_nhom_ghi_nhan']},
+       returnUrl=${selectedBatchId != null
+           ? '/san-xuat/ket-qua?batchId=' + selectedBatchId
+           : (selectedOrderId != null
+               ? '/san-xuat/ket-qua?orderId=' + selectedOrderId
+               : '/san-xuat/ket-qua')}
+   )}">
+                                        <i class="fas fa-eye"></i>
+                                        Xem chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(pendingGroups)}">
+                                <td colspan="6" class="empty-state">
+                                    <i class="fas fa-circle-check"></i>
+                                    <strong>Không có kết quả chờ duyệt</strong>
+                                    Tất cả kết quả hiện có đã được xử lý.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="review-card">
+
+                    <div class="review-card-header">
+                        <h2>
+                            <i class="fas fa-circle-check"
+                               style="color:#16a34a;margin-right:7px;"></i>
+                            Kết quả đã duyệt
+                        </h2>
+
+                        <span class="review-count"
+                              th:text="${#lists.size(approvedGroups) + ' nhóm ghi nhận'}">
+            0 nhóm ghi nhận
+        </span>
+                    </div>
+
+                    <div class="review-table-wrap">
+                        <table class="review-table">
+                            <thead>
+                            <tr>
+                                <th>Lần ghi nhận / Đợt sản xuất</th>
+                                <th>Số kết quả</th>
+                                <th>Tổng sản lượng</th>
+                                <th>Thời gian ghi nhận</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="g : ${approvedGroups}">
+                                <td>
+                                    <div class="batch-name">
+                                        <div class="batch-icon"
+                                             style="background:#dcfce7;color:#15803d;">
+                                            <i class="fas fa-boxes-stacked"></i>
+                                        </div>
+
+                                        <div>
+                                            <strong
+                                                    th:text="${g['madot_code'] != null
+                                    ? g['madot_code']
+                                    : (g['tendot'] != null
+                                        ? g['tendot']
+                                        : 'Đợt sản xuất riêng')}">
+                                                Đợt sản xuất
+                                            </strong>
+
+                                            <small th:if="${g['madot_code'] != null
+                                            and g['tendot'] != null}"
+                                                   th:text="${g['tendot']}">
+                                                Tên đợt
+                                            </small>
+
+                                            <small>
+                                                Mã nhóm:
+                                                <span th:text="${g['ma_nhom_ghi_nhan']}"></span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                    <span class="quantity-value"
+                          th:text="${g['soketqua']}">0</span>
+                                    <span style="color:#64748b;"> kết quả</span>
+                                </td>
+
+                                <td>
+                    <span class="quantity-value"
+                          th:text="${g['soluongtong']}">0</span>
+                                </td>
+
+                                <td>
+                    <span th:text="${g['ngayghi'] != null
+                        ? #temporals.format(g['ngayghi'], 'dd/MM/yyyy HH:mm')
+                        : '—'}">—</span>
+                                </td>
+
+                                <td>
+                    <span class="pending-badge"
+                          style="background:#dcfce7;color:#166534;">
+                        <i class="fas fa-check-circle"></i>
+                        Đã duyệt
+                    </span>
+                                </td>
+
+                                <td>
+                                    <a class="btn-view-results"
+                                       th:href="@{/san-xuat/ket-qua/nhom/{groupKey}(
+                            groupKey=${g['ma_nhom_ghi_nhan']}
+                       )}">
+                                        <i class="fas fa-eye"></i>
+                                        Xem chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(approvedGroups)}">
+                                <td colspan="6" class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <strong>Chưa có kết quả đã duyệt</strong>
+                                    Các kết quả sau khi xác nhận nhập kho sẽ hiển thị tại đây.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
 </div>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Kết quả sản xuất</h2><span class="record-count" th:text="${#lists.size(results) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead>
-<tr>
-    <th>Mã</th>
-    <th>Yêu cầu</th>
-    <th>Sản phẩm</th>
-    <th>Phiên bản BOM</th>
-    <th>Mã BOM</th>
-    <th>Hoàn thành</th>
-    <th>Người lập</th>
-    <th>Trạng thái</th>
-    <th>Thao tác</th>
-</tr>
-</thead><tbody>
-<tr th:each="r : ${results}">
-    <td th:text="${r.maketqua}"></td>
-
-    <td th:text="${r.mayeucau}"></td>
-
-    <td th:text="${r.tensp}"></td>
-
-    <td th:text="${'BOM ' + r.phienban}"></td>
-
-    <td th:text="${r.mabom}"></td>
-
-    <td th:text="${r.soluonghoanthanh}"></td>
-
-    <td th:text="${r.hoten}"></td>
-
-    <td th:text="${r.trangthai}"></td>
-
-    <td>
-        <a th:href="@{/san-xuat/ket-qua/{id}(id=${r.maketqua})}">
-            Xem
-        </a>
-    </td>
-</tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(results)}"><td colspan="9">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div></main></div></div></body></html>
+</body>
+</html>

@@ -142,11 +142,60 @@ public class MrpDocumentService {
     }
 
     public List<Map<String, Object>> materialIssues(String email, boolean manager) {
-        String sql = "SELECT p.mapx AS maphieu, p.maycsx AS mayeucau, p.ngaylap AS ngaytao, p.trangthai, p.ghichu, n.hoten, s.tensp " +
-                "FROM phieuxuat_nvl p JOIN nhanvien n ON n.manv = p.nguoilap " +
-                "JOIN yeucausanxuat y ON y.maycsx = p.maycsx JOIN sanpham s ON s.masp = y.masp ";
-        return manager ? jdbc.queryForList(sql + "ORDER BY p.mapx DESC") :
-                jdbc.queryForList(sql + "WHERE EXISTS (SELECT 1 FROM taikhoan t WHERE t.email = ? AND (t.manv = p.nguoilap OR t.manv = y.nguoiphutrach)) ORDER BY p.mapx DESC", email);
+        String sql = """
+        SELECT
+            p.mapx AS maphieu,
+            p.maycsx AS mayeucau,
+            p.ngaylap AS ngaytao,
+            p.trangthai,
+            p.ghichu,
+            n.hoten,
+            s.tensp,
+            d.madot_code AS madot_code,
+            d.tendot AS tendot,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM phieuxuat_nvl_ycsx py
+                    WHERE py.mapx = p.mapx
+                )
+                THEN (
+                    SELECT COUNT(*)
+                    FROM phieuxuat_nvl_ycsx py
+                    WHERE py.mapx = p.mapx
+                )
+                ELSE 1
+            END AS soyeucau
+        FROM phieuxuat_nvl p
+        JOIN nhanvien n
+            ON n.manv = p.nguoilap
+        JOIN yeucausanxuat y
+            ON y.maycsx = p.maycsx
+        JOIN sanpham s
+            ON s.masp = y.masp
+        LEFT JOIN dot_san_xuat d
+            ON d.madot = y.madot
+        """;
+
+        if (manager) {
+            return jdbc.queryForList(sql + " ORDER BY p.mapx DESC");
+        }
+
+        return jdbc.queryForList(
+                sql + """
+            WHERE EXISTS (
+                SELECT 1
+                FROM taikhoan t
+                WHERE t.email = ?
+                  AND (
+                      t.manv = p.nguoilap
+                      OR t.manv = y.nguoiphutrach
+                  )
+            )
+            ORDER BY p.mapx DESC
+            """,
+                email
+        );
     }
 
     public Map<String, Object> materialIssue(long id, String email, boolean manager) {
@@ -158,6 +207,35 @@ public class MrpDocumentService {
                 "LEFT JOIN dot_san_xuat d ON d.madot = y.madot ";
         return manager ? one(sql + "WHERE p.mapx = ?", id) :
                 ownedOne(sql + "WHERE p.mapx = ? AND EXISTS (SELECT 1 FROM taikhoan t WHERE t.email = ? AND (t.manv = p.nguoilap OR t.manv = y.nguoiphutrach))", id, email);
+    }
+
+    public List<Map<String, Object>> materialIssueRequests(long issueId) {
+        return jdbc.queryForList("""
+        SELECT
+            y.maycsx AS mayeucau,
+            s.tensp,
+            y.masp,
+            y.mabom,
+            b.phienban,
+            y.soluongyeucau,
+            y.soluonghoanthanh,
+            y.trangthai AS trangthai_yeucau,
+            d.madot_code,
+            d.tendot
+        FROM phieuxuat_nvl p
+        LEFT JOIN phieuxuat_nvl_ycsx py
+            ON py.mapx = p.mapx
+        JOIN yeucausanxuat y
+            ON y.maycsx = COALESCE(py.maycsx, p.maycsx)
+        JOIN sanpham s
+            ON s.masp = y.masp
+        JOIN bom b
+            ON b.mabom = y.mabom
+        LEFT JOIN dot_san_xuat d
+            ON d.madot = y.madot
+        WHERE p.mapx = ?
+        ORDER BY y.maycsx
+        """, issueId);
     }
 
     public List<Map<String, Object>> materialIssueLines(long id) {
@@ -1248,5 +1326,496 @@ public class MrpDocumentService {
                     "Nhà cung cấp không tồn tại hoặc đã ngừng hoạt động."
             );
         }
+    }
+
+    public List<Map<String, Object>> assignedBatches(String email) {
+        return jdbc.queryForList(
+                """
+                SELECT
+                    d.madot AS batchId,
+                    d.madot_code,
+                    d.tendot,
+                    COUNT(DISTINCT y.maycsx) AS so_yeu_cau,
+                    GROUP_CONCAT(
+                        DISTINCT s.tensp
+                        ORDER BY s.tensp
+                        SEPARATOR ', '
+                    ) AS danh_sach_san_pham
+                FROM dot_san_xuat d
+                JOIN yeucausanxuat y ON y.madot = d.madot
+                JOIN sanpham s ON s.masp = y.masp
+                JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                WHERE t.email = ?
+                  AND y.trangthai NOT IN ('HOAN_THANH', 'HUY')
+                  AND (
+                      y.soluonghoanthanh < y.soluongyeucau
+                      OR EXISTS (
+                          SELECT 1
+                          FROM ghi_nhan_san_xuat g
+                          WHERE g.maycsx = y.maycsx
+                      )
+                  )
+                GROUP BY d.madot, d.madot_code, d.tendot
+                ORDER BY d.madot DESC
+                """,
+                email
+        );
+    }
+
+    public List<Map<String, Object>> bomRequestLinesByBatch(
+            long batchId,
+            String email) {
+
+        return jdbc.queryForList(
+                """
+                SELECT
+                    demand.manvl,
+                    n.manvl_code,
+                    n.tennvl,
+                    n.donvitinh,
+                    demand.soluong_dinhmuc,
+                    demand.tyle_haohut,
+                    demand.nhu_cau,
+                    COALESCE(k.soluongton, 0) AS soluongton,
+                    COALESCE(pending.dang_de_nghi, 0) AS dang_de_nghi,
+                    GREATEST(
+                        demand.nhu_cau
+                        - COALESCE(k.soluongton, 0)
+                        - COALESCE(pending.dang_de_nghi, 0),
+                        0
+                    ) AS thieu_hut
+                FROM (
+                    SELECT
+                        y.madot,
+                        c.manvl,
+                        SUM(c.soluong_dinhmuc) AS soluong_dinhmuc,
+                        MAX(c.tyle_haohut) AS tyle_haohut,
+                        SUM(
+                            CEIL(
+                                GREATEST(
+                                    y.soluongyeucau
+                                    - GREATEST(
+                                        COALESCE(g.daghi, 0),
+                                        y.soluonghoanthanh
+                                          + COALESCE(r.dangcho, 0)
+                                    ),
+                                    0
+                                )
+                                * c.soluong_dinhmuc
+                                * (1 + c.tyle_haohut / 100)
+                            )
+                        ) AS nhu_cau
+                    FROM yeucausanxuat y
+                    JOIN bom_chitiet c ON c.mabom = y.mabom
+                    JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluong) AS daghi
+                        FROM ghi_nhan_san_xuat
+                        GROUP BY maycsx
+                    ) g ON g.maycsx = y.maycsx
+                    LEFT JOIN (
+                        SELECT maycsx, SUM(soluonghoanthanh) AS dangcho
+                        FROM ketqua_sanxuat
+                        WHERE trangthai = 'CHO_XAC_NHAN'
+                        GROUP BY maycsx
+                    ) r ON r.maycsx = y.maycsx
+                    WHERE y.madot = ?
+                      AND t.email = ?
+                      AND y.trangthai NOT IN ('HOAN_THANH', 'HUY')
+                    GROUP BY y.madot, c.manvl
+                ) demand
+                JOIN nguyenvatlieu n ON n.manvl = demand.manvl
+                JOIN loai_nguyen_vat_lieu l ON l.maloai = n.maloai
+                LEFT JOIN kho_nvl_san_xuat k ON k.manvl = demand.manvl
+                LEFT JOIN (
+                    SELECT
+                        x.madot,
+                        x.manvl,
+                        SUM(x.soluong) AS dang_de_nghi
+                    FROM (
+                        SELECT DISTINCT
+                            y.madot,
+                            p.mapx,
+                            c.manvl,
+                            c.soluong
+                        FROM phieuxuat_nvl p
+                        JOIN ct_phieuxuat_nvl c ON c.mapx = p.mapx
+                        JOIN phieuxuat_nvl_ycsx py ON py.mapx = p.mapx
+                        JOIN yeucausanxuat y ON y.maycsx = py.maycsx
+                        WHERE p.trangthai IN ('CHO_DUYET', 'DA_DUYET')
+        
+                        UNION
+        
+                        SELECT DISTINCT
+                            y.madot,
+                            p.mapx,
+                            c.manvl,
+                            c.soluong
+                        FROM phieuxuat_nvl p
+                        JOIN ct_phieuxuat_nvl c ON c.mapx = p.mapx
+                        JOIN yeucausanxuat y ON y.maycsx = p.maycsx
+                        WHERE p.trangthai IN ('CHO_DUYET', 'DA_DUYET')
+                          AND NOT EXISTS (
+                              SELECT 1
+                              FROM phieuxuat_nvl_ycsx py
+                              WHERE py.mapx = p.mapx
+                          )
+                    ) x
+                    GROUP BY x.madot, x.manvl
+                ) pending
+                    ON pending.madot = demand.madot
+                   AND pending.manvl = demand.manvl
+                WHERE n.trangthai = 1
+                  AND l.trangthai = 1
+                ORDER BY l.tenloai, n.tennvl
+                """,
+                batchId,
+                email
+        );
+    }
+
+    @Transactional
+    public long createBatchMaterialIssue(
+            String email,
+            long batchId,
+            String note,
+            List<Long> materialIds,
+            List<Integer> quantities) {
+
+        if (materialIds == null || quantities == null
+                || materialIds.isEmpty()
+                || materialIds.size() != quantities.size()) {
+            throw new IllegalArgumentException(
+                    "Phiếu phải có ít nhất một dòng chi tiết."
+            );
+        }
+
+        validateNote(note);
+
+        // Lấy các yêu cầu còn hiệu lực trong đợt mà nhân viên được giao.
+        List<Long> orderIds = jdbc.queryForList(
+                """
+                SELECT y.maycsx
+                FROM yeucausanxuat y
+                JOIN taikhoan t ON t.manv = y.nguoiphutrach
+                WHERE y.madot = ?
+                  AND t.email = ?
+                  AND y.trangthai NOT IN ('HOAN_THANH', 'HUY')
+                ORDER BY y.maycsx
+                FOR UPDATE
+                """,
+                Long.class,
+                batchId,
+                email
+        );
+
+        if (orderIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không có yêu cầu sản xuất phù hợp trong đợt này."
+            );
+        }
+
+        // Chỉ giữ các dòng có số lượng lớn hơn 0.
+        Map<Long, Integer> requested = new LinkedHashMap<>();
+
+        for (int i = 0; i < materialIds.size(); i++) {
+            Long materialId = materialIds.get(i);
+            Integer quantity = quantities.get(i);
+
+            if (materialId == null || quantity == null || quantity < 0) {
+                throw new IllegalArgumentException(
+                        "Nguyên vật liệu hoặc số lượng đề nghị không hợp lệ."
+                );
+            }
+
+            if (quantity > 0) {
+                if (requested.putIfAbsent(materialId, quantity) != null) {
+                    throw new IllegalArgumentException(
+                            "Một nguyên vật liệu chỉ được xuất hiện một lần trong phiếu."
+                    );
+                }
+            }
+        }
+
+        if (requested.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Không có nguyên vật liệu nào cần xuất."
+            );
+        }
+
+        List<Long> validMaterialIds =
+                new java.util.ArrayList<>(requested.keySet());
+
+        validateActiveMaterials(validMaterialIds);
+
+        // Tính lại nhu cầu và phần thiếu từ database, không tin số liệu gửi từ HTML.
+        Map<Long, Integer> maxByMaterial = new java.util.HashMap<>();
+
+        for (Map<String, Object> line :
+                bomRequestLinesByBatch(batchId, email)) {
+            maxByMaterial.put(
+                    ((Number) line.get("manvl")).longValue(),
+                    ((Number) line.get("thieu_hut")).intValue()
+            );
+        }
+
+        for (Map.Entry<Long, Integer> entry : requested.entrySet()) {
+            int max = maxByMaterial.getOrDefault(entry.getKey(), 0);
+
+            if (max <= 0) {
+                throw new IllegalArgumentException(
+                        "Một NVL đã đủ tồn hoặc đã có đề nghị xuất đang chờ duyệt."
+                );
+            }
+
+            if (entry.getValue() > max) {
+                throw new IllegalArgumentException(
+                        "Số lượng đề nghị vượt phần còn thiếu của NVL ID "
+                                + entry.getKey() + " (tối đa " + max + ")."
+                );
+            }
+        }
+
+        // Dùng một yêu cầu làm khóa tương thích với cấu trúc bảng cũ.
+        long firstOrderId = orderIds.get(0);
+
+        long issueId = insert(
+                """
+                INSERT INTO phieuxuat_nvl
+                    (maycsx, nguoilap, trangthai, ghichu)
+                VALUES (?, ?, 'CHO_DUYET', ?)
+                """,
+                firstOrderId,
+                employeeId(email),
+                note
+        );
+
+        // Liên kết phiếu với tất cả yêu cầu sản xuất thuộc đợt được xử lý.
+        for (Long orderId : orderIds) {
+            jdbc.update(
+                    """
+                    INSERT INTO phieuxuat_nvl_ycsx (mapx, maycsx)
+                    VALUES (?, ?)
+                    """,
+                    issueId,
+                    orderId
+            );
+        }
+
+        // Mỗi NVL chỉ có một dòng chi tiết.
+        for (Map.Entry<Long, Integer> entry : requested.entrySet()) {
+            jdbc.update(
+                    """
+                    INSERT INTO ct_phieuxuat_nvl (mapx, manvl, soluong)
+                    VALUES (?, ?, ?)
+                    """,
+                    issueId,
+                    entry.getKey(),
+                    entry.getValue()
+            );
+        }
+
+        return issueId;
+    }
+
+    public boolean hasPendingBatchMaterialIssue(
+            long batchId,
+            String email
+    ) {
+        Integer count = jdbc.queryForObject(
+                """
+                SELECT COUNT(DISTINCT p.mapx)
+                FROM phieuxuat_nvl p
+                WHERE p.trangthai = 'CHO_DUYET'
+                  AND (
+                      EXISTS (
+                          SELECT 1
+                          FROM phieuxuat_nvl_ycsx py
+                          JOIN yeucausanxuat y
+                            ON y.maycsx = py.maycsx
+                          JOIN taikhoan t
+                            ON t.manv = y.nguoiphutrach
+                          WHERE py.mapx = p.mapx
+                            AND y.madot = ?
+                            AND t.email = ?
+                      )
+                      OR (
+                          NOT EXISTS (
+                              SELECT 1
+                              FROM phieuxuat_nvl_ycsx py0
+                              WHERE py0.mapx = p.mapx
+                          )
+                          AND EXISTS (
+                              SELECT 1
+                              FROM yeucausanxuat y
+                              JOIN taikhoan t
+                                ON t.manv = y.nguoiphutrach
+                              WHERE y.maycsx = p.maycsx
+                                AND y.madot = ?
+                                AND t.email = ?
+                          )
+                      )
+                  )
+                """,
+                Integer.class,
+                batchId, email,
+                batchId, email
+        );
+
+        return count != null && count > 0;
+    }
+
+    public List<Map<String, Object>> resultGroups(
+            String email,
+            boolean manager) {
+
+        String sql = """
+        SELECT
+            k.*,
+            k.makqsx AS maketqua,
+            k.maycsx AS mayeucau,
+            COALESCE(
+                k.ma_dot_ghi_nhan,
+                CONCAT('legacy-', k.makqsx)
+            ) AS ma_nhom_ghi_nhan,
+            y.mabom,
+            s.tensp,
+            b.phienban,
+            d.madot AS madot,
+            d.madot_code,
+            d.tendot,
+            n.hoten
+        FROM ketqua_sanxuat k
+        JOIN yeucausanxuat y
+            ON y.maycsx = k.maycsx
+        JOIN sanpham s
+            ON s.masp = y.masp
+        JOIN bom b
+            ON b.mabom = y.mabom
+        LEFT JOIN dot_san_xuat d
+            ON d.madot = y.madot
+        JOIN nhanvien n
+            ON n.manv = k.nguoithuchien
+        """;
+
+        List<Map<String, Object>> rows = manager
+                ? jdbc.queryForList(
+                sql + " ORDER BY k.makqsx DESC")
+                : jdbc.queryForList(
+                sql + """
+                        JOIN taikhoan t
+                            ON t.manv = k.nguoithuchien
+                        WHERE t.email = ?
+                        ORDER BY k.makqsx DESC
+                        """,
+                email
+        );
+
+        Map<String, Map<String, Object>> grouped =
+                new LinkedHashMap<>();
+
+        for (Map<String, Object> row : rows) {
+
+            String key = String.valueOf(
+                    row.get("ma_nhom_ghi_nhan")
+            );
+
+            Map<String, Object> group = grouped.get(key);
+
+            if (group == null) {
+                group = new LinkedHashMap<>();
+
+                group.put("ma_nhom_ghi_nhan", key);
+                group.put("ngayghi", row.get("ngayhoanthanh"));
+                group.put("madot_code", row.get("madot_code"));
+                group.put("tendot", row.get("tendot"));
+                group.put("soluongtong", 0);
+                group.put("soketqua", 0);
+
+                // Trạng thái tổng hợp của cả nhóm
+                group.put("trangthai", row.get("trangthai"));
+
+                group.put(
+                        "items",
+                        new java.util.ArrayList<Map<String, Object>>()
+                );
+
+                grouped.put(key, group);
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items =
+                    (List<Map<String, Object>>) group.get("items");
+
+            items.add(row);
+
+            // Cộng tổng số lượng
+            int quantity = row.get("soluonghoanthanh") == null
+                    ? 0
+                    : ((Number) row.get("soluonghoanthanh")).intValue();
+
+            group.put(
+                    "soluongtong",
+                    ((Number) group.get("soluongtong")).intValue()
+                            + quantity
+            );
+
+            // Đếm số kết quả trong nhóm
+            group.put(
+                    "soketqua",
+                    ((Number) group.get("soketqua")).intValue() + 1
+            );
+
+            /*
+             * Trạng thái nhóm:
+             * - Nếu có kết quả chờ xác nhận: CHO_XAC_NHAN
+             * - Nếu không còn chờ xác nhận nhưng có kết quả chưa nhập kho:
+             *   giữ trạng thái chưa hoàn tất tương ứng
+             * - Nếu toàn bộ đã nhập kho: DA_NHAP_KHO
+             * - Nếu toàn bộ đã hủy: HUY
+             *
+             * Ưu tiên trạng thái chưa hoàn tất để tránh nhóm bị hiển thị
+             * "Đã duyệt" khi vẫn còn kết quả cần xử lý.
+             */
+            String currentStatus = String.valueOf(
+                    group.get("trangthai")
+            );
+
+            String rowStatus = String.valueOf(
+                    row.get("trangthai")
+            );
+
+            if ("CHO_XAC_NHAN".equals(rowStatus)) {
+                group.put("trangthai", "CHO_XAC_NHAN");
+            } else if ("CHO_XAC_NHAN".equals(currentStatus)) {
+                // Giữ trạng thái đang chờ xác nhận
+            } else if ("DA_NHAP_KHO".equals(rowStatus)
+                    && !"HUY".equals(currentStatus)) {
+                group.put("trangthai", "DA_NHAP_KHO");
+            } else if ("HUY".equals(rowStatus)
+                    && ("HUY".equals(currentStatus)
+                    || group.get("soketqua").equals(1))) {
+                group.put("trangthai", "HUY");
+            }
+        }
+
+        return new java.util.ArrayList<>(grouped.values());
+    }
+
+    public boolean hasPendingBatchResults(long batchId) {
+        Integer count = jdbc.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM ketqua_sanxuat k
+                JOIN yeucausanxuat y
+                    ON y.maycsx = k.maycsx
+                WHERE y.madot = ?
+                  AND k.trangthai = 'CHO_XAC_NHAN'
+                """,
+                Integer.class,
+                batchId
+        );
+
+        return count != null && count > 0;
     }
 }

@@ -3,153 +3,416 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yêu cầu sản xuất</title>
 
   <link rel="stylesheet" th:href="@{/style.css}">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-        rel="stylesheet">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
   <style>
-    /* Bảng danh sách chỉ giữ các thông tin cần cho việc theo dõi nhanh */
+    /* ===== BẢNG ĐỢT SẢN XUẤT ===== */
     .orders-table {
       width: 100%;
-      min-width: 980px;
+      min-width: 850px;
       table-layout: fixed;
       border-collapse: collapse;
     }
 
     .orders-table th,
     .orders-table td {
-      padding: 10px 8px;
+      padding: 12px 10px;
       font-size: 13px;
       word-break: break-word;
       overflow-wrap: anywhere;
       vertical-align: middle;
     }
 
-    .orders-table th:nth-child(1), .orders-table td:nth-child(1) { width:17%; }
-    .orders-table th:nth-child(2), .orders-table td:nth-child(2) { width:18%; }
-    .orders-table th:nth-child(3), .orders-table td:nth-child(3) { width:16%; text-align:center; }
-    .orders-table th:nth-child(4), .orders-table td:nth-child(4) { width:13%; }
-    .orders-table th:nth-child(5), .orders-table td:nth-child(5) { width:14%; text-align:center; }
-    .orders-table th:nth-child(6), .orders-table td:nth-child(6) { width:10%; text-align:center; }
-    .orders-table th:nth-child(7), .orders-table td:nth-child(7) { width:12%; }
+    /* Đợt sản xuất */
+    .orders-table th:nth-child(1),
+    .orders-table td:nth-child(1) {
+      width: 27%;
+    }
+
+    /* Tiến độ tổng */
+    .orders-table th:nth-child(2),
+    .orders-table td:nth-child(2) {
+      width: 25%;
+      text-align: center;
+    }
+
+    /* Hạn hoàn thành */
+    .orders-table th:nth-child(3),
+    .orders-table td:nth-child(3) {
+      width: 19%;
+      text-align: center;
+    }
+
+    /* Trạng thái */
+    .orders-table th:nth-child(4),
+    .orders-table td:nth-child(4) {
+      width: 14%;
+      text-align: center;
+    }
+
+    /* Thao tác */
+    .orders-table th:nth-child(5),
+    .orders-table td:nth-child(5) {
+      width: 15%;
+      text-align: center;
+    }
+
+    .batch-code {
+      display: block;
+      color: #1d4ed8;
+      font-weight: 750;
+    }
+
+    .batch-name {
+      display: block;
+      margin-top: 4px;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .order-reference {
+      display: block;
+      margin-top: 5px;
+      color: #64748b;
+      font-size: 11px;
+    }
+
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .product-list-item {
+      display: block;
+      padding: 7px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      background: #f8fafc;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    .product-count {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 7px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 700;
+    }
 
     .orders-table progress {
       width: 100%;
-      max-width: 120px;
+      max-width: 130px;
       height: 8px;
     }
 
-    .batch-code { display:block;font-weight:750;color:#1d4ed8; }
-    .batch-name { display:block;margin-top:3px;color:#334155;font-weight:600; }
-    .order-reference { display:block;margin-top:3px;color:#94a3b8;font-size:11px; }
-    .progress-numbers { display:block;margin-bottom:5px;color:#334155;font-weight:700; }
-    .progress-breakdown { display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:5px;font-size:11px; }
-    .progress-confirmed { color:#15803d;font-weight:700; }
-    .progress-pending { display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;background:#fef3c7;color:#92400e;font-weight:800; }
-    .progress-remaining { color:#64748b; }
-    .deadline-value { display:block; }
-    .deadline-warning { margin-top:7px; }
-
-    /* Các nút */
-    .orders-table .btn {
-      font-size: 11px;
-      padding: 4px 6px;
-      white-space: nowrap;
+    .progress-numbers {
+      display: block;
+      margin-bottom: 6px;
+      color: #334155;
+      font-weight: 700;
     }
 
-    /* Khu vực thao tác */
+    .progress-breakdown {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      font-size: 11px;
+    }
+
+    .progress-confirmed {
+      color: #15803d;
+      font-weight: 700;
+    }
+
+    .progress-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: 800;
+    }
+
+    .progress-remaining {
+      color: #64748b;
+    }
+
+    .deadline-value {
+      display: block;
+    }
+
+    .deadline-warning {
+      margin-top: 7px;
+    }
+
+    .orders-table .status-pill {
+      display: inline-block;
+      padding: 4px 6px;
+      font-size: 10px;
+      white-space: normal;
+    }
+
     .order-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 5px;
+      display: flex;
+      justify-content: center;
       width: 100%;
     }
 
     .orders-table .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
       width: 100%;
-      min-width: 0;
       box-sizing: border-box;
-      padding: 6px 3px;
-      border-radius: 6px;
+      padding: 8px 5px;
       border: none;
+      border-radius: 6px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       text-align: center;
       text-decoration: none;
       cursor: pointer;
       white-space: nowrap;
-    }
-
-    /* Status nhỏ hơn */
-    .orders-table .status-pill {
-      font-size: 10px;
-      padding: 3px 5px;
-      white-space: normal;
-    }
-
-    .orders-table .action-btn {
-      display: inline-block;
-      padding: 5px 8px;
-      border-radius: 6px;
-      border: none;
-      font-size: 11px;
-      font-weight: 500;
-      text-decoration: none;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .orders-table .action-view {
-      background-color: #e2e8f0;
-      color: #334155;
-    }
-
-    .orders-table .action-edit {
-      background-color: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .orders-table .action-history {
-      background-color: #f1f5f9;
-      color: #475569;
-    }
-
-    .orders-table .action-record {
-      background-color: #dcfce7;
-      color: #166534;
-    }
-
-    .orders-table .action-cancel {
-      background-color: #fee2e2;
-      color: #b91c1c;
+      transition: opacity .15s ease, background .15s ease;
     }
 
     .orders-table .action-btn:hover {
-      opacity: 0.8;
+      opacity: .85;
     }
 
-    .aggregate-shortage-card { margin:0 0 18px;border:1px solid #fdba74;border-left:5px solid #f97316;background:#fffaf5;overflow:hidden; }
-    .aggregate-shortage-card .content-card-header { background:#fff7ed;border-bottom-color:#fed7aa; }
-    .aggregate-shortage-title { display:flex;align-items:center;gap:10px;color:#9a3412; }
-    .aggregate-shortage-title i { display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#ffedd5;color:#c2410c; }
-    .aggregate-shortage-card .content-card-subtitle { margin:5px 0 0;color:#9a3412; }
-    .aggregate-shortage-table th { background:#fff7ed; }
-    .aggregate-shortage-value { color:#b91c1c;font-weight:800; }
-    .aggregate-shortage-actions { display:flex;justify-content:flex-end;padding:14px 18px;border-top:1px solid #fed7aa;background:#fff; }
-    .orders-table tr.manager-order-overdue td { background:#fffafa; }
-    .orders-table tr.manager-order-overdue td:first-child { box-shadow:inset 4px 0 #dc2626; }
-    .orders-table tr.manager-order-overdue:hover td { background:#fef2f2; }
-    .order-overdue-badge { display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:5px 8px;border:1px solid #fecaca;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:800;line-height:1.2;white-space:normal; }
-    .order-overdue-badge i { flex:0 0 auto; }
+    .orders-table .action-view {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
 
+    .orders-table .action-view:hover {
+      background: #bfdbfe;
+    }
+
+    .orders-table tr.manager-order-overdue td {
+      background: #fffafa;
+    }
+
+    .orders-table tr.manager-order-overdue td:first-child {
+      box-shadow: inset 4px 0 #dc2626;
+    }
+
+    .orders-table tr.manager-order-overdue:hover td {
+      background: #fef2f2;
+    }
+
+    .order-overdue-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fee2e2;
+      color: #b91c1c;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.4;
+      white-space: normal;
+    }
+
+    .order-overdue-badge i {
+      flex: 0 0 auto;
+    }
+
+    /* ===== BẢNG TỔNG HỢP NVL THIẾU ===== */
+    .aggregate-shortage-card {
+      margin: 0 0 18px;
+      border: 1px solid #fdba74;
+      border-left: 5px solid #f97316;
+      background: #fffaf5;
+      overflow: hidden;
+    }
+
+    .aggregate-shortage-card .content-card-header {
+      background: #fff7ed;
+      border-bottom-color: #fed7aa;
+    }
+
+    .aggregate-shortage-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #9a3412;
+    }
+
+    .aggregate-shortage-title i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    .aggregate-shortage-card .content-card-subtitle {
+      margin: 5px 0 0;
+      color: #9a3412;
+    }
+
+    .aggregate-shortage-table th {
+      background: #fff7ed;
+    }
+
+    .aggregate-shortage-value {
+      color: #b91c1c;
+      font-weight: 800;
+    }
+
+    .aggregate-shortage-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding: 14px 18px;
+      border-top: 1px solid #fed7aa;
+      background: #fff;
+    }
+
+    /* ===== POPUP HỦY ===== */
+    .cancel-modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cancel-modal-content {
+      width: 420px;
+      max-width: calc(100vw - 40px);
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+      overflow: hidden;
+    }
+
+    .cancel-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .cancel-modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .cancel-modal-close {
+      border: none;
+      background: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .cancel-modal-body {
+      padding: 20px;
+    }
+
+    .cancel-modal-body p {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #475569;
+    }
+
+    .cancel-modal-body textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .cancel-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .aggregate-shortage-actions {
+        padding: 12px;
+      }
+
+      .aggregate-shortage-actions .btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    /* Bảng nhân viên có thêm cột tình trạng NVL */
+    .orders-table.employee-orders-table {
+      min-width: 1050px;
+    }
+
+    .orders-table.employee-orders-table th:nth-child(1),
+    .orders-table.employee-orders-table td:nth-child(1) {
+      width: 22%;
+    }
+
+    .orders-table.employee-orders-table th:nth-child(2),
+    .orders-table.employee-orders-table td:nth-child(2) {
+      width: 21%;
+    }
+
+    .orders-table.employee-orders-table th:nth-child(3),
+    .orders-table.employee-orders-table td:nth-child(3) {
+      width: 14%;
+      text-align: center;
+    }
+
+    .orders-table.employee-orders-table th:nth-child(4),
+    .orders-table.employee-orders-table td:nth-child(4) {
+      width: 16%;
+      text-align: center;
+    }
+
+    .orders-table.employee-orders-table th:nth-child(5),
+    .orders-table.employee-orders-table td:nth-child(5) {
+      width: 12%;
+      text-align: center;
+    }
+
+    .orders-table.employee-orders-table th:nth-child(6),
+    .orders-table.employee-orders-table td:nth-child(6) {
+      width: 15%;
+      text-align: center;
+    }
   </style>
-
 </head>
 
 <body>
-
 <div class="app-container">
 
   <!-- SIDEBAR -->
@@ -164,15 +427,16 @@
 
       <h1>Yêu cầu sản xuất</h1>
 
-      <!-- Nút tạo yêu cầu -->
+      <!-- TẠO YÊU CẦU -->
       <p th:if="${manager}">
         <a class="btn btn-primary"
            th:href="@{/san-xuat/yeu-cau/create}">
+          <i class="fas fa-plus"></i>
           Tạo yêu cầu
         </a>
       </p>
 
-      <!-- Thông báo -->
+      <!-- THÔNG BÁO -->
       <div th:if="${success}"
            class="status-pill"
            style="background-color:#dcfce7;color:#166534;margin-bottom:15px;"
@@ -185,20 +449,27 @@
            th:text="${error}">
       </div>
 
+      <!-- TỔNG HỢP NVL THIẾU -->
       <section th:if="${!manager and not #lists.isEmpty(materialShortages)}"
                class="content-card aggregate-shortage-card">
+
         <div class="content-card-header">
           <div>
             <h2 class="content-card-title aggregate-shortage-title">
               <i class="fas fa-box-open"></i>
               Tổng hợp nguyên vật liệu đang thiếu
             </h2>
+
             <p class="content-card-subtitle">
               Nhu cầu đã trừ tồn kho sản xuất và số lượng đang có phiếu đề nghị chờ duyệt.
             </p>
           </div>
-          <span class="record-count" th:text="${#lists.size(materialShortages) + ' loại đang thiếu'}"></span>
+
+          <span class="record-count"
+                th:text="${#lists.size(materialShortages) + ' loại đang thiếu'}">
+                    </span>
         </div>
+
         <div class="table-container">
           <table class="aggregate-shortage-table">
             <thead>
@@ -211,230 +482,360 @@
               <th>Tổng còn thiếu</th>
             </tr>
             </thead>
+
             <tbody>
             <tr th:each="item : ${materialShortages}">
-              <td><strong th:text="${item.manvl_code + ' - ' + item.tennvl}"></strong></td>
-              <td><span data-number th:text="${item.soyeucau}"></span> yêu cầu</td>
-              <td><span data-number th:text="${item.tongnhucau}"></span> <span th:text="${item.donvitinh}"></span></td>
-              <td><span data-number th:text="${item.soluongton}"></span> <span th:text="${item.donvitinh}"></span></td>
-              <td><span data-number th:text="${item.tongdangdenghi}"></span> <span th:text="${item.donvitinh}"></span></td>
-              <td class="aggregate-shortage-value"><span data-number th:text="${item.tongthieu}"></span> <span th:text="${item.donvitinh}"></span></td>
+              <td>
+                <strong th:text="${item.manvl_code + ' - ' + item.tennvl}"></strong>
+              </td>
+
+              <td>
+                <span data-number th:text="${item.soyeucau}"></span>
+                yêu cầu
+              </td>
+
+              <td>
+                <span data-number th:text="${item.tongnhucau}"></span>
+                <span th:text="${item.donvitinh}"></span>
+              </td>
+
+              <td>
+                <span data-number th:text="${item.soluongton}"></span>
+                <span th:text="${item.donvitinh}"></span>
+              </td>
+
+              <td>
+                <span data-number th:text="${item.tongdangdenghi}"></span>
+                <span th:text="${item.donvitinh}"></span>
+              </td>
+
+              <td class="aggregate-shortage-value">
+                <span data-number th:text="${item.tongthieu}"></span>
+                <span th:text="${item.donvitinh}"></span>
+              </td>
             </tr>
             </tbody>
           </table>
         </div>
+
         <div class="aggregate-shortage-actions">
-          <a class="btn btn-primary" th:href="@{/kho/xuat-nvl/create}">
-            <i class="fas fa-paper-plane"></i> Lập đề nghị xuất NVL
+          <a class="btn btn-primary"
+             th:href="@{/kho/xuat-nvl/create}">
+            <i class="fas fa-paper-plane"></i>
+            Lập đề nghị xuất NVL
           </a>
         </div>
       </section>
 
+      <!-- DANH SÁCH ĐỢT SẢN XUẤT -->
       <div class="content-card">
 
         <div class="content-card-header">
           <h2 class="content-card-title">
-            Yêu cầu sản xuất
+            Danh sách đợt sản xuất
           </h2>
 
           <span class="record-count"
-                th:text="${#lists.size(orders) + ' bản ghi'}">
-                        0 bản ghi
+                th:text="${#lists.size(orders) + ' đợt sản xuất'}">
+                        0 đợt sản xuất
                     </span>
         </div>
 
-
         <div class="table-container">
-
-          <table class="orders-table">
+          <table class="orders-table"
+                 th:classappend="${!manager ? ' employee-orders-table' : ''}">
 
             <thead>
             <tr>
               <th>Đợt sản xuất</th>
-              <th>Sản phẩm</th>
-              <th>Tiến độ</th>
-              <th>Nhân viên</th>
+              <th>Tiến độ tổng</th>
+
+              <th th:if="${!manager}">Tình trạng NVL</th>
+
               <th>Hạn hoàn thành</th>
               <th>Trạng thái</th>
-              <th style="text-align: center;">Thao tác</th>
+              <th style="text-align:center;">Thao tác</th>
             </tr>
             </thead>
 
-
             <tbody>
-
             <tr th:each="order : ${orders}"
-                th:classappend="${manager and order.overdueDays > 0 ? 'manager-order-overdue' : ''}">
+                th:classappend="${manager and order.overdueDays > 0
+                                ? 'manager-order-overdue' : ''}">
 
-              <!-- Đợt sản xuất -->
+              <!-- ĐỢT SẢN XUẤT -->
               <td>
-                <span class="batch-code"
-                      th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></span>
+                                <span class="batch-code"
+                                      th:text="${order.madot_code != null
+                                          ? order.madot_code
+                                          : 'YCSX-' + order.mayeucau}">
+                                </span>
+
                 <span class="batch-name"
-                      th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất cũ'}"></span>
-                <span class="order-reference" th:text="${'Yêu cầu #' + order.mayeucau}"></span>
+                      th:text="${order.tendot != null
+                                          ? order.tendot
+                                          : 'Yêu cầu sản xuất cũ'}">
+                                </span>
+
+                <span class="order-reference"
+                      th:text="${order.soyeucau + ' yêu cầu thành phần'}">
+                                </span>
               </td>
 
-              <!-- Sản phẩm -->
-              <td th:text="${order.tensp}"></td>
 
-              <!-- Tiến độ -->
+              <!-- TIẾN ĐỘ TỔNG -->
               <td>
-                <span class="progress-numbers"
-                      th:text="${(order.soluonghoanthanh + order.soluongchoduyet) + ' / ' + order.soluongyeucau + ' đã sản xuất'}"></span>
+                                <span class="progress-numbers"
+                                      th:text="${order.soluongdahoanthanh + ' / '
+                                          + order.soluongyeucau + ' sản phẩm'}">
+                                </span>
+
                 <progress
-                        th:value="${order.soluonghoanthanh + order.soluongchoduyet}"
-                        th:max="${order.soluongyeucau > 0 ? order.soluongyeucau : 1}">
+                        th:value="${order.soluongdahoanthanh}"
+                        th:max="${order.soluongyeucau > 0
+                                        ? order.soluongyeucau : 1}">
                 </progress>
-                <span th:text="${order.soluongyeucau > 0
-                        ? (order.soluonghoanthanh + order.soluongchoduyet) * 100 / order.soluongyeucau + '%'
-                        : '0%'}"></span>
+
+                <span
+                        th:text="${order.soluongyeucau > 0
+                                        ? #numbers.formatDecimal(
+                                            order.soluongdahoanthanh * 100.0
+                                            / order.soluongyeucau, 1, 1) + '%'
+                                        : '0%'}">
+                                </span>
+
                 <div class="progress-breakdown">
-                  <span class="progress-confirmed"
-                        th:text="${'Đã duyệt: ' + order.soluonghoanthanh}"></span>
-                  <span class="progress-pending" th:if="${order.soluongchoduyet > 0}">
-                    <i class="fas fa-hourglass-half"></i>
-                    <span th:text="${'Chờ duyệt: ' + order.soluongchoduyet}"></span>
-                  </span>
+                                    <span class="progress-confirmed"
+                                          th:text="${'Đã duyệt: '
+                                              + order.soluonghoanthanh}">
+                                    </span>
+
+                  <span class="progress-pending"
+                        th:if="${order.soluongchoduyet > 0}">
+                                        <i class="fas fa-hourglass-half"></i>
+                                        <span th:text="${'Chờ duyệt: '
+                                            + order.soluongchoduyet}">
+                                        </span>
+                                    </span>
+
                   <span class="progress-remaining"
-                        th:text="${'Còn sản xuất: ' + (order.soluongyeucau > order.soluonghoanthanh + order.soluongchoduyet
-                            ? order.soluongyeucau - order.soluonghoanthanh - order.soluongchoduyet : 0)}"></span>
+                        th:text="${'Còn sản xuất: '
+                                              + order.soluongconphaisanxuat}">
+                                    </span>
                 </div>
               </td>
 
-              <!-- Nhân viên -->
-              <td th:text="${order.hoten}"></td>
+              <!-- TÌNH TRẠNG NVL: CHỈ HIỆN CHO NHÂN VIÊN -->
+              <td th:if="${!manager}" style="text-align:center;">
 
-              <!-- Hạn và cảnh báo quá hạn -->
+<span class="status-pill"
+      th:style="${order.tinhtrangnvl == 'DU'
+          ? 'background:#dcfce7;color:#166534;'
+          : order.tinhtrangnvl == 'DANG_CHO_DUYET'
+              ? 'background:#fef3c7;color:#92400e;'
+              : order.tinhtrangnvl == 'THIEU'
+                  ? 'background:#fee2e2;color:#b91c1c;'
+                  : 'background:#f1f5f9;color:#64748b;'}"
+      th:text="${order.tinhtrangnvl == 'DU'
+          ? 'Đủ NVL'
+          : order.tinhtrangnvl == 'DANG_CHO_DUYET'
+              ? 'Đang chờ duyệt'
+              : order.tinhtrangnvl == 'THIEU'
+                  ? 'Thiếu NVL'
+                  : 'Không cần NVL'}">
+</span>
+
+              </td>
+
+
+              <!-- HẠN HOÀN THÀNH -->
               <td>
-                <span class="deadline-value" data-date-time th:text="${order.hanhoanthanh}"></span>
-                <span th:if="${order.overdueDays > 0}"
+                                <span class="deadline-value"
+                                      data-date-time
+                                      th:text="${order.hanhoanthanh}">
+                                </span>
+
+                <!-- QUÁ HẠN SẢN XUẤT
+                     Hiển thị cho nhân viên và quản lý khi chưa sản xuất đủ -->
+                <span th:if="${order.overdueDays > 0
+              and order.trangthai != 'HUY'
+              and order.trangthai != 'HOAN_THANH'
+              and order.soluongconphaisanxuat > 0}"
                       class="order-overdue-badge deadline-warning">
-                  <i class="fas fa-clock"></i>
-                  <span th:text="${'Quá hạn ' + order.overdueDays + ' ngày'}"></span>
-                </span>
+    <i class="fas fa-clock"></i>
+    <span th:text="${'Quá hạn sản xuất '
+        + order.overdueDays + ' ngày'}">
+    </span>
+</span>
+
+                <!-- QUÁ HẠN DUYỆT
+                     Chỉ quản lý kho nhìn thấy khi đã sản xuất đủ nhưng còn chờ duyệt -->
+                <span th:if="${manager
+              and order.overdueDays > 0
+              and order.trangthai != 'HUY'
+              and order.trangthai != 'HOAN_THANH'
+              and order.soluongconphaisanxuat <= 0
+              and order.soluongchoduyet > 0}"
+                      class="deadline-warning"
+                      style="display:inline-flex;
+             align-items:center;
+             justify-content:center;
+             gap:5px;
+             padding:5px 8px;
+             border:1px solid #fcd34d;
+             border-radius:999px;
+             background:#fef3c7;
+             color:#92400e;
+             font-size:10px;
+             font-weight:800;
+             line-height:1.4;
+             white-space:normal;">
+    <i class="fas fa-hourglass-half"></i>
+    <span th:text="${'Quá hạn do duyệt '
+        + order.overdueDays + ' ngày'}">
+    </span>
+</span>
               </td>
 
-              <!-- Trạng thái -->
+              <!-- TRẠNG THÁI -->
               <td>
-                <span class="status-pill"
-                      th:text="${
-                          order.trangthai == 'HUY' ? 'Hủy' :
-                          order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
-                          order.trangthai
-                      }">
-                </span>
+    <span class="status-pill"
+          th:style="${order.trangthai == 'HUY'
+              ? 'background:#fee2e2;color:#b91c1c;'
+              : order.trangthai == 'HOAN_THANH'
+                  ? 'background:#dcfce7;color:#166534;'
+                  : order.soluongyeucau > 0
+                      and order.soluongdahoanthanh == 0
+                          ? 'background:#dbeafe;color:#1d4ed8;'
+                          : 'background:#fef3c7;color:#92400e;'}"
+          th:text="${order.trangthai == 'HUY'
+              ? 'Hủy'
+              : order.trangthai == 'HOAN_THANH'
+                  ? 'Hoàn thành'
+                  : order.soluongyeucau > 0
+                      and order.soluongdahoanthanh == 0
+                          ? 'Đã giao'
+                          : 'Đang thực hiện'}">
+    </span>
               </td>
 
-
-              <!-- ================================================= -->
-              <!-- THAO TÁC -->
-              <!-- ================================================= -->
-
+              <!-- XEM CHI TIẾT -->
               <td>
+                <div class="order-actions" style="flex-direction: column; gap: 6px;">
 
-                <div class="order-actions">
+                  <!-- Đợt có mã madot -->
+                  <a th:if="${order.madot != null}"
+                     th:href="@{/san-xuat/yeu-cau/dot/{batchId}(
+                   batchId=${order.madot})}"
+                     class="action-btn action-view">
+                    <i class="fas fa-eye"></i>
+                    Xem đợt
+                  </a>
 
-                  <!-- XEM -->
-                  <a
-                          th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
-                          class="action-btn action-view">
+                  <!-- Yêu cầu cũ chưa thuộc đợt -->
+                  <a th:unless="${order.madot != null}"
+                     th:href="@{/san-xuat/yeu-cau/{id}(
+                   id=${order.mayeucau})}"
+                     class="action-btn action-view">
+                    <i class="fas fa-eye"></i>
                     Xem
                   </a>
 
-                  <!-- GHI NHẬN NHANH - CHỈ NHÂN VIÊN -->
-                  <a th:unless="${manager}"
-                     th:if="${order.trangthai != 'HOAN_THANH'
-                         and order.trangthai != 'HUY'
-                         and order.soluonghoanthanh + order.soluongchoduyet < order.soluongyeucau}"
-                     th:href="@{/san-xuat/ghi-nhan(orderId=${order.mayeucau})}"
-                     class="action-btn action-record"
-                     title="Ghi nhận thành phẩm và nhập kho sản xuất">
-                    <i class="fas fa-box-open"></i> Ghi nhận
-                  </a>
+                  <!-- BỎ HỦY TOÀN BỘ ĐỢT -->
+                  <button th:if="${manager
+                and order.madot != null
+                and order.trangthai == 'HUY'}"
+                          type="button"
+                          class="action-btn"
+                          style="background:#dcfce7;color:#15803d;"
+                          th:attr="data-batch-id=${order.madot},
+                 data-batch-name=${order.tendot != null
+                     ? order.tendot : order.madot_code}"
+                          onclick="if (confirm('Bạn có chắc muốn bỏ hủy đợt sản xuất này?')) {
+                     document.getElementById('uncancelForm-' + this.dataset.batchId).submit();
+                 }">
+                    <i class="fas fa-undo"></i>
+                    Bỏ hủy đợt
+                  </button>
 
+                  <form th:if="${manager
+              and order.madot != null
+              and order.trangthai == 'HUY'}"
+                        th:id="'uncancelForm-' + ${order.madot}"
+                        th:action="@{/san-xuat/yeu-cau/dot/{id}/uncancel(id=${order.madot})}"
+                        method="post"
+                        style="display:none;">
+                  </form>
+                  <!-- HỦY TOÀN BỘ ĐỢT: chỉ quản lý, đợt chưa hoàn thành hoặc hủy -->
+                  <button th:if="${manager
+                  and order.madot != null
+                  and order.trangthai != 'HOAN_THANH'
+                  and order.trangthai != 'HUY'}"
+                          type="button"
+                          class="action-btn"
+                          style="background:#fee2e2;color:#b91c1c;"
+                          th:attr="data-batch-id=${order.madot},
+                   data-batch-name=${order.tendot != null
+                       ? order.tendot : order.madot_code}"
+                          onclick="openCancelModal(
+              this.dataset.batchId,
+              this.dataset.batchName
+          )">
+                    <i class="fas fa-ban"></i>
+                    Hủy đợt
+                  </button>
 
-                  <!-- =============================== -->
-                  <!-- CHỈ QUẢN LÝ -->
-                  <!-- =============================== -->
-
-                  <th:block th:if="${manager}">
-
-                    <!-- SỬA -->
-                    <a
-                            th:if="${order.trangthai != 'HOAN_THANH'
-                and order.trangthai != 'HUY'}"
-                            th:href="@{/san-xuat/yeu-cau/{id}/edit(id=${order.mayeucau})}"
-                            class="action-btn action-edit">
-                      Sửa
-                    </a>
-
-
-                    <!-- LỊCH SỬ -->
-                    <a
-                            th:href="@{/san-xuat/yeu-cau/{id}/history(id=${order.mayeucau})}"
-                            class="action-btn action-history">
-                      Lịch sử
-                    </a>
-
-
-                    <!-- HỦY -->
-                    <button
-                            th:if="${order.trangthai != 'HOAN_THANH'
-                and order.trangthai != 'HUY'}"
-                            type="button"
-                            class="action-btn action-cancel"
-                            th:onclick="'openCancelModal(' + ${order.mayeucau} + ')'">
-                      Hủy
-                    </button>
-
-                  </th:block>
+                  <!-- Yêu cầu cũ chưa thuộc đợt: vẫn cho hủy riêng -->
+                  <button th:if="${manager
+                  and order.madot == null
+                  and order.trangthai != 'HOAN_THANH'
+                  and order.trangthai != 'HUY'}"
+                          type="button"
+                          class="action-btn"
+                          style="background:#fee2e2;color:#b91c1c;"
+                          th:attr="data-order-id=${order.mayeucau}"
+                          onclick="openCancelModal(
+              this.dataset.orderId,
+              'Yêu cầu sản xuất',
+              false
+          )">
+                    <i class="fas fa-ban"></i>
+                    Hủy yêu cầu
+                  </button>
 
                 </div>
-
               </td>
 
             </tr>
 
-
-            <!-- Không có dữ liệu -->
-            <tr
-                    class="empty-row"
-                    th:if="${#lists.isEmpty(orders)}">
-
-              <td colspan="7">
-                Chưa có dữ liệu để hiển thị.
+            <!-- KHÔNG CÓ DỮ LIỆU -->
+            <tr class="empty-row"
+                th:if="${#lists.isEmpty(orders)}">
+              <td th:attr="colspan=${manager ? 5 : 6}">
+                Chưa có đợt sản xuất nào để hiển thị.
               </td>
-
             </tr>
-
             </tbody>
 
           </table>
-
         </div>
-
       </div>
 
     </main>
-
   </div>
-
 </div>
 
-<!-- POPUP HỦY -->
+<!-- POPUP HỦY YÊU CẦU -->
 <div id="cancelModal" class="cancel-modal">
-
   <div class="cancel-modal-content">
 
     <div class="cancel-modal-header">
-      <h3>
+      <h3 id="cancelModalTitle">
         <i class="fas fa-times-circle"></i>
-        Hủy yêu cầu sản xuất
+        Hủy đợt sản xuất
       </h3>
 
-      <button
-              type="button"
+      <button type="button"
               class="cancel-modal-close"
               onclick="closeCancelModal()">
         &times;
@@ -442,128 +843,67 @@
     </div>
 
     <div class="cancel-modal-body">
-
-      <p>Vui lòng nhập lý do hủy yêu cầu:</p>
+      <p id="cancelModalDescription">
+        Bạn đang chuẩn bị hủy toàn bộ yêu cầu thành phẩm thuộc đợt này.
+        Thao tác này không thể hoàn tác.
+      </p>
 
       <form id="cancelForm" method="post">
-
-        <textarea
-                name="reason"
-                id="cancelReason"
-                maxlength="255"
-                required
-                placeholder="Nhập lý do hủy..."
-                rows="4"></textarea>
+                <textarea
+                        name="reason"
+                        id="cancelReason"
+                        maxlength="255"
+                        required
+                        placeholder="Nhập lý do hủy..."
+                        rows="4"></textarea>
 
         <div class="cancel-modal-actions">
-
-          <button
-                  type="button"
+          <button type="button"
                   class="btn btn-secondary"
                   onclick="closeCancelModal()">
             Đóng
           </button>
 
-          <button
-                  type="submit"
+          <button type="submit"
                   class="btn btn-danger"
                   onclick="return confirm('Bạn có chắc muốn hủy yêu cầu này?');">
             <i class="fas fa-times"></i>
             Xác nhận hủy
           </button>
-
         </div>
-
       </form>
-
     </div>
-
   </div>
-
 </div>
 
-<style>
-  .cancel-modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    align-items: center;
-    justify-content: center;
-  }
-
-  .cancel-modal-content {
-    width: 420px;
-    max-width: calc(100vw - 40px);
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-    overflow: hidden;
-  }
-
-  .cancel-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .cancel-modal-header h3 {
-    margin: 0;
-    font-size: 18px;
-  }
-
-  .cancel-modal-close {
-    border: none;
-    background: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: #64748b;
-  }
-
-  .cancel-modal-body {
-    padding: 20px;
-  }
-
-  .cancel-modal-body p {
-    margin-top: 0;
-    margin-bottom: 12px;
-    color: #475569;
-  }
-
-  .cancel-modal-body textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    resize: vertical;
-    font-family: inherit;
-    font-size: 14px;
-  }
-
-  .cancel-modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 15px;
-  }
-</style>
-
 <script>
-  function openCancelModal(id) {
-
+  function openCancelModal(id, name, isBatch = true) {
     const modal = document.getElementById('cancelModal');
     const form = document.getElementById('cancelForm');
     const reason = document.getElementById('cancelReason');
+    const title = document.getElementById('cancelModalTitle');
+    const description = document.getElementById('cancelModalDescription');
 
-    form.action = '/san-xuat/yeu-cau/' + id + '/cancel';
+    if (isBatch) {
+      form.action = '/san-xuat/yeu-cau/dot/' + id + '/cancel';
 
-    modal.style.display = 'flex';
+      title.innerHTML = '<i class="fas fa-times-circle"></i> Hủy đợt sản xuất';
+
+      description.textContent =
+              'Bạn đang chuẩn bị hủy toàn bộ yêu cầu thành phẩm thuộc đợt "' +
+              (name || id) +
+              '". Thao tác này không thể hoàn tác.';
+    } else {
+      form.action = '/san-xuat/yeu-cau/' + id + '/cancel';
+
+      title.innerHTML = '<i class="fas fa-times-circle"></i> Hủy yêu cầu sản xuất';
+
+      description.textContent =
+              'Bạn đang chuẩn bị hủy yêu cầu sản xuất này.';
+    }
 
     reason.value = '';
+    modal.style.display = 'flex';
     reason.focus();
   }
 
@@ -571,13 +911,13 @@
     document.getElementById('cancelModal').style.display = 'none';
   }
 
-  document.getElementById('cancelModal').addEventListener('click', function(event) {
+  document.getElementById('cancelModal').addEventListener('click', function (event) {
     if (event.target === this) {
       closeCancelModal();
     }
   });
 
-  document.addEventListener('keydown', function(event) {
+  document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
       closeCancelModal();
     }

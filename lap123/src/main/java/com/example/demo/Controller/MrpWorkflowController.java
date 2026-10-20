@@ -131,33 +131,91 @@ public class MrpWorkflowController {
     }
 
     @GetMapping("/kho/xuat-nvl/create")
-    public String materialIssueForm(Authentication auth, @RequestParam(required = false) Long orderId, Model model) {
-        model.addAttribute("orders", documents.assignedOrders(auth.getName()));
-        model.addAttribute("selectedOrder", orderId);
-        if (orderId != null) model.addAttribute("lines", documents.bomRequestLines(orderId, auth.getName()));
+    public String materialIssueForm(
+            Authentication auth,
+            @RequestParam(required = false) Long batchId,
+            @RequestParam(required = false) String returnUrl,
+            Model model) {
+
+        model.addAttribute(
+                "batches",
+                documents.assignedBatches(auth.getName())
+        );
+
+        model.addAttribute("selectedBatch", batchId);
+
+        // Lưu đường dẫn để nút quay lại trở về đúng trang trước đó
+        model.addAttribute("returnUrl", returnUrl);
+
+        if (batchId != null) {
+            model.addAttribute(
+                    "lines",
+                    documents.bomRequestLinesByBatch(
+                            batchId,
+                            auth.getName()
+                    )
+            );
+        }
+
         return "mrp/material-issue-form";
     }
 
     @PostMapping("/kho/xuat-nvl")
-    public String createMaterialIssue(Authentication auth, @RequestParam long orderId,
-                                      @RequestParam(required = false) String note,
-                                      @RequestParam List<Long> materialId, @RequestParam List<Integer> quantity,
-                                      RedirectAttributes flash) {
+    public String createMaterialIssue(
+            Authentication auth,
+            @RequestParam long batchId,
+            @RequestParam(required = false) String note,
+            @RequestParam List<Long> materialId,
+            @RequestParam List<Integer> quantity,
+            RedirectAttributes flash) {
+
         try {
-            long id = documents.createMaterialIssue(auth.getName(), orderId, note, materialId, quantity);
-            flash.addFlashAttribute("success", "Đã gửi đề nghị xuất NVL.");
+            long id = documents.createBatchMaterialIssue(
+                    auth.getName(),
+                    batchId,
+                    note,
+                    materialId,
+                    quantity
+            );
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Đã gửi đề nghị xuất NVL cho đợt sản xuất."
+            );
+
             return "redirect:/kho/xuat-nvl/" + id;
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
             flash.addFlashAttribute("error", exception.getMessage());
-            return "redirect:/kho/xuat-nvl/create?orderId=" + orderId;
+
+            return "redirect:/kho/xuat-nvl/create?batchId=" + batchId;
         }
     }
 
+
     @GetMapping("/kho/xuat-nvl/{id}")
-    public String materialIssue(@PathVariable long id, Authentication auth, Model model) {
-        model.addAttribute("issue", documents.materialIssue(id, auth.getName(), manager(auth)));
-        model.addAttribute("lines", documents.materialIssueLines(id));
+    public String materialIssue(
+            @PathVariable long id,
+            Authentication auth,
+            Model model) {
+
+        model.addAttribute(
+                "issue",
+                documents.materialIssue(id, auth.getName(), manager(auth))
+        );
+
+        model.addAttribute(
+                "requests",
+                documents.materialIssueRequests(id)
+        );
+
+        model.addAttribute(
+                "lines",
+                documents.materialIssueLines(id)
+        );
+
         model.addAttribute("manager", manager(auth));
+
         return "mrp/material-issue-detail";
     }
 
@@ -205,24 +263,136 @@ public class MrpWorkflowController {
     }
 
     @GetMapping("/san-xuat/ket-qua")
-    public String results(Authentication auth,
-                          @RequestParam(required = false) Long orderId,
-                          Model model) {
-        if (!manager(auth)) {
-            return "redirect:/san-xuat/ghi-nhan";
+    public String results(
+            Authentication auth,
+            @RequestParam(required = false) Long orderId,
+            @RequestParam(required = false) Long batchId,
+            Model model) {
+
+        requireManager(auth);
+
+        List<Map<String, Object>> groups =
+                documents.resultGroups(auth.getName(), true);
+
+        List<Map<String, Object>> pendingGroups =
+                new java.util.ArrayList<>();
+
+        List<Map<String, Object>> approvedGroups =
+                new java.util.ArrayList<>();
+
+        for (Map<String, Object> group : groups) {
+
+            Object rawItems = group.get("items");
+
+            if (!(rawItems instanceof List<?> items)) {
+                continue;
+            }
+
+            // Danh sách toàn bộ kết quả hợp lệ của nhóm sau khi lọc.
+            List<Map<String, Object>> filteredItems =
+                    new java.util.ArrayList<>();
+
+            boolean hasPending = false;
+            boolean hasApproved = false;
+
+            for (Object rawItem : items) {
+
+                if (!(rawItem instanceof Map<?, ?> rawMap)) {
+                    continue;
+                }
+
+                Map<String, Object> item =
+                        new java.util.LinkedHashMap<>();
+
+                rawMap.forEach((key, value) ->
+                        item.put(String.valueOf(key), value));
+
+                // Lọc theo đợt sản xuất.
+                if (batchId != null) {
+                    Object rawBatchId = item.get("madot");
+
+                    if (!(rawBatchId instanceof Number number)
+                            || number.longValue() != batchId) {
+                        continue;
+                    }
+                }
+
+                // Lọc theo yêu cầu sản xuất.
+                if (orderId != null) {
+                    Object rawOrderId = item.get("mayeucau");
+
+                    if (!(rawOrderId instanceof Number number)
+                            || number.longValue() != orderId) {
+                        continue;
+                    }
+                }
+
+                String status =
+                        String.valueOf(item.get("trangthai"));
+
+                // Chỉ lấy kết quả thuộc hai trạng thái cần hiển thị.
+                if (!"CHO_XAC_NHAN".equals(status)
+                        && !"DA_NHAP_KHO".equals(status)) {
+                    continue;
+                }
+
+                filteredItems.add(item);
+
+                if ("CHO_XAC_NHAN".equals(status)) {
+                    hasPending = true;
+                } else if ("DA_NHAP_KHO".equals(status)) {
+                    hasApproved = true;
+                }
+            }
+
+            // Không còn kết quả nào sau khi lọc.
+            if (filteredItems.isEmpty()) {
+                continue;
+            }
+
+            // Giữ toàn bộ kết quả trong cùng một đợt,
+            // tuyệt đối không chia nhỏ thành hai nhóm.
+            Map<String, Object> resultGroup =
+                    new java.util.LinkedHashMap<>(group);
+
+            resultGroup.put("items", filteredItems);
+            resultGroup.put("soketqua", filteredItems.size());
+            resultGroup.put(
+                    "soluongtong",
+                    sumResultQuantity(filteredItems)
+            );
+
+            // Ưu tiên chưa duyệt nếu chỉ cần một kết quả đang chờ.
+            if (hasPending) {
+                resultGroup.put("trangthai", "CHO_XAC_NHAN");
+                pendingGroups.add(resultGroup);
+
+            } else if (hasApproved) {
+                // Chỉ vào bảng đã duyệt khi không còn kết quả chờ duyệt.
+                resultGroup.put("trangthai", "DA_NHAP_KHO");
+                approvedGroups.add(resultGroup);
+            }
         }
-        List<Map<String, Object>> resultList = documents.results(auth.getName(), true);
-        if (orderId != null) {
-            resultList = resultList.stream()
-                    .filter(result -> result.get("mayeucau") instanceof Number number
-                            && number.longValue() == orderId
-                            && "CHO_XAC_NHAN".equals(String.valueOf(result.get("trangthai"))))
-                    .toList();
-        }
+
         model.addAttribute("manager", true);
-        model.addAttribute("results", resultList);
+        model.addAttribute("pendingGroups", pendingGroups);
+        model.addAttribute("approvedGroups", approvedGroups);
         model.addAttribute("selectedOrderId", orderId);
+        model.addAttribute("selectedBatchId", batchId);
+
         return "mrp/results";
+    }
+
+    private int sumResultQuantity(List<Map<String, Object>> items) {
+        return items.stream()
+                .mapToInt(item -> {
+                    Object quantity = item.get("soluonghoanthanh");
+
+                    return quantity instanceof Number number
+                            ? number.intValue()
+                            : 0;
+                })
+                .sum();
     }
 
     @GetMapping("/san-xuat/ket-qua/create")
@@ -248,14 +418,30 @@ public class MrpWorkflowController {
     }
 
     @PostMapping("/san-xuat/ket-qua/{id}/confirm")
-    public String confirmResult(@PathVariable long id, Authentication auth, RedirectAttributes flash) {
+    public String confirmResult(
+            @PathVariable long id,
+            Authentication auth,
+            @RequestParam(required = false) String groupKey,
+            RedirectAttributes flash) {
+
         requireManager(auth);
+
         try {
             warehouse.confirmProduction(id, auth.getName());
-            flash.addFlashAttribute("success", "Xác nhận nhập thành phẩm thành công.");
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Xác nhận nhập thành phẩm thành công."
+            );
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
             flash.addFlashAttribute("error", exception.getMessage());
         }
+
+        if (groupKey != null && !groupKey.isBlank()) {
+            return "redirect:/san-xuat/ket-qua/nhom/" + groupKey;
+        }
+
         return "redirect:/san-xuat/ket-qua/" + id;
     }
 
@@ -355,5 +541,54 @@ public class MrpWorkflowController {
             flash.addFlashAttribute("error", exception.getMessage());
         }
         return "redirect:/kho/xuat-thanh-pham/" + id;
+    }
+
+    @GetMapping("/san-xuat/ket-qua/nhom/{groupKey}")
+    public String resultGroup(
+            @PathVariable String groupKey,
+            @RequestParam(required = false) String returnUrl,
+            Authentication auth,
+            Model model) {
+
+        boolean isManager = manager(auth);
+
+        // Lấy danh sách nhóm theo đúng quyền của người đang đăng nhập.
+        List<Map<String, Object>> groups =
+                documents.resultGroups(auth.getName(), isManager);
+
+        // Tìm đúng nhóm được chọn.
+        Map<String, Object> selectedGroup = groups.stream()
+                .filter(group -> groupKey.equals(
+                        String.valueOf(group.get("ma_nhom_ghi_nhan"))
+                ))
+                .findFirst()
+                .orElseThrow(() ->
+                        new AccessDeniedException(
+                                "Không tìm thấy nhóm kết quả hoặc bạn không có quyền xem."
+                        )
+                );
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> groupResults =
+                (List<Map<String, Object>>) selectedGroup.get("items");
+
+        // Chỉ cho phép quay lại trang danh sách kết quả nội bộ.
+        String safeReturnUrl = "/san-xuat/ket-qua";
+
+        if (isManager && returnUrl != null) {
+            if (returnUrl.equals("/san-xuat/ket-qua")) {
+                safeReturnUrl = returnUrl;
+            } else if (returnUrl.matches(
+                    "^/san-xuat/ket-qua\\?(batchId|orderId)=\\d+$")) {
+                safeReturnUrl = returnUrl;
+            }
+        }
+
+        model.addAttribute("manager", isManager);
+        model.addAttribute("group", selectedGroup);
+        model.addAttribute("results", groupResults);
+        model.addAttribute("returnUrl", safeReturnUrl);
+
+        return "mrp/result-detail";
     }
 }

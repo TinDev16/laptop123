@@ -292,12 +292,12 @@
                         </button>
 
                         <a
-                                th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
+                                th:href="${order.madot != null}
+        ? @{/san-xuat/yeu-cau/dot/{id}(id=${order.madot})}
+        : @{/san-xuat/yeu-cau}"
                                 class="btn btn-secondary">
-
                             <i class="fas fa-arrow-left"></i>
                             Quay lại
-
                         </a>
 
                     </div>

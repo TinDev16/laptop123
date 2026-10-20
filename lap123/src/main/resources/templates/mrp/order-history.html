@@ -130,7 +130,10 @@
 
             <div class="page-header">
                 <div><h1 class="page-title">Lịch sử hoạt động yêu cầu sản xuất</h1><p class="page-description">Theo dõi toàn bộ quá trình từ khi giao việc đến khi hoàn thành.</p></div>
-                <a th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}" class="btn btn-back"><i class="fas fa-arrow-left"></i> Quay lại yêu cầu</a>
+                <a th:href="@{/san-xuat/yeu-cau/dot/{id}(id=${order.madot})}"
+                   class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Quay lại đợt sản xuất
+                </a>
             </div>
 
 

@@ -1,0 +1,918 @@
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết đợt sản xuất</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .batch-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .summary-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .summary-value {
+            color: #0f172a;
+            font-size: 19px;
+            font-weight: 750;
+            overflow-wrap: anywhere;
+        }
+
+        .product-card {
+            margin-bottom: 22px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+        }
+
+        .product-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding: 18px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .product-title {
+            margin: 0 0 8px;
+            color: #0f172a;
+            font-size: 17px;
+            font-weight: 750;
+        }
+
+        .product-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .bom-info {
+            margin: 16px 18px 0;
+            padding: 13px 15px;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            background: #eff6ff;
+        }
+
+        .bom-info strong {
+            color: #1d4ed8;
+        }
+
+        .bom-info p {
+            margin: 4px 0;
+            color: #334155;
+            font-size: 13px;
+        }
+
+        .material-section {
+            padding: 18px;
+        }
+
+        .material-section h3 {
+            margin: 0 0 12px;
+            font-size: 15px;
+            color: #334155;
+        }
+
+        .material-table {
+            width: 100%;
+            min-width: 780px;
+            border-collapse: collapse;
+        }
+
+        .material-table th,
+        .material-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        .material-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+        }
+
+        .number {
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .shortage {
+            color: #b91c1c;
+            font-weight: 800;
+        }
+
+        .available {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .no-shortage {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .empty-materials {
+            padding: 18px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 14px 18px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .product-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .section-heading {
+            margin: 24px 0 14px;
+            color: #0f172a;
+            font-size: 19px;
+        }
+
+        .progress-track {
+            width: 100%;
+            max-width: 240px;
+            height: 8px;
+            overflow: hidden;
+            border-radius: 99px;
+            background: #e2e8f0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: #2563eb;
+        }
+
+        .pending-note {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            background: #fffbeb;
+            color: #92400e;
+            font-size: 13px;
+        }
+
+        .cancel-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, .45);
+        }
+
+        .cancel-modal-content {
+            width: 440px;
+            max-width: 100%;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .2);
+        }
+
+        .cancel-modal-content textarea {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .cancel-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .product-card-header {
+                flex-direction: column;
+            }
+
+            .summary-value {
+                font-size: 16px;
+            }
+        }
+
+        .order-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .order-status-cancelled {
+            color: #b91c1c;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+        }
+
+        .order-status-completed {
+            color: #15803d;
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+        }
+
+        .order-status-active {
+            color: #1d4ed8;
+            background: #dbeafe;
+            border: 1px solid #bfdbfe;
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('mrp')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Chi tiết đợt sản xuất', 'MRP / Yêu cầu sản xuất')}"></div>
+
+        <main class="content-body">
+
+            <!-- Tiêu đề -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title"
+                        th:text="${batch.tendot != null ? batch.tendot : 'Chi tiết đợt sản xuất'}">
+                        Chi tiết đợt sản xuất
+                    </h1>
+
+                    <p class="page-description">
+                        Mã đợt:
+                        <strong th:text="${batch.madot_code != null ? batch.madot_code : batch.madot}"></strong>
+                    </p>
+                </div>
+
+                <div>
+                    <a th:href="@{/san-xuat/yeu-cau}" class="btn btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Về danh sách
+                    </a>
+                </div>
+            </div>
+
+            <!-- Thông tin tổng quan -->
+            <section class="content-card">
+                <div class="content-card-header">
+                    <h2 class="content-card-title">Tổng quan đợt sản xuất</h2>
+                </div>
+
+                <div class="content-card-body">
+                    <div class="batch-summary">
+
+                        <div class="summary-item">
+                            <span class="summary-label">Mã đợt</span>
+                            <div class="summary-value"
+                                 th:text="${batch.madot_code != null ? batch.madot_code : batch.madot}">
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-label">Số yêu cầu thành phần</span>
+                            <div class="summary-value"
+                                 th:text="${#lists.size(orders)}">
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-label">Tổng sản lượng yêu cầu</span>
+                            <div class="summary-value number"
+                                 th:text="${#aggregates.sum(orders.![soluongyeucau])}">
+                            </div>
+                        </div>
+
+                        <!-- SẢN PHẨM YÊU CẦU -->
+                        <div class="summary-item">
+    <span class="summary-label">
+        <i class="fas fa-box"></i>
+        Sản phẩm yêu cầu
+    </span>
+
+                            <div class="summary-value"
+                                 th:text="${#sets.size(#sets.toSet(orders.![tensp]))}">
+                            </div>
+
+                            <div style="margin-top: 10px; color: #475569; font-size: 13px; line-height: 1.8;">
+                                <th:block th:each="name, stat : ${#sets.toSet(orders.![tensp])}">
+                                    <div>
+                                        <i class="fas fa-angle-right"></i>
+                                        <span th:text="${name}"></span>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+
+                        <!-- NHÂN VIÊN THAM GIA -->
+                        <div class="summary-item">
+    <span class="summary-label">
+        <i class="fas fa-users"></i>
+        Nhân viên tham gia
+    </span>
+
+                            <div class="summary-value"
+                                 th:text="${#sets.size(#sets.toSet(orders.![hoten]))}">
+                            </div>
+
+                            <div style="margin-top: 10px; color: #475569; font-size: 13px; line-height: 1.8;">
+                                <th:block th:each="name : ${#sets.toSet(orders.![hoten])}">
+                                    <div>
+                                        <i class="fas fa-user"></i>
+                                        <span th:text="${name}"></span>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+
+                        <div class="summary-item">
+                            <span class="summary-label">Ghi chú đợt</span>
+                            <div class="summary-value"
+                                 style="font-size:14px"
+                                 th:text="${batch['ghichu_dot'] != null and !#strings.isEmpty(#strings.trim(batch['ghichu_dot']))
+         ? batch['ghichu_dot']
+         : 'Không có ghi chú'}">
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Trạng thái NVL của toàn bộ đợt -->
+                    <div th:if="${!manager}"
+                         style="margin-top:18px;padding:16px;border:1px solid #e2e8f0;
+            border-radius:10px;background:#fff;">
+
+                        <div style="display:flex;justify-content:space-between;
+                align-items:center;gap:12px;flex-wrap:wrap;">
+
+                            <div>
+                                <h3 style="margin:0 0 7px;color:#0f172a;font-size:15px;">
+                                    <i class="fas fa-boxes-stacked"></i>
+                                    Tình trạng nguyên vật liệu toàn đợt
+                                </h3>
+
+                                <!-- Không còn sản lượng cần sản xuất -->
+                                <p th:if="${!batchHasRemainingProduction}"
+                                   style="margin:0;color:#15803d;font-size:13px;font-weight:700;">
+                                    <i class="fas fa-check-circle"></i>
+                                    Đợt sản xuất đã hoàn thành toàn bộ sản lượng còn lại.
+                                </p>
+
+                                <!-- Đã gửi đề nghị, đang chờ duyệt -->
+                                <p th:if="${batchHasRemainingProduction and batchPendingIssue}"
+                                   style="margin:0;color:#b45309;font-size:13px;font-weight:700;">
+                                    <i class="fas fa-clock"></i>
+                                    Đợt sản xuất đang chờ duyệt NVL.
+                                </p>
+
+                                <!-- Còn sản lượng và đang thiếu NVL, chưa có đề nghị chờ duyệt -->
+                                <p th:if="${batchHasRemainingProduction
+           and !batchPendingIssue
+           and batchHasShortage}"
+                                   style="margin:0;color:#b91c1c;font-size:13px;font-weight:700;">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                    Đợt sản xuất đang thiếu nguyên vật liệu.
+                                </p>
+
+                                <!-- Còn sản lượng và đã đủ NVL -->
+                                <p th:if="${batchHasRemainingProduction
+           and !batchPendingIssue
+           and !batchHasShortage}"
+                                   style="margin:0;color:#15803d;font-size:13px;font-weight:700;">
+                                    <i class="fas fa-check-circle"></i>
+                                    Đã đủ nguyên vật liệu theo nhu cầu còn lại.
+                                </p>
+                            </div>
+
+                            <div th:if="${!manager}"
+                                 style="display:flex;flex-direction:column;align-items:flex-start;
+            gap:10px;margin-top:14px;">
+
+                                <!-- Đề nghị xuất NVL cho cả đợt -->
+                                <a th:if="${batchHasRemainingProduction
+          and !batchPendingIssue
+          and batchHasShortage}"
+                                   th:href="@{/kho/xuat-nvl/create(
+       batchId=${batch.madot},
+       returnUrl='/san-xuat/yeu-cau/dot/' + ${batch.madot}
+   )}"
+                                   class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Đề nghị xuất NVL cho cả đợt
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        <!-- TÌNH TRẠNG SẢN XUẤT TOÀN ĐỢT -->
+                        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #e2e8f0;">
+
+                            <div style="display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                flex-wrap:wrap;">
+
+                                <!-- Thông báo trạng thái bên trái -->
+                                <div>
+                                    <h3 style="margin:0 0 8px;color:#0f172a;font-size:14px;">
+                                        <i class="fas fa-industry"></i>
+                                        Tình trạng sản xuất toàn đợt
+                                    </h3>
+
+                                    <!-- Còn sản lượng cần sản xuất -->
+                                    <p th:if="${!#lists.isEmpty(orders)
+                and #lists.size(orders.?[
+                    trangthai != 'HUY'
+                    and trangthai != 'HOAN_THANH'
+                    and soluongconphaisanxuat > 0
+                ]) > 0}"
+                                       style="margin:0;color:#b45309;font-size:13px;font-weight:700;">
+                                        <i class="fas fa-clock"></i>
+                                        Đợt sản xuất vẫn còn yêu cầu chưa hoàn thành.
+                                    </p>
+
+                                    <!-- Đã hoàn thành toàn bộ sản lượng còn lại -->
+                                    <p th:if="${!#lists.isEmpty(orders)
+                and #lists.size(orders.?[
+                    trangthai != 'HUY'
+                    and trangthai != 'HOAN_THANH'
+                    and soluongconphaisanxuat > 0
+                ]) == 0}"
+                                       style="margin:0;color:#15803d;font-size:13px;font-weight:700;">
+                                        <i class="fas fa-check-circle"></i>
+                                        Đợt sản xuất đã hoàn thành toàn bộ sản lượng còn lại.
+                                    </p>
+                                </div>
+
+                                <!-- Nút bên phải -->
+                                <div style="display:flex;
+                    align-items:center;
+                    gap:10px;">
+
+                                    <a th:if="${!#lists.isEmpty(orders)
+                and #lists.size(orders.?[
+                    trangthai != 'HUY'
+                    and trangthai != 'HOAN_THANH'
+                    and soluongconphaisanxuat > 0
+                ]) > 0}"
+                                       th:href="@{/san-xuat/ghi-nhan(batchId=${batch.madot})}"
+                                       class="btn btn-primary"
+                                       style="background:#16a34a;border-color:#16a34a;">
+                                        <i class="fas fa-box-open"></i>
+                                        Ghi nhận thành phẩm cho cả đợt
+                                    </a>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div th:if="${manager}"
+                         style="margin-top:18px;padding:18px;border:1px solid #e2e8f0;
+            border-radius:12px;background:#fff;">
+
+                        <div style="display:flex;justify-content:space-between;
+                align-items:center;gap:16px;flex-wrap:wrap;">
+
+                            <div>
+                                <h3 style="margin:0 0 8px;font-size:16px;color:#0f172a;">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    Tình trạng duyệt kết quả toàn đợt
+                                </h3>
+
+                                <p th:if="${batchHasPendingResults}"
+                                   style="margin:0;color:#b45309;">
+                                    Đợt sản xuất đang có kết quả chờ duyệt.
+                                </p>
+
+                                <p th:unless="${batchHasPendingResults}"
+                                   style="margin:0;color:#64748b;">
+                                    Đợt sản xuất không có kết quả chờ duyệt.
+                                </p>
+                            </div>
+
+                            <a th:if="${batchHasPendingResults}"
+                               th:href="@{/san-xuat/ket-qua(batchId=${batch.madot})}"
+                               class="btn btn-primary">
+                                <i class="fas fa-clipboard-check"></i>
+                                Xem và duyệt kết quả của đợt
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Danh sách từng thành phẩm/BOM/NVL -->
+            <h2 class="section-heading">
+                <i class="fas fa-layer-group"></i>
+                Thành phẩm, BOM và nguyên vật liệu
+            </h2>
+
+            <p class="page-description">
+                Mỗi thẻ dưới đây tương ứng với một yêu cầu thành phẩm trong đợt.
+                Nguyên vật liệu được liệt kê theo BOM áp dụng của chính thành phẩm đó.
+            </p>
+
+            <div th:if="${#lists.isEmpty(orders)}" class="content-card">
+                <div class="empty-materials">
+                    Đợt sản xuất chưa có yêu cầu thành phẩm.
+                </div>
+            </div>
+
+            <section class="product-card" th:each="child, stat : ${orders}">
+
+                <!-- Thông tin thành phẩm -->
+                <div class="product-card-header">
+                    <div>
+                        <h2 class="product-title">
+                            <span th:text="${stat.count + '. '}"></span>
+                            <span th:text="${child.tensp}"></span>
+                        </h2>
+
+                        <div class="product-meta">
+                            <span>
+                                <i class="fas fa-hashtag"></i>
+                                Yêu cầu
+                                <strong th:text="${child.mayeucau}"></strong>
+                            </span>
+
+                            <span>
+                                <i class="fas fa-user"></i>
+                                <span th:text="${child.hoten}"></span>
+                            </span>
+
+                            <span>
+    <i class="fas fa-calendar"></i>
+    Hạn:
+    <span data-date-time th:text="${child.hanhoanthanh}"></span>
+</span>
+
+                            <!-- CẢNH BÁO QUÁ HẠN SẢN XUẤT
+                                 Hiển thị cho cả nhân viên và quản lý kho
+                                 khi số lượng ghi nhận tại xưởng chưa đủ -->
+                            <span th:if="${child.trangthai != 'HUY'
+              and child.trangthai != 'HOAN_THANH'
+              and child.hanhoanthanh != null
+              and #temporals.createNow().toLocalDate().isAfter(child.hanhoanthanh.toLocalDate())
+              and child.soluongdaghinhan < child.soluongyeucau}"
+                                  style="display:inline-flex;
+             align-items:center;
+             gap:5px;
+             padding:4px 8px;
+             border-radius:999px;
+             background:#fee2e2;
+             color:#b91c1c;
+             font-weight:700;">
+    <i class="fas fa-clock"></i>
+    Quá hạn sản xuất
+</span>
+
+                            <!-- CẢNH BÁO QUÁ HẠN DUYỆT
+                                 Chỉ quản lý kho nhìn thấy
+                                 khi đã sản xuất đủ nhưng còn kết quả chờ duyệt -->
+                            <span th:if="${manager
+              and child.trangthai != 'HUY'
+              and child.trangthai != 'HOAN_THANH'
+              and child.hanhoanthanh != null
+              and #temporals.createNow().toLocalDate().isAfter(child.hanhoanthanh.toLocalDate())
+              and child.soluongdaghinhan >= child.soluongyeucau
+              and child.soluongchoduyet > 0}"
+                                  style="display:inline-flex;
+             align-items:center;
+             gap:5px;
+             padding:4px 8px;
+             border-radius:999px;
+             background:#fef3c7;
+             color:#92400e;
+             font-weight:700;">
+    <i class="fas fa-hourglass-half"></i>
+    Quá hạn do duyệt
+</span>
+                            <span th:class="${child.trangthai == 'HUY'
+        ? 'order-status order-status-cancelled'
+        : child.trangthai == 'HOAN_THANH'
+            ? 'order-status order-status-completed'
+            : 'order-status order-status-active'}">
+
+    <i th:class="${child.trangthai == 'HUY'
+        ? 'fas fa-ban'
+        : child.trangthai == 'HOAN_THANH'
+            ? 'fas fa-check-circle'
+            : 'fas fa-spinner'}"></i>
+
+    <span th:text="${child.trangthai == 'HUY' ? 'Đã hủy'
+        : child.trangthai == 'HOAN_THANH' ? 'Hoàn thành'
+        : child.trangthai == 'DANG_THUC_HIEN' ? 'Đang thực hiện'
+        : child.trangthai}">
+    </span>
+</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="status-pill"
+                              th:text="${'Yêu cầu: ' + child.soluongyeucau}">
+                        </span>
+                    </div>
+                </div>
+
+                <!-- BOM riêng của thành phẩm -->
+                <div class="bom-info">
+                    <p>
+                        <i class="fas fa-sitemap"></i>
+                        <strong>BOM áp dụng:</strong>
+                        <span th:text="${child.tenbom != null ? child.tenbom : 'Chưa xác định BOM'}"></span>
+                    </p>
+
+                    <p>
+                        <strong>Tiến độ sản xuất:</strong>
+                        <span class="number" th:text="${child.soluonghoanthanh}"></span>
+                        đã xác nhận nhập kho /
+                        <span class="number" th:text="${child.soluongyeucau}"></span>
+                        yêu cầu
+                    </p>
+
+                    <p>
+                        <strong>Đã ghi nhận tại xưởng:</strong>
+                        <span class="number" th:text="${child.soluongdaghinhan}"></span>
+                        &nbsp; | &nbsp;
+                        <strong>Chờ duyệt:</strong>
+                        <span class="number" th:text="${child.soluongchoduyet}"></span>
+                        &nbsp; | &nbsp;
+                        <strong>Còn phải sản xuất:</strong>
+                        <span class="number" th:text="${child.soluongconphaisanxuat}"></span>
+                    </p>
+                </div>
+
+                <!-- Nguyên vật liệu của đúng BOM này -->
+                <div class="material-section">
+                    <h3>
+                        <i class="fas fa-boxes-stacked"></i>
+                        Nguyên vật liệu thuộc BOM này
+                    </h3>
+
+                    <div class="table-container">
+                        <table class="material-table">
+                            <thead>
+                            <tr>
+                                <th>Nguyên vật liệu</th>
+                                <th>Định mức / thành phẩm</th>
+                                <th>Hao hụt (%)</th>
+                                <th>Tổng nhu cầu</th>
+                                <th>Nhu cầu còn lại</th>
+                                <th>Tồn kho sản xuất</th>
+                                <th>Đang chờ xuất</th>
+                                <th>Còn thiếu</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="need : ${child.needs}">
+                                <td>
+                                    <strong th:text="${need.code}"></strong>
+                                    <div th:text="${need.name}"></div>
+                                </td>
+
+                                <td>
+                                    <span class="number" data-number th:text="${need.standard}"></span>
+                                    <span th:text="${need.unit}"></span>
+                                </td>
+
+                                <td class="number" data-number th:text="${need.waste}"></td>
+
+                                <td>
+                                    <span class="number" data-number th:text="${need.totalNeeded}"></span>
+                                    <span th:text="${need.unit}"></span>
+                                </td>
+
+                                <td>
+                                    <span class="number" data-number th:text="${need.needed}"></span>
+                                    <span th:text="${need.unit}"></span>
+                                </td>
+
+                                <td>
+                                    <span class="number available" data-number th:text="${need.available}"></span>
+                                    <span th:text="${need.unit}"></span>
+                                </td>
+
+                                <td>
+                                    <span class="number" data-number th:text="${need.pending}"></span>
+                                    <span th:text="${need.unit}"></span>
+                                </td>
+
+                                <td>
+                                    <span th:if="${need.shortage > 0}"
+                                          class="number shortage"
+                                          data-number
+                                          th:text="${need.shortage}">
+                                    </span>
+
+                                    <span th:if="${need.shortage <= 0}"
+                                          class="no-shortage">
+                                        Đủ
+                                    </span>
+
+                                    <span th:if="${need.shortage > 0}"
+                                          th:text="${need.unit}">
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${#lists.isEmpty(child.needs)}">
+                                <td colspan="8" class="empty-materials">
+                                    BOM này chưa có nguyên vật liệu chi tiết.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pending-note"
+                         th:if="${!#lists.isEmpty(child.needs) and !manager
+                            and #lists.size(child.needs.?[shortage > 0]) > 0}">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        BOM của thành phẩm này đang có nguyên vật liệu thiếu.
+                        Kiểm tra tồn kho sản xuất và phiếu đề nghị xuất trước khi tiếp tục.
+                    </div>
+                </div>
+
+                <!-- Thao tác của từng yêu cầu con -->
+                <div class="product-actions">
+
+                    <form th:if="${manager and child.trangthai == 'HUY'}"
+                          th:action="@{/san-xuat/yeu-cau/{id}/uncancel(id=${child.mayeucau})}"
+                          method="post"
+                          style="display:inline;"
+                          onsubmit="return confirm('Bạn có chắc muốn bỏ hủy yêu cầu này?');">
+
+                        <input type="hidden" name="batchId" th:value="${batch.madot}">
+
+                        <button type="submit"
+                                class="btn btn-secondary"
+                                style="background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;">
+                            <i class="fas fa-undo"></i>
+                            Bỏ hủy yêu cầu này
+                        </button>
+                    </form>
+
+                    <a th:if="${manager}"
+                       th:href="@{/san-xuat/yeu-cau/{id}/history(id=${child.mayeucau})}"
+                       class="btn btn-secondary">
+                        <i class="fas fa-history"></i>
+                        Lịch sử
+                    </a>
+
+                    <a th:if="${manager
+                            and child.trangthai != 'HOAN_THANH'
+                            and child.trangthai != 'HUY'}"
+                       th:href="@{/san-xuat/yeu-cau/{id}/edit(id=${child.mayeucau})}"
+                       class="btn btn-secondary">
+                        <i class="fas fa-edit"></i>
+                        Sửa yêu cầu này
+                    </a>
+
+
+                    <button th:if="${manager
+                            and child.trangthai != 'HOAN_THANH'
+                            and child.trangthai != 'HUY'}"
+                            type="button"
+                            class="btn btn-secondary"
+                            th:attr="data-order-id=${child.mayeucau}"
+                            onclick="openCancelModal(this.dataset.orderId)">
+                        <i class="fas fa-times"></i>
+                        Hủy yêu cầu này
+                    </button>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- Modal hủy một yêu cầu con -->
+<div id="cancelModal" class="cancel-modal">
+    <div class="cancel-modal-content">
+
+        <h2 style="margin-top:0;font-size:18px;">
+            <i class="fas fa-times-circle"></i>
+            Hủy yêu cầu thành phẩm
+        </h2>
+
+        <p>
+            Chỉ hủy yêu cầu thành phẩm đang chọn, không tự động hủy các yêu cầu khác trong đợt.
+        </p>
+
+        <form id="cancelForm" method="post">
+            <label for="cancelReason">Lý do hủy</label>
+
+            <textarea id="cancelReason"
+                      name="reason"
+                      rows="4"
+                      maxlength="255"
+                      required
+                      placeholder="Nhập lý do hủy..."></textarea>
+
+            <div class="cancel-modal-actions">
+                <button type="button"
+                        class="btn btn-secondary"
+                        onclick="closeCancelModal()">
+                    Đóng
+                </button>
+
+                <button type="submit"
+                        class="btn btn-danger"
+                        onclick="return confirm('Bạn có chắc muốn hủy yêu cầu thành phẩm này?')">
+                    <i class="fas fa-times"></i>
+                    Xác nhận hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCancelModal(orderId) {
+        document.getElementById('cancelForm').action =
+            '/san-xuat/yeu-cau/' + orderId + '/cancel';
+
+        document.getElementById('cancelReason').value = '';
+        document.getElementById('cancelModal').style.display = 'flex';
+        document.getElementById('cancelReason').focus();
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelModal').style.display = 'none';
+    }
+
+    document.getElementById('cancelModal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            closeCancelModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeCancelModal();
+        }
+    });
+</script>
+
+</body>
+</html>

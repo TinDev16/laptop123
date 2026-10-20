@@ -161,6 +161,57 @@ public class MrpWarehouseService {
 
 
         // =====================================================
+// KIỂM TRA CÁC YÊU CẦU ĐƯỢC GOM VÀO PHIẾU
+// TẤT CẢ PHẢI THUỘC CÙNG MỘT ĐỢT SẢN XUẤT
+// =====================================================
+
+        List<Map<String, Object>> batchChecks = jdbc.queryForList(
+                """
+                SELECT
+                    COUNT(py.maycsx) AS total_links,
+                    COUNT(DISTINCT y.madot) AS batch_count,
+                    SUM(
+                        CASE
+                            WHEN py.maycsx = p.maycsx THEN 1
+                            ELSE 0
+                        END
+                    ) AS header_linked
+                FROM phieuxuat_nvl p
+                LEFT JOIN phieuxuat_nvl_ycsx py
+                    ON py.mapx = p.mapx
+                LEFT JOIN yeucausanxuat y
+                    ON y.maycsx = py.maycsx
+                WHERE p.mapx = ?
+                """,
+                issueId
+        );
+
+        Map<String, Object> batchCheck = batchChecks.get(0);
+
+        long totalLinks = ((Number) batchCheck.get("total_links")).longValue();
+        long batchCount = ((Number) batchCheck.get("batch_count")).longValue();
+        long headerLinked = batchCheck.get("header_linked") == null
+                ? 0L
+                : ((Number) batchCheck.get("header_linked")).longValue();
+
+        if (totalLinks > 0) {
+            if (batchCount != 1) {
+                throw new IllegalStateException(
+                        "Các yêu cầu trong phiếu xuất phải thuộc cùng một đợt sản xuất."
+                );
+            }
+
+            if (headerLinked == 0) {
+                throw new IllegalStateException(
+                        "Yêu cầu sản xuất đại diện của phiếu chưa được liên kết hợp lệ."
+                );
+            }
+        }
+
+
+
+
+        // =====================================================
         // 2. LẤY CHI TIẾT PHIẾU
         // =====================================================
 

@@ -1,32 +1,478 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chi tiết kết quả sản xuất</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết kết quả', 'Sản xuất / Kết quả')}"></div>
-<main class="content-body mrp-entry-page"><div class="page-header"><div><h1 class="page-title" th:text="${'Kết quả sản xuất #' + result.maketqua}"></h1><p class="page-description">Thông tin ghi nhận và trạng thái xác nhận nhập kho.</p></div><a class="btn btn-outline" th:href="${manager ? '/san-xuat/ket-qua' : '/san-xuat/ghi-nhan'}">Về danh sách</a></div>
-<div class="directory-alert directory-alert--success" th:if="${success}" th:text="${success}"></div><div class="directory-alert directory-alert--error" th:if="${error}" th:text="${error}"></div>
-<section class="content-card"><div class="content-card-header"><h2 class="content-card-title">Thông tin kết quả</h2><span class="status-pill" th:text="${result.trangthai}"></span></div>
-<div class="content-card-body"><dl class="ceo-detail-grid">
-    <div>
-        <dt>Yêu cầu sản xuất</dt>
-        <dd th:text="${'#' + result.mayeucau}"></dd>
-    </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết đợt sản xuất</title>
 
-    <div>
-        <dt>Sản phẩm</dt>
-        <dd th:text="${result.tensp}"></dd>
-    </div>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <div>
-        <dt>Phiên bản BOM</dt>
-        <dd th:text="${'BOM ' + result.phienban}"></dd>
-    </div>
+    <style>
+        .batch-page {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-    <div>
-        <dt>Mã BOM</dt>
-        <dd th:text="${result.mabom}"></dd>
+        .batch-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .batch-heading h1 {
+            margin: 0 0 7px;
+            font-size: 25px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .batch-subtitle {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .batch-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .batch-stat {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .batch-stat-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .batch-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .batch-stat-icon {
+            color: #2563eb;
+            margin-right: 7px;
+        }
+
+        .batch-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .batch-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 18px 22px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .batch-card-header h2 {
+            margin: 0;
+            font-size: 17px;
+            color: #0f172a;
+        }
+
+        .batch-card-header p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .batch-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .batch-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        .batch-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            padding: 13px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .batch-table td {
+            padding: 15px 16px;
+            border-top: 1px solid #f1f5f9;
+            color: #334155;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .batch-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .batch-product {
+            font-weight: 650;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .batch-muted {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .batch-quantity {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .batch-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 650;
+            white-space: nowrap;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .batch-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .batch-status.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .batch-status.cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .batch-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .batch-actions .btn {
+            white-space: nowrap;
+        }
+
+        .batch-note {
+            margin: 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .batch-empty {
+            text-align: center;
+            padding: 38px 16px !important;
+            color: #64748b !important;
+        }
+
+        .batch-empty i {
+            display: block;
+            font-size: 27px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 760px) {
+            .batch-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .batch-heading h1 {
+                font-size: 21px;
+            }
+
+            .batch-card-header {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('ket-qua')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Chi tiết đợt sản xuất', 'Sản xuất / Kết quả')}"></div>
+
+        <main class="content-body batch-page">
+
+            <!-- Tiêu đề -->
+            <section class="batch-heading">
+                <div>
+                    <h1>
+                        <i class="fas fa-layer-group"
+                           style="color:#2563eb;margin-right:8px"></i>
+                        Chi tiết đợt sản xuất
+                    </h1>
+
+                    <p class="batch-subtitle">
+                        Theo dõi các kết quả ghi nhận và trạng thái nhập kho
+                        trong cùng một đợt.
+                    </p>
+
+                    <div style="margin-top:10px;font-size:14px;color:#334155">
+                        <strong>Đợt:</strong>
+                        <span th:text="${group['tendot'] != null
+                            ? group['tendot']
+                            : (group['madot_code'] != null
+                                ? group['madot_code']
+                                : 'Đợt ghi nhận riêng')}">
+                            Đợt sản xuất
+                        </span>
+
+                        <span th:if="${group['madot_code'] != null}"
+                              style="color:#64748b;margin-left:6px"
+                              th:text="${'(' + group['madot_code'] + ')'}">
+                        </span>
+                    </div>
+                </div>
+
+                <a class="btn btn-outline"
+                   th:href="${manager
+       ? (returnUrl != null ? returnUrl : '/san-xuat/ket-qua')
+       : '/san-xuat/ghi-nhan'}">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+                </a>
+            </section>
+
+            <!-- Thông báo -->
+            <div class="directory-alert directory-alert--success"
+                 th:if="${success}" th:text="${success}"></div>
+
+            <div class="directory-alert directory-alert--error"
+                 th:if="${error}" th:text="${error}"></div>
+
+            <!-- Thống kê -->
+            <section class="batch-stats">
+
+                <div class="batch-stat">
+                    <div class="batch-stat-label">
+                        <i class="fas fa-list-ol batch-stat-icon"></i>
+                        Số kết quả
+                    </div>
+                    <div class="batch-stat-value"
+                         th:text="${group['soketqua']}">0</div>
+                </div>
+
+                <div class="batch-stat">
+                    <div class="batch-stat-label">
+                        <i class="fas fa-boxes-stacked batch-stat-icon"></i>
+                        Tổng sản lượng ghi nhận
+                    </div>
+                    <div class="batch-stat-value"
+                         th:text="${group['soluongtong']}">0</div>
+                </div>
+
+                <div class="batch-stat">
+                    <div class="batch-stat-label">
+                        <i class="fas fa-clock batch-stat-icon"></i>
+                        Trạng thái đợt
+                    </div>
+
+                    <div>
+                        <span class="batch-status"
+                              th:classappend="${group['trangthai'] == 'DA_NHAP_KHO'}
+                                  ? ' approved'
+                                  : (${group['trangthai'] == 'HUY'}
+                                      ? ' cancelled' : ' pending')"
+                              th:text="${group['trangthai'] == 'DA_NHAP_KHO'
+                                  ? 'Đã nhập kho'
+                                  : (group['trangthai'] == 'CHO_XAC_NHAN'
+                                      ? 'Chờ xác nhận'
+                                      : (group['trangthai'] == 'HUY'
+                                          ? 'Đã hủy'
+                                          : 'Chưa xác định'))}">
+                            Chờ xác nhận
+                        </span>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Danh sách kết quả -->
+            <section class="batch-card">
+
+                <div class="batch-card-header">
+                    <div>
+                        <h2>
+                            <i class="fas fa-table"
+                               style="color:#2563eb;margin-right:7px"></i>
+                            Danh sách kết quả trong đợt
+                        </h2>
+                        <p>
+                            Mỗi dòng là một kết quả sản xuất.
+                            Xác nhận nhập kho được thực hiện riêng cho từng kết quả.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="batch-table-wrap">
+                    <table class="batch-table">
+                        <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Sản phẩm / Yêu cầu</th>
+                            <th>BOM</th>
+                            <th>Nhân viên</th>
+                            <th>Số lượng</th>
+                            <th>Ngày hoàn thành</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="item, stat : ${results}">
+
+                            <td th:text="${stat.count}">1</td>
+
+                            <td>
+                                <div class="batch-product"
+                                     th:text="${item.tensp}">
+                                    Tên sản phẩm
+                                </div>
+                                <div class="batch-muted"
+                                     th:text="${'Yêu cầu #' + item.mayeucau}">
+                                    Yêu cầu
+                                </div>
+                            </td>
+
+                            <td>
+                                <div th:text="${'BOM #' + item.mabom}">BOM</div>
+                                <div class="batch-muted"
+                                     th:text="${'Phiên bản ' + item.phienban}">
+                                    Phiên bản
+                                </div>
+                            </td>
+
+                            <td th:text="${item.hoten}">Nhân viên</td>
+
+                            <td>
+                                <span class="batch-quantity"
+                                      th:text="${item.soluonghoanthanh}">
+                                    0
+                                </span>
+                            </td>
+
+                            <td th:text="${item.ngayhoanthanh != null
+                                ? #temporals.format(item.ngayhoanthanh, 'dd/MM/yyyy HH:mm')
+                                : '—'}">
+                                —
+                            </td>
+
+                            <td>
+                                <span class="batch-status"
+                                      th:classappend="${item.trangthai == 'DA_NHAP_KHO'}
+                                          ? ' approved'
+                                          : (${item.trangthai == 'HUY'}
+                                              ? ' cancelled' : ' pending')"
+                                      th:text="${item.trangthai == 'DA_NHAP_KHO'
+                                          ? 'Đã nhập kho'
+                                          : (item.trangthai == 'CHO_XAC_NHAN'
+                                              ? 'Chờ xác nhận'
+                                              : (item.trangthai == 'HUY'
+                                                  ? 'Đã hủy'
+                                                  : item.trangthai))}">
+                                    Chờ xác nhận
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="batch-actions">
+
+                                    <form th:if="${manager and item.trangthai == 'CHO_XAC_NHAN'}"
+                                          th:action="@{/san-xuat/ket-qua/{id}/confirm(id=${item.maketqua}, groupKey=${group['ma_nhom_ghi_nhan']})}"
+                                          method="post"
+                                          onsubmit="return confirm('Xác nhận nhập kho cho kết quả này?')">
+
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-check"></i>
+                                            Xác nhận
+                                        </button>
+                                    </form>
+
+                                    <span th:if="${item.trangthai == 'DA_NHAP_KHO'}"
+                                          class="batch-muted">
+                                        <i class="fas fa-check-circle"
+                                           style="color:#16a34a"></i>
+                                        Đã nhập kho
+                                    </span>
+
+                                    <span th:if="${item.trangthai == 'HUY'}"
+                                          class="batch-muted">
+                                        Kết quả đã hủy
+                                    </span>
+
+                                    <span th:if="${item.trangthai == 'CHO_XAC_NHAN' and !manager}"
+                                          class="batch-muted">
+                                        Chờ quản lý xác nhận
+                                    </span>
+
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        <tr th:if="${results == null or #lists.isEmpty(results)}">
+                            <td colspan="8" class="batch-empty">
+                                <i class="fas fa-inbox"></i>
+                                Chưa có kết quả nào trong đợt này.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+            <p class="batch-note">
+                <i class="fas fa-info-circle"></i>
+                Trạng thái và thao tác được hiển thị riêng cho từng kết quả.
+                Việc xác nhận nhập kho vẫn đi qua chức năng xác nhận hiện có của hệ thống.
+            </p>
+
+        </main>
     </div>
-<div><dt>Nhân viên thực hiện</dt><dd th:text="${result.hoten}"></dd></div><div><dt>Số lượng hoàn thành</dt><dd th:text="${result.soluonghoanthanh}"></dd></div>
-<div class="ceo-detail-note"><dt>Ghi chú</dt><dd th:text="${result.ghichu != null and !#strings.isEmpty(result.ghichu) ? result.ghichu : 'Không có ghi chú'}"></dd></div>
-</dl></div></section>
-<form th:if="${manager and result.trangthai == 'CHO_XAC_NHAN'}" th:action="@{/san-xuat/ket-qua/{id}/confirm(id=${result.maketqua})}" method="post" class="ceo-detail-action" onsubmit="return confirm('Xác nhận nhập thành phẩm?')"><button type="submit" class="btn btn-primary">Xác nhận nhập kho</button></form>
-</main></div></div></body></html>
+</div>
+</body>
+</html>

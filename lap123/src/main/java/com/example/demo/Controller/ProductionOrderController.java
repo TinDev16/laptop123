@@ -5,7 +5,7 @@ import com.example.demo.Service.ProductionOrderService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-
+import com.example.demo.Service.MrpDocumentService;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -26,9 +26,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ProductionOrderController {
 
     private final ProductionOrderService service;
+    private final MrpDocumentService mrpDocumentService;
 
-    public ProductionOrderController(ProductionOrderService service) {
+    public ProductionOrderController(
+            ProductionOrderService service,
+            MrpDocumentService mrpDocumentService
+    ) {
         this.service = service;
+        this.mrpDocumentService = mrpDocumentService;
     }
 
     // =========================================================
@@ -63,11 +68,7 @@ public class ProductionOrderController {
 
         model.addAttribute(
                 "orders",
-                service.list(
-                        auth.getName(),
-                        isManager,
-                        search
-                )
+                service.listGrouped(auth.getName(), isManager, search)
         );
 
         model.addAttribute(
@@ -134,9 +135,7 @@ public class ProductionOrderController {
             @RequestParam List<Integer> employeeId,
             @RequestParam List<Integer> quantity,
             @RequestParam
-            @DateTimeFormat(
-                    iso = DateTimeFormat.ISO.DATE
-            )
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             List<LocalDate> deadline,
             @RequestParam(required = false) String note,
             RedirectAttributes redirect
@@ -159,7 +158,6 @@ public class ProductionOrderController {
             );
 
             redirect.addFlashAttribute("createdCount", created);
-
             redirect.addFlashAttribute(
                     "success",
                     "Tạo yêu cầu sản xuất thành công."
@@ -168,7 +166,6 @@ public class ProductionOrderController {
             return "redirect:/san-xuat/yeu-cau";
 
         } catch (IllegalArgumentException exception) {
-
             redirect.addFlashAttribute(
                     "error",
                     exception.getMessage()
@@ -221,6 +218,81 @@ public class ProductionOrderController {
         );
 
         return "mrp/order-detail";
+    }
+
+    @GetMapping("/dot/{batchId}")
+    public String batchDetail(
+            @PathVariable Long batchId,
+            Authentication auth,
+            Model model
+    ) {
+        boolean isManager = manager(auth);
+        String email = auth.getName();
+
+        model.addAttribute(
+                "batch",
+                service.getBatchInfo(batchId, email, isManager)
+        );
+
+        model.addAttribute(
+                "orders",
+                service.getBatchOrders(batchId, email, isManager)
+        );
+
+        model.addAttribute("manager", isManager);
+
+        // Kiểm tra đợt có kết quả sản xuất đang chờ duyệt hay không.
+        model.addAttribute(
+                "batchHasPendingResults",
+                isManager && mrpDocumentService.hasPendingBatchResults(batchId)
+        );
+
+        if (!isManager) {
+            List<Map<String, Object>> batchMaterialLines =
+                    mrpDocumentService.bomRequestLinesByBatch(
+                            batchId,
+                            email
+                    );
+
+            boolean hasShortage = batchMaterialLines.stream()
+                    .anyMatch(line ->
+                            line.get("thieu_hut") != null
+                                    && ((Number) line.get("thieu_hut")).doubleValue() > 0
+                    );
+
+            boolean pendingIssue =
+                    mrpDocumentService.hasPendingBatchMaterialIssue(
+                            batchId,
+                            email
+                    );
+
+            // Kiểm tra còn yêu cầu nào chưa sản xuất đủ hay không.
+            List<Map<String, Object>> batchOrders =
+                    service.getBatchOrders(batchId, email, false);
+
+            boolean hasRemainingProduction = batchOrders.stream()
+                    .anyMatch(order -> {
+                        String status = String.valueOf(order.get("trangthai"));
+
+                        if ("HUY".equals(status)
+                                || "HOAN_THANH".equals(status)) {
+                            return false;
+                        }
+
+                        Object remainingValue =
+                                order.get("soluongconphaisanxuat");
+
+                        return remainingValue instanceof Number
+                                && ((Number) remainingValue).doubleValue() > 0;
+                    });
+
+            model.addAttribute("batchMaterialLines", batchMaterialLines);
+            model.addAttribute("batchHasShortage", hasShortage);
+            model.addAttribute("batchPendingIssue", pendingIssue);
+            model.addAttribute("batchHasRemainingProduction", hasRemainingProduction);
+        }
+
+        return "mrp/batch-detail";
     }
 
     // =========================================================
@@ -297,9 +369,7 @@ public class ProductionOrderController {
             Authentication auth,
             @RequestParam int quantity,
             @RequestParam
-            @DateTimeFormat(
-                    iso = DateTimeFormat.ISO.DATE
-            )
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate deadline,
             @RequestParam int employeeId,
             @RequestParam(required = false) String note,
@@ -312,6 +382,11 @@ public class ProductionOrderController {
         }
 
         try {
+            // Lấy mã đợt trước khi cập nhật
+            Map<String, Object> order = service.getForEdit(id);
+            Object madot = order.get("madot");
+
+            // Cập nhật yêu cầu
             service.update(
                     auth.getName(),
                     id,
@@ -326,10 +401,15 @@ public class ProductionOrderController {
                     "Cập nhật yêu cầu sản xuất thành công."
             );
 
-            return "redirect:/san-xuat/yeu-cau/" + id;
+            // Quay lại trang chi tiết đợt sản xuất
+            if (madot != null) {
+                return "redirect:/san-xuat/yeu-cau/dot/" + madot;
+            }
+
+            // Yêu cầu không thuộc đợt nào
+            return "redirect:/san-xuat/yeu-cau";
 
         } catch (Exception e) {
-
             redirect.addFlashAttribute(
                     "error",
                     e.getMessage()
@@ -344,6 +424,10 @@ public class ProductionOrderController {
     // POST /san-xuat/yeu-cau/{id}/cancel
     // =========================================================
 
+    // =========================================================
+// HỦY YÊU CẦU
+// POST /san-xuat/yeu-cau/{id}/cancel
+// =========================================================
     @PostMapping("/{id}/cancel")
     public String cancel(
             @PathVariable long id,
@@ -358,6 +442,11 @@ public class ProductionOrderController {
         }
 
         try {
+            // Lấy mã đợt sản xuất trước khi hủy yêu cầu
+            Map<String, Object> order = service.getForEdit(id);
+            Object madot = order.get("madot");
+
+            // Thực hiện hủy yêu cầu
             service.cancel(
                     auth.getName(),
                     id,
@@ -369,15 +458,32 @@ public class ProductionOrderController {
                     "Đã hủy yêu cầu sản xuất."
             );
 
-        } catch (IllegalArgumentException exception) {
+            // Quay lại đúng trang chi tiết đợt sản xuất
+            if (madot != null) {
+                return "redirect:/san-xuat/yeu-cau/dot/" + madot;
+            }
 
+        } catch (IllegalArgumentException exception) {
             redirect.addFlashAttribute(
                     "error",
                     exception.getMessage()
             );
+
+            // Khi lỗi, vẫn ưu tiên quay lại trang đợt sản xuất
+            try {
+                Map<String, Object> order = service.getForEdit(id);
+                Object madot = order.get("madot");
+
+                if (madot != null) {
+                    return "redirect:/san-xuat/yeu-cau/dot/" + madot;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Không tìm thấy yêu cầu hoặc đợt sản xuất
+            }
         }
 
-        return "redirect:/san-xuat/yeu-cau/" + id;
+        // Yêu cầu không thuộc đợt nào
+        return "redirect:/san-xuat/yeu-cau";
     }
 
     @PostMapping("/{id}/repair-result")
@@ -405,6 +511,47 @@ public class ProductionOrderController {
             redirect.addFlashAttribute("error", exception.getMessage());
             return "redirect:/san-xuat/yeu-cau/" + id;
         }
+    }
+
+    // =========================================================
+// HỦY TOÀN BỘ ĐỢT SẢN XUẤT
+// POST /san-xuat/yeu-cau/dot/{batchId}/cancel
+// =========================================================
+    @PostMapping("/dot/{batchId}/cancel")
+    public String cancelBatch(
+            @PathVariable Long batchId,
+            Authentication auth,
+            @RequestParam String reason,
+            RedirectAttributes redirect
+    ) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException(
+                    "Không có quyền hủy đợt sản xuất."
+            );
+        }
+
+        try {
+            // Hủy toàn bộ yêu cầu thuộc đợt.
+            // Service phải kiểm tra trạng thái trước khi cập nhật.
+            service.cancelBatch(
+                    auth.getName(),
+                    batchId,
+                    reason
+            );
+
+            redirect.addFlashAttribute(
+                    "success",
+                    "Đã hủy toàn bộ yêu cầu trong đợt sản xuất."
+            );
+
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            redirect.addFlashAttribute(
+                    "error",
+                    exception.getMessage()
+            );
+        }
+
+        return "redirect:/san-xuat/yeu-cau";
     }
 
     // =========================================================
@@ -450,5 +597,68 @@ public class ProductionOrderController {
 
             return "redirect:/san-xuat/yeu-cau";
         }
+    }
+
+    @PostMapping("/dot/{batchId}/uncancel")
+    public String uncancelBatch(
+            @PathVariable Long batchId,
+            Authentication auth,
+            RedirectAttributes redirect
+    ) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException(
+                    "Không có quyền bỏ hủy đợt sản xuất."
+            );
+        }
+
+        try {
+            service.uncancelBatch(
+                    auth.getName(),
+                    batchId
+            );
+
+            redirect.addFlashAttribute(
+                    "success",
+                    "Đã bỏ hủy đợt sản xuất."
+            );
+
+        } catch (IllegalArgumentException exception) {
+            redirect.addFlashAttribute(
+                    "error",
+                    exception.getMessage()
+            );
+        }
+
+        return "redirect:/san-xuat/yeu-cau";
+    }
+
+    @PostMapping("/{id}/uncancel")
+    public String uncancel(
+            @PathVariable long id,
+            @RequestParam(required = false) Long batchId,
+            Authentication auth,
+            RedirectAttributes redirect) {
+
+        if (!manager(auth)) {
+            throw new AccessDeniedException(
+                    "Không có quyền bỏ hủy yêu cầu sản xuất."
+            );
+        }
+
+        try {
+            service.uncancel(auth.getName(), id);
+            redirect.addFlashAttribute(
+                    "success",
+                    "Đã bỏ hủy yêu cầu sản xuất."
+            );
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+
+        if (batchId != null) {
+            return "redirect:/san-xuat/yeu-cau/dot/" + batchId;
+        }
+
+        return "redirect:/san-xuat/yeu-cau";
     }
 }

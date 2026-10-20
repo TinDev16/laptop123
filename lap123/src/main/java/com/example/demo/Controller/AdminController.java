@@ -635,14 +635,39 @@ public class AdminController {
         }
 
         // Chỉ được mở khóa nếu nhân viên liên kết vẫn đang làm.
+// Kiểm tra điều kiện khi mở khóa tài khoản.
         if (!locked && tk.getNhanvien() != null) {
+
             Nhanvien nhanvien = tk.getNhanvien();
 
+            // Không mở khóa nếu nhân viên đã nghỉ việc.
             if (nhanvien.getTRANGTHAI() != 0) {
                 redirect.addFlashAttribute(
                         "error",
                         "Không thể mở khóa tài khoản vì nhân viên đã nghỉ việc. "
                                 + "Hãy khôi phục nhân viên trước.");
+
+                return "redirect:/admin/taikhoan";
+            }
+
+            // Kiểm tra nhân viên có tài khoản KHÁC đang hoạt động hay không.
+            boolean coTaiKhoanDangHoatDongKhac =
+                    taikhoanRepository.findAll().stream()
+                            .anyMatch(existing ->
+                                    existing.getNhanvien() != null
+                                            && existing.getNhanvien().getMANV()
+                                            == nhanvien.getMANV()
+                                            && existing.getTaikhoan_id()
+                                            != tk.getTaikhoan_id()
+                                            && !existing.isLocked());
+
+            // Nếu có tài khoản khác đang hoạt động thì không cho mở khóa.
+            if (coTaiKhoanDangHoatDongKhac) {
+                redirect.addFlashAttribute(
+                        "error",
+                        "Không thể mở khóa tài khoản này vì nhân viên đã có "
+                                + "một tài khoản đang hoạt động.");
+
                 return "redirect:/admin/taikhoan";
             }
         }

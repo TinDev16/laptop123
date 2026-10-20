@@ -1,6 +1,312 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><title>Xuất thành phẩm</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head><body>
-<div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('xuat-tp')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Xuất thành phẩm', 'Kho / Xuất thành phẩm')}"></div><main class="content-body">
-<h1>Phiếu xuất thành phẩm</h1><p th:unless="${manager}"><a th:href="@{/kho/xuat-thanh-pham/create}" class="btn btn-primary">Lập đề nghị</a></p>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Phiếu xuất thành phẩm</h2><span class="record-count" th:text="${#lists.size(issues) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table><thead><tr><th>Mã</th><th>Sản phẩm</th><th>Số lượng</th><th>Người lập</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
-<tr th:each="i : ${issues}"><td th:text="${i.maphieu}"></td><td th:text="${i.tensp}"></td><td th:text="${i.soluong}"></td><td th:text="${i.hoten}"></td><td data-date-time th:text="${i.ngaytao}"></td><td th:text="${i.trangthai}"></td><td><a th:href="@{/kho/xuat-thanh-pham/{id}(id=${i.maphieu})}">Xem</a></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(issues)}"><td colspan="7">Chưa có dữ liệu để hiển thị.</td></tr></tbody></table></div></div></main></div></div></body></html>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Xuất thành phẩm</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+
+    <style>
+        .finished-issues-page {
+            padding-bottom: 32px;
+        }
+
+        .finished-issues-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .finished-issues-header h1 {
+            margin: 0 0 8px;
+            color: #1e293b;
+        }
+
+        .finished-issues-header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .finished-issues-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+
+        .finished-issues-card .content-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .finished-issues-card .content-card-title {
+            margin: 0;
+            color: #1e293b;
+        }
+
+        .finished-issues-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .finished-issues-table th,
+        .finished-issues-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .finished-issues-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .finished-issues-table td {
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .finished-issues-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .finished-issues-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .finished-issue-name {
+            min-width: 180px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .finished-issue-code {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .finished-issue-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .finished-issue-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border: 1px solid #bfdbfe;
+            border-radius: 7px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .finished-issue-action:hover {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .finished-issues-empty {
+            padding: 36px 20px !important;
+            text-align: center !important;
+            color: #64748b !important;
+        }
+
+        @media (max-width: 768px) {
+            .finished-issues-card .content-card-header {
+                padding: 16px;
+            }
+
+            .finished-issues-table th,
+            .finished-issues-table td {
+                padding: 11px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar('xuat-tp')}"></div>
+
+    <div class="main-wrapper">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{fragments/sidebar :: topbar('Xuất thành phẩm', 'Kho / Xuất thành phẩm')}"></div>
+
+        <main class="content-body finished-issues-page">
+
+            <!-- HEADER -->
+            <div class="finished-issues-header">
+
+                <div>
+                    <h1 class="page-title">Phiếu xuất thành phẩm</h1>
+
+                    <p class="page-description">
+                        Theo dõi các đề nghị xuất thành phẩm, tên phiếu và trạng thái xử lý.
+                    </p>
+                </div>
+
+                <a th:if="${!manager}"
+                   th:href="@{/kho/xuat-thanh-pham/create}"
+                   class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i>
+                    Lập đề nghị
+                </a>
+
+            </div>
+
+            <!-- DANH SÁCH PHIẾU -->
+            <div class="content-card finished-issues-card">
+
+                <div class="content-card-header">
+
+                    <h2 class="content-card-title">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        Danh sách phiếu xuất
+                    </h2>
+
+                    <span class="record-count"
+                          th:text="${#lists.size(issues) + ' bản ghi'}">
+                        0 bản ghi
+                    </span>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table class="finished-issues-table">
+
+                        <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Tên phiếu xuất</th>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Người lập</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <tr th:each="i : ${issues}">
+
+                            <!-- MÃ PHIẾU -->
+                            <td class="finished-issue-code"
+                                th:text="${i.maphieu}">
+                                1
+                            </td>
+
+                            <!-- TÊN PHIẾU XUẤT -->
+                            <td class="finished-issue-name"
+                                th:text="${i.ten_dot_de_nghi != null && !#strings.isEmpty(i.ten_dot_de_nghi)
+                                    ? i.ten_dot_de_nghi
+                                    : '—'}">
+                                Đợt xuất thành phẩm
+                            </td>
+
+                            <!-- SẢN PHẨM -->
+                            <td th:text="${i.tensp != null ? i.tensp : '—'}">
+                                Laptop
+                            </td>
+
+                            <!-- SỐ LƯỢNG -->
+                            <td th:text="${i.soluong != null ? i.soluong : 0}">
+                                10
+                            </td>
+
+                            <!-- NGƯỜI LẬP -->
+                            <td th:text="${i.hoten != null ? i.hoten : '—'}">
+                                Nguyễn Văn A
+                            </td>
+
+                            <!-- NGÀY TẠO -->
+                            <td data-date-time
+                                th:text="${i.ngaytao != null ? i.ngaytao : '—'}">
+                                2026-10-20
+                            </td>
+
+                            <!-- TRẠNG THÁI -->
+                            <td>
+                                <span class="finished-issue-status"
+                                      th:text="${i.trangthai != null ? i.trangthai : '—'}">
+                                    CHO_DUYET
+                                </span>
+                            </td>
+
+                            <!-- THAO TÁC -->
+                            <td>
+                                <a class="finished-issue-action"
+                                   th:href="@{/kho/xuat-thanh-pham/{id}(id=${i.maphieu})}">
+                                    <i class="fa-regular fa-eye"></i>
+                                    Xem
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        <!-- KHÔNG CÓ DỮ LIỆU -->
+                        <tr class="empty-row"
+                            th:if="${#lists.isEmpty(issues)}">
+
+                            <td colspan="8" class="finished-issues-empty">
+                                <i class="fa-solid fa-inbox"
+                                   style="font-size: 28px; margin-bottom: 10px; display: block;">
+                                </i>
+
+                                Chưa có phiếu xuất thành phẩm nào.
+                            </td>
+
+                        </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

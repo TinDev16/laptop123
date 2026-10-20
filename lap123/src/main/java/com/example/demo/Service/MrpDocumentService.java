@@ -871,6 +871,7 @@ public class MrpDocumentService {
                 "SELECT p.*, " +
                         "p.mapxtp AS maphieu, " +
                         "p.ngaylap AS ngaytao, " +
+                        "p.ten_dot_de_nghi AS ten_dot_de_nghi, " +
                         "n.hoten, " +
                         "GROUP_CONCAT(s.tensp ORDER BY c.id SEPARATOR ', ') AS tensp, " +
                         "SUM(c.soluong) AS soluong, " +
@@ -881,12 +882,17 @@ public class MrpDocumentService {
                         "JOIN sanpham s ON s.masp = c.masp ";
 
         return manager
-                ? jdbc.queryForList(sql + "GROUP BY p.mapxtp, n.hoten ORDER BY p.mapxtp DESC")
+                ? jdbc.queryForList(
+                sql +
+                "GROUP BY p.mapxtp, n.hoten " +
+                "ORDER BY p.mapxtp DESC"
+        )
                 : jdbc.queryForList(
                 sql +
                 "JOIN taikhoan t ON t.manv = p.nguoilap " +
                 "WHERE t.email = ? " +
-                        "GROUP BY p.mapxtp, n.hoten ORDER BY p.mapxtp DESC",
+                "GROUP BY p.mapxtp, n.hoten " +
+                "ORDER BY p.mapxtp DESC",
                 email
         );
     }
@@ -947,6 +953,7 @@ public class MrpDocumentService {
     @Transactional
     public long createFinishedIssueBatch(
             String email,
+            String tenDotDeNghi,
             List<Integer> productIds,
             List<Integer> bomIds,
             List<Integer> quantities,
@@ -972,8 +979,16 @@ public class MrpDocumentService {
         }
 
         long issueId = createFinishedIssue(
-                email, productIds.get(0), bomIds.get(0), quantities.get(0), customerId,
-                address, unitPrices.get(0), Boolean.TRUE.equals(priceFixedValues.get(0)), note
+                email,
+                tenDotDeNghi,
+                productIds.get(0),
+                bomIds.get(0),
+                quantities.get(0),
+                customerId,
+                address,
+                unitPrices.get(0),
+                Boolean.TRUE.equals(priceFixedValues.get(0)),
+                note
         );
 
         for (int index = 1; index < size; index++) {
@@ -1015,6 +1030,7 @@ public class MrpDocumentService {
     @Transactional
     public long createFinishedIssue(
             String email,
+            String tenDotDeNghi,
             int productId,
             int bomId,
             int quantity,
@@ -1054,7 +1070,19 @@ public class MrpDocumentService {
             );
         }
 
+        if (tenDotDeNghi == null || tenDotDeNghi.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập tên đợt đề nghị.");
+        }
+
+        tenDotDeNghi = tenDotDeNghi.trim();
+
+        if (tenDotDeNghi.length() > 150) {
+            throw new IllegalArgumentException("Tên đợt đề nghị không được vượt quá 150 ký tự.");
+        }
+
         validateNote(note);
+
+
 
         // =========================
         // Kiểm tra khách hàng
@@ -1138,15 +1166,17 @@ public class MrpDocumentService {
                         diachi_giaohang,
                         nguoilap,
                         trangthai,
-                        ghichu
+                        ghichu,
+                        ten_dot_de_nghi
                     )
                 VALUES
-                    (?, ?, ?, 'CHO_DUYET', ?)
+                    (?, ?, ?, 'CHO_DUYET', ?, ?)
                 """,
                 customerId,
                 address.trim(),
                 employeeId(email),
-                note
+                note,
+                tenDotDeNghi
         );
 
         // =========================

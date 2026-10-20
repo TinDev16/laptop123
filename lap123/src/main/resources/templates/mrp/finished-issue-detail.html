@@ -96,108 +96,51 @@
                 <div class="content-card-body">
 
 
-                    <!-- =================================================
+                    <!-- =====================================================
                          THÔNG TIN ĐỀ NGHỊ
-                    ================================================== -->
-
+                    ====================================================== -->
                     <h2 class="ceo-section-title">
-
                         <i class="fas fa-truck-loading"></i>
-
                         Thông tin đề nghị
-
                     </h2>
-
 
                     <div class="ceo-detail-grid">
 
-
-                        <!-- SẢN PHẨM -->
-
-                        <div>
-
-                            <span class="detail-label">
-                                Sản phẩm
-                            </span>
-
-                            <strong th:text="${issue.tensp}">
-                            </strong>
-
-                        </div>
-
-
-                        <!-- BOM -->
-
-                        <div>
-
-                            <span class="detail-label">
-                                Phiên bản BOM
-                            </span>
+                        <!-- TÊN PHIẾU XUẤT -->
+                        <div class="ceo-detail-note" style="grid-column: 1 / -1;">
+        <span class="detail-label">
+            Tên phiếu xuất
+        </span>
 
                             <strong
-                                    th:text="${'BOM ' + issue.phienban}">
+                                    style="font-size: 20px; color: #2563eb; overflow-wrap: anywhere;"
+                                    th:text="${issue.ten_dot_de_nghi != null
+                && !#strings.isEmpty(issue.ten_dot_de_nghi)
+                ? issue.ten_dot_de_nghi
+                : '—'}">
                             </strong>
-
                         </div>
-
-
-                        <!-- MÃ BOM -->
-
-                        <div>
-
-                            <span class="detail-label">
-                                Mã BOM
-                            </span>
-
-                            <strong th:text="${issue.mabom}">
-                            </strong>
-
-                        </div>
-
-
-                        <!-- SỐ LƯỢNG -->
-
-                        <div>
-
-                            <span class="detail-label">
-                                Số lượng xuất
-                            </span>
-
-                            <strong data-number
-                                    th:text="${issue.soluong}">
-                            </strong>
-
-                        </div>
-
 
                         <!-- NGƯỜI LẬP -->
-
                         <div>
+        <span class="detail-label">
+            Người lập
+        </span>
 
-                            <span class="detail-label">
-                                Người lập
-                            </span>
-
-                            <strong th:text="${issue.hoten}">
+                            <strong th:text="${issue.hoten != null ? issue.hoten : '—'}">
                             </strong>
-
                         </div>
 
-
                         <!-- TRẠNG THÁI -->
-
                         <div>
-
-                            <span class="detail-label">
-                                Trạng thái
-                            </span>
+        <span class="detail-label">
+            Trạng thái
+        </span>
 
                             <span class="status-pill"
                                   th:text="${issue.trangthai}">
-                            </span>
-
+        </span>
                         </div>
-
 
                     </div>
 
@@ -247,18 +190,6 @@
                         </div>
 
 
-                        <!-- EMAIL -->
-
-                        <div>
-
-                            <span class="detail-label">
-                                Email
-                            </span>
-
-                            <strong th:text="${issue.email_nguoinhan}">
-                            </strong>
-
-                        </div>
 
 
                         <!-- ĐỊA CHỈ -->

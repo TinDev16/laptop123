@@ -71,14 +71,231 @@
       font-weight: 800;
       white-space: nowrap;
     }
-    .dashboard-orders-table { min-width:980px;table-layout:fixed; }
-    .dashboard-orders-table th:nth-child(1), .dashboard-orders-table td:nth-child(1) { width:17%; }
-    .dashboard-orders-table th:nth-child(2), .dashboard-orders-table td:nth-child(2) { width:18%; }
-    .dashboard-orders-table th:nth-child(3), .dashboard-orders-table td:nth-child(3) { width:16%;text-align:center; }
-    .dashboard-orders-table th:nth-child(4), .dashboard-orders-table td:nth-child(4) { width:13%; }
-    .dashboard-orders-table th:nth-child(5), .dashboard-orders-table td:nth-child(5) { width:14%;text-align:center; }
-    .dashboard-orders-table th:nth-child(6), .dashboard-orders-table td:nth-child(6) { width:10%;text-align:center; }
-    .dashboard-orders-table th:nth-child(7), .dashboard-orders-table td:nth-child(7) { width:12%; }
+    /* BẢNG YÊU CẦU SẢN XUẤT - VỪA MÀN HÌNH */
+    .dashboard-orders-table {
+      width: 100%;
+      min-width: 0;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    /* Phân chia chiều rộng 6 cột */
+    .dashboard-orders-table th:nth-child(1),
+    .dashboard-orders-table td:nth-child(1) {
+      width: 17%;
+    }
+
+    .dashboard-orders-table th:nth-child(2),
+    .dashboard-orders-table td:nth-child(2) {
+      width: 17%;
+    }
+
+    .dashboard-orders-table th:nth-child(3),
+    .dashboard-orders-table td:nth-child(3) {
+      width: 22%;
+      text-align: center;
+    }
+
+    .dashboard-orders-table th:nth-child(4),
+    .dashboard-orders-table td:nth-child(4) {
+      width: 12%;
+    }
+
+    .dashboard-orders-table th:nth-child(5),
+    .dashboard-orders-table td:nth-child(5) {
+      width: 17%;
+      text-align: center;
+    }
+
+    .dashboard-orders-table th:nth-child(6),
+    .dashboard-orders-table td:nth-child(6) {
+      width: 15%;
+    }
+
+    /* Thu gọn khoảng cách trong ô */
+    .dashboard-orders-table th,
+    .dashboard-orders-table td {
+      padding: 10px 8px;
+      font-size: 12px;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
+    }
+
+    /* Tên sản phẩm và đợt sản xuất được xuống dòng */
+    .dashboard-product-list,
+    .dashboard-batch-name {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .dashboard-batch-code {
+      display: block;
+      color: #1d4ed8;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .dashboard-batch-name {
+      display: block;
+      margin-top: 3px;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .dashboard-order-reference {
+      display: block;
+      margin-top: 3px;
+      color: #94a3b8;
+      font-size: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    /* Tiến độ */
+    .dashboard-progress-total {
+      display: block;
+      margin-bottom: 5px;
+      color: #334155;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .dashboard-progress-cell progress {
+      width: 100%;
+      max-width: 120px;
+      height: 8px;
+    }
+
+    .dashboard-progress-breakdown {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-top: 5px;
+      font-size: 10px;
+    }
+
+    .dashboard-progress-confirmed {
+      color: #15803d;
+      font-weight: 700;
+    }
+
+    .dashboard-progress-pending {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 3px 5px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: 800;
+    }
+
+    .dashboard-progress-remaining {
+      color: #64748b;
+    }
+
+    /* Không để nút thao tác làm rộng bảng nếu có sử dụng */
+    .dashboard-order-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .dashboard-order-actions--single {
+      grid-template-columns: 1fr;
+    }
+
+    /* Màn hình nhỏ */
+    @media (max-width: 768px) {
+      .dashboard-orders-table th,
+      .dashboard-orders-table td {
+        padding: 8px 5px;
+        font-size: 11px;
+      }
+
+      .dashboard-orders-table th:nth-child(4),
+      .dashboard-orders-table td:nth-child(4) {
+        display: none;
+      }
+
+      .dashboard-orders-table th:nth-child(1),
+      .dashboard-orders-table td:nth-child(1) {
+        width: 20%;
+      }
+
+      .dashboard-orders-table th:nth-child(2),
+      .dashboard-orders-table td:nth-child(2) {
+        width: 20%;
+      }
+
+      .dashboard-orders-table th:nth-child(3),
+      .dashboard-orders-table td:nth-child(3) {
+        width: 25%;
+      }
+
+      .dashboard-orders-table th:nth-child(5),
+      .dashboard-orders-table td:nth-child(5) {
+        width: 20%;
+      }
+
+      .dashboard-orders-table th:nth-child(6),
+      .dashboard-orders-table td:nth-child(6) {
+        width: 15%;
+      }
+    }
+
+    .dashboard-product-list {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+
+    .dashboard-batch-name {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .dashboard-order-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .dashboard-action-view {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .dashboard-overdue-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 5px;
+      padding: 5px 8px;
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.4;
+      white-space: normal;
+    }
+
+    .dashboard-overdue-badge:has(.fa-hourglass-half) {
+      border-color: #fcd34d;
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .dashboard-action-record {
+      background: #dcfce7;
+      color: #166534;
+    }
     .dashboard-batch-code { display:block;color:#1d4ed8;font-weight:800; }
     .dashboard-batch-name { display:block;margin-top:3px;color:#334155;font-weight:600; }
     .dashboard-order-reference { display:block;margin-top:3px;color:#94a3b8;font-size:11px; }
@@ -381,7 +598,7 @@
           <div>
 
             <div class="kpi-title">
-              Yêu cầu được giao
+              Yêu cầu được giao gần đây
             </div>
 
             <div
@@ -580,8 +797,6 @@
 
               <th>Trạng thái</th>
 
-              <th>Thao tác</th>
-
             </tr>
 
             </thead>
@@ -593,15 +808,33 @@
                     th:each="order : ${orders}">
 
               <td>
-                <span class="dashboard-batch-code"
-                      th:text="${order.madot_code != null ? order.madot_code : 'YCSX-' + order.mayeucau}"></span>
+  <span class="dashboard-batch-code"
+        th:text="${order.madot_code != null
+          ? order.madot_code
+          : 'YCSX-' + order.mayeucau}">
+  </span>
+
                 <span class="dashboard-batch-name"
-                      th:text="${order.tendot != null ? order.tendot : 'Yêu cầu sản xuất cũ'}"></span>
-                <span class="dashboard-order-reference" th:text="${'Yêu cầu #' + order.mayeucau}"></span>
+                      th:text="${order.tendot != null
+          ? order.tendot
+          : 'Yêu cầu sản xuất cũ'}">
+  </span>
+
+                <span class="dashboard-order-reference"
+                      th:if="${order.madot != null}"
+                      th:text="${order.soyeucau + ' yêu cầu thành phần'}">
+  </span>
+
+                <span class="dashboard-order-reference"
+                      th:if="${order.madot == null}"
+                      th:text="${'Mã yêu cầu: #' + order.mayeucau}">
+  </span>
               </td>
 
-              <td
-                      th:text="${order.tensp}">
+              <td>
+                <div class="dashboard-product-list"
+                     th:text="${order.tensp != null ? order.tensp : 'Chưa có sản phẩm'}">
+                </div>
               </td>
 
               <td>
@@ -645,50 +878,58 @@
               </td>
 
               <td>
-                <span data-date-time th:text="${order.hanhoanthanh}"></span>
-                <span
-                        th:if="${order.overdueDays > 0}"
-                        class="dashboard-overdue-badge">
-                  <i class="fas fa-clock"></i>
-                  <span th:text="'Quá hạn ' + ${order.overdueDays} + ' ngày'"></span>
-                </span>
+    <span data-date-time
+          th:text="${order.hanhoanthanh}">
+    </span>
+
+                <!-- Quá hạn sản xuất -->
+                <span th:if="${order.overdueDays > 0
+          and order.trangthai != 'HUY'
+          and order.trangthai != 'HOAN_THANH'
+          and order.soluongconphaisanxuat > 0}"
+                      class="dashboard-overdue-badge">
+        <i class="fas fa-clock"></i>
+        <span th:text="${'Quá hạn sản xuất '
+            + order.overdueDays + ' ngày'}">
+        </span>
+    </span>
+
+                <!-- Đã sản xuất đủ nhưng còn kết quả chờ duyệt -->
+                <span th:if="${manager
+          and order.overdueDays > 0
+          and order.trangthai != 'HUY'
+          and order.trangthai != 'HOAN_THANH'
+          and order.soluongconphaisanxuat <= 0
+          and order.soluongchoduyet > 0}"
+                      class="dashboard-overdue-badge">
+        <i class="fas fa-hourglass-half"></i>
+        <span th:text="${'Quá hạn do duyệt '
+            + order.overdueDays + ' ngày'}">
+        </span>
+    </span>
               </td>
 
               <td>
-
-                <span
-                        class="status-pill"
-                        th:text="${
-                          order.trangthai == 'HUY' ? 'Hủy' :
-                          order.trangthai == 'HOAN_THANH' ? 'Hoàn thành' :
-                          order.trangthai
-                        }">
-                </span>
-
+    <span class="status-pill"
+          th:style="${order.trangthai == 'HUY'
+              ? 'background:#fee2e2;color:#b91c1c;'
+              : order.trangthai == 'HOAN_THANH'
+                  ? 'background:#dcfce7;color:#166534;'
+                  : order.soluongyeucau > 0
+                      and order.soluongdahoanthanh == 0
+                          ? 'background:#dbeafe;color:#1d4ed8;'
+                          : 'background:#fef3c7;color:#92400e;'}"
+          th:text="${order.trangthai == 'HUY'
+              ? 'Hủy'
+              : order.trangthai == 'HOAN_THANH'
+                  ? 'Hoàn thành'
+                  : order.soluongyeucau > 0
+                      and order.soluongdahoanthanh == 0
+                          ? 'Đã giao'
+                          : 'Đang thực hiện'}">
+    </span>
               </td>
 
-              <td>
-
-                <div class="dashboard-order-actions"
-                     th:classappend="${manager ? 'dashboard-order-actions--single' : ''}">
-                  <a th:href="@{/san-xuat/yeu-cau/{id}(id=${order.mayeucau})}"
-                     class="dashboard-action"
-                     title="Xem chi tiết yêu cầu sản xuất">
-                    Xem
-                  </a>
-
-                  <a th:unless="${manager}"
-                     th:if="${order.trangthai != 'HOAN_THANH'
-                       and order.trangthai != 'HUY'
-                       and order.soluonghoanthanh + order.soluongchoduyet < order.soluongyeucau}"
-                     th:href="@{/san-xuat/ghi-nhan(orderId=${order.mayeucau})}"
-                     class="dashboard-action dashboard-action-record"
-                     title="Ghi nhận thành phẩm và nhập kho sản xuất">
-                    <i class="fas fa-box-open"></i> Ghi nhận
-                  </a>
-                </div>
-
-              </td>
 
             </tr>
 
@@ -698,7 +939,7 @@
                     class="empty-row"
                     th:if="${#lists.isEmpty(orders)}">
 
-              <td colspan="7">
+              <td colspan="6">
                 Chưa có yêu cầu sản xuất nào.
               </td>
 

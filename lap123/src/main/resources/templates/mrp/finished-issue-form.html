@@ -88,6 +88,32 @@
 
                     <div class="ceo-form-grid">
 
+                        <!-- =========================
+     TÊN ĐỢT ĐỀ NGHỊ
+========================== -->
+
+                        <div class="ceo-field ceo-field-full">
+
+                            <label for="tenDotDeNghi">
+                                Tên đợt đề nghị
+                                <span class="ceo-required">*</span>
+                            </label>
+
+                            <input
+                                    type="text"
+                                    id="tenDotDeNghi"
+                                    name="tenDotDeNghi"
+                                    maxlength="150"
+                                    class="form-control"
+                                    required
+                                    placeholder="Ví dụ: Đợt xuất thành phẩm tháng 10">
+
+                            <small>
+                                Đặt tên để dễ nhận biết và quản lý phiếu xuất thành phẩm.
+                            </small>
+
+                        </div>
+
 
                         <!-- =========================
                              SẢN PHẨM
@@ -1207,6 +1233,29 @@
 
             const productId =
                 productSelect.value;
+
+            const tenDotDeNghi =
+                document.getElementById("tenDotDeNghi").value.trim();
+
+            if (!tenDotDeNghi) {
+                event.preventDefault();
+
+                alert("Vui lòng nhập tên đợt đề nghị.");
+
+                document.getElementById("tenDotDeNghi").focus();
+
+                return;
+            }
+
+            if (tenDotDeNghi.length > 150) {
+                event.preventDefault();
+
+                alert("Tên đợt đề nghị không được vượt quá 150 ký tự.");
+
+                document.getElementById("tenDotDeNghi").focus();
+
+                return;
+            }
 
 
             const bomId =

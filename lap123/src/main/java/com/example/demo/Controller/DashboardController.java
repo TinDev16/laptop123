@@ -43,12 +43,12 @@ public class DashboardController {
 
         model.addAttribute(
                 "orders",
-                orders.list(
+                orders.listGrouped(
                                 authentication.getName(),
                                 manager,
                                 ""
                         ).stream()
-                        .limit(10)
+                        .limit(15)
                         .toList()
         );
 
@@ -187,7 +187,7 @@ public class DashboardController {
             );
 
             model.addAttribute(
-                    "pendingMaterials",
+                    "pendingMaterialIssues",
                     jdbc.queryForObject(
                             "SELECT COUNT(*) " +
                                     "FROM phieuxuat_nvl " +
@@ -207,7 +207,7 @@ public class DashboardController {
             );
 
             model.addAttribute(
-                    "pendingProducts",
+                    "pendingFinishedProductIssues",
                     jdbc.queryForObject(
                             "SELECT COUNT(*) " +
                                     "FROM phieuxuat_thanhpham " +

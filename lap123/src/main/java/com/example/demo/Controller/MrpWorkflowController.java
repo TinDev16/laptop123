@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.math.BigDecimal;
 import java.util.Map;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -469,6 +468,7 @@ public class MrpWorkflowController {
     @PostMapping("/kho/xuat-thanh-pham")
     public String createFinishedIssue(
             Authentication auth,
+            @RequestParam String tenDotDeNghi,
             @RequestParam List<Integer> productId,
             @RequestParam List<Integer> bomId,
             @RequestParam List<Integer> quantity,
@@ -482,6 +482,7 @@ public class MrpWorkflowController {
         try {
             long id = documents.createFinishedIssueBatch(
                     auth.getName(),
+                    tenDotDeNghi,
                     productId,
                     bomId,
                     quantity,

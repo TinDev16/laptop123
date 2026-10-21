@@ -181,56 +181,35 @@
 
 
                         <!-- LOẠI GIAO DỊCH -->
-
                         <div class="ceo-field">
+                            <label for="type">Loại giao dịch</label>
 
-                            <label for="type">
-                                Loại giao dịch
-                            </label>
-
-                            <select
-                                    id="type"
-                                    name="type"
-                                    class="form-control"
-                            >
-
-                                <option
-                                        value=""
-                                        th:selected="${type == null or type == ''}"
-                                >
+                            <select id="type" name="type" class="form-control">
+                                <option value=""
+                                        th:selected="${type == null or type == ''}">
                                     Tất cả
                                 </option>
 
-                                <option
-                                        value="NHAP_NVL_SAN_XUAT"
-                                        th:selected="${type == 'NHAP_NVL_SAN_XUAT'}"
-                                >
+                                <option value="NHAP_NVL_SAN_XUAT"
+                                        th:selected="${type == 'NHAP_NVL_SAN_XUAT'}">
                                     Nhập NVL
                                 </option>
 
-                                <option
-                                        value="XUAT_NVL_SAN_XUAT"
-                                        th:selected="${type == 'XUAT_NVL_SAN_XUAT'}"
-                                >
-                                    lịch sử NVL đề tạo tp
+                                <option value="XUAT_NVL_SAN_XUAT"
+                                        th:selected="${type == 'XUAT_NVL_SAN_XUAT'}">
+                                    Dùng NVL để tạo SP
                                 </option>
 
-                                <option
-                                        value="NHAP_THANH_PHAM_SAN_XUAT"
-                                        th:selected="${type == 'NHAP_THANH_PHAM_SAN_XUAT'}"
-                                >
+                                <option value="NHAP_THANH_PHAM_SAN_XUAT"
+                                        th:selected="${type == 'NHAP_THANH_PHAM_SAN_XUAT'}">
                                     Nhập thành phẩm
                                 </option>
 
-                                <option
-                                        value="XUAT_THANH_PHAM_SAN_XUAT"
-                                        th:selected="${type == 'XUAT_THANH_PHAM_SAN_XUAT'}"
-                                >
+                                <option value="XUAT_THANH_PHAM_SAN_XUAT"
+                                        th:selected="${type == 'XUAT_THANH_PHAM_SAN_XUAT'}">
                                     Xuất thành phẩm
                                 </option>
-
                             </select>
-
                         </div>
 
 
@@ -306,9 +285,6 @@
                                 Giao dịch
                             </th>
 
-                            <th>
-                                Hàng hóa
-                            </th>
 
                             <th>
                                 Tổng số lượng
@@ -369,19 +345,21 @@
 
                             <!-- KHO -->
 
+                            <!-- KHO -->
+
                             <td>
 
-                                <span
-                                        th:if="${row.loai_kho == 'NVL_SAN_XUAT'}"
-                                >
-                                    Kho NVL sản xuất
-                                </span>
+    <span th:if="${row.loai_kho == 'NVL_SAN_XUAT'}">
+        Kho NVL sản xuất
+    </span>
 
-                                <span
-                                        th:if="${row.loai_kho == 'THANH_PHAM_SAN_XUAT'}"
-                                >
-                                    Kho thành phẩm sản xuất
-                                </span>
+                                <span th:if="${row.loai_kho == 'THANH_PHAM_SAN_XUAT'}">
+        Kho thành phẩm sản xuất
+    </span>
+
+                                <span th:if="${row.loai_kho == 'LOI_SAN_XUAT'}">
+        Kho lỗi sản xuất
+    </span>
 
                             </td>
 
@@ -406,42 +384,30 @@
 
 
                             <!-- GIAO DỊCH -->
-
                             <td>
 
-                                <span
-                                        th:if="${row.loai_giao_dich == 'NHAP_NVL_SAN_XUAT'}"
-                                >
-                                    Nhập NVL
-                                </span>
+    <span th:if="${row.loai_giao_dich == 'NHAP_NVL_SAN_XUAT'}">
+        Nhập NVL
+    </span>
 
-                                <span
-                                        th:if="${row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}"
-                                >
-                                    Xuất NVL
-                                </span>
+                                <span th:if="${row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}">
+        Dùng NVL để tạo SP
+    </span>
 
-                                <span
-                                        th:if="${row.loai_giao_dich == 'NHAP_THANH_PHAM_SAN_XUAT'}"
-                                >
-                                    Nhập thành phẩm
-                                </span>
+                                <span th:if="${row.loai_giao_dich == 'NHAP_THANH_PHAM_SAN_XUAT'}">
+        Nhập thành phẩm
+    </span>
 
-                                <span
-                                        th:if="${row.loai_giao_dich == 'XUAT_THANH_PHAM_SAN_XUAT'}"
-                                >
-                                    Xuất thành phẩm
-                                </span>
+                                <span th:if="${row.loai_giao_dich == 'NHAP_LOI_SAN_XUAT'}">
+        Nhập thành phẩm
+    </span>
+
+                                <span th:if="${row.loai_giao_dich == 'XUAT_THANH_PHAM_SAN_XUAT'}">
+        Xuất thành phẩm
+    </span>
 
                             </td>
 
-
-                            <!-- HÀNG HÓA -->
-
-                            <td class="production-history-items"
-                                th:text="${row.hanghoa ?: '-'}">
-                                -
-                            </td>
 
 
                             <!-- TỔNG SỐ LƯỢNG -->
@@ -541,7 +507,7 @@
                                 th:if="${#lists.isEmpty(rows)}"
                         >
 
-                            <td colspan="12">
+                            <td colspan="11">
                                 Chưa có dữ liệu để hiển thị.
                             </td>
 

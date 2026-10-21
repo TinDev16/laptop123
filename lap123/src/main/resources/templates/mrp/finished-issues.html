@@ -213,8 +213,6 @@
                         <tr>
                             <th>Mã phiếu</th>
                             <th>Tên phiếu xuất</th>
-                            <th>Sản phẩm</th>
-                            <th>Số lượng</th>
                             <th>Người lập</th>
                             <th>Ngày tạo</th>
                             <th>Trạng thái</th>
@@ -240,15 +238,6 @@
                                 Đợt xuất thành phẩm
                             </td>
 
-                            <!-- SẢN PHẨM -->
-                            <td th:text="${i.tensp != null ? i.tensp : '—'}">
-                                Laptop
-                            </td>
-
-                            <!-- SỐ LƯỢNG -->
-                            <td th:text="${i.soluong != null ? i.soluong : 0}">
-                                10
-                            </td>
 
                             <!-- NGƯỜI LẬP -->
                             <td th:text="${i.hoten != null ? i.hoten : '—'}">
@@ -284,7 +273,7 @@
                         <tr class="empty-row"
                             th:if="${#lists.isEmpty(issues)}">
 
-                            <td colspan="8" class="finished-issues-empty">
+                            <td colspan="6" class="finished-issues-empty">
                                 <i class="fa-solid fa-inbox"
                                    style="font-size: 28px; margin-bottom: 10px; display: block;">
                                 </i>

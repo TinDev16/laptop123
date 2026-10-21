@@ -462,15 +462,18 @@
 
                                 </span>
 
+                                <span th:if="${row['loai_kho'] == 'LOI_SAN_XUAT'}">
+    Kho lỗi sản xuất
+</span>
+
 
                                 <span
                                         th:if="${row['loai_kho'] != 'NVL_SAN_XUAT'
-                                        and row['loai_kho'] != 'THANH_PHAM_SAN_XUAT'}"
+    and row['loai_kho'] != 'THANH_PHAM_SAN_XUAT'
+    and row['loai_kho'] != 'LOI_SAN_XUAT'}"
                                         th:text="${row['loai_kho']}">
-
-                                    -
-
-                                </span>
+    -
+</span>
 
 
                             </td>
@@ -563,6 +566,10 @@
 
                                 </span>
 
+                                <span th:if="${row['loai_giao_dich'] == 'NHAP_LOI_SAN_XUAT'}">
+    Nhập thành phẩm
+</span>
+
 
                                 <span
                                         th:if="${row['loai_giao_dich'] == 'XUAT_THANH_PHAM_SAN_XUAT'}">
@@ -576,6 +583,7 @@
                                         th:if="${row['loai_giao_dich'] != 'NHAP_NVL_SAN_XUAT'
                                         and row['loai_giao_dich'] != 'XUAT_NVL_SAN_XUAT'
                                         and row['loai_giao_dich'] != 'NHAP_THANH_PHAM_SAN_XUAT'
+                                        and row['loai_giao_dich'] != 'NHAP_LOI_SAN_XUAT'
                                         and row['loai_giao_dich'] != 'XUAT_THANH_PHAM_SAN_XUAT'}"
                                         th:text="${row['loai_giao_dich']}">
 

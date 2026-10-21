@@ -178,10 +178,19 @@ public class DashboardController {
             model.addAttribute(
                     "activeOrders",
                     jdbc.queryForObject(
-                            "SELECT COUNT(*) " +
-                                    "FROM yeucausanxuat " +
-                                    "WHERE trangthai IN " +
-                                    "('DA_GIAO', 'DANG_SAN_XUAT')",
+                            "SELECT COUNT(*) FROM (" +
+                                    "    SELECT COALESCE(y.madot, -y.maycsx) AS nhom_dot " +
+                                    "    FROM yeucausanxuat y " +
+                                    "    GROUP BY COALESCE(y.madot, -y.maycsx) " +
+                                    "    HAVING SUM(" +
+                                    "        CASE " +
+                                    "            WHEN y.trangthai NOT IN ('HUY', 'HOAN_THANH') " +
+                                    "             AND y.soluonghoanthanh < y.soluongyeucau " +
+                                    "            THEN y.soluongyeucau - y.soluonghoanthanh " +
+                                    "            ELSE 0 " +
+                                    "        END" +
+                                    "    ) > 0 " +
+                                    ") active_batches",
                             Integer.class
                     )
             );
@@ -216,16 +225,25 @@ public class DashboardController {
                     )
             );
 
-            // TỔNG YÊU CẦU QUÁ HẠN
+// TỔNG ĐỢT SẢN XUẤT QUÁ HẠN
             model.addAttribute(
                     "overdueOrders",
                     jdbc.queryForObject(
-                            "SELECT COUNT(*) " +
-                                    "FROM yeucausanxuat " +
-                                    "WHERE trangthai NOT IN ('HOAN_THANH', 'HUY') " +
-                                    "AND soluonghoanthanh < soluongyeucau " +
-                                    "AND hanhoanthanh IS NOT NULL " +
-                                    "AND hanhoanthanh < CURDATE()",
+                            "SELECT COUNT(*) FROM (" +
+                                    "    SELECT " +
+                                    "        COALESCE(y.madot, -y.maycsx) AS nhom_dot " +
+                                    "    FROM yeucausanxuat y " +
+                                    "    WHERE y.trangthai NOT IN ('HOAN_THANH', 'HUY') " +
+                                    "      AND y.hanhoanthanh IS NOT NULL " +
+                                    "      AND y.hanhoanthanh < CURDATE() " +
+                                    "    GROUP BY COALESCE(y.madot, -y.maycsx) " +
+                                    "    HAVING SUM(" +
+                                    "        CASE " +
+                                    "            WHEN y.soluonghoanthanh < y.soluongyeucau " +
+                                    "            THEN 1 ELSE 0 " +
+                                    "        END" +
+                                    "    ) > 0 " +
+                                    ") overdue_batches",
                             Integer.class
                     )
             );

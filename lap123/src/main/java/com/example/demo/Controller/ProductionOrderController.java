@@ -58,35 +58,40 @@ public class ProductionOrderController {
     public String list(
             Authentication auth,
             Model model,
-            @RequestParam(
-                    required = false,
-                    defaultValue = ""
-            )
-            String search
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false, defaultValue = "") String trangthai
     ) {
         boolean isManager = manager(auth);
 
-        model.addAttribute(
-                "orders",
-                service.listGrouped(auth.getName(), isManager, search)
-        );
+        List<Map<String, Object>> groupedOrders =
+                service.listGrouped(auth.getName(), isManager, search);
 
-        model.addAttribute(
-                "manager",
-                isManager
-        );
+        // Lọc danh sách theo trạng thái KPI sau khi đã gom nhóm theo đợt.
+        if (!trangthai.isBlank()) {
+            groupedOrders = groupedOrders.stream()
+                    .filter(order -> {
+                        String status = String.valueOf(order.get("trangthai"));
 
-        model.addAttribute(
-                "materialShortages",
-                isManager
-                        ? List.of()
-                        : service.aggregateMaterialShortages(auth.getName())
-        );
+                        return switch (trangthai) {
+                            case "DANG_SAN_XUAT" ->
+                                    "DANG_THUC_HIEN".equals(status);
 
-        model.addAttribute(
-                "search",
-                search
-        );
+                            case "HOAN_THANH" ->
+                                    "HOAN_THANH".equals(status);
+
+                            case "HUY" ->
+                                    "HUY".equals(status);
+
+                            default -> true;
+                        };
+                    })
+                    .toList();
+        }
+
+        model.addAttribute("orders", groupedOrders);
+        model.addAttribute("manager", isManager);
+        model.addAttribute("search", search);
+        model.addAttribute("trangthai", trangthai);
 
         return "mrp/orders";
     }

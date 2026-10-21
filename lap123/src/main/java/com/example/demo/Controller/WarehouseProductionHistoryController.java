@@ -20,7 +20,8 @@ public class WarehouseProductionHistoryController {
             "NHAP_NVL_SAN_XUAT",
             "XUAT_NVL_SAN_XUAT",
             "NHAP_THANH_PHAM_SAN_XUAT",
-            "XUAT_THANH_PHAM_SAN_XUAT"
+            "XUAT_THANH_PHAM_SAN_XUAT",
+            "NHAP_LOI_SAN_XUAT"
     );
 
     private final WarehouseProductionHistoryService service;

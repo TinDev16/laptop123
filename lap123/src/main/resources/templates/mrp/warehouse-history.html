@@ -172,9 +172,6 @@
                                 Giao dịch
                             </th>
 
-                            <th>
-                                Hàng hóa
-                            </th>
 
                             <th>
                                 Chứng từ
@@ -228,10 +225,6 @@
                             </td>
 
 
-                            <td class="warehouse-item-summary"
-                                th:text="${r.hanghoa ?: '-'}">
-                                -
-                            </td>
 
 
                             <td>
@@ -298,7 +291,7 @@
                         <tr class="empty-row"
                             th:if="${#lists.isEmpty(rows)}">
 
-                            <td colspan="10">
+                            <td colspan="9">
 
                                 Chưa có dữ liệu để hiển thị.
 

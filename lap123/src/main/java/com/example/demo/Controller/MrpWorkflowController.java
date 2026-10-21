@@ -270,6 +270,7 @@ public class MrpWorkflowController {
             Authentication auth,
             @RequestParam(required = false) Long orderId,
             @RequestParam(required = false) Long batchId,
+            @RequestParam(required = false) String trangthai,
             Model model) {
 
         requireManager(auth);
@@ -328,11 +329,17 @@ public class MrpWorkflowController {
                     }
                 }
 
-                String status =
-                        String.valueOf(item.get("trangthai"));
+                String status = String.valueOf(item.get("trangthai"));
 
-                // Bỏ qua trạng thái không thuộc các trạng thái
-                // hợp lệ của quy trình kết quả sản xuất.
+// Chỉ hiển thị kết quả thuộc trạng thái được yêu cầu.
+                if (trangthai != null && !trangthai.isBlank()) {
+                    if ("CHO_XAC_NHAN".equals(trangthai)
+                            && !"CHO_XAC_NHAN".equals(status)) {
+                        continue;
+                    }
+                }
+
+// Bỏ qua trạng thái không hợp lệ.
                 if (!java.util.Set.of(
                         "CHO_XAC_NHAN",
                         "DA_NHAP_KHO",
@@ -383,6 +390,7 @@ public class MrpWorkflowController {
         model.addAttribute("approvedGroups", approvedGroups);
         model.addAttribute("selectedOrderId", orderId);
         model.addAttribute("selectedBatchId", batchId);
+        model.addAttribute("selectedStatus", trangthai);
 
         return "mrp/results";
     }

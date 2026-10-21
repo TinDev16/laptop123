@@ -163,6 +163,7 @@ public class MrpWorkflowController {
     public String createMaterialIssue(
             Authentication auth,
             @RequestParam long batchId,
+            @RequestParam(defaultValue = "DINH_MUC") String loaiXuat,
             @RequestParam(required = false) String note,
             @RequestParam List<Long> materialId,
             @RequestParam List<Integer> quantity,
@@ -172,6 +173,7 @@ public class MrpWorkflowController {
             long id = documents.createBatchMaterialIssue(
                     auth.getName(),
                     batchId,
+                    loaiXuat,
                     note,
                     materialId,
                     quantity
@@ -179,7 +181,9 @@ public class MrpWorkflowController {
 
             flash.addFlashAttribute(
                     "success",
-                    "Đã gửi đề nghị xuất NVL cho đợt sản xuất."
+                    "XUAT_BU".equalsIgnoreCase(loaiXuat)
+                            ? "Đã gửi đề nghị xuất bù linh kiện hư hỏng cho Quản lý phê duyệt."
+                            : "Đã gửi đề nghị xuất NVL cho đợt sản xuất."
             );
 
             return "redirect:/kho/xuat-nvl/" + id;

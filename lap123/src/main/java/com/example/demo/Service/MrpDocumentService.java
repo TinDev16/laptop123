@@ -1511,6 +1511,17 @@ public class MrpDocumentService {
             String note,
             List<Long> materialIds,
             List<Integer> quantities) {
+        return createBatchMaterialIssue(email, batchId, "DINH_MUC", note, materialIds, quantities);
+    }
+
+    @Transactional
+    public long createBatchMaterialIssue(
+            String email,
+            long batchId,
+            String loaiXuat,
+            String note,
+            List<Long> materialIds,
+            List<Integer> quantities) {
 
         if (materialIds == null || quantities == null
                 || materialIds.isEmpty()
@@ -1518,6 +1529,16 @@ public class MrpDocumentService {
             throw new IllegalArgumentException(
                     "Phiếu phải có ít nhất một dòng chi tiết."
             );
+        }
+
+        boolean isXuatBu = "XUAT_BU".equalsIgnoreCase(loaiXuat);
+
+        if (isXuatBu) {
+            if (note == null || note.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Khi lập đề nghị xuất bù linh kiện hư hỏng, bạn bắt buộc phải ghi rõ lý do hư hỏng / giải trình vào ô Ghi chú."
+                );
+            }
         }
 
         validateNote(note);
@@ -1569,7 +1590,9 @@ public class MrpDocumentService {
 
         if (requested.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Không có nguyên vật liệu nào cần xuất."
+                    isXuatBu
+                            ? "Vui lòng nhập số lượng (> 0) cho ít nhất một linh kiện bị hư hỏng cần xuất bù."
+                            : "Không có nguyên vật liệu nào cần xuất."
             );
         }
 
@@ -1578,31 +1601,44 @@ public class MrpDocumentService {
 
         validateActiveMaterials(validMaterialIds);
 
-        // Tính lại nhu cầu và phần thiếu từ database, không tin số liệu gửi từ HTML.
-        Map<Long, Integer> maxByMaterial = new java.util.HashMap<>();
+        // NẾU LÀ XUẤT ĐỊNH MỨC THÔNG THƯỜNG -> Kiểm tra không vượt phần thiếu hụt BOM
+        if (!isXuatBu) {
+            Map<Long, Integer> maxByMaterial = new java.util.HashMap<>();
 
-        for (Map<String, Object> line :
-                bomRequestLinesByBatch(batchId, email)) {
-            maxByMaterial.put(
-                    ((Number) line.get("manvl")).longValue(),
-                    ((Number) line.get("thieu_hut")).intValue()
-            );
-        }
-
-        for (Map.Entry<Long, Integer> entry : requested.entrySet()) {
-            int max = maxByMaterial.getOrDefault(entry.getKey(), 0);
-
-            if (max <= 0) {
-                throw new IllegalArgumentException(
-                        "Một NVL đã đủ tồn hoặc đã có đề nghị xuất đang chờ duyệt."
+            for (Map<String, Object> line :
+                    bomRequestLinesByBatch(batchId, email)) {
+                maxByMaterial.put(
+                        ((Number) line.get("manvl")).longValue(),
+                        ((Number) line.get("thieu_hut")).intValue()
                 );
             }
 
-            if (entry.getValue() > max) {
-                throw new IllegalArgumentException(
-                        "Số lượng đề nghị vượt phần còn thiếu của NVL ID "
-                                + entry.getKey() + " (tối đa " + max + ")."
-                );
+            for (Map.Entry<Long, Integer> entry : requested.entrySet()) {
+                int max = maxByMaterial.getOrDefault(entry.getKey(), 0);
+
+                if (max <= 0) {
+                    throw new IllegalArgumentException(
+                            "Một NVL đã đủ tồn hoặc đã có đề nghị xuất đang chờ duyệt. Nếu cần xuất bù do hư hỏng, vui lòng chọn mục 'Xuất bù linh kiện hư hỏng'."
+                    );
+                }
+
+                if (entry.getValue() > max) {
+                    throw new IllegalArgumentException(
+                            "Số lượng đề nghị vượt phần còn thiếu của NVL ID "
+                                    + entry.getKey() + " (tối đa " + max + ")."
+                    );
+                }
+            }
+        }
+
+        // Format lại ghi chú nếu là xuất bù
+        String finalNote = note != null ? note.trim() : "";
+        if (isXuatBu) {
+            if (!finalNote.startsWith("[XUẤT BÙ HƯ HỎNG]")) {
+                finalNote = "[XUẤT BÙ HƯ HỎNG] " + finalNote;
+            }
+            if (finalNote.length() > 255) {
+                finalNote = finalNote.substring(0, 255);
             }
         }
 
@@ -1617,7 +1653,7 @@ public class MrpDocumentService {
                 """,
                 firstOrderId,
                 employeeId(email),
-                note
+                finalNote
         );
 
         // Liên kết phiếu với tất cả yêu cầu sản xuất thuộc đợt được xử lý.

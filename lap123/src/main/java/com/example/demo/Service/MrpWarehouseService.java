@@ -342,6 +342,13 @@ public class MrpWarehouseService {
                         ? null
                         : employeeId(managerEmail);
 
+        // Kiểm tra xem đây có phải là phiếu xuất bù linh kiện hư hỏng không
+        String issueNote = jdbc.queryForObject(
+                "SELECT ghichu FROM phieuxuat_nvl WHERE mapx = ?",
+                String.class,
+                issueId
+        );
+        boolean isXuatBu = issueNote != null && issueNote.contains("[XUẤT BÙ HƯ HỎNG]");
 
         // =====================================================
         // 6. THỰC HIỆN CHUYỂN KHO
@@ -350,7 +357,9 @@ public class MrpWarehouseService {
         //     - quantity
         //
         // Kho sản xuất:
-        //     + quantity
+        //     - Xuất định mức bình thường: + quantity
+        //     - Xuất bù hư hỏng: 1 linh kiện mới bù vào 1 linh kiện đã hỏng (cấn trừ),
+        //       tồn kho sản xuất giữ nguyên, đồng thời ghi nhận lịch sử xuất hủy phế phẩm.
         // =====================================================
 
         for (MaterialStockChange change : changes) {
@@ -369,22 +378,6 @@ public class MrpWarehouseService {
                     change.line().itemId()
             );
 
-
-            // -------------------------------------------------
-            // Cộng kho NVL sản xuất
-            // -------------------------------------------------
-
-            jdbc.update(
-                    """
-                    UPDATE kho_nvl_san_xuat
-                    SET soluongton = ?
-                    WHERE manvl = ?
-                    """,
-                    change.afterProduction(),
-                    change.line().itemId()
-            );
-
-
             // -------------------------------------------------
             // Ghi lịch sử kho trung tâm
             // -------------------------------------------------
@@ -398,29 +391,68 @@ public class MrpWarehouseService {
                     issueId
             );
 
-
             // -------------------------------------------------
-            // Ghi lịch sử kho NVL sản xuất
-            //
-            // Trung tâm:
-            //     XUAT_NVL
-            //
-            // Kho sản xuất:
-            //     NHAP_NVL_SAN_XUAT
+            // Xử lý kho NVL sản xuất & Ghi lịch sử
             // -------------------------------------------------
 
-            productionHistory(
-                    "NVL_SAN_XUAT",
-                    "NVL",
-                    change.line().itemId(),
-                    "NHAP_NVL_SAN_XUAT",
-                    change.line().quantity(),
-                    change.beforeProduction(),
-                    change.afterProduction(),
-                    actor,
-                    "phieuxuat_nvl",
-                    issueId
-            );
+            if (isXuatBu) {
+                // Xuất bù linh kiện hư hỏng:
+                // 1) Ghi nhận nhập linh kiện mới bù từ kho tổng (+quantity)
+                BigDecimal tempAfter = change.beforeProduction().add(change.line().quantity());
+                productionHistory(
+                        "NVL_SAN_XUAT",
+                        "NVL",
+                        change.line().itemId(),
+                        "NHAP_NVL_SAN_XUAT",
+                        change.line().quantity(),
+                        change.beforeProduction(),
+                        tempAfter,
+                        actor,
+                        "phieuxuat_nvl",
+                        issueId
+                );
+
+                // 2) Tự động ghi nhận xuất hủy linh kiện hỏng do sản xuất (-quantity)
+                productionHistory(
+                        "NVL_SAN_XUAT",
+                        "NVL",
+                        change.line().itemId(),
+                        "XUAT_NVL_SAN_XUAT",
+                        change.line().quantity(),
+                        tempAfter,
+                        change.beforeProduction(),
+                        actor,
+                        "phieuxuat_nvl",
+                        issueId
+                );
+
+                // Tồn kho NVL sản xuất thực tế giữ nguyên ở mức `change.beforeProduction()`,
+                // tránh bị tồn dư ảo trên chuyền sau khi hoàn thành yêu cầu.
+            } else {
+                // Xuất theo kế hoạch bình thường: Tăng tồn kho sản xuất
+                jdbc.update(
+                        """
+                        UPDATE kho_nvl_san_xuat
+                        SET soluongton = ?
+                        WHERE manvl = ?
+                        """,
+                        change.afterProduction(),
+                        change.line().itemId()
+                );
+
+                productionHistory(
+                        "NVL_SAN_XUAT",
+                        "NVL",
+                        change.line().itemId(),
+                        "NHAP_NVL_SAN_XUAT",
+                        change.line().quantity(),
+                        change.beforeProduction(),
+                        change.afterProduction(),
+                        actor,
+                        "phieuxuat_nvl",
+                        issueId
+                );
+            }
         }
 
 

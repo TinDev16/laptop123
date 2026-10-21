@@ -213,9 +213,18 @@
 
                     </div>
 
-                    <!-- GHI CHÚ -->
+                    <!-- BANNER XUẤT BÙ HƯ HỎNG -->
+                    <div th:if="${issue.ghichu != null and #strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]')}"
+                         style="background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #ea580c; padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.25rem;">
+                        <div style="font-weight: 700; color: #b45309; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-triangle-exclamation" style="color: #ea580c;"></i> ĐỀ NGHỊ XUẤT BÙ LINH KIỆN HƯ HỎNG / HAO HỤT PHÁT SINH
+                        </div>
+                        <div style="color: #92400e; font-size: 0.88rem;" th:text="${issue.ghichu}"></div>
+                    </div>
+
+                    <!-- GHI CHÚ BÌNH THƯỜNG -->
                     <p
-                            th:if="${issue.ghichu != null and !#strings.isEmpty(issue.ghichu)}"
+                            th:if="${issue.ghichu != null and !#strings.isEmpty(issue.ghichu) and !#strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]')}"
                             class="alert"
                             th:text="${'Ghi chú: ' + issue.ghichu}">
                     </p>
@@ -223,68 +232,145 @@
                     <!-- LÝ DO TỪ CHỐI -->
                     <p
                             th:if="${issue.lydo != null and !#strings.isEmpty(issue.lydo)}"
-                            class="alert alert-danger"
-                            th:text="${'Lý do từ chối: ' + issue.lydo}">
-                    </p>
-
-                    <!-- ========================= -->
-                    <!-- DANH SÁCH YÊU CẦU SẢN XUẤT -->
-                    <!-- ========================= -->
-
+                          <!-- ============================================= -->
+                    <!-- 1. DANH SÁCH VẬT TƯ ĐỀ NGHỊ XUẤT (QUAN TRỌNG NHẤT) -->
+                    <!-- ============================================= -->
                     <h2 class="ceo-section-title">
-                        <i class="fas fa-industry"></i>
-                        Các yêu cầu sản xuất trong đợt
-                        <span
-                                class="record-count"
-                                th:text="${requests != null ? #lists.size(requests) + ' yêu cầu' : '0 yêu cầu'}">
-    </span>
+                        <i class="fas fa-boxes-stacked" style="color: #2563eb;"></i>
+                        <span th:if="${issue.ghichu != null and #strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]')}">
+                            Danh sách linh kiện đề nghị xuất bù (Hư hỏng)
+                        </span>
+                        <span th:unless="${issue.ghichu != null and #strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]')}">
+                            Vật tư đề nghị xuất kho
+                        </span>
+                        <span class="record-count" th:text="${lines != null ? #lists.size(lines) + ' linh kiện' : '0'}"></span>
                     </h2>
 
                     <div class="table-container">
                         <table class="table">
                             <thead>
                             <tr>
-                                <th>Mã yêu cầu</th>
-                                <th>Sản phẩm</th>
+                                <th>Mã NVL</th>
+                                <th>Tên NVL</th>
+                                <th>Phân loại</th>
+                                <th class="numeric-column" style="text-align: right;">
+                                    <span th:if="${issue.ghichu != null and #strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]')}" style="color: #ea580c;">
+                                        SL xuất bù
+                                    </span>
+                                    <span th:unless="${issue.ghichu != null and #strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]')}">
+                                        SL đề nghị xuất
+                                    </span>
+                                </th>
+                                <th style="text-align: center;">Đơn vị tính</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="l : ${lines}">
+                                <td>
+                                    <strong style="font-family: monospace; color: #2563eb;" th:text="${l.manvl_code}"></strong>
+                                </td>
+                                <td>
+                                    <strong th:text="${l.tennvl}"></strong>
+                                </td>
+                                <td th:text="${l.tenloai != null ? l.tenloai : 'Chưa phân loại'}"></td>
+                                <td class="numeric-column" style="text-align: right; font-weight: 800; font-size: 1.15rem;"
+                                    th:style="${issue.ghichu != null and #strings.contains(issue.ghichu, '[XUẤT BÙ HƯ HỎNG]') ? 'color: #ea580c; text-align: right; font-weight: 800; font-size: 1.15rem;' : 'color: #1d4ed8; text-align: right; font-weight: 800; font-size: 1.15rem;'}"
+                                    th:text="${l.soluong}">
+                                </td>
+                                <td style="text-align: center;" th:text="${l.donvitinh}"></td>
+                            </tr>
+                            <tr th:if="${lines == null or #lists.isEmpty(lines)}">
+                                <td colspan="5" style="text-align: center; padding: 24px;">Không có dòng chi tiết vật tư nào.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ========================= -->
+                    <!-- 2. KHU VỰC PHÊ DUYỆT CỦA QUẢN LÝ -->
+                    <!-- ========================= -->
+                    <div th:if="${manager and issue.trangthai == 'CHO_DUYET'}"
+                         class="approval-panel" style="margin: 1.5rem 0;">
+
+                        <!-- DUYỆT -->
+                        <form class="approval-approve"
+                              th:action="@{/kho/xuat-nvl/{id}/duyet(id=${issue.maphieu})}"
+                              method="post"
+                              onsubmit="return confirm('Xác nhận duyệt và xuất kho nguyên vật liệu cho phiếu này?')">
+                            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                                <i class="fas fa-check"></i> Duyệt và xuất kho
+                            </button>
+                        </form>
+
+                        <!-- TỪ CHỐI -->
+                        <form class="reject-form"
+                              th:action="@{/kho/xuat-nvl/{id}/tu-choi(id=${issue.maphieu})}"
+                              method="post"
+                              onsubmit="return confirm('Xác nhận từ chối phiếu này?')">
+                            <div class="ceo-field" style="flex: 1;">
+                                <label for="rejectReason">
+                                    Lý do từ chối <span class="ceo-required">*</span>
+                                </label>
+                                <input id="rejectReason"
+                                       name="reason"
+                                       required
+                                       maxlength="255"
+                                       class="form-control"
+                                       placeholder="Nhập lý do cụ thể để người lập xử lý">
+                            </div>
+                            <button type="submit" class="btn btn-reject">
+                                <i class="fas fa-times"></i> Từ chối
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- ============================================= -->
+                    <!-- 3. THÔNG TIN LỆNH SẢN XUẤT ÁP DỤNG (THAM CHIẾU) -->
+                    <!-- ============================================= -->
+                    <h2 class="ceo-section-title" style="margin-top: 2rem;">
+                        <i class="fas fa-industry"></i>
+                        Lệnh sản xuất liên quan trong đợt
+                        <span class="record-count" th:text="${requests != null ? #lists.size(requests) + ' lệnh' : '0'}"></span>
+                    </h2>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Mã lệnh SX</th>
+                                <th>Sản phẩm Laptop</th>
                                 <th>BOM áp dụng</th>
-                                <th>Số lượng yêu cầu</th>
-                                <th>Đã hoàn thành</th>
-                                <th>Trạng thái</th>
+                                <th style="text-align: center;">Kế hoạch ráp (Laptop)</th>
+                                <th style="text-align: center;">Đã ráp xong</th>
+                                <th>Trạng thái lệnh</th>
                                 <th>Chi tiết</th>
                             </tr>
                             </thead>
 
                             <tbody>
                             <tr th:each="r : ${requests}">
-                                <td th:text="${'YCSX-' + r.mayeucau}"></td>
-
+                                <td style="font-family: monospace; font-weight: 700; color: #2563eb;" th:text="${'YCSX-' + r.mayeucau}"></td>
                                 <td>
                                     <strong th:text="${r.tensp}"></strong>
-                                    <div style="font-size: 12px; color: #64748b;"
-                                         th:text="${'Mã SP: ' + r.masp}">
-                                    </div>
+                                    <div style="font-size: 12px; color: #64748b;" th:text="${'Mã SP: #' + r.masp}"></div>
                                 </td>
-
                                 <td>
                                     <span th:text="${'BOM #' + r.mabom}"></span>
-                                    <div style="font-size: 12px; color: #64748b;"
-                                         th:text="${'Phiên bản: ' + r.phienban}">
-                                    </div>
+                                    <div style="font-size: 12px; color: #64748b;" th:text="${'Phiên bản: ' + r.phienban}"></div>
                                 </td>
-
-                                <td th:text="${r.soluongyeucau}"></td>
-
-                                <td th:text="${r.soluonghoanthanh}"></td>
-
+                                <td style="text-align: center;">
+                                    <span class="badge-status badge-blue" th:text="${r.soluongyeucau + ' máy'}"></span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span th:text="${r.soluonghoanthanh + ' máy'}"></span>
+                                </td>
                                 <td>
-                <span class="status-pill"
-                      th:text="${r.trangthai_yeucau}">
-                </span>
+                                    <span class="status-pill" th:text="${r.trangthai_yeucau}"></span>
                                 </td>
-
                                 <td>
                                     <a th:href="@{/san-xuat/yeu-cau/{id}(id=${r.mayeucau})}">
-                                        Xem yêu cầu
+                                        Xem chi tiết lệnh
                                     </a>
                                 </td>
                             </tr>
@@ -295,152 +381,6 @@
                                 </td>
                             </tr>
                             </tbody>
-                        </table>
-                    </div>
-
-                    <!-- ========================= -->
-                    <!-- KHU VỰC PHÊ DUYỆT -->
-                    <!-- ========================= -->
-
-                    <div
-                            th:if="${manager and issue.trangthai == 'CHO_DUYET'}"
-                            class="approval-panel">
-
-                        <!-- DUYỆT -->
-                        <form
-                                class="approval-approve"
-                                th:action="@{/kho/xuat-nvl/{id}/duyet(id=${issue.maphieu})}"
-                                method="post"
-                                onsubmit="return confirm('Duyệt và xuất nguyên vật liệu?')">
-
-                            <button
-                                    type="submit"
-                                    class="btn btn-primary">
-
-                                <i class="fas fa-check"></i>
-                                Duyệt và xuất kho
-
-                            </button>
-
-                        </form>
-
-
-                        <!-- TỪ CHỐI -->
-                        <form
-                                class="reject-form"
-                                th:action="@{/kho/xuat-nvl/{id}/tu-choi(id=${issue.maphieu})}"
-                                method="post"
-                                onsubmit="return confirm('Xác nhận từ chối phiếu này?')">
-
-                            <div class="ceo-field">
-
-                                <label for="rejectReason">
-
-                                    Lý do từ chối
-
-                                    <span class="ceo-required">
-                                        *
-                                    </span>
-
-                                </label>
-
-                                <input
-                                        id="rejectReason"
-                                        name="reason"
-                                        required
-                                        maxlength="255"
-                                        class="form-control"
-                                        placeholder="Nhập lý do cụ thể để người lập xử lý">
-
-                            </div>
-
-
-                            <button
-                                    type="submit"
-                                    class="btn btn-reject">
-
-                                <i class="fas fa-times"></i>
-                                Từ chối
-
-                            </button>
-
-                        </form>
-
-                    </div>
-
-
-                    <!-- ========================= -->
-                    <!-- DANH SÁCH VẬT TƯ -->
-                    <!-- ========================= -->
-
-                    <h2 class="ceo-section-title">
-                        <i class="fas fa-cubes"></i>
-                        Vật tư đề nghị xuất
-                    </h2>
-
-
-                    <div class="table-container">
-
-                        <table class="table">
-
-                            <thead>
-
-                            <tr>
-
-                                <th>Mã NVL</th>
-
-                                <th>Tên NVL</th>
-
-                                <th>Loại</th>
-
-                                <th>Số lượng</th>
-
-                                <th>Đơn vị</th>
-
-                            </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                            <tr th:each="l : ${lines}">
-
-                                <!-- MÃ NVL -->
-                                <td
-                                        th:text="${l.manvl_code}">
-                                </td>
-
-
-                                <!-- TÊN NVL -->
-                                <td
-                                        th:text="${l.tennvl}">
-                                </td>
-
-
-                                <!-- LOẠI NVL -->
-                                <td
-                                        th:text="${l.tenloai != null ? l.tenloai : 'Chưa phân loại'}">
-                                </td>
-
-
-                                <!-- SỐ LƯỢNG -->
-                                <td
-                                        th:text="${l.soluong}">
-                                </td>
-
-
-                                <!-- ĐƠN VỊ -->
-                                <td
-                                        th:text="${l.donvitinh}">
-                                </td>
-
-                            </tr>
-
-                            </tbody>
-
-                        </table>
-
                     </div>
 
 

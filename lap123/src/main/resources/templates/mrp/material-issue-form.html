@@ -82,13 +82,36 @@
 
         <input type="hidden" name="batchId" th:value="${selectedBatch}">
 
+        <!-- MỤC ĐÍCH ĐỀ NGHỊ XUẤT KHO -->
+        <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 1.15rem 1.5rem;">
+          <div style="font-weight: 700; color: #1e293b; font-size: 0.92rem; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-bullseye" style="color: #2563eb;"></i> Mục đích đề nghị xuất kho:
+          </div>
+          <div style="display: flex; gap: 1.75rem; flex-wrap: wrap;">
+            <label style="display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; font-weight: 600; color: #334155;">
+              <input type="radio" name="loaiXuat" value="DINH_MUC" checked onchange="toggleIssueType(this.value)">
+              <span><i class="fas fa-boxes-stacked" style="color: #059669; margin-right: 0.25rem;"></i> Xuất theo định mức BOM (Bình thường)</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; font-weight: 600; color: #b45309;">
+              <input type="radio" name="loaiXuat" value="XUAT_BU" onchange="toggleIssueType(this.value)">
+              <span><i class="fas fa-wrench" style="color: #ea580c; margin-right: 0.25rem;"></i> Xuất bù hư hỏng / Hao hụt phát sinh (Bất thường)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ALERT BANNER CHO XUẤT BÙ -->
+        <div id="scrapAlertBanner" style="display: none; background: #fffbeb; border-bottom: 1px solid #fed7aa; padding: 0.9rem 1.5rem; color: #9a3412; font-size: 0.88rem;">
+          <i class="fas fa-triangle-exclamation" style="color: #ea580c; margin-right: 0.4rem;"></i>
+          <strong>Chế độ Xuất bù hư hỏng:</strong> Vui lòng chỉ nhập số lượng cho linh kiện bị hỏng/lỗi cần xuất bù (các linh kiện không hỏng để số lượng 0). <strong>Bắt buộc phải ghi rõ lý do hư hỏng / giải trình</strong> vào ô Ghi chú bên dưới để Quản lý phê duyệt.
+        </div>
+
         <div class="content-card-header">
           <div>
             <h2 class="content-card-title">
               <i class="fas fa-boxes"></i>
               Tổng hợp nguyên vật liệu
             </h2>
-            <p class="content-card-subtitle">
+            <p class="content-card-subtitle" id="formSubTitle">
               Mỗi NVL chỉ xuất hiện một lần; số lượng đề nghị không được vượt phần còn thiếu.
             </p>
           </div>
@@ -170,6 +193,7 @@
                          step="1"
                          required
                          th:value="${l.thieu_hut}"
+                         th:attr="data-default-shortage=${l.thieu_hut}"
                          class="form-control issue-quantity-input"
                          aria-label="Số lượng đề nghị">
                 </td>
@@ -186,14 +210,14 @@
           </div>
 
           <div class="ceo-field material-issue-note">
-            <label for="issueNote">Ghi chú</label>
+            <label for="issueNote" id="issueNoteLabel">Ghi chú</label>
             <textarea id="issueNote"
                       name="note"
                       maxlength="255"
                       rows="3"
                       class="form-control"
                       placeholder="Nhập lưu ý cấp phát hoặc thông tin nội bộ"></textarea>
-            <small>Tối đa 255 ký tự.</small>
+            <small id="issueNoteHelp">Tối đa 255 ký tự.</small>
           </div>
 
           <div class="ceo-form-actions material-issue-actions">
@@ -206,9 +230,10 @@
             </a>
 
             <button class="btn btn-primary"
+                    id="btnSubmitIssue"
                     type="submit"
                     th:disabled="${#lists.isEmpty(lines)}">
-              <i class="fas fa-paper-plane"></i> Gửi đề nghị cho cả đợt
+              <i class="fas fa-paper-plane"></i> <span id="btnSubmitText">Gửi đề nghị cho cả đợt</span>
             </button>
           </div>
         </div>
@@ -224,5 +249,60 @@
     </main>
   </div>
 </div>
+
+<script>
+  function toggleIssueType(val) {
+    const isScrap = val === 'XUAT_BU';
+    const banner = document.getElementById('scrapAlertBanner');
+    const subTitle = document.getElementById('formSubTitle');
+    const noteLabel = document.getElementById('issueNoteLabel');
+    const noteInput = document.getElementById('issueNote');
+    const noteHelp = document.getElementById('issueNoteHelp');
+    const btnText = document.getElementById('btnSubmitText');
+    const btnSubmit = document.getElementById('btnSubmitIssue');
+    const qtyInputs = document.querySelectorAll('.issue-quantity-input');
+
+    if (banner) banner.style.display = isScrap ? 'block' : 'none';
+
+    if (isScrap) {
+      if (subTitle) subTitle.innerText = 'Chế độ Xuất bù: Nhập số lượng linh kiện hỏng cần cấp thêm. Các linh kiện không hỏng để 0.';
+      if (noteLabel) noteLabel.innerHTML = 'Lý do hư hỏng / Giải trình hỏng hóc <span class="ceo-required" style="color: #dc2626;">*</span>';
+      if (noteInput) {
+        noteInput.setAttribute('required', 'required');
+        noteInput.placeholder = 'BẮT BUỘC: Ghi rõ máy số mấy, chi tiết linh kiện bị hỏng, nguyên nhân hỏng... để Quản lý duyệt cấp bù';
+      }
+      if (noteHelp) noteHelp.innerHTML = '<span style="color: #dc2626; font-weight: 600;">* Bắt buộc giải trình lý do hư hỏng để Quản lý xét duyệt.</span>';
+      if (btnText) btnText.innerText = 'Gửi đề nghị xuất bù hư hỏng';
+      if (btnSubmit) {
+        btnSubmit.style.background = '#ea580c';
+        btnSubmit.style.borderColor = '#c2410c';
+      }
+
+      // Reset quantities to 0 so employee only enters what is broken
+      qtyInputs.forEach(input => {
+        input.value = 0;
+      });
+    } else {
+      if (subTitle) subTitle.innerText = 'Mỗi NVL chỉ xuất hiện một lần; số lượng đề nghị không được vượt phần còn thiếu.';
+      if (noteLabel) noteLabel.innerHTML = 'Ghi chú';
+      if (noteInput) {
+        noteInput.removeAttribute('required');
+        noteInput.placeholder = 'Nhập lưu ý cấp phát hoặc thông tin nội bộ';
+      }
+      if (noteHelp) noteHelp.innerHTML = 'Tối đa 255 ký tự.';
+      if (btnText) btnText.innerText = 'Gửi đề nghị cho cả đợt';
+      if (btnSubmit) {
+        btnSubmit.style.background = '';
+        btnSubmit.style.borderColor = '';
+      }
+
+      // Restore default shortages
+      qtyInputs.forEach(input => {
+        const def = input.getAttribute('data-default-shortage');
+        input.value = def !== null ? def : 0;
+      });
+    }
+  }
+</script>
 </body>
 </html>

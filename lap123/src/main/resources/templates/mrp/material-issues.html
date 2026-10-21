@@ -239,7 +239,12 @@
                                             PXNVL-1
                                         </div>
 
-                                        <div class="issue-subtitle">
+                                        <div class="issue-subtitle" th:if="${i.ghichu != null and #strings.contains(i.ghichu, '[XUẤT BÙ HƯ HỎNG]')}">
+                                            <span style="color: #ea580c; font-weight: 700; font-size: 0.78rem;">
+                                                <i class="fas fa-wrench"></i> Xuất bù hư hỏng
+                                            </span>
+                                        </div>
+                                        <div class="issue-subtitle" th:unless="${i.ghichu != null and #strings.contains(i.ghichu, '[XUẤT BÙ HƯ HỎNG]')}">
                                             Phiếu xuất nguyên vật liệu
                                         </div>
                                     </div>

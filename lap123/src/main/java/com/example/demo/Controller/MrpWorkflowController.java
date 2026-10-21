@@ -287,12 +287,10 @@ public class MrpWorkflowController {
                 continue;
             }
 
-            // Danh sách toàn bộ kết quả hợp lệ của nhóm sau khi lọc.
             List<Map<String, Object>> filteredItems =
                     new java.util.ArrayList<>();
 
             boolean hasPending = false;
-            boolean hasApproved = false;
 
             for (Object rawItem : items) {
 
@@ -329,9 +327,15 @@ public class MrpWorkflowController {
                 String status =
                         String.valueOf(item.get("trangthai"));
 
-                // Chỉ lấy kết quả thuộc hai trạng thái cần hiển thị.
-                if (!"CHO_XAC_NHAN".equals(status)
-                        && !"DA_NHAP_KHO".equals(status)) {
+                // Bỏ qua trạng thái không thuộc các trạng thái
+                // hợp lệ của quy trình kết quả sản xuất.
+                if (!java.util.Set.of(
+                        "CHO_XAC_NHAN",
+                        "DA_NHAP_KHO",
+                        "TU_CHOI_LOI",
+                        "TU_CHOI_SAI_YEU_CAU",
+                        "HUY"
+                ).contains(status)) {
                     continue;
                 }
 
@@ -339,18 +343,14 @@ public class MrpWorkflowController {
 
                 if ("CHO_XAC_NHAN".equals(status)) {
                     hasPending = true;
-                } else if ("DA_NHAP_KHO".equals(status)) {
-                    hasApproved = true;
                 }
             }
 
-            // Không còn kết quả nào sau khi lọc.
+            // Không còn kết quả sau khi lọc.
             if (filteredItems.isEmpty()) {
                 continue;
             }
 
-            // Giữ toàn bộ kết quả trong cùng một đợt,
-            // tuyệt đối không chia nhỏ thành hai nhóm.
             Map<String, Object> resultGroup =
                     new java.util.LinkedHashMap<>(group);
 
@@ -361,14 +361,15 @@ public class MrpWorkflowController {
                     sumResultQuantity(filteredItems)
             );
 
-            // Ưu tiên chưa duyệt nếu chỉ cần một kết quả đang chờ.
             if (hasPending) {
+                // Chỉ cần còn một kết quả chờ xác nhận,
+                // cả nhóm vẫn thuộc Chờ duyệt.
                 resultGroup.put("trangthai", "CHO_XAC_NHAN");
                 pendingGroups.add(resultGroup);
-
-            } else if (hasApproved) {
-                // Chỉ vào bảng đã duyệt khi không còn kết quả chờ duyệt.
-                resultGroup.put("trangthai", "DA_NHAP_KHO");
+            } else {
+                // Tất cả kết quả đã được xử lý:
+                // nhập kho, từ chối hoặc hủy.
+                resultGroup.put("trangthai", "DA_DUYET");
                 approvedGroups.add(resultGroup);
             }
         }
@@ -591,5 +592,42 @@ public class MrpWorkflowController {
         model.addAttribute("returnUrl", safeReturnUrl);
 
         return "mrp/result-detail";
+    }
+
+    @PostMapping("/san-xuat/ket-qua/{id}/reject")
+    public String rejectResult(
+            @PathVariable long id,
+            @RequestParam String rejectionType,
+            @RequestParam String reason,
+            @RequestParam(required = false) Integer defectQuantity,
+            @RequestParam(required = false) String groupKey,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        requireManager(auth);
+
+        try {
+            warehouse.rejectProduction(
+                    id,
+                    rejectionType,
+                    reason,
+                    defectQuantity,
+                    auth.getName()
+            );
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Đã xử lý từ chối kết quả sản xuất."
+            );
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+
+        if (groupKey != null && !groupKey.isBlank()) {
+            return "redirect:/san-xuat/ket-qua/nhom/" + groupKey;
+        }
+
+        return "redirect:/san-xuat/ket-qua/" + id;
     }
 }

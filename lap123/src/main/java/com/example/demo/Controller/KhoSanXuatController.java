@@ -179,4 +179,104 @@ public class KhoSanXuatController {
                 productId
         );
     }
+
+    /**
+     * Kho lỗi sản xuất
+     */
+    @GetMapping("/loi")
+    public String khoLoiSanXuat(Model model) {
+
+        List<Map<String, Object>> products = jdbc.queryForList(
+                """
+                SELECT
+                    s.masp,
+                    s.tensp,
+                    s.hinhanhsp,
+                    s.donvitinh,
+                    s.trangthai AS trangthai_sp,
+        
+                    COALESCE(
+                        (
+                            SELECT SUM(k.soluongton)
+                            FROM kho_loi_san_xuat k
+                            WHERE k.masp = s.masp
+                        ),
+                        0
+                    ) AS tong_san_pham
+        
+                FROM sanpham s
+        
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM kho_loi_san_xuat k
+                    WHERE k.masp = s.masp
+                )
+        
+                ORDER BY s.tensp
+                """
+        );
+
+        model.addAttribute("products", products);
+
+        return "kho-san-xuat/loi";
+    }
+
+
+    /**
+     * Lấy các phiên bản BOM và số lượng lỗi theo từng BOM.
+     *
+     * URL:
+     * /kho-san-xuat/loi/bom?productId=1
+     */
+    @GetMapping("/loi/bom")
+    @ResponseBody
+    public List<Map<String, Object>> bomKhoLoiTheoSanPham(
+            @RequestParam int productId) {
+
+        return jdbc.queryForList(
+                """
+                SELECT
+                    b.mabom,
+                    b.masp,
+                    b.phienban,
+                    b.trangthai AS trangthai_bom,
+        
+                    COALESCE(k.soluongton, 0) AS soluongton,
+        
+                    COALESCE(
+                        (
+                            SELECT SUM(
+                                COALESCE(bct.soluong_dinhmuc, 0)
+                                * COALESCE(nvl.dongianhap, 0)
+                            )
+                            FROM bom_chitiet bct
+                            JOIN nguyenvatlieu nvl
+                                ON nvl.manvl = bct.manvl
+                            WHERE bct.mabom = b.mabom
+                        ),
+                        0
+                    ) AS tong_gia_nvl
+        
+                FROM bom b
+        
+                LEFT JOIN (
+                    SELECT
+                        masp,
+                        mabom,
+                        SUM(soluongton) AS soluongton
+                    FROM kho_loi_san_xuat
+                    GROUP BY masp, mabom
+                ) k
+                    ON k.masp = b.masp
+                   AND k.mabom = b.mabom
+        
+                WHERE b.masp = ?
+        
+                ORDER BY b.mabom
+                """,
+                productId
+        );
+    }
+
+
 }

@@ -1606,4 +1606,382 @@ public class MrpWarehouseService {
             int requested,
             int completed
     ) {}
+
+    // =====================================================
+// TỪ CHỐI KẾT QUẢ SẢN XUẤT
+// =====================================================
+
+    @Transactional
+    public void rejectProduction(
+            long resultId,
+            String rejectionType,
+            String reason,
+            Integer defectQuantity,
+            String managerEmail) {
+
+        // 1. Khóa kết quả, ngăn xử lý lặp
+        String status = lockStatus(
+                "ketqua_sanxuat",
+                "makqsx",
+                resultId
+        );
+
+        requireStatus(status, "CHO_XAC_NHAN");
+
+        if (reason == null
+                || reason.isBlank()
+                || reason.trim().length() > 500) {
+            throw new IllegalArgumentException(
+                    "Lý do từ chối phải có từ 1 đến 500 ký tự."
+            );
+        }
+
+        boolean rejectWrongRequest =
+                "TU_CHOI_SAI_YEU_CAU".equals(rejectionType);
+
+        boolean rejectDefect =
+                "TU_CHOI_LOI".equals(rejectionType);
+
+        if (!rejectWrongRequest && !rejectDefect) {
+            throw new IllegalArgumentException(
+                    "Loại từ chối không hợp lệ."
+            );
+        }
+
+        // 2. Lấy thông tin kết quả
+        ProductionResult result = jdbc.queryForObject(
+                """
+                SELECT maycsx, soluonghoanthanh
+                FROM ketqua_sanxuat
+                WHERE makqsx = ?
+                """,
+                (rs, row) -> new ProductionResult(
+                        rs.getLong("maycsx"),
+                        rs.getInt("soluonghoanthanh")
+                ),
+                resultId
+        );
+
+        if (result == null || result.quantity() <= 0) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy kết quả hoặc số lượng không hợp lệ."
+            );
+        }
+
+        // 3. Xác định số lượng lỗi và số lượng đạt
+        int defect = 0;
+
+        if (rejectDefect) {
+            if (defectQuantity == null
+                    || defectQuantity < 1
+                    || defectQuantity > result.quantity()) {
+                throw new IllegalArgumentException(
+                        "Số lượng lỗi phải từ 1 đến "
+                                + result.quantity() + "."
+                );
+            }
+
+            defect = defectQuantity;
+        }
+
+        int goodQuantity = result.quantity() - defect;
+
+        // 4. Khóa yêu cầu sản xuất
+        ProductionOrder order = jdbc.queryForObject(
+                """
+                SELECT
+                    masp,
+                    mabom,
+                    soluongyeucau,
+                    soluonghoanthanh
+                FROM yeucausanxuat
+                WHERE maycsx = ?
+                FOR UPDATE
+                """,
+                (rs, row) -> new ProductionOrder(
+                        rs.getLong("masp"),
+                        rs.getLong("mabom"),
+                        rs.getInt("soluongyeucau"),
+                        rs.getInt("soluonghoanthanh")
+                ),
+                result.orderId()
+        );
+
+        if (order == null) {
+            throw new IllegalArgumentException(
+                    "Không tìm thấy yêu cầu sản xuất."
+            );
+        }
+
+        Integer recorded = jdbc.queryForObject(
+                """
+                SELECT COALESCE(SUM(soluong), 0)
+                FROM ghi_nhan_san_xuat
+                WHERE maycsx = ?
+                """,
+                Integer.class,
+                result.orderId()
+        );
+
+        Integer pendingOther = jdbc.queryForObject(
+                """
+                SELECT COALESCE(SUM(soluonghoanthanh), 0)
+                FROM ketqua_sanxuat
+                WHERE maycsx = ?
+                  AND trangthai = 'CHO_XAC_NHAN'
+                  AND makqsx <> ?
+                """,
+                Integer.class,
+                result.orderId(),
+                resultId
+        );
+
+        int unsubmitted =
+                (recorded == null ? 0 : recorded)
+                        - (pendingOther == null ? 0 : pendingOther);
+
+        if (result.quantity() > unsubmitted) {
+            throw new IllegalStateException(
+                    "Số lượng kết quả vượt quá số lượng đã ghi nhận chưa gửi."
+            );
+        }
+
+        Integer actor = employeeId(managerEmail);
+
+        // =================================================
+        // TRƯỜNG HỢP 1: TỪ CHỐI SAI YÊU CẦU
+        // Không thay đổi bất kỳ tồn kho nào.
+        // =================================================
+
+        if (rejectWrongRequest) {
+            consumeRecordedProduction(
+                    result.orderId(),
+                    result.quantity()
+            );
+
+            jdbc.update(
+                    """
+                    UPDATE ketqua_sanxuat
+                    SET
+                        trangthai = 'TU_CHOI_SAI_YEU_CAU',
+                        soluongloi = 0,
+                        lydotuchoi = ?,
+                        nguoiduyet = ?,
+                        ngayduyet = CURRENT_TIMESTAMP
+                    WHERE makqsx = ?
+                      AND trangthai = 'CHO_XAC_NHAN'
+                    """,
+                    reason.trim(),
+                    actor,
+                    resultId
+            );
+
+            return;
+        }
+
+        // =================================================
+        // TRƯỜNG HỢP 2: TỪ CHỐI DO SẢN PHẨM LỖI
+        // Chuyển toàn bộ sản phẩm khỏi kho sản xuất:
+        // - Hàng đạt -> kho thành phẩm quản lý
+        // - Hàng lỗi -> kho lỗi sản xuất
+        // =================================================
+
+        if (order.completed() + goodQuantity > order.requested()) {
+            throw new IllegalStateException(
+                    "Số lượng thành phẩm đạt vượt quá số lượng còn lại của yêu cầu."
+            );
+        }
+
+        BigDecimal total = BigDecimal.valueOf(result.quantity());
+
+        // Khóa tồn kho thành phẩm sản xuất
+        BigDecimal productionBefore = lockStock(
+                "kho_thanhpham_san_xuat",
+                "masp",
+                order.productId(),
+                "mabom",
+                order.bomId()
+        );
+
+        if (productionBefore.compareTo(total) < 0) {
+            throw new IllegalStateException(
+                    "Kho thành phẩm sản xuất không đủ số lượng để xử lý kết quả."
+            );
+        }
+
+        BigDecimal productionAfter = productionBefore.subtract(total);
+
+        // Trừ toàn bộ số lượng khỏi kho thành phẩm sản xuất
+        jdbc.update(
+                """
+                UPDATE kho_thanhpham_san_xuat
+                SET soluongton = ?
+                WHERE masp = ?
+                  AND mabom = ?
+                """,
+                productionAfter,
+                order.productId(),
+                order.bomId()
+        );
+
+        productionHistory(
+                "THANH_PHAM_SAN_XUAT",
+                "THANH_PHAM",
+                order.productId(),
+                "XUAT_THANH_PHAM_SAN_XUAT",
+                total,
+                productionBefore,
+                productionAfter,
+                actor,
+                "ketqua_sanxuat",
+                resultId
+        );
+
+        // Cộng hàng đạt vào kho thành phẩm quản lý
+        if (goodQuantity > 0) {
+            BigDecimal good = BigDecimal.valueOf(goodQuantity);
+
+            BigDecimal centralBefore = lockStock(
+                    "sanpham",
+                    "masp",
+                    order.productId()
+            );
+
+            BigDecimal centralAfter = centralBefore.add(good);
+
+            jdbc.update(
+                    """
+                    UPDATE sanpham
+                    SET soluongton = ?
+                    WHERE masp = ?
+                    """,
+                    centralAfter,
+                    order.productId()
+            );
+
+            history(
+                    "NHAP_THANH_PHAM",
+                    "THANH_PHAM",
+                    new Line(
+                            order.productId(),
+                            order.bomId(),
+                            good,
+                            BigDecimal.ZERO
+                    ),
+                    actor,
+                    "ketqua_sanxuat",
+                    resultId
+            );
+        }
+
+        // Cộng hàng lỗi vào kho lỗi sản xuất
+        if (defect > 0) {
+            jdbc.update(
+                    """
+                    INSERT INTO kho_loi_san_xuat
+                        (masp, mabom, soluongton)
+                    VALUES (?, ?, 0)
+                    ON DUPLICATE KEY UPDATE
+                        masp = VALUES(masp)
+                    """,
+                    order.productId(),
+                    order.bomId()
+            );
+
+            BigDecimal defectBefore = lockStock(
+                    "kho_loi_san_xuat",
+                    "masp",
+                    order.productId(),
+                    "mabom",
+                    order.bomId()
+            );
+
+            BigDecimal defectAmount = BigDecimal.valueOf(defect);
+            BigDecimal defectAfter = defectBefore.add(defectAmount);
+
+            jdbc.update(
+                    """
+                    UPDATE kho_loi_san_xuat
+                    SET soluongton = ?
+                    WHERE masp = ?
+                      AND mabom = ?
+                    """,
+                    defectAfter,
+                    order.productId(),
+                    order.bomId()
+            );
+
+
+            // Lịch sử chi tiết kho lỗi
+            jdbc.update(
+                    """
+                    INSERT INTO lich_su_kho_loi_san_xuat
+                    (
+                        makqsx,
+                        masp,
+                        mabom,
+                        soluong,
+                        ton_truoc,
+                        ton_sau,
+                        lydo,
+                        nguoi_thuchien
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    resultId,
+                    order.productId(),
+                    order.bomId(),
+                    defect,
+                    defectBefore.intValueExact(),
+                    defectAfter.intValueExact(),
+                    reason.trim(),
+                    actor
+            );
+        }
+
+        // Chỉ tính hàng đạt vào tiến độ hoàn thành yêu cầu
+        if (goodQuantity > 0) {
+            int completed = order.completed() + goodQuantity;
+
+            jdbc.update(
+                    """
+                    UPDATE yeucausanxuat
+                    SET
+                        soluonghoanthanh = ?,
+                        trangthai = ?
+                    WHERE maycsx = ?
+                    """,
+                    completed,
+                    completed >= order.requested()
+                            ? "HOAN_THANH"
+                            : "DANG_SAN_XUAT",
+                    result.orderId()
+            );
+        }
+
+        // Đối soát số lượng đã ghi nhận để không tạo kết quả trùng
+        consumeRecordedProduction(
+                result.orderId(),
+                result.quantity()
+        );
+
+        // Lưu trạng thái, số lượng lỗi, lý do và người duyệt
+        jdbc.update(
+                """
+                UPDATE ketqua_sanxuat
+                SET
+                    trangthai = 'TU_CHOI_LOI',
+                    soluongloi = ?,
+                    lydotuchoi = ?,
+                    nguoiduyet = ?,
+                    ngayduyet = CURRENT_TIMESTAMP
+                WHERE makqsx = ?
+                  AND trangthai = 'CHO_XAC_NHAN'
+                """,
+                defect,
+                reason.trim(),
+                actor,
+                resultId
+        );
+    }
 }

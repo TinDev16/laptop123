@@ -40,7 +40,7 @@
 
         .batch-stats {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 14px;
         }
 
@@ -177,6 +177,30 @@
             color: #991b1b;
         }
 
+        .batch-status.partial {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .batch-result-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .batch-result-quantity-detail {
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.6;
+            white-space: nowrap;
+        }
+
+        .batch-result-quantity-detail strong {
+            color: #334155;
+            font-weight: 700;
+        }
+
         .batch-actions {
             display: flex;
             align-items: center;
@@ -208,9 +232,15 @@
             color: #94a3b8;
         }
 
+        @media (max-width: 1100px) {
+            .batch-stats {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 760px) {
             .batch-stats {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             .batch-heading h1 {
@@ -221,6 +251,258 @@
                 padding: 16px;
             }
         }
+
+        @media (max-width: 480px) {
+            .batch-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== POPUP TỪ CHỐI KẾT QUẢ ===== */
+        .reject-modal[hidden] {
+            display: none !important;
+        }
+
+        .reject-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.58);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            animation: rejectFadeIn .2s ease;
+        }
+
+        .reject-modal-dialog {
+            width: 100%;
+            max-width: 480px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, .25);
+            animation: rejectSlideIn .22s ease;
+        }
+
+        .reject-modal-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            padding: 23px 24px 18px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .reject-modal-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            color: #dc2626;
+            background: #fef2f2;
+            font-size: 19px;
+        }
+
+        .reject-modal-heading {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .reject-modal-heading h3 {
+            margin: 1px 0 6px;
+            color: #0f172a;
+            font-size: 19px;
+            font-weight: 750;
+        }
+
+        .reject-modal-heading p {
+            margin: 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .reject-modal-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            border: none;
+            border-radius: 9px;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 16px;
+            transition: .2s;
+        }
+
+        .reject-modal-close:hover {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .reject-modal-body {
+            padding: 22px 24px 24px;
+        }
+
+        .reject-modal-body .reject-result-form {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-width: 0 !important;
+            margin: 0 !important;
+        }
+
+        .reject-modal-body .reject-result-form label {
+            margin-top: 5px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .reject-modal-body .reject-result-form select,
+        .reject-modal-body .reject-result-form input,
+        .reject-modal-body .reject-result-form textarea {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 43px;
+            padding: 11px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #fff;
+            color: #0f172a;
+            font: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .reject-modal-body .reject-result-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .reject-modal-body .reject-result-form select:focus,
+        .reject-modal-body .reject-result-form input:focus,
+        .reject-modal-body .reject-result-form textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+        }
+
+        .reject-modal-body .defect-quantity-field {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            padding: 13px;
+            margin-top: 4px;
+            border: 1px solid #fed7aa;
+            border-radius: 11px;
+            background: #fff7ed;
+        }
+
+        .reject-modal-body .defect-quantity-field[hidden] {
+            display: none !important;
+        }
+
+        .reject-modal-body .defect-quantity-field small {
+            color: #9a3412;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .reject-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 18px;
+            margin-top: 8px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .reject-modal-footer button {
+            min-height: 41px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        .reject-cancel-btn {
+            color: #475569;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+        }
+
+        .reject-cancel-btn:hover {
+            background: #f8fafc;
+        }
+
+        .reject-submit-btn {
+            color: #fff;
+            background: #dc2626;
+            border: 1px solid #dc2626;
+            box-shadow: 0 3px 8px rgba(220, 38, 38, .16);
+        }
+
+        .reject-submit-btn:hover {
+            background: #b91c1c;
+        }
+
+        body.reject-modal-open {
+            overflow: hidden;
+        }
+
+        @keyframes rejectFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes rejectSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 520px) {
+            .reject-modal {
+                padding: 12px;
+            }
+
+            .reject-modal-dialog {
+                max-height: calc(100vh - 24px);
+                border-radius: 15px;
+            }
+
+            .reject-modal-header {
+                padding: 18px 17px 15px;
+            }
+
+            .reject-modal-body {
+                padding: 17px;
+            }
+
+            .reject-modal-heading h3 {
+                font-size: 17px;
+            }
+        }
+
     </style>
 </head>
 
@@ -282,7 +564,7 @@
             <div class="directory-alert directory-alert--error"
                  th:if="${error}" th:text="${error}"></div>
 
-            <!-- Thống kê -->
+            <!-- Thống kê đợt: số lượng được tính từ từng kết quả thực tế -->
             <section class="batch-stats">
 
                 <div class="batch-stat">
@@ -290,7 +572,7 @@
                         <i class="fas fa-list-ol batch-stat-icon"></i>
                         Số kết quả
                     </div>
-                    <div class="batch-stat-value"
+                    <div class="batch-stat-value" id="batchResultCount"
                          th:text="${group['soketqua']}">0</div>
                 </div>
 
@@ -299,8 +581,26 @@
                         <i class="fas fa-boxes-stacked batch-stat-icon"></i>
                         Tổng sản lượng ghi nhận
                     </div>
-                    <div class="batch-stat-value"
+                    <div class="batch-stat-value" id="batchRecordedQuantity"
                          th:text="${group['soluongtong']}">0</div>
+                </div>
+
+                <div class="batch-stat">
+                    <div class="batch-stat-label">
+                        <i class="fas fa-check-circle batch-stat-icon"
+                           style="color:#16a34a"></i>
+                        Sản phẩm tốt đã nhập kho
+                    </div>
+                    <div class="batch-stat-value" id="batchAcceptedQuantity">0</div>
+                </div>
+
+                <div class="batch-stat">
+                    <div class="batch-stat-label">
+                        <i class="fas fa-triangle-exclamation batch-stat-icon"
+                           style="color:#dc2626"></i>
+                        Số lượng sản phẩm lỗi
+                    </div>
+                    <div class="batch-stat-value" id="batchDefectQuantity">0</div>
                 </div>
 
                 <div class="batch-stat">
@@ -308,21 +608,9 @@
                         <i class="fas fa-clock batch-stat-icon"></i>
                         Trạng thái đợt
                     </div>
-
                     <div>
-                        <span class="batch-status"
-                              th:classappend="${group['trangthai'] == 'DA_NHAP_KHO'}
-                                  ? ' approved'
-                                  : (${group['trangthai'] == 'HUY'}
-                                      ? ' cancelled' : ' pending')"
-                              th:text="${group['trangthai'] == 'DA_NHAP_KHO'
-                                  ? 'Đã nhập kho'
-                                  : (group['trangthai'] == 'CHO_XAC_NHAN'
-                                      ? 'Chờ xác nhận'
-                                      : (group['trangthai'] == 'HUY'
-                                          ? 'Đã hủy'
-                                          : 'Chưa xác định'))}">
-                            Chờ xác nhận
+                        <span class="batch-status pending" id="batchOverallStatus">
+                            Đang tổng hợp...
                         </span>
                     </div>
                 </div>
@@ -362,7 +650,11 @@
                         </thead>
 
                         <tbody>
-                        <tr th:each="item, stat : ${results}">
+                        <tr class="batch-result-row"
+                            th:each="item, stat : ${results}"
+                            th:attr="data-result-status=${item.trangthai},
+                                     data-result-quantity=${item.soluonghoanthanh},
+                                     data-result-defects=${item.soluongloi != null ? item.soluongloi : 0}">
 
                             <td th:text="${stat.count}">1</td>
 
@@ -401,20 +693,38 @@
                             </td>
 
                             <td>
-                                <span class="batch-status"
-                                      th:classappend="${item.trangthai == 'DA_NHAP_KHO'}
-                                          ? ' approved'
-                                          : (${item.trangthai == 'HUY'}
-                                              ? ' cancelled' : ' pending')"
-                                      th:text="${item.trangthai == 'DA_NHAP_KHO'
-                                          ? 'Đã nhập kho'
-                                          : (item.trangthai == 'CHO_XAC_NHAN'
-                                              ? 'Chờ xác nhận'
-                                              : (item.trangthai == 'HUY'
-                                                  ? 'Đã hủy'
-                                                  : item.trangthai))}">
-                                    Chờ xác nhận
-                                </span>
+                                <div class="batch-result-status">
+                                    <span class="batch-status"
+                                          th:classappend="${item.trangthai == 'DA_NHAP_KHO'}
+        ? ' approved'
+        : (${item.trangthai == 'HUY'
+            or item.trangthai == 'TU_CHOI_LOI'
+            or item.trangthai == 'TU_CHOI_SAI_YEU_CAU'}
+            ? ' cancelled' : ' pending')"
+                                          th:text="${item.trangthai == 'DA_NHAP_KHO'
+        ? 'Đã nhập kho'
+        : (item.trangthai == 'CHO_XAC_NHAN'
+            ? 'Chờ xác nhận'
+            : (item.trangthai == 'HUY'
+                ? 'Đã hủy'
+                : (item.trangthai == 'TU_CHOI_LOI'
+                    ? 'Từ chối - Sản phẩm lỗi'
+                    : (item.trangthai == 'TU_CHOI_SAI_YEU_CAU'
+                        ? 'Từ chối - Sai yêu cầu'
+                        : item.trangthai))) )}">
+                                        Chờ xác nhận
+                                    </span>
+
+                                    <div th:if="${item.trangthai == 'TU_CHOI_LOI'}"
+                                         class="batch-result-quantity-detail">
+                                        Ghi nhận:
+                                        <strong th:text="${item.soluonghoanthanh}">3</strong>
+                                        · Đạt:
+                                        <strong th:text="${item.soluonghoanthanh - (item.soluongloi != null ? item.soluongloi : 0)}">2</strong>
+                                        · Lỗi:
+                                        <strong th:text="${item.soluongloi != null ? item.soluongloi : 0}">1</strong>
+                                    </div>
+                                </div>
                             </td>
 
                             <td>
@@ -431,17 +741,60 @@
                                         </button>
                                     </form>
 
+                                    <button th:if="${manager and item.trangthai == 'CHO_XAC_NHAN'}"
+                                            type="button"
+                                            class="btn btn-danger open-reject-modal"
+                                            th:attr="data-result-id=${item.maketqua},
+                 data-product-name=${item.tensp},
+                 data-quantity=${item.soluonghoanthanh},
+                 data-group-key=${group['ma_nhom_ghi_nhan']}">
+                                        <i class="fas fa-times"></i>
+                                        Từ chối
+                                    </button>
+
+                                    <!-- Đã nhập toàn bộ vào kho -->
                                     <span th:if="${item.trangthai == 'DA_NHAP_KHO'}"
                                           class="batch-muted">
-                                        <i class="fas fa-check-circle"
-                                           style="color:#16a34a"></i>
-                                        Đã nhập kho
-                                    </span>
+    <i class="fas fa-check-circle"
+       style="color:#16a34a"></i>
+    Đã nhập kho
+</span>
 
+                                    <!-- Từ chối do sản phẩm lỗi: vẫn nhập phần sản phẩm đạt -->
+                                    <span th:if="${item.trangthai == 'TU_CHOI_LOI'
+      and item.soluongloi != null
+      and item.soluongloi < item.soluonghoanthanh}"
+                                          class="batch-muted">
+    <i class="fas fa-box-open"
+       style="color:#2563eb"></i>
+    Nhập 1 phần
+</span>
+
+                                    <!-- Từ chối do sản phẩm lỗi: toàn bộ sản phẩm đều lỗi -->
+                                    <span th:if="${item.trangthai == 'TU_CHOI_LOI'
+      and (item.soluongloi == null
+      or item.soluongloi >= item.soluonghoanthanh)}"
+                                          class="batch-muted">
+    <i class="fas fa-ban"
+       style="color:#dc2626"></i>
+    Không nhập
+</span>
+
+                                    <!-- Từ chối do sai yêu cầu: không nhập kho -->
+                                    <span th:if="${item.trangthai == 'TU_CHOI_SAI_YEU_CAU'}"
+                                          class="batch-muted">
+    <i class="fas fa-ban"
+       style="color:#dc2626"></i>
+    Không nhập
+</span>
+
+                                    <!-- Đã hủy -->
                                     <span th:if="${item.trangthai == 'HUY'}"
                                           class="batch-muted">
-                                        Kết quả đã hủy
-                                    </span>
+    <i class="fas fa-times-circle"
+       style="color:#dc2626"></i>
+    Kết quả đã hủy
+</span>
 
                                     <span th:if="${item.trangthai == 'CHO_XAC_NHAN' and !manager}"
                                           class="batch-muted">
@@ -467,12 +820,347 @@
 
             <p class="batch-note">
                 <i class="fas fa-info-circle"></i>
-                Trạng thái và thao tác được hiển thị riêng cho từng kết quả.
-                Việc xác nhận nhập kho vẫn đi qua chức năng xác nhận hiện có của hệ thống.
+                Trạng thái từng kết quả được hiển thị riêng; trạng thái đợt và thống kê
+                số lượng đạt/lỗi được tổng hợp từ toàn bộ kết quả trong đợt.
             </p>
 
         </main>
     </div>
 </div>
+
+<!-- POPUP TỪ CHỐI KẾT QUẢ -->
+<div id="rejectModal"
+     class="reject-modal"
+     hidden
+     aria-hidden="true">
+
+    <div class="reject-modal-dialog"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="rejectModalTitle">
+
+        <div class="reject-modal-header">
+            <div class="reject-modal-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+
+            <div class="reject-modal-heading">
+                <h3 id="rejectModalTitle">Từ chối kết quả sản xuất</h3>
+                <p id="rejectModalDescription">
+                    Kiểm tra thông tin và nhập lý do từ chối.
+                </p>
+            </div>
+
+            <button type="button"
+                    class="reject-modal-close"
+                    id="rejectModalClose"
+                    aria-label="Đóng popup">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="reject-modal-body">
+            <form id="rejectResultForm"
+                  method="post"
+                  class="reject-result-form">
+
+                <label for="rejectType">Loại từ chối</label>
+                <select id="rejectType"
+                        name="rejectionType"
+                        class="reject-type"
+                        required>
+                    <option value="TU_CHOI_SAI_YEU_CAU">
+                        Sai yêu cầu sản xuất
+                    </option>
+                    <option value="TU_CHOI_LOI">
+                        Sản phẩm bị lỗi
+                    </option>
+                </select>
+
+                <div class="defect-quantity-field" hidden>
+                    <label for="rejectDefectQuantity">
+                        Số lượng sản phẩm lỗi
+                    </label>
+
+                    <input id="rejectDefectQuantity"
+                           type="number"
+                           name="defectQuantity"
+                           min="1"
+                           step="1"
+                           disabled>
+
+                    <small>
+                        Số lượng không lỗi còn lại sẽ được nhập vào kho
+                        thành phẩm quản lý.
+                    </small>
+                </div>
+
+                <label for="rejectReason">Lý do từ chối</label>
+                <textarea id="rejectReason"
+                          name="reason"
+                          maxlength="500"
+                          rows="4"
+                          required
+                          placeholder="Nhập lý do từ chối..."></textarea>
+
+                <div class="reject-modal-footer">
+                    <button type="button"
+                            class="reject-cancel-btn"
+                            id="rejectModalCancel">
+                        Hủy bỏ
+                    </button>
+
+                    <button type="submit"
+                            class="reject-submit-btn">
+                        <i class="fas fa-times-circle"></i>
+                        Xác nhận từ chối
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Tổng hợp trạng thái đợt dựa trên toàn bộ kết quả đang hiển thị.
+    (() => {
+        const rows = Array.from(document.querySelectorAll('.batch-result-row'));
+        const statusElement = document.getElementById('batchOverallStatus');
+        const resultCountElement = document.getElementById('batchResultCount');
+        const recordedElement = document.getElementById('batchRecordedQuantity');
+        const acceptedElement = document.getElementById('batchAcceptedQuantity');
+        const defectElement = document.getElementById('batchDefectQuantity');
+
+        if (!statusElement) return;
+
+        const summary = {
+            total: rows.length,
+            pending: 0,
+            approved: 0,
+            defectRejected: 0,
+            wrongRejected: 0,
+            cancelled: 0,
+            recorded: 0,
+            accepted: 0,
+            defects: 0
+        };
+
+        rows.forEach(row => {
+            const status = (row.dataset.resultStatus || '').trim();
+            const quantity = Math.max(0, Number(row.dataset.resultQuantity || 0));
+            const defects = Math.max(0, Number(row.dataset.resultDefects || 0));
+
+            summary.recorded += quantity;
+
+            if (status === 'CHO_XAC_NHAN') {
+                summary.pending++;
+            } else if (status === 'DA_NHAP_KHO') {
+                summary.approved++;
+                summary.accepted += quantity;
+            } else if (status === 'TU_CHOI_LOI') {
+                summary.defectRejected++;
+                summary.defects += Math.min(defects, quantity);
+                summary.accepted += Math.max(0, quantity - defects);
+            } else if (status === 'TU_CHOI_SAI_YEU_CAU') {
+                summary.wrongRejected++;
+            } else if (status === 'HUY') {
+                summary.cancelled++;
+            }
+        });
+
+        if (resultCountElement) resultCountElement.textContent = summary.total;
+        if (recordedElement) recordedElement.textContent = summary.recorded;
+        if (acceptedElement) acceptedElement.textContent = summary.accepted;
+        if (defectElement) defectElement.textContent = summary.defects;
+
+        let label = 'Đang xử lý';
+        let style = 'pending';
+
+        if (summary.total === 0) {
+            label = 'Chưa có kết quả';
+            style = 'pending';
+        } else if (summary.pending === summary.total) {
+            label = 'Chờ xác nhận';
+            style = 'pending';
+        } else if (summary.pending > 0) {
+            label = 'Đang xử lý';
+            style = 'pending';
+        } else if (summary.approved === summary.total) {
+            label = 'Đã nhập kho';
+            style = 'approved';
+        } else if (summary.accepted > 0) {
+            label = 'Hoàn thành một phần';
+            style = 'partial';
+        } else if (
+            summary.defectRejected > 0 &&
+            summary.wrongRejected === 0 &&
+            summary.cancelled === 0
+        ) {
+            label = 'Bị từ chối - Sản phẩm lỗi';
+            style = 'cancelled';
+        } else if (
+            summary.wrongRejected > 0 &&
+            summary.defectRejected === 0 &&
+            summary.cancelled === 0
+        ) {
+            label = 'Bị từ chối - Sai yêu cầu';
+            style = 'cancelled';
+        } else if (
+            summary.defectRejected > 0 ||
+            summary.wrongRejected > 0
+        ) {
+            label = 'Đã xử lý - Có kết quả bị từ chối';
+            style = 'cancelled';
+        } else if (summary.cancelled === summary.total) {
+            label = 'Đã hủy';
+            style = 'cancelled';
+        } else if (summary.cancelled > 0) {
+            label = 'Đã xử lý - Có kết quả đã hủy';
+            style = 'cancelled';
+        }
+
+        statusElement.textContent = label;
+        statusElement.classList.remove('pending', 'approved', 'cancelled', 'partial');
+        statusElement.classList.add(style);
+    })();
+</script>
+
+<script>
+    (() => {
+        const modal = document.getElementById('rejectModal');
+        const dialog = modal.querySelector('.reject-modal-dialog');
+        const form = document.getElementById('rejectResultForm');
+
+        const title = document.getElementById('rejectModalTitle');
+        const description = document.getElementById('rejectModalDescription');
+
+        const typeSelect = document.getElementById('rejectType');
+        const defectField = form.querySelector('.defect-quantity-field');
+        const defectInput = document.getElementById('rejectDefectQuantity');
+        const reasonInput = document.getElementById('rejectReason');
+
+        const closeButton = document.getElementById('rejectModalClose');
+        const cancelButton = document.getElementById('rejectModalCancel');
+
+        let previousFocus = null;
+
+        function updateDefectField() {
+            const isDefect = typeSelect.value === 'TU_CHOI_LOI';
+
+            defectField.hidden = !isDefect;
+            defectInput.disabled = !isDefect;
+            defectInput.required = isDefect;
+
+            if (!isDefect) {
+                defectInput.value = '';
+            }
+        }
+
+        function openModal(button) {
+            previousFocus = button;
+
+            const resultId = button.dataset.resultId;
+            const productName = button.dataset.productName || 'sản phẩm';
+            const quantity = Number(button.dataset.quantity || 0);
+            const groupKey = button.dataset.groupKey;
+
+            const params = new URLSearchParams();
+
+            if (groupKey) {
+                params.set('groupKey', groupKey);
+            }
+
+            const query = params.toString();
+
+            form.action =
+                '/san-xuat/ket-qua/' +
+                encodeURIComponent(resultId) +
+                '/reject' +
+                (query ? '?' + query : '');
+
+            title.textContent = 'Từ chối kết quả sản xuất';
+            description.textContent =
+                productName + ' · Số lượng ghi nhận: ' + quantity;
+
+            defectInput.max = quantity;
+            defectInput.value = '';
+            reasonInput.value = '';
+            typeSelect.value = 'TU_CHOI_SAI_YEU_CAU';
+
+            updateDefectField();
+
+            modal.hidden = false;
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('reject-modal-open');
+
+            requestAnimationFrame(() => {
+                typeSelect.focus();
+            });
+        }
+
+        function closeModal() {
+            modal.hidden = true;
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('reject-modal-open');
+
+            if (previousFocus) {
+                previousFocus.focus();
+            }
+        }
+
+        document.querySelectorAll('.open-reject-modal').forEach(button => {
+            button.addEventListener('click', () => openModal(button));
+        });
+
+        typeSelect.addEventListener('change', updateDefectField);
+
+        closeButton.addEventListener('click', closeModal);
+        cancelButton.addEventListener('click', closeModal);
+
+        // Bấm vùng nền tối bên ngoài hộp thoại để đóng.
+        modal.addEventListener('click', event => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Nhấn Escape để đóng popup.
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !modal.hidden) {
+                closeModal();
+            }
+        });
+
+        // Chặn số lượng lỗi vượt quá số lượng đã ghi nhận.
+        form.addEventListener('submit', event => {
+            if (typeSelect.value === 'TU_CHOI_LOI') {
+                const defect = Number(defectInput.value);
+                const quantity = Number(defectInput.max);
+
+                if (
+                    !Number.isInteger(defect) ||
+                    defect < 1 ||
+                    defect > quantity
+                ) {
+                    event.preventDefault();
+                    defectInput.setCustomValidity(
+                        'Số lượng lỗi phải từ 1 đến ' + quantity + '.'
+                    );
+                    defectInput.reportValidity();
+                    defectInput.setCustomValidity('');
+                    defectInput.focus();
+                    return;
+                }
+            }
+
+            if (!reasonInput.value.trim()) {
+                event.preventDefault();
+                reasonInput.value = '';
+                reasonInput.focus();
+            }
+        });
+    })();
+</script>
 </body>
 </html>

@@ -135,11 +135,14 @@ public class WarehouseReportController {
 
 
     // =====================================================
-    // BÁO CÁO
+    // BÁO CÁO TOÀN DIỆN MRP & KHO
     // =====================================================
 
     @GetMapping("/baocao")
     public String report(
+            @RequestParam(defaultValue = "xnt")
+            String tab,
+
             @RequestParam(required = false)
             Integer month,
 
@@ -151,6 +154,9 @@ public class WarehouseReportController {
 
             @RequestParam(defaultValue = "")
             String type,
+
+            @RequestParam(defaultValue = "ALL")
+            String kind,
 
             Model model) {
 
@@ -164,189 +170,229 @@ public class WarehouseReportController {
         LocalDate from;
         LocalDate to;
 
-        // =====================================================
-        // ƯU TIÊN THÁNG
-        //
-        // Có tháng -> lấy tháng đó.
-        // Năm có thì lấy năm đã nhập.
-        // Không có năm -> lấy năm hiện tại.
-        //
-        // Nếu vừa có tháng + quý -> vẫn ưu tiên tháng.
-        // =====================================================
-
+        // Ưu tiên Tháng
         if (month != null) {
-
             if (month < 1 || month > 12) {
-                throw new IllegalArgumentException(
-                        "Tháng không hợp lệ."
-                );
+                throw new IllegalArgumentException("Tháng không hợp lệ.");
             }
-
-            from = LocalDate.of(
-                    selectedYear,
-                    month,
-                    1
-            );
-
-            to = from
-                    .plusMonths(1)
-                    .minusDays(1);
+            from = LocalDate.of(selectedYear, month, 1);
+            to = from.plusMonths(1).minusDays(1);
         }
-
-        // =====================================================
-        // KHÔNG CÓ THÁNG -> XÉT QUÝ
-        //
-        // Có quý -> lấy quý đó.
-        // Năm có thì lấy năm đã nhập.
-        // Không có năm -> lấy năm hiện tại.
-        // =====================================================
-
+        // Xét Quý
         else if (quarter != null) {
-
             if (quarter < 1 || quarter > 4) {
-                throw new IllegalArgumentException(
-                        "Quý không hợp lệ."
-                );
+                throw new IllegalArgumentException("Quý không hợp lệ.");
             }
-
-            from = LocalDate.of(
-                    selectedYear,
-                    (quarter - 1) * 3 + 1,
-                    1
-            );
-
-            to = from
-                    .plusMonths(3)
-                    .minusDays(1);
+            from = LocalDate.of(selectedYear, (quarter - 1) * 3 + 1, 1);
+            to = from.plusMonths(3).minusDays(1);
         }
-
-        // =====================================================
-        // KHÔNG CÓ THÁNG, KHÔNG CÓ QUÝ
-        //
-        // Có năm -> lấy cả năm đó.
-        // Không có gì -> mặc định tháng hiện tại.
-        // =====================================================
-
+        // Xét Năm
         else if (year != null) {
-
-            from = LocalDate.of(
-                    year,
-                    1,
-                    1
-            );
-
-            to = LocalDate.of(
-                    year,
-                    12,
-                    31
-            );
+            from = LocalDate.of(year, 1, 1);
+            to = LocalDate.of(year, 12, 31);
         }
-
+        // Mặc định tháng hiện tại
         else {
-
-            // Mặc định khi mở trang:
-            // tháng hiện tại + năm hiện tại
-
-            from = LocalDate.of(
-                    today.getYear(),
-                    today.getMonthValue(),
-                    1
-            );
-
-            to = from
-                    .plusMonths(1)
-                    .minusDays(1);
+            from = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
+            to = from.plusMonths(1).minusDays(1);
         }
 
-
-        // =====================================================
-        // VALIDATE LOẠI GIAO DỊCH
-        // =====================================================
-
-        if (!type.isBlank()
-                && !REPORT_TRANSACTION_TYPES.contains(type)) {
-
-            throw new IllegalArgumentException(
-                    "Loại giao dịch báo cáo không hợp lệ."
-            );
+        // Validate loại giao dịch nếu có lọc chứng từ
+        if (!type.isBlank() && !REPORT_TRANSACTION_TYPES.contains(type)) {
+            throw new IllegalArgumentException("Loại giao dịch báo cáo không hợp lệ.");
         }
 
+        // Dữ liệu chung
+        model.addAttribute("tab", tab);
+        model.addAttribute("from", from);
+        model.addAttribute("to", to);
+        model.addAttribute("month", month);
+        model.addAttribute("quarter", quarter);
+        model.addAttribute("year", year);
+        model.addAttribute("selectedKind", kind);
+        model.addAttribute("selectedType", type);
 
         // =====================================================
-        // LẤY DỮ LIỆU
+        // TAB 1: XUẤT - NHẬP - TỒN & GIÁ TRỊ VỐN SKU
         // =====================================================
+        if ("xnt".equalsIgnoreCase(tab)) {
+            Map<String, BigDecimal> totals = service.totals(from, to);
+            Map<String, BigDecimal> currentStock = service.stockAt(to);
+            List<Map<String, Object>> inventoryDetails = service.getInventoryDetails(from, to, kind);
+            Map<String, Object> inventorySummary = service.getInventorySummary(inventoryDetails);
 
-        Map<String, BigDecimal> totals =
-                service.totals(
-                        from,
-                        to
-                );
-
-        Map<String, BigDecimal> currentStock =
-                service.stockAt(to);
-
+            model.addAttribute("totals", totals);
+            model.addAttribute("currentStock", currentStock);
+            model.addAttribute("inventoryDetails", inventoryDetails);
+            model.addAttribute("inventorySummary", inventorySummary);
+            model.addAttribute("showDetails", !type.isBlank());
+            model.addAttribute("rows", type.isBlank() ? List.of() : service.history(from, to, "", type));
+        }
 
         // =====================================================
-        // GỬI SANG VIEW
+        // TAB 2: HIỆU SUẤT & CHẤT LƯỢNG SẢN XUẤT (OTIF, LỖI)
         // =====================================================
+        else if ("sanxuat".equalsIgnoreCase(tab)) {
+            Map<String, Object> prodPerf = service.getProductionPerformance(from, to);
+            model.addAttribute("prodPerf", prodPerf);
+        }
 
-        model.addAttribute(
-                "from",
-                from
-        );
+        // =====================================================
+        // TAB 3: CÂN ĐỐI CUNG - CẦU & THIẾU HỤT VẬT TƯ MRP
+        // =====================================================
+        else if ("mrp".equalsIgnoreCase(tab)) {
+            Map<String, Object> mrpData = service.getMrpShortageReport();
+            model.addAttribute("mrpData", mrpData);
+        }
 
-        model.addAttribute(
-                "to",
-                to
-        );
-
-        model.addAttribute(
-                "month",
-                month
-        );
-
-        model.addAttribute(
-                "quarter",
-                quarter
-        );
-
-        model.addAttribute(
-                "year",
-                year
-        );
-
-        model.addAttribute(
-                "totals",
-                totals
-        );
-
-        model.addAttribute(
-                "currentStock",
-                currentStock
-        );
-
-        model.addAttribute(
-                "selectedType",
-                type
-        );
-
-        model.addAttribute(
-                "showDetails",
-                !type.isBlank()
-        );
-
-        model.addAttribute(
-                "rows",
-                type.isBlank()
-                        ? List.of()
-                        : service.history(
-                        from,
-                        to,
-                        "",
-                        type
-                )
-        );
+        // =====================================================
+        // TAB 4: ĐỐI SOÁT ĐỊNH MỨC BOM & HAO HỤT THỰC TẾ
+        // =====================================================
+        else if ("bom".equalsIgnoreCase(tab)) {
+            List<Map<String, Object>> bomVariances = service.getBomVarianceReport(from, to);
+            model.addAttribute("bomVariances", bomVariances);
+        }
 
         return "mrp/report";
+    }
+
+    // =====================================================
+    // TRANG XEM CHI TIẾT ĐỐI SOÁT ĐỊNH MỨC BOM CHO 1 LỆNH SX
+    // =====================================================
+    @GetMapping("/baocao/doi-soat-bom/{id}")
+    public String bomVarianceDetail(
+            @org.springframework.web.bind.annotation.PathVariable("id") Long maycsx,
+            Model model
+    ) {
+        Map<String, Object> detail = service.getBomVarianceDetail(maycsx);
+        if (detail == null) {
+            return "redirect:/baocao?tab=bom";
+        }
+        model.addAttribute("d", detail);
+        return "mrp/bom-variance-detail";
+    }
+
+    // =====================================================
+    // XUẤT BÁO CÁO CSV (UTF-8 BOM CHO EXCEL)
+    // =====================================================
+    @GetMapping("/baocao/export-csv")
+    public void exportCsv(
+            @RequestParam(defaultValue = "xnt") String tab,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(defaultValue = "ALL") String kind,
+            jakarta.servlet.http.HttpServletResponse response
+    ) throws java.io.IOException {
+        LocalDate today = LocalDate.now();
+        int selectedYear = year == null ? today.getYear() : year;
+        LocalDate from, to;
+        if (month != null) {
+            from = LocalDate.of(selectedYear, month, 1);
+            to = from.plusMonths(1).minusDays(1);
+        } else if (quarter != null) {
+            from = LocalDate.of(selectedYear, (quarter - 1) * 3 + 1, 1);
+            to = from.plusMonths(3).minusDays(1);
+        } else if (year != null) {
+            from = LocalDate.of(year, 1, 1);
+            to = LocalDate.of(year, 12, 31);
+        } else {
+            from = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
+            to = from.plusMonths(1).minusDays(1);
+        }
+
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        String filename = "BaoCao_" + tab.toUpperCase() + "_" + from + "_" + to + ".csv";
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+        java.io.PrintWriter writer = response.getWriter();
+        writer.write('\uFEFF'); // UTF-8 BOM để Excel hiển thị tiếng Việt chuẩn
+
+        if ("sanxuat".equalsIgnoreCase(tab)) {
+            writer.println("Mã lệnh,Đợt sản xuất,Sản phẩm,Kỹ thuật viên,Số lượng yêu cầu,Số lượng hoàn thành,Số lượng lỗi,Tỷ lệ lỗi (%),Hạn hoàn thành,Đánh giá tiến độ,Trạng thái");
+            var perf = service.getProductionPerformance(from, to);
+            @SuppressWarnings("unchecked")
+            var orders = (List<Map<String, Object>>) perf.get("orders");
+            for (var o : orders) {
+                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",%s,%s,%s,%s%%,\"%s\",\"%s\",\"%s\"%n",
+                        o.get("madot_code"),
+                        o.get("tendot"),
+                        o.get("tensp"),
+                        o.get("hoten_phutrach"),
+                        o.get("soluongyeucau"),
+                        o.get("soluonghoanthanh"),
+                        o.get("soluongloi"),
+                        o.get("ty_le_loi"),
+                        o.get("hanhoanthanh") != null ? o.get("hanhoanthanh") : "",
+                        o.get("danh_gia_tien_do"),
+                        o.get("trangthai")
+                );
+            }
+        } else if ("mrp".equalsIgnoreCase(tab)) {
+            writer.println("Mã NVL,Tên NVL,ĐVT,Tổng nhu cầu sản xuất,Tồn kho tổng,Tồn xưởng,Tổng khả dụng,Số lượng thiếu,Đơn giá vốn,Chi phí dự kiến (VNĐ),Lead time (ngày),Trạng thái cung ứng");
+            var mrp = service.getMrpShortageReport();
+            @SuppressWarnings("unchecked")
+            var items = (List<Map<String, Object>>) mrp.get("items");
+            for (var i : items) {
+                writer.printf("\"%s\",\"%s\",\"%s\",%s,%s,%s,%s,%s,%s,%s,%s,\"%s\"%n",
+                        i.get("manvl_code"),
+                        i.get("tennvl"),
+                        i.get("donvitinh"),
+                        i.get("tongnhucau"),
+                        i.get("ton_kho_tong"),
+                        i.get("ton_kho_sx"),
+                        i.get("tong_kha_dung"),
+                        i.get("soluongthieu"),
+                        i.get("dongianhap"),
+                        i.get("chi_phi_mua_du_kien"),
+                        i.get("lead_time_ngay"),
+                        i.get("trang_thai_cung_ung")
+                );
+            }
+        } else if ("bom".equalsIgnoreCase(tab)) {
+            writer.println("Lệnh SX,Sản phẩm,BOM Ver,Tiến độ lắp ráp,Trạng thái lệnh,Linh kiện,ĐVT,Định mức cho phép,Thực tế xuất,Đang trên chuyền,Chênh lệch,Đánh giá");
+            var orders = service.getBomVarianceReport(from, to);
+            for (var order : orders) {
+                @SuppressWarnings("unchecked")
+                var mats = (List<Map<String, Object>>) order.get("materials");
+                for (var b : mats) {
+                    writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%s,%s,%s,%s,\"%s\"%n",
+                            order.get("madot_code"),
+                            order.get("tensp"),
+                            order.get("phienban_bom"),
+                            order.get("tiendo_text"),
+                            order.get("trangthai"),
+                            b.get("tennvl"),
+                            b.get("donvitinh"),
+                            b.get("dinhmuc_cho_phep"),
+                            b.get("thuc_xuat"),
+                            b.get("nvl_con_lai_chuyen"),
+                            b.get("chenh_lech"),
+                            b.get("danh_gia")
+                    );
+                }
+            }
+        } else {
+            // Default XNT
+            writer.println("Mã hàng,Tên hàng hóa,Loại hàng,Đơn vị tính,Tồn đầu kỳ,Nhập trong kỳ,Xuất trong kỳ,Tồn cuối kỳ,Đơn giá vốn,Thành tiền tồn cuối kỳ (VNĐ),Tình trạng");
+            var details = service.getInventoryDetails(from, to, kind);
+            for (var d : details) {
+                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",%s,%s,%s,%s,%s,%s,\"%s\"%n",
+                        d.get("ma_code"),
+                        d.get("ten_hang"),
+                        d.get("loai_hang"),
+                        d.get("donvitinh"),
+                        d.get("ton_dau_ky"),
+                        d.get("nhap_trong_ky"),
+                        d.get("xuat_trong_ky"),
+                        d.get("ton_cuoi_ky"),
+                        d.get("don_gia"),
+                        d.get("gia_tri_ton"),
+                        d.get("canh_bao")
+                );
+            }
+        }
+        writer.flush();
     }
 }

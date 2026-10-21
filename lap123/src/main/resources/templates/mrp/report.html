@@ -1,398 +1,1362 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Báo cáo MRP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trung Tâm Báo Cáo & Thống Kê MRP - LAPTOP 123</title>
 
-  <link rel="stylesheet" th:href="@{/style.css(v='20260924-1')}">
+    <link rel="stylesheet" th:href="@{/style.css(v='20261021-1')}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-          rel="stylesheet">
+    <style>
+        .report-header-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 14px;
+            padding: 1.75rem 2rem;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+        }
+
+        .report-header-title h1 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            margin: 0 0 0.35rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #f8fafc;
+        }
+
+        .report-header-title p {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .report-header-actions {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-report {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.15rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-report-excel {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .btn-report-excel:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            color: #fff;
+        }
+
+        .btn-report-csv {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-report-csv:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            color: #fff;
+        }
+
+        .btn-report-print {
+            background: #475569;
+            color: #fff;
+        }
+
+        .btn-report-print:hover {
+            background: #334155;
+            color: #fff;
+        }
+
+        /* TABS */
+        .report-nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .nav-tab-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.85rem 1.35rem;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .nav-tab-item:hover {
+            color: #2563eb;
+            background: #f1f5f9;
+        }
+
+        .nav-tab-item.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        /* FILTER BAR */
+        .report-filter-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-form-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            height: 38px;
+            padding: 0.35rem 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+            color: #334155;
+            transition: border-color 0.15s;
+        }
+
+        .filter-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .date-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 0.45rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* KPI METRIC CARDS */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-metric-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .kpi-metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .kpi-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #94a3b8;
+        }
+
+        .kpi-metric-card.blue::before {
+            background: #3b82f6;
+        }
+
+        .kpi-metric-card.green::before {
+            background: #10b981;
+        }
+
+        .kpi-metric-card.orange::before {
+            background: #f97316;
+        }
+
+        .kpi-metric-card.purple::before {
+            background: #8b5cf6;
+        }
+
+        .kpi-metric-card.red::before {
+            background: #ef4444;
+        }
+
+        .kpi-content .kpi-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.35rem;
+        }
+
+        .kpi-content .kpi-number {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .kpi-content .kpi-subtext {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 0.3rem;
+        }
+
+        .kpi-icon-bubble {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .kpi-icon-bubble.blue {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .kpi-icon-bubble.green {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .kpi-icon-bubble.orange {
+            background: #fff7ed;
+            color: #ea580c;
+        }
+
+        .kpi-icon-bubble.purple {
+            background: #f5f3ff;
+            color: #8b5cf6;
+        }
+
+        .kpi-icon-bubble.red {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        /* DATA TABLE */
+        .report-table-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.75rem;
+            overflow: hidden;
+        }
+
+        .report-table-header {
+            padding: 1rem 1.25rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .report-table-header h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-search-box {
+            position: relative;
+            min-width: 260px;
+        }
+
+        .table-search-box input {
+            width: 100%;
+            height: 36px;
+            padding: 0.25rem 0.75rem 0.25rem 2.2rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .table-search-box i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .mrp-table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .mrp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .mrp-table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .mrp-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .mrp-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* BADGES */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-orange {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .badge-red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-gray {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        /* CHARTS CONTAINER */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .chart-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .chart-box h4 {
+            margin: 0 0 1rem 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* PRINT OPTIMIZATION */
+        @media print {
+
+            .sidebar,
+            .topbar,
+            .report-header-actions,
+            .report-filter-card,
+            .table-search-box,
+            .btn-report {
+                display: none !important;
+            }
+
+            .app-container,
+            .main-wrapper,
+            .content-body {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+            }
+
+            .report-header-section {
+                background: none !important;
+                color: #000 !important;
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+
+            .report-header-title h1,
+            .report-header-title p {
+                color: #000 !important;
+            }
+        }
+
+        /* ACCORDION CHO BÁO CÁO ĐỐI SOÁT BOM */
+        .order-master-row {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .order-master-row:hover {
+            background-color: #f1f5f9 !important;
+        }
+
+        .order-master-row.expanded {
+            background-color: #f1f5f9 !important;
+        }
+
+        .order-detail-row {
+            display: none;
+            background-color: #f8fafc;
+        }
+
+        .order-detail-row.show {
+            display: table-row !important;
+        }
+    </style>
+
+    <script>
+        // Đóng / Mở chi tiết đối soát của từng yêu cầu sản xuất (Hỗ trợ cả element 'this' và id)
+        function toggleOrderDetails(target, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            var masterRow = null;
+            var detailRow = null;
+
+            if (target && target.nodeType === 1) { // Là DOM element (this)
+                masterRow = target.classList.contains('order-master-row') ? target : target.closest('.order-master-row');
+                if (masterRow) {
+                    detailRow = masterRow.nextElementSibling;
+                    if (!detailRow || !detailRow.classList.contains('order-detail-row')) {
+                        var tbody = masterRow.closest('tbody');
+                        if (tbody) detailRow = tbody.querySelector('.order-detail-row');
+                    }
+                }
+            } else { // Là ID truyền vào
+                detailRow = document.getElementById('details-' + target);
+                masterRow = document.getElementById('order-row-' + target);
+                if (!detailRow && masterRow) {
+                    detailRow = masterRow.nextElementSibling;
+                }
+            }
+
+            // Fallback cuối cùng: tìm qua querySelector
+            if (!detailRow) {
+                var allDetailRows = document.querySelectorAll('.order-detail-row');
+                if (allDetailRows.length === 1) {
+                    detailRow = allDetailRows[0];
+                    masterRow = document.querySelector('.order-master-row');
+                }
+            }
+
+            if (!detailRow) {
+                console.error('Không tìm thấy dòng chi tiết id:', target);
+                return;
+            }
+
+            var icon = masterRow ? masterRow.querySelector('.toggle-icon') : null;
+            var btn = masterRow ? masterRow.querySelector('.btn-report') : null;
+
+            var isHidden = (detailRow.style.display === 'none' ||
+                !detailRow.classList.contains('show') ||
+                window.getComputedStyle(detailRow).display === 'none');
+
+            if (isHidden) {
+                detailRow.classList.add('show');
+                detailRow.style.setProperty('display', 'table-row', 'important');
+                if (masterRow) masterRow.classList.add('expanded');
+                if (icon) {
+                    icon.className = 'fas fa-chevron-down toggle-icon';
+                    icon.style.color = '#2563eb';
+                }
+                if (btn) {
+                    btn.innerHTML = '<span>Thu gọn</span> <i class="fas fa-chevron-up" style="font-size: 0.7rem; margin-left: 0.25rem;"></i>';
+                    btn.style.backgroundColor = '#64748b';
+                }
+            } else {
+                detailRow.classList.remove('show');
+                detailRow.style.setProperty('display', 'none', 'important');
+                if (masterRow) masterRow.classList.remove('expanded');
+                if (icon) {
+                    icon.className = 'fas fa-chevron-right toggle-icon';
+                    icon.style.color = '#64748b';
+                }
+                if (btn) {
+                    btn.innerHTML = '<span>Chi tiết</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 0.25rem;"></i>';
+                    btn.style.backgroundColor = '';
+                }
+            }
+        }
+
+        // Tìm kiếm nhanh trong bảng
+        function filterTable(inputId, tableId) {
+            var input = document.getElementById(inputId);
+            if (!input) return;
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById(tableId);
+            if (!table) return;
+            var trs = table.getElementsByTagName('tr');
+
+            for (var i = 1; i < trs.length; i++) {
+                var tr = trs[i];
+                if (tr.id && tr.id.indexOf('details-') === 0) continue;
+                var text = tr.textContent || tr.innerText;
+                if (text.toLowerCase().indexOf(filter) !== -1) {
+                    tr.style.display = '';
+                } else {
+                    tr.style.display = 'none';
+                }
+            }
+        }
+    </script>
 </head>
 
 <body>
 
-<div class="app-container">
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <div th:replace="~{fragments/sidebar :: sidebar('baocao')}"></div>
 
-  <div th:replace="~{fragments/sidebar :: sidebar('baocao')}"></div>
+        <div class="main-wrapper">
+            <!-- TOPBAR -->
+            <div th:replace="~{fragments/sidebar :: topbar('Báo cáo & Thống kê MRP', 'Quản trị / Báo cáo')}"></div>
 
-  <div class="main-wrapper">
+            <main class="content-body" style="padding: 1.5rem 2rem;">
 
-    <div th:replace="~{fragments/sidebar :: topbar('Báo cáo MRP', 'Báo cáo')}"></div>
+                <!-- HERO HEADER -->
+                <div class="report-header-section">
+                    <div class="report-header-title">
+                        <h1><i class="fas fa-chart-line" style="color: #60a5fa;"></i> TRUNG TÂM BÁO CÁO & THỐNG KÊ MRP
+                        </h1>
+                        <p>Hệ thống giám sát Xuất - Nhập - Tồn, Hoạch định Cân đối Nhu cầu Vật tư & Quản lý Chất lượng
+                            Sản xuất</p>
+                    </div>
+                    <div class="report-header-actions">
+                        <button type="button" class="btn-report btn-report-excel" onclick="exportTableToExcel()">
+                            <i class="fas fa-file-excel"></i> Xuất Excel (.xlsx)
+                        </button>
+                        <a th:href="@{/baocao/export-csv(tab=${tab}, month=${month}, quarter=${quarter}, year=${year}, kind=${selectedKind})}"
+                            class="btn-report btn-report-csv">
+                            <i class="fas fa-file-csv"></i> Tải file CSV
+                        </a>
+                        <button type="button" class="btn-report btn-report-print" onclick="window.print()">
+                            <i class="fas fa-print"></i> In báo cáo
+                        </button>
+                    </div>
+                </div>
 
-    <main class="content-body">
+                <!-- TABS NAVIGATION -->
+                <nav class="report-nav-tabs" aria-label="Tab báo cáo">
+                    <a th:href="@{/baocao(tab='xnt', month=${month}, quarter=${quarter}, year=${year}, kind=${selectedKind})}"
+                        class="nav-tab-item" th:classappend="${tab == 'xnt' ? 'active' : ''}">
+                        <i class="fas fa-boxes-stacked"></i> 1. Xuất - Nhập - Tồn & Giá Trị Kho
+                    </a>
+                    <a th:href="@{/baocao(tab='sanxuat', month=${month}, quarter=${quarter}, year=${year})}"
+                        class="nav-tab-item" th:classappend="${tab == 'sanxuat' ? 'active' : ''}">
+                        <i class="fas fa-industry"></i> 2. Hiệu Suất & Chất Lượng Sản Xuất
+                    </a>
+                    <a th:href="@{/baocao(tab='mrp')}" class="nav-tab-item"
+                        th:classappend="${tab == 'mrp' ? 'active' : ''}">
+                        <i class="fas fa-triangle-exclamation"></i> 3. Cân Đối Cung - Cầu & Thiếu Hụt MRP
+                    </a>
+                    <a th:href="@{/baocao(tab='bom', month=${month}, quarter=${quarter}, year=${year})}"
+                        class="nav-tab-item" th:classappend="${tab == 'bom' ? 'active' : ''}">
+                        <i class="fas fa-clipboard-check"></i> 4. Đối Soát Định Mức BOM & Hao Hụt
+                    </a>
+                </nav>
 
-      <h1>Báo cáo MRP</h1>
+                <!-- BỘ LỌC CHUNG CHO BÁO CÁO (Áp dụng trừ tab MRP Cung Cầu thời gian thực) -->
+                <div class="report-filter-card" th:if="${tab != 'mrp'}">
+                    <form th:action="@{/baocao}" method="get" class="filter-form-group">
+                        <input type="hidden" name="tab" th:value="${tab}">
 
-      <!-- Bộ lọc -->
-      <!-- Bộ lọc -->
-      <form th:action="@{/baocao}"
-            method="get"
-            style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                        <label style="font-weight: 600; font-size: 0.88rem; color: #475569;">Kỳ thống kê:</label>
+                        <input type="number" name="month" min="1" max="12" placeholder="Tháng (1-12)"
+                            th:value="${month}" class="filter-input" style="width: 120px;">
+                        <input type="number" name="quarter" min="1" max="4" placeholder="Quý (1-4)"
+                            th:value="${quarter}" class="filter-input" style="width: 100px;">
+                        <input type="number" name="year" min="2000" max="2100" placeholder="Năm (vd: 2026)"
+                            th:value="${year}" class="filter-input" style="width: 130px;">
 
-        <input
-                type="number"
-                data-number-format="plain"
-                name="month"
-                min="1"
-                max="12"
-                placeholder="Tháng">
+                        <!-- Bộ lọc loại hàng riêng cho tab XNT -->
+                        <select name="kind" class="filter-input" th:if="${tab == 'xnt'}" style="font-weight: 600;">
+                            <option value="ALL" th:selected="${selectedKind == 'ALL'}">Tất cả (NVL & Laptop)</option>
+                            <option value="NVL" th:selected="${selectedKind == 'NVL'}">Chỉ Nguyên Vật Liệu</option>
+                            <option value="THANH_PHAM" th:selected="${selectedKind == 'THANH_PHAM'}">Chỉ Thành Phẩm
+                                Laptop</option>
+                        </select>
 
-        <input
-                type="number"
-                data-number-format="plain"
-                name="quarter"
-                min="1"
-                max="4"
-                placeholder="Quý">
+                        <button type="submit" class="btn-report btn-report-csv" style="padding: 0.5rem 1rem;">
+                            <i class="fas fa-filter"></i> Lọc dữ liệu
+                        </button>
+                        <a th:href="@{/baocao(tab=${tab})}"
+                            style="font-size: 0.85rem; color: #64748b; margin-left: 0.25rem;">Đặt lại mặc định</a>
+                    </form>
 
-        <input
-                type="number"
-                data-number-format="plain"
-                name="year"
-                min="2000"
-                max="2100"
-                placeholder="Năm">
-
-        <button type="submit">
-          Xem
-        </button>
-
-      </form>
-
-      <p th:text="${'Từ ' + from + ' đến ' + to}"></p>
+                    <div class="date-badge">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span th:text="${'Kỳ báo cáo: Từ ' + from + ' đến ' + to}"></span>
+                    </div>
+                </div>
 
 
+                <!-- ======================================================================= -->
+                <!-- NỘI DUNG TAB 1: XUẤT - NHẬP - TỒN & GIÁ TRỊ VỐN TỒN KHO THEO SKU -->
+                <!-- ======================================================================= -->
+                <div th:if="${tab == 'xnt'}">
+                    <!-- KPI CARDS -->
+                    <div class="kpi-row">
+                        <div class="kpi-metric-card purple">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Tổng giá trị tồn kho</div>
+                                <div class="kpi-number" style="color: #7c3aed;"
+                                    th:text="${#numbers.formatDecimal(inventorySummary.tong_gia_tri_kho, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                </div>
+                                <div class="kpi-subtext">Định giá vốn kho tại thời điểm cuối kỳ</div>
+                            </div>
+                            <div class="kpi-icon-bubble purple"><i class="fas fa-coins"></i></div>
+                        </div>
 
-      <!-- Tổng hợp báo cáo -->
-      <div class="report-summary-grid">
+                        <div class="kpi-metric-card blue">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Tồn kho Nguyên Vật Liệu</div>
+                                <div class="kpi-number"
+                                    th:text="${#numbers.formatDecimal(inventorySummary.tong_nvl_cuoi, 0, 'POINT', 0, 'COMMA')}">
+                                </div>
+                                <div class="kpi-subtext"
+                                    th:text="${'Giá trị: ' + #numbers.formatDecimal(inventorySummary.tong_gt_nvl, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                </div>
+                            </div>
+                            <div class="kpi-icon-bubble blue"><i class="fas fa-cubes"></i></div>
+                        </div>
 
-        <!-- Tổng NVL nhập -->
-        <div class="content-card report-summary-card">
+                        <div class="kpi-metric-card green">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Tồn kho Thành Phẩm Laptop</div>
+                                <div class="kpi-number" style="color: #059669;"
+                                    th:text="${#numbers.formatDecimal(inventorySummary.tong_tp_cuoi, 0, 'POINT', 0, 'COMMA')}">
+                                </div>
+                                <div class="kpi-subtext"
+                                    th:text="${'Giá trị bán: ' + #numbers.formatDecimal(inventorySummary.tong_gt_tp, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                </div>
+                            </div>
+                            <div class="kpi-icon-bubble green"><i class="fas fa-laptop"></i></div>
+                        </div>
 
-          <strong>Tổng NVL nhập</strong>
+                        <div class="kpi-metric-card orange">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Tổng biến động trong kỳ</div>
+                                <div class="kpi-number" style="font-size: 1.15rem; color: #ea580c;">
+                                    <span style="color: #16a34a;"
+                                        th:text="${'+' + (inventorySummary.tong_nvl_nhap + inventorySummary.tong_tp_nhap)}"></span>
+                                    /
+                                    <span style="color: #dc2626;"
+                                        th:text="${'-' + (inventorySummary.tong_nvl_xuat + inventorySummary.tong_tp_xuat)}"></span>
+                                </div>
+                                <div class="kpi-subtext">Nhập kho / Xuất kho trong kỳ</div>
+                            </div>
+                            <div class="kpi-icon-bubble orange"><i class="fas fa-right-left"></i></div>
+                        </div>
 
-          <h2
-                  data-number
-                  th:text="${totals.getOrDefault('NHAP_NVL', 0)}">
-          </h2>
+                        <div class="kpi-metric-card red">
+                            <div class="kpi-content">
+                                <div class="kpi-label">NVL Chạm ngưỡng an toàn</div>
+                                <div class="kpi-number" style="color: #dc2626;"
+                                    th:text="${inventorySummary.so_canh_bao_nvl}"></div>
+                                <div class="kpi-subtext">SKU tồn dưới mức tối thiểu</div>
+                            </div>
+                            <div class="kpi-icon-bubble red"><i class="fas fa-triangle-exclamation"></i></div>
+                        </div>
+                    </div>
 
+                    <!-- BIỂU ĐỒ BIẾN ĐỘNG -->
+                    <div class="charts-grid">
+                        <div class="chart-box">
+                            <h4><i class="fas fa-chart-column" style="color: #3b82f6;"></i> Biểu đồ Nhập & Xuất theo
+                                Loại Hàng (Trong kỳ)</h4>
+                            <div style="height: 250px;">
+                                <canvas id="chartInOut"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-box">
+                            <h4><i class="fas fa-chart-pie" style="color: #8b5cf6;"></i> Cơ Cấu Tồn Kho Cuối Kỳ</h4>
+                            <div style="height: 250px;">
+                                <canvas id="chartStockRatio"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG CHI TIẾT SKU -->
+                    <div class="report-table-card">
+                        <div class="report-table-header">
+                            <h3><i class="fas fa-table-list" style="color: #2563eb;"></i> Bảng Kê Chi Tiết Xuất - Nhập -
+                                Tồn Từng Mặt Hàng (SKU)</h3>
+                            <div class="table-search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="skuSearch" onkeyup="filterTable('skuSearch', 'skuTable')"
+                                    placeholder="Tìm kiếm mã, tên hàng hóa...">
+                            </div>
+                        </div>
+                        <div class="mrp-table-responsive">
+                            <table class="mrp-table" id="skuTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã SKU</th>
+                                        <th>Tên hàng hóa</th>
+                                        <th class="text-center">Loại</th>
+                                        <th class="text-center">ĐVT</th>
+                                        <th class="text-right">Tồn đầu kỳ</th>
+                                        <th class="text-right" style="color: #16a34a;">Nhập kỳ</th>
+                                        <th class="text-right" style="color: #ea580c;">Xuất kỳ</th>
+                                        <th class="text-right" style="font-weight: 700; color: #2563eb;">Tồn cuối kỳ
+                                        </th>
+                                        <th class="text-right">Đơn giá vốn</th>
+                                        <th class="text-right" style="font-weight: 700;">Thành tiền tồn</th>
+                                        <th class="text-center">Tình trạng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="row : ${inventoryDetails}">
+                                        <td style="font-weight: 600; font-family: monospace;" th:text="${row.ma_code}">
+                                        </td>
+                                        <td style="font-weight: 600;" th:text="${row.ten_hang}"></td>
+                                        <td class="text-center">
+                                            <span class="badge-status"
+                                                th:classappend="${row.loai_hang == 'NVL' ? 'badge-blue' : 'badge-green'}"
+                                                th:text="${row.loai_hang == 'NVL' ? 'Linh kiện' : 'Laptop'}"></span>
+                                        </td>
+                                        <td class="text-center" th:text="${row.donvitinh}"></td>
+                                        <td class="text-right"
+                                            th:text="${#numbers.formatDecimal(row.ton_dau_ky, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right" style="color: #16a34a; font-weight: 600;"
+                                            th:text="${'+' + #numbers.formatDecimal(row.nhap_trong_ky, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right" style="color: #ea580c; font-weight: 600;"
+                                            th:text="${'-' + #numbers.formatDecimal(row.xuat_trong_ky, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right"
+                                            style="font-weight: 700; color: #1d4ed8; font-size: 0.95rem;"
+                                            th:text="${#numbers.formatDecimal(row.ton_cuoi_ky, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right"
+                                            th:text="${#numbers.formatDecimal(row.don_gia, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                        </td>
+                                        <td class="text-right" style="font-weight: 700; color: #0f172a;"
+                                            th:text="${#numbers.formatDecimal(row.gia_tri_ton, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:if="${row.canh_bao == 'CANH_BAO_HET'}"
+                                                class="badge-status badge-red"><i class="fas fa-times-circle"></i> Hết
+                                                hàng</span>
+                                            <span th:if="${row.canh_bao == 'CANH_BAO_THAP'}"
+                                                class="badge-status badge-orange"><i
+                                                    class="fas fa-exclamation-triangle"></i> Sắp hết</span>
+                                            <span th:if="${row.canh_bao == 'AN_TOAN'}"
+                                                class="badge-status badge-green"><i class="fas fa-check-circle"></i> Khả
+                                                dụng</span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(inventoryDetails)}">
+                                        <td colspan="11" class="text-center" style="padding: 2.5rem; color: #94a3b8;">
+                                            Không có dữ liệu tồn kho trong kỳ đã chọn.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ======================================================================= -->
+                <!-- NỘI DUNG TAB 2: HIỆU SUẤT & CHẤT LƯỢNG SẢN XUẤT (OTIF & TỶ LỆ LỖI/PHẾ PHẨM) -->
+                <!-- ======================================================================= -->
+                <div th:if="${tab == 'sanxuat'}">
+                    <div class="kpi-row">
+                        <div class="kpi-metric-card green">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Tỷ lệ đúng hạn (OTIF)</div>
+                                <div class="kpi-number" style="color: #059669;" th:text="${prodPerf.ty_le_otif + '%'}">
+                                </div>
+                                <div class="kpi-subtext"
+                                    th:text="${prodPerf.dung_han + ' lệnh đúng hạn / ' + (prodPerf.dung_han + prodPerf.tre_han) + ' lệnh'}">
+                                </div>
+                            </div>
+                            <div class="kpi-icon-bubble green"><i class="fas fa-clock-rotate-left"></i></div>
+                        </div>
+
+                        <div class="kpi-metric-card blue">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Tổng sản lượng lắp ráp</div>
+                                <div class="kpi-number"
+                                    th:text="${#numbers.formatDecimal(prodPerf.tong_san_luong, 0, 'POINT', 0, 'COMMA') + ' máy'}">
+                                </div>
+                                <div class="kpi-subtext"
+                                    th:text="${'Trong tổng số ' + prodPerf.tong_lenh + ' lệnh sản xuất'}"></div>
+                            </div>
+                            <div class="kpi-icon-bubble blue"><i class="fas fa-laptop-medical"></i></div>
+                        </div>
+
+                        <div class="kpi-metric-card red">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Phế phẩm & Lỗi sản xuất</div>
+                                <div class="kpi-number" style="color: #dc2626;"
+                                    th:text="${#numbers.formatDecimal(prodPerf.tong_loi, 0, 'POINT', 0, 'COMMA') + ' lỗi'}">
+                                </div>
+                                <div class="kpi-subtext" th:text="${'Tỷ lệ phế phẩm: ' + prodPerf.ty_le_loi + '%'}">
+                                </div>
+                            </div>
+                            <div class="kpi-icon-bubble red"><i class="fas fa-ban"></i></div>
+                        </div>
+
+                        <div class="kpi-metric-card orange">
+                            <div class="kpi-content">
+                                <div class="kpi-label">Lệnh trễ hạn / Quá hạn</div>
+                                <div class="kpi-number" style="color: #ea580c;" th:text="${prodPerf.tre_han}"></div>
+                                <div class="kpi-subtext">Cần tăng tốc độ lắp ráp</div>
+                            </div>
+                            <div class="kpi-icon-bubble orange"><i class="fas fa-triangle-exclamation"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- BIỂU ĐỒ CHẤT LƯỢNG & NĂNG SUẤT -->
+                    <div class="charts-grid">
+                        <div class="chart-box">
+                            <h4><i class="fas fa-chart-bar" style="color: #2563eb;"></i> Sản Lượng Hoàn Thành vs Lỗi
+                                Theo Dòng Laptop</h4>
+                            <div style="height: 250px;">
+                                <canvas id="chartProductQuality"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-box">
+                            <h4><i class="fas fa-user-check" style="color: #10b981;"></i> Năng Suất & Tỷ Lệ Lỗi Theo Kỹ
+                                Thuật Viên</h4>
+                            <div style="height: 250px;">
+                                <canvas id="chartWorkerPerf"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG CHI TIẾT LỆNH SẢN XUẤT -->
+                    <div class="report-table-card">
+                        <div class="report-table-header">
+                            <h3><i class="fas fa-tasks" style="color: #2563eb;"></i> Danh Sách Lệnh Sản Xuất & Đánh Giá
+                                Chất Lượng</h3>
+                            <div class="table-search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="orderSearch" onkeyup="filterTable('orderSearch', 'orderTable')"
+                                    placeholder="Tìm kiếm lệnh, tên máy, nhân viên...">
+                            </div>
+                        </div>
+                        <div class="mrp-table-responsive">
+                            <table class="mrp-table" id="orderTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã lệnh / Đợt SX</th>
+                                        <th>Tên sản phẩm Laptop</th>
+                                        <th>Kỹ thuật viên</th>
+                                        <th class="text-right">Yêu cầu</th>
+                                        <th class="text-right" style="color: #16a34a;">Hoàn thành</th>
+                                        <th class="text-right" style="color: #dc2626;">Lỗi (phế phẩm)</th>
+                                        <th class="text-right">Tỷ lệ lỗi</th>
+                                        <th>Hạn chót</th>
+                                        <th class="text-center">Đánh giá tiến độ</th>
+                                        <th class="text-center">Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="o : ${prodPerf.orders}">
+                                        <td style="font-weight: 700; font-family: monospace;" th:text="${o.madot_code}">
+                                        </td>
+                                        <td style="font-weight: 600;" th:text="${o.tensp}"></td>
+                                        <td th:text="${o.hoten_phutrach}"></td>
+                                        <td class="text-right" th:text="${o.soluongyeucau}"></td>
+                                        <td class="text-right" style="font-weight: 700; color: #16a34a;"
+                                            th:text="${o.soluonghoanthanh}"></td>
+                                        <td class="text-right" style="font-weight: 700; color: #dc2626;"
+                                            th:text="${o.soluongloi}"></td>
+                                        <td class="text-right" style="font-weight: 600;" th:text="${o.ty_le_loi + '%'}">
+                                        </td>
+                                        <td th:text="${o.hanhoanthanh != null ? o.hanhoanthanh : '---'}"></td>
+                                        <td class="text-center">
+                                            <span th:if="${o.danh_gia_tien_do == 'Đúng hạn'}"
+                                                class="badge-status badge-green"><i class="fas fa-check"></i> Đúng
+                                                hạn</span>
+                                            <span th:if="${o.danh_gia_tien_do == 'Trễ hạn'}"
+                                                class="badge-status badge-orange"><i class="fas fa-clock"></i> Trễ
+                                                hạn</span>
+                                            <span th:if="${o.danh_gia_tien_do == 'Quá hạn'}"
+                                                class="badge-status badge-red"><i class="fas fa-exclamation"></i> Quá
+                                                hạn</span>
+                                            <span th:if="${o.danh_gia_tien_do == 'Đang tiến hành'}"
+                                                class="badge-status badge-blue"><i class="fas fa-spinner"></i> Đang
+                                                làm</span>
+                                            <span th:if="${o.danh_gia_tien_do == 'Đã hủy'}"
+                                                class="badge-status badge-gray">Đã hủy</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge-status badge-gray" th:text="${o.trangthai}"></span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(prodPerf.orders)}">
+                                        <td colspan="10" class="text-center" style="padding: 2.5rem; color: #94a3b8;">
+                                            Không có lệnh sản xuất nào trong kỳ đã chọn.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ======================================================================= -->
+                <!-- NỘI DUNG TAB 3: CÂN ĐỐI CUNG - CẦU & THIẾU HỤT VẬT TƯ MRP (TIME-REAL) -->
+                <!-- ======================================================================= -->
+                <div th:if="${tab == 'mrp'}">
+                    <!-- CẢNH BÁO TỔNG QUAN -->
+                    <div
+                        style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 1px solid #fecaca; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3
+                                style="margin: 0 0 0.25rem 0; color: #991b1b; display: flex; align-items: center; gap: 0.5rem; font-size: 1.15rem;">
+                                <i class="fas fa-triangle-exclamation"></i> Bảng Cân Đối Cung - Cầu & Thiếu Hụt Linh
+                                Kiện Cho Các Lệnh Đang Chạy
+                            </h3>
+                            <p style="margin: 0; color: #b91c1c; font-size: 0.88rem;">Hệ thống tự động phân rã định mức
+                                BOM của tất cả đơn hàng đang mở so với tổng khả dụng của Kho Tổng & Kho Xưởng.</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.8rem; color: #7f1d1d; font-weight: 600;">LINH KIỆN THIẾU HỤT
+                                </div>
+                                <div style="font-size: 1.6rem; font-weight: 800; color: #b91c1c;"
+                                    th:text="${mrpData.so_loai_thieu + ' loại'}"></div>
+                            </div>
+                            <div style="text-align: right; padding-left: 1rem; border-left: 2px solid #fca5a5;">
+                                <div style="font-size: 0.8rem; color: #7f1d1d; font-weight: 600;">DỰ TOÁN NGÂN SÁCH MUA
+                                </div>
+                                <div style="font-size: 1.6rem; font-weight: 800; color: #b91c1c;"
+                                    th:text="${#numbers.formatDecimal(mrpData.tong_chi_phi_mua, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG CÂN ĐỐI CUNG CẦU -->
+                    <div class="report-table-card">
+                        <div class="report-table-header">
+                            <h3><i class="fas fa-list-check" style="color: #2563eb;"></i> Chi Tiết Nhu Cầu Gộp vs Khả
+                                Dụng & Đề Xuất Mua Hàng</h3>
+                            <div class="table-search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="mrpSearch" onkeyup="filterTable('mrpSearch', 'mrpTable')"
+                                    placeholder="Tìm kiếm linh kiện, mã NVL...">
+                            </div>
+                        </div>
+                        <div class="mrp-table-responsive">
+                            <table class="mrp-table" id="mrpTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã NVL</th>
+                                        <th>Tên Nguyên Vật Liệu</th>
+                                        <th class="text-center">ĐVT</th>
+                                        <th class="text-right" style="color: #1d4ed8; font-weight: 700;">Tổng nhu cầu SX
+                                        </th>
+                                        <th class="text-right">Tồn kho tổng</th>
+                                        <th class="text-right">Tồn xưởng</th>
+                                        <th class="text-right" style="font-weight: 600;">Tổng khả dụng</th>
+                                        <th class="text-right" style="color: #dc2626; font-weight: 800;">Lượng thiếu hụt
+                                        </th>
+                                        <th class="text-right">Đơn giá nhập</th>
+                                        <th class="text-right" style="font-weight: 700;">Dự toán mua bù</th>
+                                        <th class="text-center">Lead time</th>
+                                        <th class="text-center">Tình trạng cung ứng</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${mrpData.items}"
+                                        th:style="${item.soluongthieu > 0 ? 'background: #fff5f5;' : ''}">
+                                        <td style="font-weight: 700; font-family: monospace;"
+                                            th:text="${item.manvl_code}"></td>
+                                        <td style="font-weight: 600;" th:text="${item.tennvl}"></td>
+                                        <td class="text-center" th:text="${item.donvitinh}"></td>
+                                        <td class="text-right" style="font-weight: 700; color: #1d4ed8;"
+                                            th:text="${#numbers.formatDecimal(item.tongnhucau, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right"
+                                            th:text="${#numbers.formatDecimal(item.ton_kho_tong, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right"
+                                            th:text="${#numbers.formatDecimal(item.ton_kho_sx, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right" style="font-weight: 600;"
+                                            th:text="${#numbers.formatDecimal(item.tong_kha_dung, 0, 'POINT', 0, 'COMMA')}">
+                                        </td>
+                                        <td class="text-right" style="font-weight: 800; font-size: 1.05rem;"
+                                            th:style="${item.soluongthieu > 0 ? 'color: #dc2626;' : 'color: #16a34a;'}"
+                                            th:text="${item.soluongthieu > 0 ? ('-' + #numbers.formatDecimal(item.soluongthieu, 0, 'POINT', 0, 'COMMA')) : '0'}">
+                                        </td>
+                                        <td class="text-right"
+                                            th:text="${#numbers.formatDecimal(item.dongianhap, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                        </td>
+                                        <td class="text-right" style="font-weight: 700;"
+                                            th:text="${#numbers.formatDecimal(item.chi_phi_mua_du_kien, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                        </td>
+                                        <td class="text-center" th:text="${item.lead_time_ngay + ' ngày'}"></td>
+                                        <td class="text-center">
+                                            <span th:if="${item.trang_thai_cung_ung == 'THIEU_HANG'}"
+                                                class="badge-status badge-red"><i class="fas fa-circle-exclamation"></i>
+                                                Thiếu hụt</span>
+                                            <span th:if="${item.trang_thai_cung_ung == 'CANH_BAO_TON_THAP'}"
+                                                class="badge-status badge-orange"><i
+                                                    class="fas fa-triangle-exclamation"></i> Tồn thấp</span>
+                                            <span th:if="${item.trang_thai_cung_ung == 'DU_HANG'}"
+                                                class="badge-status badge-green"><i class="fas fa-circle-check"></i> Đủ
+                                                sản xuất</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a th:if="${item.soluongthieu > 0}" th:href="@{/kho/nhap-nvl/create}"
+                                                class="btn-report btn-report-excel"
+                                                style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
+                                                <i class="fas fa-cart-plus"></i> Đặt hàng
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(mrpData.items)}">
+                                        <td colspan="13" class="text-center"
+                                            style="padding: 2.5rem; color: #16a34a; font-weight: 600;">
+                                            <i class="fas fa-check-circle"
+                                                style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                                            Tuyệt vời! Hiện tại không có yêu cầu sản xuất nào bị thiếu hụt nguyên vật
+                                            liệu.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ======================================================================= -->
+                <!-- NỘI DUNG TAB 4: ĐỐI SOÁT ĐỊNH MỨC BOM & HAO HỤT THỰC TẾ -->
+                <!-- ======================================================================= -->
+                <div th:if="${tab == 'bom'}">
+                    <div class="report-table-card">
+                        <div class="report-table-header">
+                            <div>
+                                <h3><i class="fas fa-sitemap" style="color: #2563eb;"></i> Báo Cáo Đối Soát Định Mức BOM
+                                    vs Thực Xuất Kho</h3>
+                                <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #64748b;">So sánh chi tiết
+                                    lượng vật tư cấp thực tế cho xưởng so với định mức kỹ thuật đã phê duyệt trong BOM
+                                </p>
+                            </div>
+                            <div class="table-search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="bomSearch" onkeyup="filterTable('bomSearch', 'bomTable')"
+                                    placeholder="Tìm kiếm lệnh, laptop, linh kiện...">
+                            </div>
+                        </div>
+                        <div class="mrp-table-responsive">
+                            <table class="mrp-table" id="bomTable">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">STT</th>
+                                        <th>Mã Lệnh / Đợt SX</th>
+                                        <th>Sản phẩm Laptop</th>
+                                        <th class="text-center">BOM Ver</th>
+                                        <th class="text-center">Tiến độ SX</th>
+                                        <th class="text-center">Trạng thái lệnh</th>
+                                        <th class="text-center">Cơ cấu BOM</th>
+                                        <th class="text-center">Đánh giá tiêu hao</th>
+                                        <th class="text-center" style="width: 160px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="order, iter : ${bomVariances}">
+                                        <td class="text-center" style="color: #94a3b8;" th:text="${iter.count}"></td>
+                                        <td style="font-weight: 700; font-family: monospace; color: #2563eb;"
+                                            th:text="${order.madot_code}"></td>
+                                        <td style="font-weight: 600;" th:text="${order.tensp}"></td>
+                                        <td class="text-center" style="font-family: monospace;"
+                                            th:text="${order.phienban_bom}"></td>
+                                        <td class="text-center">
+                                            <span class="badge-status badge-blue" style="font-weight: 700;"
+                                                th:text="${order.tiendo_text + ' máy'}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge-status"
+                                                th:classappend="${order.is_completed ? 'badge-green' : 'badge-orange'}"
+                                                th:text="${order.is_completed ? 'ĐÃ HOÀN THÀNH' : 'ĐANG THỰC HIỆN'}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge-status badge-gray"
+                                                th:text="${order.so_linh_kien + ' linh kiện'}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:if="${order.danh_gia_tong_quan == 'VƯỢT ĐỊNH MỨC'}"
+                                                class="badge-status badge-red"><i class="fas fa-arrow-trend-up"></i>
+                                                Vượt định mức</span>
+                                            <span th:if="${order.danh_gia_tong_quan == 'CẤP VƯỢT KẾ HOẠCH'}"
+                                                class="badge-status badge-red"><i class="fas fa-circle-exclamation"></i>
+                                                Cấp vượt KH</span>
+                                            <span th:if="${order.danh_gia_tong_quan == 'TIẾT KIỆM'}"
+                                                class="badge-status badge-green"><i class="fas fa-arrow-trend-down"></i>
+                                                Tiết kiệm</span>
+                                            <span th:if="${order.danh_gia_tong_quan == 'CHUẨN ĐỊNH MỨC'}"
+                                                class="badge-status badge-blue"><i class="fas fa-check"></i> Chuẩn định
+                                                mức</span>
+                                            <span th:if="${order.danh_gia_tong_quan == 'ĐANG TIẾN HÀNH (HỢP LÝ)'}"
+                                                class="badge-status" style="background: #e0f2fe; color: #0284c7;"><i
+                                                    class="fas fa-gears"></i> Đang ráp (Hợp lý)</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a th:href="@{/baocao/doi-soat-bom/{id}(id=${order.maycsx})}"
+                                                class="btn-report btn-report-csv"
+                                                style="padding: 0.35rem 0.8rem; font-size: 0.82rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                                <i class="fas fa-eye"></i> Xem đối soát
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(bomVariances)}">
+                                        <td colspan="9" class="text-center" style="padding: 2.5rem; color: #94a3b8;">
+                                            Không có dữ liệu đối soát BOM cho các lệnh sản xuất trong kỳ.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
         </div>
+    </div>
 
+    <!-- SCRIPT XUẤT EXCEL & CHART TRÊN TRÌNH DUYỆT -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Xuất bảng sang file Excel bằng SheetJS
+        function exportTableToExcel() {
+            var activeTab = /*[[${tab}]]*/ 'xnt';
+            var tableId = 'skuTable';
+            var fileName = 'BaoCao_XuatNhapTon.xlsx';
 
-        <!-- Tổng NVL xuất -->
-        <div class="content-card report-summary-card">
-
-          <strong>Tổng NVL xuất</strong>
-
-          <h2
-                  data-number
-                  th:text="${totals.getOrDefault('XUAT_NVL', 0)}">
-          </h2>
-
-        </div>
-
-
-        <!-- Tổng thành phẩm nhập -->
-        <div class="content-card report-summary-card">
-
-          <strong>Tổng thành phẩm nhập</strong>
-
-          <h2
-                  data-number
-                  th:text="${totals.getOrDefault('NHAP_THANH_PHAM', 0)}">
-          </h2>
-
-        </div>
-
-
-        <!-- Tổng thành phẩm xuất -->
-        <div class="content-card report-summary-card">
-
-          <strong>Tổng thành phẩm xuất</strong>
-
-          <h2
-                  data-number
-                  th:text="${totals.getOrDefault('XUAT_THANH_PHAM', 0)}">
-          </h2>
-
-        </div>
-
-
-        <!-- Tổng NVL tồn -->
-        <div class="content-card report-summary-card">
-
-          <strong>Tổng NVL tồn</strong>
-
-          <h2
-                  data-number
-                  th:text="${currentStock.getOrDefault('NVL_TON', 0)}">
-          </h2>
-
-        </div>
-
-
-        <!-- Tổng thành phẩm tồn -->
-        <div class="content-card report-summary-card">
-
-          <strong>Tổng sản phẩm tồn</strong>
-
-          <h2
-                  data-number
-                  th:text="${currentStock.getOrDefault('THANH_PHAM_TON', 0)}">
-          </h2>
-
-        </div>
-
-      </div>
-
-
-      <!-- BIỂU ĐỒ -->
-      <h2>Biểu đồ nhập và xuất</h2>
-
-      <div
-              style="
-                    display:grid;
-                    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-                    gap:1rem;
-                ">
-
-        <!-- Biểu đồ NVL -->
-        <div
-                class="content-card"
-                style="padding:1rem">
-
-          <canvas
-                  id="nvlChart"
-                  aria-label="Nhập và xuất NVL">
-          </canvas>
-
-        </div>
-
-
-        <!-- Biểu đồ thành phẩm -->
-        <div
-                class="content-card"
-                style="padding:1rem">
-
-          <canvas
-                  id="finishedChart"
-                  aria-label="Nhập và xuất thành phẩm">
-          </canvas>
-
-        </div>
-
-      </div>
-
-      <h2>Biểu đồ tồn kho</h2>
-
-      <div
-              style="
-        display:grid;
-        grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-        gap:1rem;
-    ">
-
-        <div
-                class="content-card"
-                style="padding:1rem">
-
-          <canvas
-                  id="stockChart"
-                  aria-label="Tồn kho nguyên vật liệu và thành phẩm">
-          </canvas>
-
-        </div>
-
-      </div>
-
-
-      <!-- Chart.js -->
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-      <script th:inline="javascript">
-
-        if (window.Chart) {
-
-          const nvlIn = Number(
-                  /*[[${totals.getOrDefault('NHAP_NVL', 0)}]]*/ 0
-          );
-
-          const nvlOut = Number(
-                  /*[[${totals.getOrDefault('XUAT_NVL', 0)}]]*/ 0
-          );
-
-          const finishedIn = Number(
-                  /*[[${totals.getOrDefault('NHAP_THANH_PHAM', 0)}]]*/ 0
-          );
-
-          const finishedOut = Number(
-                  /*[[${totals.getOrDefault('XUAT_THANH_PHAM', 0)}]]*/ 0
-          );
-
-          const nvlStock = Number(
-                  /*[[${currentStock.getOrDefault('NVL_TON', 0)}]]*/ 0
-          );
-
-          const finishedStock = Number(
-                  /*[[${currentStock.getOrDefault('THANH_PHAM_TON', 0)}]]*/ 0
-          );
-
-
-          const makeChart = (
-                  id,
-                  label,
-                  received,
-                  issued
-          ) => {
-
-            const canvas =
-                    document.getElementById(id);
-
-            if (!canvas) {
-              return;
+            if (activeTab === 'sanxuat') {
+                tableId = 'orderTable';
+                fileName = 'BaoCao_HieuSuat_SanXuat.xlsx';
+            } else if (activeTab === 'mrp') {
+                tableId = 'mrpTable';
+                fileName = 'BaoCao_CanDoi_NhuCau_MRP.xlsx';
+            } else if (activeTab === 'bom') {
+                tableId = 'bomTable';
+                fileName = 'BaoCao_DoiSoat_DinhMuc_BOM.xlsx';
             }
 
-            new Chart(canvas, {
-
-              type: 'bar',
-
-              data: {
-
-                labels: [
-                  'Nhập',
-                  'Xuất'
-                ],
-
-                datasets: [
-
-                  {
-                    label: label,
-
-                    data: [
-                      received,
-                      issued
-                    ],
-
-                    backgroundColor: [
-                      '#2563eb',
-                      '#f97316'
-                    ]
-                  }
-
-                ]
-
-              },
-
-              options: {
-
-                responsive: true,
-
-                maintainAspectRatio: true,
-
-                scales: {
-
-                  y: {
-                    beginAtZero: true
-                  }
-
-                }
-
-              }
-
-            });
-
-          };
-
-          const makeStockChart = () => {
-
-            const canvas =
-                    document.getElementById('stockChart');
-
-            if (!canvas) {
-              return;
+            var table = document.getElementById(tableId);
+            if (!table) {
+                alert('Không tìm thấy bảng dữ liệu để xuất Excel.');
+                return;
             }
 
-            new Chart(canvas, {
-
-              type: 'bar',
-
-              data: {
-
-                labels: [
-                  'Nguyên vật liệu',
-                  'Thành phẩm'
-                ],
-
-                datasets: [
-
-                  {
-                    label: 'Tồn kho',
-
-                    data: [
-                      nvlStock,
-                      finishedStock
-                    ],
-
-                    backgroundColor: [
-                      '#2563eb',
-                      '#16a34a'
-                    ]
-                  }
-
-                ]
-
-              },
-
-              options: {
-
-                responsive: true,
-
-                maintainAspectRatio: true,
-
-                scales: {
-
-                  y: {
-                    beginAtZero: true
-                  }
-
-                }
-
-              }
-
-            });
-
-          };
-
-
-          makeChart(
-                  'nvlChart',
-                  'Nguyên vật liệu',
-                  nvlIn,
-                  nvlOut
-          );
-
-
-          makeChart(
-                  'finishedChart',
-                  'Thành phẩm',
-                  finishedIn,
-                  finishedOut
-          );
-
-          makeStockChart();
-
+            var wb = XLSX.utils.table_to_book(table, { sheet: "Báo Cáo MRP" });
+            XLSX.writeFile(wb, fileName);
         }
 
-      </script>
+        // BIỂU ĐỒ CHO TAB XNT
+        var currentTab = /*[[${tab}]]*/ 'xnt';
 
-    </main>
+        if (currentTab === 'xnt' && window.Chart) {
+            const nvlNhap = Number(/*[[${inventorySummary != null ? inventorySummary.tong_nvl_nhap : 0}]]*/ 0);
+            const nvlXuat = Number(/*[[${inventorySummary != null ? inventorySummary.tong_nvl_xuat : 0}]]*/ 0);
+            const tpNhap = Number(/*[[${inventorySummary != null ? inventorySummary.tong_tp_nhap : 0}]]*/ 0);
+            const tpXuat = Number(/*[[${inventorySummary != null ? inventorySummary.tong_tp_xuat : 0}]]*/ 0);
 
-  </div>
+            const nvlTon = Number(/*[[${inventorySummary != null ? inventorySummary.tong_nvl_cuoi : 0}]]*/ 0);
+            const tpTon = Number(/*[[${inventorySummary != null ? inventorySummary.tong_tp_cuoi : 0}]]*/ 0);
 
-</div>
+            const ctxInOut = document.getElementById('chartInOut');
+            if (ctxInOut) {
+                new Chart(ctxInOut, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Nguyên Vật Liệu', 'Thành Phẩm Laptop'],
+                        datasets: [
+                            { label: 'Nhập trong kỳ', data: [nvlNhap, tpNhap], backgroundColor: '#10b981' },
+                            { label: 'Xuất trong kỳ', data: [nvlXuat, tpXuat], backgroundColor: '#f97316' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            const ctxRatio = document.getElementById('chartStockRatio');
+            if (ctxRatio) {
+                new Chart(ctxRatio, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Tồn Nguyên Vật Liệu', 'Tồn Thành Phẩm Laptop'],
+                        datasets: [{
+                            data: [nvlTon, tpTon],
+                            backgroundColor: ['#3b82f6', '#10b981']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+
+        // BIỂU ĐỒ CHO TAB SẢN XUẤT
+        if (currentTab === 'sanxuat' && window.Chart) {
+            const topProducts = /*[[${prodPerf != null ? prodPerf.topProducts : {}}]]*/[];
+            const workerStats = /*[[${prodPerf != null ? prodPerf.workerStats : {}}]]*/[];
+
+            const ctxProd = document.getElementById('chartProductQuality');
+            if (ctxProd && Array.isArray(topProducts) && topProducts.length > 0) {
+                new Chart(ctxProd, {
+                    type: 'bar',
+                    data: {
+                        labels: topProducts.map(p => p.name),
+                        datasets: [
+                            { label: 'Sản lượng đạt', data: topProducts.map(p => p.san_luong), backgroundColor: '#10b981' },
+                            { label: 'Số lượng lỗi', data: topProducts.map(p => p.loi), backgroundColor: '#ef4444' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            const ctxWorker = document.getElementById('chartWorkerPerf');
+            if (ctxWorker && Array.isArray(workerStats) && workerStats.length > 0) {
+                new Chart(ctxWorker, {
+                    type: 'bar',
+                    data: {
+                        labels: workerStats.map(w => w.name),
+                        datasets: [
+                            { label: 'Lắp ráp hoàn thành', data: workerStats.map(w => w.san_luong), backgroundColor: '#3b82f6' },
+                            { label: 'Lỗi phát sinh', data: workerStats.map(w => w.loi), backgroundColor: '#ea580c' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+        /*]]>*/
+    </script>
 
 </body>
+
 </html>

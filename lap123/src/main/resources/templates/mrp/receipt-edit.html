@@ -1,0 +1,1069 @@
+
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sửa phiếu nhập</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+
+    <style>
+        :root {
+            --edit-primary: #2563eb;
+            --edit-primary-hover: #1d4ed8;
+            --edit-bg: #f8fafc;
+            --edit-card: #ffffff;
+            --edit-text: #0f172a;
+            --edit-muted: #64748b;
+            --edit-border: #e2e8f0;
+            --edit-soft-blue: #eff6ff;
+            --edit-danger: #dc2626;
+            --edit-danger-bg: #fef2f2;
+            --edit-radius: 12px;
+        }
+
+        .receipt-edit-page {
+            background: var(--edit-bg);
+            min-height: 100%;
+            padding-bottom: 36px;
+            color: var(--edit-text);
+        }
+
+        .receipt-edit-page * {
+            box-sizing: border-box;
+        }
+
+        .receipt-edit-page .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .receipt-edit-page .page-title {
+            margin: 0 0 8px;
+            color: var(--edit-text);
+            font-size: clamp(23px, 3vw, 30px);
+            font-weight: 750;
+            letter-spacing: -0.7px;
+        }
+
+        .receipt-edit-page .page-description {
+            margin: 0;
+            color: var(--edit-muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .receipt-edit-page .breadcrumb-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--edit-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .receipt-edit-page .content-card {
+            margin-bottom: 22px;
+            overflow: hidden;
+            background: var(--edit-card);
+            border: 1px solid var(--edit-border);
+            border-radius: var(--edit-radius);
+            box-shadow: 0 2px 8px rgb(15 23 42 / 3%);
+        }
+
+        .receipt-edit-page .content-card-body {
+            padding: 24px;
+        }
+
+        .receipt-edit-page .card-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .receipt-edit-page .heading-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 42px;
+            width: 42px;
+            height: 42px;
+            color: var(--edit-primary);
+            background: var(--edit-soft-blue);
+            border-radius: 10px;
+            font-size: 17px;
+        }
+
+        .receipt-edit-page .card-heading h2 {
+            margin: 1px 0 6px;
+            color: var(--edit-text);
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .receipt-edit-page .card-heading p {
+            margin: 0;
+            color: var(--edit-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .receipt-edit-page .form-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 22px;
+        }
+
+        .receipt-edit-page .form-group {
+            min-width: 0;
+            margin-bottom: 20px;
+        }
+
+        .receipt-edit-page .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .receipt-edit-page .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .receipt-edit-page .required-mark {
+            color: var(--edit-danger);
+        }
+
+        .receipt-edit-page .form-control {
+            display: block;
+            width: 100%;
+            min-height: 43px;
+            padding: 10px 12px;
+            color: var(--edit-text);
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+            font: inherit;
+            font-size: 13px;
+            transition: border-color .18s, box-shadow .18s;
+        }
+
+        .receipt-edit-page .form-control:hover {
+            border-color: #94a3b8;
+        }
+
+        .receipt-edit-page .form-control:focus {
+            border-color: var(--edit-primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
+        }
+
+        .receipt-edit-page textarea.form-control {
+            min-height: 96px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .receipt-edit-page .field-hint {
+            display: block;
+            margin-top: 7px;
+            color: var(--edit-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .receipt-edit-page .alert {
+            margin-bottom: 20px;
+            padding: 13px 16px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .receipt-edit-page .alert-danger {
+            color: #991b1b;
+            background: var(--edit-danger-bg);
+            border-color: #fecaca;
+        }
+
+        .receipt-edit-page .section-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 22px 24px;
+            border-bottom: 1px solid var(--edit-border);
+        }
+
+        .receipt-edit-page .section-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .receipt-edit-page .section-title-wrap h2 {
+            margin: 0 0 5px;
+            font-size: 17px;
+            font-weight: 750;
+        }
+
+        .receipt-edit-page .section-title-wrap p {
+            margin: 0;
+            color: var(--edit-muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .receipt-edit-page .line-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 25px;
+            padding: 0 8px;
+            color: var(--edit-primary);
+            background: var(--edit-soft-blue);
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .receipt-edit-page .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 10px 15px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 650;
+            line-height: 1.3;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .18s, border-color .18s, box-shadow .18s;
+            white-space: nowrap;
+        }
+
+        .receipt-edit-page .btn:focus-visible {
+            outline: 3px solid rgb(37 99 235 / 25%);
+            outline-offset: 2px;
+        }
+
+        .receipt-edit-page .btn-primary {
+            color: #fff;
+            background: var(--edit-primary);
+            border-color: var(--edit-primary);
+        }
+
+        .receipt-edit-page .btn-primary:hover {
+            background: var(--edit-primary-hover);
+            border-color: var(--edit-primary-hover);
+            box-shadow: 0 3px 8px rgb(37 99 235 / 18%);
+        }
+
+        .receipt-edit-page .btn-back {
+            color: #334155;
+            background: #fff;
+            border-color: #cbd5e1;
+        }
+
+        .receipt-edit-page .btn-back:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .receipt-edit-page .btn-delete-draft {
+            min-width: 38px;
+            min-height: 36px;
+            padding: 8px 10px;
+            color: var(--edit-danger);
+            background: #fff;
+            border-color: #fecaca;
+        }
+
+        .receipt-edit-page .btn-delete-draft:hover {
+            background: var(--edit-danger-bg);
+            border-color: #fca5a5;
+        }
+
+        .receipt-edit-page .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .receipt-edit-page .table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .receipt-edit-page .table thead th {
+            padding: 13px 16px;
+            color: #475569;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--edit-border);
+            font-size: 11px;
+            font-weight: 750;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: .35px;
+        }
+
+        .receipt-edit-page .table tbody td {
+            padding: 14px 16px;
+            background: #fff;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        .receipt-edit-page .table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .receipt-edit-page .table tbody tr:hover td {
+            background: #fbfdff;
+        }
+
+        .receipt-edit-page .table .form-control {
+            min-width: 100px;
+            min-height: 39px;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .receipt-edit-page .table .material-select {
+            min-width: 245px;
+        }
+
+        .receipt-edit-page .table .quantity-input {
+            min-width: 100px;
+        }
+
+        .receipt-edit-page .table .price-input {
+            min-width: 145px;
+        }
+
+        .receipt-edit-page .line-total {
+            color: #0f172a;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .receipt-edit-page .money-unit {
+            margin-left: 3px;
+            color: var(--edit-muted);
+            font-size: 11px;
+        }
+
+        .receipt-edit-page .table tfoot th {
+            padding: 18px 16px;
+            background: #f8fafc;
+            border-top: 1px solid var(--edit-border);
+            font-size: 13px;
+        }
+
+        .receipt-edit-page .total-label {
+            color: #475569;
+            text-align: right;
+        }
+
+        .receipt-edit-page .total-value {
+            color: var(--edit-primary);
+            font-size: 19px !important;
+            font-weight: 800;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .receipt-edit-page .empty-lines {
+            padding: 28px 16px;
+            color: var(--edit-muted);
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .receipt-edit-page .form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 22px;
+            padding: 18px 22px;
+            background: #fff;
+            border: 1px solid var(--edit-border);
+            border-radius: var(--edit-radius);
+            box-shadow: 0 2px 8px rgb(15 23 42 / 3%);
+        }
+
+        .receipt-edit-page .footer-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            color: var(--edit-muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .receipt-edit-page .footer-hint i {
+            margin-top: 2px;
+            color: var(--edit-primary);
+        }
+
+        .receipt-edit-page .footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .receipt-edit-page .content-card-body {
+                padding: 18px;
+            }
+
+            .receipt-edit-page .form-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .receipt-edit-page .section-toolbar {
+                align-items: flex-start;
+                padding: 18px;
+            }
+
+            .receipt-edit-page .form-footer {
+                align-items: stretch;
+                padding: 16px;
+            }
+
+            .receipt-edit-page .footer-actions {
+                width: 100%;
+            }
+
+            .receipt-edit-page .footer-actions .btn {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .receipt-edit-page .page-header {
+                align-items: flex-start;
+            }
+
+            .receipt-edit-page .page-header > .btn {
+                width: 100%;
+            }
+
+            .receipt-edit-page .section-toolbar {
+                flex-direction: column;
+            }
+
+            .receipt-edit-page #addLine {
+                width: 100%;
+            }
+
+            .receipt-edit-page .footer-hint {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Sửa phiếu nhập', 'Kho / Nhập NVL')}"></div>
+
+        <main class="content-body detail-page receipt-edit-page">
+
+            <div class="page-header">
+                <div>
+                    <div class="breadcrumb-label">
+                        <i class="fas fa-warehouse"></i>
+                        QUẢN LÝ KHO
+                        <i class="fas fa-chevron-right" style="font-size:9px"></i>
+                        PHIẾU NHẬP
+                    </div>
+
+                    <h1 class="page-title"
+                        th:text="${'Sửa phiếu nhập #' + receipt.maphieu}">
+                        Sửa phiếu nhập
+                    </h1>
+
+                    <p class="page-description">
+                        Cập nhật nhà cung cấp, ghi chú và danh sách nguyên vật liệu
+                        trước khi xác nhận nhập kho.
+                    </p>
+                </div>
+
+                <a class="btn btn-back"
+                   th:href="@{/kho/nhap-nvl/{id}(id=${receipt.maphieu})}">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại chi tiết
+                </a>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger">
+                <i class="fas fa-circle-exclamation"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <form method="post"
+                  th:action="@{/kho/nhap-nvl/{id}/edit(id=${receipt.maphieu})}"
+                  id="receiptForm">
+
+                <section class="content-card">
+                    <div class="content-card-body">
+
+                        <div class="card-heading">
+                            <div class="heading-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+
+                            <div>
+                                <h2>Thông tin phiếu nhập</h2>
+                                <p>Kiểm tra thông tin nhà cung cấp và nội dung phiếu.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="supplierId">
+                                    Nhà cung cấp
+                                    <span class="required-mark">*</span>
+                                </label>
+
+                                <select id="supplierId"
+                                        name="supplierId"
+                                        class="form-control"
+                                        required>
+                                    <option value="">-- Chọn nhà cung cấp --</option>
+
+                                    <option th:each="s : ${suppliers}"
+                                            th:value="${s.mancc}"
+                                            th:text="${s.tenncc}"
+                                            th:selected="${s.mancc == receipt.mancc}">
+                                    </option>
+                                </select>
+
+                                <span class="field-hint">
+                                    Chọn nhà cung cấp chịu trách nhiệm cung ứng NVL.
+                                </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="note">Ghi chú</label>
+
+                                <textarea id="note"
+                                          name="note"
+                                          class="form-control"
+                                          maxlength="255"
+                                          rows="3"
+                                          placeholder="Nhập ghi chú cho phiếu nhập..."
+                                          th:text="${receipt.ghichu}"></textarea>
+
+                                <span class="field-hint">Tối đa 255 ký tự.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="content-card">
+                    <div class="section-toolbar">
+                        <div class="section-title-wrap">
+                            <div class="heading-icon">
+                                <i class="fas fa-boxes-stacked"></i>
+                            </div>
+
+                            <div>
+                                <h2>
+                                    Chi tiết nguyên vật liệu
+                                    <span class="line-count" id="lineCount">0</span>
+                                </h2>
+
+                                <p>
+                                    Thêm, xóa hoặc thay đổi số lượng và đơn giá từng NVL.
+                                </p>
+                            </div>
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-primary"
+                                id="addLine">
+                            <i class="fas fa-plus"></i>
+                            Thêm nguyên vật liệu
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th style="min-width:280px">Nguyên vật liệu</th>
+                                <th style="min-width:120px">Số lượng</th>
+                                <th style="min-width:160px">Đơn giá (VNĐ)</th>
+                                <th style="min-width:150px">Thành tiền</th>
+                                <th style="width:80px; text-align:center">Xóa</th>
+                            </tr>
+                            </thead>
+
+                            <tbody id="receiptLines">
+                            <tr th:each="l : ${lines}" class="receipt-line">
+                                <td>
+                                    <select name="materialId"
+                                            class="form-control material-select"
+                                            required>
+                                        <option value="">-- Chọn NVL --</option>
+
+                                        <option th:each="m : ${materials}"
+                                                th:value="${m.manvl}"
+                                                th:text="${m.manvl_code + ' - ' + m.tennvl}"
+                                                th:attr="data-price=${m.dongianhap}"
+                                                th:selected="${m.manvl == l.manvl}">
+                                        </option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="number"
+                                           name="quantity"
+                                           class="form-control quantity-input"
+                                           min="1"
+                                           step="1"
+                                           required
+                                           th:value="${l.soluong}">
+                                </td>
+
+                                <td>
+                                    <!-- Đơn giá dùng text để không bị input number loại bỏ dấu chấm -->
+                                    <input type="text"
+                                           name="price"
+                                           class="form-control price-input"
+                                           inputmode="numeric"
+                                           autocomplete="off"
+                                           required
+                                           th:value="${l.dongia == null ? '0' : #numbers.formatDecimal(l.dongia, 0, 'POINT', 0, 'NONE')}">
+                                </td>
+
+                                <td>
+                                    <span class="line-total"
+                                          th:text="${l.thanhtien == null ? '0' : #numbers.formatDecimal(l.thanhtien, 0, 'POINT', 0, 'COMMA')}">0</span>
+                                    <span class="money-unit">VNĐ</span>
+                                </td>
+
+                                <td style="text-align:center">
+                                    <button type="button"
+                                            class="btn btn-delete-draft remove-line"
+                                            title="Xóa dòng nguyên vật liệu"
+                                            aria-label="Xóa dòng nguyên vật liệu">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr id="emptyLineMessage"
+                                th:if="${#lists.isEmpty(lines)}">
+                                <td colspan="5" class="empty-lines">
+                                    <i class="fas fa-box-open"
+                                       style="font-size:22px; display:block; margin-bottom:9px"></i>
+                                    Chưa có nguyên vật liệu. Nhấn
+                                    <strong>Thêm nguyên vật liệu</strong>
+                                    để bắt đầu.
+                                </td>
+                            </tr>
+                            </tbody>
+
+                            <tfoot>
+                            <tr>
+                                <th colspan="3" class="total-label">
+                                    Tổng giá trị phiếu nhập
+                                </th>
+
+                                <th colspan="2">
+                                    <span id="grandTotal" class="total-value">0</span>
+                                    <span class="money-unit">VNĐ</span>
+                                </th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </section>
+
+                <div class="form-footer">
+                    <div class="footer-hint">
+                        <i class="fas fa-circle-info"></i>
+                        <span>
+                            Thay đổi chỉ được lưu khi bạn nhấn
+                            <strong>Lưu thay đổi</strong>.
+                            Phiếu nháp chưa làm thay đổi tồn kho.
+                        </span>
+                    </div>
+
+                    <div class="footer-actions">
+                        <a class="btn btn-back"
+                           th:href="@{/kho/nhap-nvl/{id}(id=${receipt.maphieu})}">
+                            <i class="fas fa-xmark"></i>
+                            Hủy
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-floppy-disk"></i>
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <template id="lineTemplate">
+                <tr class="receipt-line">
+                    <td>
+                        <select name="materialId"
+                                class="form-control material-select"
+                                required>
+                            <option value="">-- Chọn NVL --</option>
+
+                            <option th:each="m : ${materials}"
+                                    th:value="${m.manvl}"
+                                    th:text="${m.manvl_code + ' - ' + m.tennvl}"
+                                    th:attr="data-price=${m.dongianhap}">
+                            </option>
+                        </select>
+                    </td>
+
+                    <td>
+                        <input type="number"
+                               name="quantity"
+                               class="form-control quantity-input"
+                               min="1"
+                               step="1"
+                               value="1"
+                               required>
+                    </td>
+
+                    <td>
+                        <input type="text"
+                               name="price"
+                               class="form-control price-input"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               value="0"
+                               required>
+                    </td>
+
+                    <td>
+                        <span class="line-total">0</span>
+                        <span class="money-unit">VNĐ</span>
+                    </td>
+
+                    <td style="text-align:center">
+                        <button type="button"
+                                class="btn btn-delete-draft remove-line"
+                                title="Xóa dòng nguyên vật liệu"
+                                aria-label="Xóa dòng nguyên vật liệu">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            </template>
+        </main>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const form = document.getElementById('receiptForm');
+        const tbody = document.getElementById('receiptLines');
+        const template = document.getElementById('lineTemplate');
+        const addButton = document.getElementById('addLine');
+        const grandTotal = document.getElementById('grandTotal');
+        const lineCount = document.getElementById('lineCount');
+
+        /*
+         * Chấp nhận:
+         * 232232
+         * 232.232
+         * 22.323.232
+         * 232,232 (dấu phẩy được hiểu là phân cách hàng nghìn)
+         *
+         * Trả về NaN nếu có ký tự không hợp lệ.
+         */
+        function parseMoney(input) {
+            if (!input) return NaN;
+
+            const raw = input.value.trim();
+
+            if (raw === '') return NaN;
+
+            const normalized = raw.replace(/[.,\s]/g, '');
+
+            if (!/^\d+$/.test(normalized)) {
+                return NaN;
+            }
+
+            const value = Number(normalized);
+
+            return Number.isSafeInteger(value) ? value : NaN;
+        }
+
+        function formatMoney(value) {
+            if (!Number.isFinite(value)) {
+                return '0';
+            }
+
+            return Math.round(value).toLocaleString('vi-VN', {
+                maximumFractionDigits: 0,
+                useGrouping: true
+            });
+        }
+
+        function getRows() {
+            return tbody.querySelectorAll('.receipt-line');
+        }
+
+        function updateEmptyState() {
+            const rows = getRows();
+            const emptyRow = document.getElementById('emptyLineMessage');
+
+            if (emptyRow) {
+                emptyRow.remove();
+            }
+
+            if (rows.length === 0) {
+                const row = document.createElement('tr');
+                row.id = 'emptyLineMessage';
+
+                const cell = document.createElement('td');
+                cell.colSpan = 5;
+                cell.className = 'empty-lines';
+
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-box-open';
+                icon.style.cssText =
+                    'font-size:22px;display:block;margin-bottom:9px';
+
+                cell.appendChild(icon);
+                cell.appendChild(
+                    document.createTextNode(
+                        'Chưa có nguyên vật liệu. Nhấn "Thêm nguyên vật liệu" để bắt đầu.'
+                    )
+                );
+
+                row.appendChild(cell);
+                tbody.appendChild(row);
+            }
+        }
+
+        function updateTotals() {
+            let total = 0;
+
+            getRows().forEach(row => {
+                const quantityInput = row.querySelector('.quantity-input');
+                const priceInput = row.querySelector('.price-input');
+                const lineTotalElement = row.querySelector('.line-total');
+
+                const quantity = Number(quantityInput.value);
+                const price = parseMoney(priceInput);
+
+                if (
+                    quantityInput.value.trim() === '' ||
+                    !Number.isSafeInteger(quantity) ||
+                    quantity < 1 ||
+                    !Number.isSafeInteger(price) ||
+                    price < 0
+                ) {
+                    lineTotalElement.textContent = '—';
+                    return;
+                }
+
+                const lineTotal = quantity * price;
+
+                if (!Number.isSafeInteger(lineTotal)) {
+                    lineTotalElement.textContent = '—';
+                    return;
+                }
+
+                lineTotalElement.textContent = formatMoney(lineTotal);
+                total += lineTotal;
+            });
+
+            grandTotal.textContent = formatMoney(total);
+            lineCount.textContent = getRows().length;
+
+            updateEmptyState();
+        }
+
+        function addLine() {
+            const fragment = template.content.cloneNode(true);
+            tbody.appendChild(fragment);
+
+            updateTotals();
+
+            const rows = getRows();
+            const lastRow = rows[rows.length - 1];
+
+            if (lastRow) {
+                lastRow.querySelector('.material-select').focus();
+            }
+        }
+
+        addButton.addEventListener('click', addLine);
+
+        // Chọn NVL: lấy đơn giá mặc định từ dropdown.
+        tbody.addEventListener('change', event => {
+            if (!event.target.matches('.material-select')) {
+                return;
+            }
+
+            const row = event.target.closest('.receipt-line');
+            const selected = event.target.selectedOptions[0];
+            const priceInput = row.querySelector('.price-input');
+
+            if (selected && selected.value) {
+                const rawPrice = selected.dataset.price || '0';
+                const defaultPrice = Number(rawPrice);
+
+                if (Number.isFinite(defaultPrice) && defaultPrice >= 0) {
+                    priceInput.value = String(Math.round(defaultPrice));
+                } else {
+                    priceInput.value = '0';
+                }
+            } else {
+                priceInput.value = '0';
+            }
+
+            updateTotals();
+        });
+
+        // Nhập số lượng/đơn giá: tính lại ngay.
+        tbody.addEventListener('input', event => {
+            if (event.target.matches('.quantity-input, .price-input')) {
+                updateTotals();
+            }
+        });
+
+        // Khi rời ô đơn giá, chuẩn hóa về số thô không dấu chấm.
+        tbody.addEventListener('focusout', event => {
+            if (!event.target.matches('.price-input')) {
+                return;
+            }
+
+            const price = parseMoney(event.target);
+
+            if (Number.isSafeInteger(price) && price >= 0) {
+                event.target.value = String(price);
+            }
+
+            updateTotals();
+        });
+
+        // Xóa dòng NVL.
+        tbody.addEventListener('click', event => {
+            const button = event.target.closest('.remove-line');
+
+            if (!button) {
+                return;
+            }
+
+            const rows = getRows();
+
+            if (rows.length <= 1) {
+                alert('Phiếu nhập phải có ít nhất một dòng nguyên vật liệu.');
+                return;
+            }
+
+            button.closest('.receipt-line').remove();
+            updateTotals();
+        });
+
+        // Kiểm tra dữ liệu trước khi gửi form.
+        form.addEventListener('submit', event => {
+            const rows = getRows();
+
+            if (rows.length === 0) {
+                event.preventDefault();
+                alert('Phiếu nhập phải có ít nhất một dòng nguyên vật liệu.');
+                return;
+            }
+
+            const supplier = document.getElementById('supplierId');
+
+            if (!supplier.value) {
+                event.preventDefault();
+                supplier.focus();
+                alert('Vui lòng chọn nhà cung cấp.');
+                return;
+            }
+
+            const selectedIds = new Set();
+
+            for (const row of rows) {
+                const material = row.querySelector('.material-select');
+                const quantity = row.querySelector('.quantity-input');
+                const price = row.querySelector('.price-input');
+
+                if (!material.value || selectedIds.has(material.value)) {
+                    event.preventDefault();
+                    material.focus();
+                    alert('Vui lòng chọn NVL hợp lệ và không chọn trùng NVL.');
+                    return;
+                }
+
+                selectedIds.add(material.value);
+
+                const quantityValue = Number(quantity.value);
+                const priceValue = parseMoney(price);
+
+                if (
+                    quantity.value.trim() === '' ||
+                    !Number.isSafeInteger(quantityValue) ||
+                    quantityValue <= 0 ||
+                    !Number.isSafeInteger(priceValue) ||
+                    priceValue < 0
+                ) {
+                    event.preventDefault();
+                    alert(
+                        'Số lượng phải là số nguyên dương; đơn giá phải là số nguyên không âm.'
+                    );
+                    return;
+                }
+
+                // Backend nhận giá trị số nguyên thô, ví dụ 232232.
+                price.value = String(priceValue);
+                quantity.value = String(quantityValue);
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn lưu thay đổi phiếu nhập?')) {
+                event.preventDefault();
+            }
+        });
+
+        // Khởi tạo: tính lại theo số lượng và đơn giá đang có trong input.
+        updateTotals();
+    })();
+</script>
+
+</body>
+</html>

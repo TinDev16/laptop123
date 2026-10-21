@@ -1,25 +1,147 @@
+
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nhập nguyên vật liệu</title>
-<link rel="stylesheet" th:href="@{/style.css}">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nhập nguyên vật liệu</title>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
 </head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div><div class="main-wrapper">
-<div th:replace="~{fragments/sidebar :: topbar('Nhập nguyên vật liệu', 'Kho / Nhập NVL')}"></div>
-<main class="content-body">
-<div class="page-header"><div><h1 class="page-title">Phiếu nhập nguyên vật liệu</h1><p class="page-description">Theo dõi phiếu nhập, giá trị lô hàng và trạng thái nhập kho.</p></div><a class="btn btn-primary" th:href="@{/kho/nhap-nvl/create}"><i class="fas fa-plus"></i> Tạo phiếu nhập</a></div>
-<p th:if="${success}" th:text="${success}" class="alert alert-success"></p>
-<p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
-<div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Danh sách phiếu nhập</h2><span class="record-count" th:text="${#lists.size(receipts) + ' bản ghi'}">0 bản ghi</span></div>
-<div class="table-container"><table><thead><tr><th>Mã</th><th>Nhà cung cấp</th><th>Người lập</th><th>Ngày lập</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ghi chú</th><th>Thao tác</th></tr></thead><tbody>
-<tr th:each="r : ${receipts}">
-<td class="font-semibold" th:text="${r.maphieu}"></td><td th:text="${r.tenncc}"></td><td th:text="${r.hoten}"></td><td data-date-time th:text="${r.ngaytao}"></td>
-<td><span data-number th:text="${r.tongtien}"></span> VNĐ</td><td><span class="status-pill" th:text="${r.trangthai}"></span></td><td th:text="${r.ghichu != null and !#strings.isEmpty(r.ghichu) ? r.ghichu : '—'}"></td>
-<td><div class="table-actions receipt-table-actions"><a class="btn btn-outline btn-compact" th:href="@{/kho/nhap-nvl/{id}(id=${r.maphieu})}"><i class="fas fa-eye"></i> Xem</a>
-<form th:if="${r.trangthai == 'NHAP_NHAP'}" th:action="@{/kho/nhap-nvl/{id}/delete(id=${r.maphieu})}" method="post" onsubmit="return confirm('Xóa phiếu nhập bản nháp này?')"><button type="submit" class="btn btn-compact btn-delete-draft"><i class="fas fa-trash-alt"></i> Xóa</button></form>
-</div></td></tr>
-<tr class="empty-row" th:if="${#lists.isEmpty(receipts)}"><td colspan="8">Chưa có dữ liệu để hiển thị.</td></tr>
-</tbody></table></div></div>
-</main></div></div></body></html>
+
+<body>
+<div class="app-container">
+
+    <div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div>
+
+    <div class="main-wrapper">
+
+        <div th:replace="~{fragments/sidebar :: topbar('Nhập nguyên vật liệu', 'Kho / Nhập NVL')}"></div>
+
+        <main class="content-body">
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Phiếu nhập nguyên vật liệu</h1>
+                    <p class="page-description">
+                        Theo dõi phiếu nhập, giá trị lô hàng và trạng thái nhập kho.
+                    </p>
+                </div>
+
+                <a class="btn btn-primary" th:href="@{/kho/nhap-nvl/create}">
+                    <i class="fas fa-plus"></i>
+                    Tạo phiếu nhập
+                </a>
+            </div>
+
+            <p th:if="${success}"
+               th:text="${success}"
+               class="alert alert-success"></p>
+
+            <p th:if="${error}"
+               th:text="${error}"
+               class="alert alert-danger"></p>
+
+            <div class="content-card">
+
+                <div class="content-card-header">
+                    <h2 class="content-card-title">Danh sách phiếu nhập</h2>
+
+                    <span class="record-count"
+                          th:text="${#lists.size(receipts) + ' bản ghi'}">
+                        0 bản ghi
+                    </span>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Nhà cung cấp</th>
+                            <th>Người lập</th>
+                            <th>Ngày lập</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <tr th:each="r : ${receipts}">
+                            <td class="font-semibold"
+                                th:text="${r.maphieu}"></td>
+
+                            <td th:text="${r.tenncc}"></td>
+
+                            <td th:text="${r.hoten}"></td>
+
+                            <td data-date-time
+                                th:text="${r.ngaytao}"></td>
+
+                            <td>
+                                <span data-number
+                                      th:text="${r.tongtien}"></span>
+                                VNĐ
+                            </td>
+
+                            <td>
+                                <span class="status-pill"
+                                      th:text="${r.trangthai}"></span>
+                            </td>
+
+                            <td th:text="${r.ghichu != null and !#strings.isEmpty(r.ghichu) ? r.ghichu : '—'}"></td>
+
+                            <td>
+                                <div class="table-actions receipt-table-actions">
+
+                                    <!-- Xem chi tiết -->
+                                    <a class="btn btn-outline btn-compact"
+                                       th:href="@{/kho/nhap-nvl/{id}(id=${r.maphieu})}">
+                                        <i class="fas fa-eye"></i>
+                                        Xem
+                                    </a>
+
+                                    <!-- Sửa phiếu nhập bản nháp -->
+                                    <a th:if="${r.trangthai == 'NHAP_NHAP'}"
+                                       class="btn btn-outline btn-compact"
+                                       th:href="@{/kho/nhap-nvl/{id}/edit(id=${r.maphieu})}">
+                                        <i class="fas fa-edit"></i>
+                                        Sửa
+                                    </a>
+
+                                    <!-- Xóa phiếu nhập bản nháp -->
+                                    <form th:if="${r.trangthai == 'NHAP_NHAP'}"
+                                          th:action="@{/kho/nhap-nvl/{id}/delete(id=${r.maphieu})}"
+                                          method="post"
+                                          onsubmit="return confirm('Xóa phiếu nhập bản nháp này?')">
+
+                                        <button type="submit"
+                                                class="btn btn-compact btn-delete-draft">
+                                            <i class="fas fa-trash-alt"></i>
+                                            Xóa
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="empty-row" th:if="${#lists.isEmpty(receipts)}">
+                            <td colspan="8">Chưa có dữ liệu để hiển thị.</td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+</body>
+</html>

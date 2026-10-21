@@ -634,4 +634,64 @@ public class MrpWorkflowController {
 
         return "redirect:/san-xuat/ket-qua/" + id;
     }
+
+    @GetMapping("/kho/nhap-nvl/{id}/edit")
+    public String editReceiptForm(
+            @PathVariable long id,
+            Model model,
+            RedirectAttributes flash) {
+
+        try {
+            documents.requireDraftReceipt(id);
+
+            var materials = documents.materials();
+
+            model.addAttribute("receipt", documents.receipt(id));
+            model.addAttribute("lines", documents.receiptLines(id));
+            model.addAttribute("suppliers", documents.suppliers());
+            model.addAttribute("materials", materials);
+            model.addAttribute(
+                    "materialGroups",
+                    documents.groupMaterialsByType(materials)
+            );
+
+            return "mrp/receipt-edit";
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/kho/nhap-nvl/" + id;
+        }
+    }
+
+    @PostMapping("/kho/nhap-nvl/{id}/edit")
+    public String updateReceipt(
+            @PathVariable long id,
+            @RequestParam int supplierId,
+            @RequestParam(required = false) String note,
+            @RequestParam List<Long> materialId,
+            @RequestParam List<Integer> quantity,
+            @RequestParam List<BigDecimal> price,
+            RedirectAttributes flash) {
+
+        try {
+            documents.updateDraftReceipt(
+                    id,
+                    supplierId,
+                    note,
+                    materialId,
+                    quantity,
+                    price
+            );
+
+            flash.addFlashAttribute(
+                    "success",
+                    "Cập nhật phiếu nhập bản nháp thành công."
+            );
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/kho/nhap-nvl/" + id;
+    }
 }

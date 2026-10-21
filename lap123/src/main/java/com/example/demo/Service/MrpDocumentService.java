@@ -1862,4 +1862,131 @@ public class MrpDocumentService {
 
         return count != null && count > 0;
     }
+
+    /**
+     * Kiểm tra phiếu có tồn tại và còn là bản nháp.
+     */
+    public void requireDraftReceipt(long receiptId) {
+        List<String> statuses = jdbc.queryForList(
+                """
+                SELECT trangthai
+                FROM phieunhap_nvl
+                WHERE mapn = ?
+                """,
+                String.class,
+                receiptId
+        );
+
+        if (statuses.isEmpty()) {
+            throw new IllegalArgumentException("Phiếu nhập không tồn tại.");
+        }
+
+        if (!"NHAP_NHAP".equals(statuses.get(0))) {
+            throw new IllegalStateException(
+                    "Chỉ được sửa phiếu nhập đang ở trạng thái Bản nháp."
+            );
+        }
+    }
+
+    /**
+     * Cập nhật phiếu nhập bản nháp.
+     * Không tác động đến tồn kho.
+     */
+    @Transactional
+    public void updateDraftReceipt(
+            long receiptId,
+            int supplierId,
+            String note,
+            List<Long> materialIds,
+            List<Integer> quantities,
+            List<BigDecimal> prices) {
+
+        // Khóa phiếu để tránh cập nhật đồng thời với thao tác xác nhận.
+        List<String> statuses = jdbc.queryForList(
+                """
+                SELECT trangthai
+                FROM phieunhap_nvl
+                WHERE mapn = ?
+                FOR UPDATE
+                """,
+                String.class,
+                receiptId
+        );
+
+        if (statuses.isEmpty()) {
+            throw new IllegalArgumentException("Phiếu nhập không tồn tại.");
+        }
+
+        if (!"NHAP_NHAP".equals(statuses.get(0))) {
+            throw new IllegalStateException(
+                    "Phiếu nhập đã được xử lý, không thể sửa."
+            );
+        }
+
+        validateActiveSupplier(supplierId);
+        validateLines(materialIds, quantities);
+        validateActiveMaterials(materialIds);
+        validateNote(note);
+
+        if (prices == null
+                || prices.size() != materialIds.size()
+                || prices.stream().anyMatch(
+                price -> price == null || price.signum() < 0)) {
+            throw new IllegalArgumentException(
+                    "Đơn giá nhập không hợp lệ."
+            );
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (int i = 0; i < materialIds.size(); i++) {
+            total = total.add(
+                    prices.get(i).multiply(
+                            BigDecimal.valueOf(quantities.get(i))
+                    )
+            );
+        }
+
+        // Cập nhật thông tin phiếu.
+        int updated = jdbc.update(
+                """
+                UPDATE phieunhap_nvl
+                SET mancc = ?,
+                    ghichu = ?,
+                    tongtien = ?
+                WHERE mapn = ?
+                  AND trangthai = 'NHAP_NHAP'
+                """,
+                supplierId,
+                note,
+                total,
+                receiptId
+        );
+
+        if (updated != 1) {
+            throw new IllegalStateException(
+                    "Không thể cập nhật phiếu nhập."
+            );
+        }
+
+        // Thay thế toàn bộ chi tiết bằng danh sách mới.
+        jdbc.update(
+                "DELETE FROM ct_phieunhap_nvl WHERE mapn = ?",
+                receiptId
+        );
+
+        for (int i = 0; i < materialIds.size(); i++) {
+            jdbc.update(
+                    """
+                    INSERT INTO ct_phieunhap_nvl
+                        (mapn, manvl, soluong, dongia)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    receiptId,
+                    materialIds.get(i),
+                    quantities.get(i),
+                    prices.get(i)
+            );
+        }
+    }
 }

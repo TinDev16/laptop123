@@ -1,50 +1,220 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chi tiết phiếu nhập</title><link rel="stylesheet" th:href="@{/style.css}"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></head>
-<body><div class="app-container"><div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div><div class="main-wrapper"><div th:replace="~{fragments/sidebar :: topbar('Chi tiết phiếu nhập', 'Kho / Nhập NVL')}"></div>
-<main class="content-body detail-page">
-<div class="page-header"><div><h1 class="page-title" th:text="${'Phiếu nhập #' + receipt.maphieu}"></h1><p class="page-description">Thông tin nhà cung cấp và chi tiết nguyên vật liệu nhập kho.</p></div><a class="btn btn-back" th:href="@{/kho/nhap-nvl}"><i class="fas fa-arrow-left"></i> Về danh sách</a></div>
-<p th:if="${success}" th:text="${success}" class="alert alert-success"></p><p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
-<div class="content-card"><div class="content-card-body">
-<div class="detail-meta"><span th:text="${'Nhà cung cấp: ' + receipt.tenncc}"></span><span th:text="${'Người lập: ' + receipt.hoten}"></span><span><strong>Trạng thái:</strong> <span class="status-pill" th:text="${receipt.trangthai}"></span></span></div>
-<p th:if="${receipt.ghichu != null}" th:text="${receipt.ghichu}"></p>
-<div th:if="${receipt.trangthai == 'NHAP_NHAP'}" class="receipt-detail-actions">
-<form th:action="@{/kho/nhap-nvl/{id}/confirm(id=${receipt.maphieu})}" method="post" onsubmit="return confirm('Xác nhận nhập kho?')"><button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Xác nhận nhập kho</button></form>
-<form th:action="@{/kho/nhap-nvl/{id}/delete(id=${receipt.maphieu})}" method="post" onsubmit="return confirm('Xóa phiếu nhập bản nháp này?')"><button type="submit" class="btn btn-delete-draft"><i class="fas fa-trash-alt"></i> Xóa bản nháp</button></form>
-</div></div></div>
-<div class="content-card"><div class="table-container"><table class="table"><thead>
-<tr>
-    <th>Mã NVL</th>
-    <th>Tên NVL</th>
-    <th>Loại</th>
-    <th>Số lượng</th>
-    <th>Đơn giá</th>
-    <th>Thành tiền</th>
-</tr>
-</thead><tbody>
-<tr th:each="l : ${lines}">
-    <td th:text="${l.manvl_code}"></td>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết phiếu nhập</title>
 
-    <td th:text="${l.tennvl}"></td>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet">
+</head>
 
-    <td th:text="${l.tenloai != null ? l.tenloai : 'Chưa phân loại'}"></td>
+<body>
+<div class="app-container">
 
-    <td data-number
-        th:text="${l.soluong}">
-    </td>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar('nhap-nvl')}"></div>
 
-    <td>
-        <span data-number
-              th:text="${l.dongia}">
-        </span>
-        VNĐ
-    </td>
+    <div class="main-wrapper">
 
-    <td>
-        <span data-number
-              th:text="${l.thanhtien}">
-        </span>
-        VNĐ
-    </td>
-</tr></tbody></table></div></div>
-</main></div></div></body></html>
+        <!-- Topbar -->
+        <div th:replace="~{fragments/sidebar :: topbar('Chi tiết phiếu nhập', 'Kho / Nhập NVL')}"></div>
+
+        <main class="content-body detail-page">
+
+            <!-- Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title"
+                        th:text="${'Phiếu nhập #' + receipt.maphieu}">
+                        Chi tiết phiếu nhập
+                    </h1>
+
+                    <p class="page-description">
+                        Thông tin nhà cung cấp và chi tiết nguyên vật liệu nhập kho.
+                    </p>
+                </div>
+
+                <a class="btn btn-back" th:href="@{/kho/nhap-nvl}">
+                    <i class="fas fa-arrow-left"></i>
+                    Về danh sách
+                </a>
+            </div>
+
+            <!-- Thông báo -->
+            <p th:if="${success}"
+               th:text="${success}"
+               class="alert alert-success"></p>
+
+            <p th:if="${error}"
+               th:text="${error}"
+               class="alert alert-danger"></p>
+
+            <!-- Thông tin phiếu nhập -->
+            <div class="content-card">
+                <div class="content-card-body">
+
+                    <div class="detail-meta">
+                        <span th:text="${'Nhà cung cấp: ' + receipt.tenncc}"></span>
+
+                        <span th:text="${'Người lập: ' + receipt.hoten}"></span>
+
+                        <span>
+                            <strong>Trạng thái:</strong>
+
+                            <span class="status-pill"
+                                  th:text="${receipt.trangthai}">
+                            </span>
+                        </span>
+                    </div>
+
+                    <p th:if="${receipt.ghichu != null
+                                and !#strings.isEmpty(receipt.ghichu)}"
+                       th:text="${receipt.ghichu}">
+                    </p>
+
+                    <!-- Các thao tác chỉ dành cho phiếu nháp -->
+                    <div th:if="${receipt.trangthai == 'NHAP_NHAP'}"
+                         class="receipt-detail-actions">
+
+                        <!-- Sửa phiếu nhập -->
+                        <a class="btn btn-primary"
+                           th:href="@{/kho/nhap-nvl/{id}/edit(id=${receipt.maphieu})}">
+                            <i class="fas fa-edit"></i>
+                            Sửa phiếu nhập
+                        </a>
+
+                        <!-- Xác nhận nhập kho -->
+                        <form th:action="@{/kho/nhap-nvl/{id}/confirm(id=${receipt.maphieu})}"
+                              method="post"
+                              onsubmit="return confirm('Xác nhận nhập kho? Sau khi xác nhận, phiếu sẽ không còn được chỉnh sửa.');">
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i>
+                                Xác nhận nhập kho
+                            </button>
+                        </form>
+
+                        <!-- Xóa bản nháp -->
+                        <form th:action="@{/kho/nhap-nvl/{id}/delete(id=${receipt.maphieu})}"
+                              method="post"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập bản nháp này?');">
+
+                            <button type="submit" class="btn btn-delete-draft">
+                                <i class="fas fa-trash-alt"></i>
+                                Xóa bản nháp
+                            </button>
+                        </form>
+
+                    </div>
+
+                    <!-- Thông báo khi phiếu không còn là bản nháp -->
+                    <div th:if="${receipt.trangthai != 'NHAP_NHAP'}"
+                         class="receipt-detail-actions">
+
+                        <span class="page-description">
+                            <i class="fas fa-lock"></i>
+                            Phiếu đã được xử lý, không thể chỉnh sửa hoặc xóa bản nháp.
+                        </span>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Danh sách nguyên vật liệu -->
+            <div class="content-card">
+
+                <div class="content-card-body">
+                    <h2 class="section-title">
+                        <i class="fas fa-boxes-stacked"></i>
+                        Chi tiết nguyên vật liệu
+                    </h2>
+                </div>
+
+                <div class="table-container">
+                    <table class="table">
+
+                        <thead>
+                        <tr>
+                            <th>Mã NVL</th>
+                            <th>Tên NVL</th>
+                            <th>Loại</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+
+                        <!-- Có dữ liệu -->
+                        <tr th:each="l : ${lines}">
+
+                            <td th:text="${l.manvl_code}"></td>
+
+                            <td th:text="${l.tennvl}"></td>
+
+                            <td th:text="${l.tenloai != null
+                                          ? l.tenloai
+                                          : 'Chưa phân loại'}">
+                            </td>
+
+                            <td data-number
+                                th:text="${l.soluong}">
+                            </td>
+
+                            <td>
+                                <span data-number
+                                      th:text="${l.dongia}">
+                                </span>
+                                VNĐ
+                            </td>
+
+                            <td>
+                                <span data-number
+                                      th:text="${l.thanhtien}">
+                                </span>
+                                VNĐ
+                            </td>
+
+                        </tr>
+
+                        <!-- Không có dữ liệu -->
+                        <tr th:if="${#lists.isEmpty(lines)}">
+                            <td colspan="6" class="text-center">
+                                Phiếu nhập chưa có nguyên vật liệu.
+                            </td>
+                        </tr>
+
+                        </tbody>
+
+                        <!-- Tổng tiền -->
+                        <tfoot th:if="${not #lists.isEmpty(lines)}">
+                        <tr>
+                            <td colspan="5"
+                                style="text-align: right; font-weight: 600;">
+                                Tổng tiền:
+                            </td>
+
+                            <td style="font-weight: 700;">
+                                <span data-number
+                                      th:text="${receipt.tongtien}">
+                                </span>
+                                VNĐ
+                            </td>
+                        </tr>
+                        </tfoot>
+
+                    </table>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

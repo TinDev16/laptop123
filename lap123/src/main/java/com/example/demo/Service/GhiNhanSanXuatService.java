@@ -784,22 +784,24 @@ public class GhiNhanSanXuatService {
         jdbc.update(
                 """
                 INSERT INTO ketqua_sanxuat
-                    (
-                        maycsx,
-                        nguoithuchien,
-                        soluonghoanthanh,
-                        soluongloi,
-                        trangthai,
-                        ghichu,
-                        ma_dot_ghi_nhan
-                    )
-                VALUES (?, ?, ?, 0, 'CHO_XAC_NHAN', ?, ?)
+                (
+                    maycsx,
+                    nguoithuchien,
+                    soluonghoanthanh,
+                    soluongloi,
+                    trangthai,
+                    ghichu,
+                    ma_dot_ghi_nhan,
+                    id_ghi_nhan
+                )
+                VALUES (?, ?, ?, 0, 'CHO_XAC_NHAN', ?, ?, ?)
                 """,
                 orderId,
                 actor,
                 quantity,
                 normalizedNote,
-                batchRecordId
+                batchRecordId,
+                recordId
         );
 
         Long resultId = jdbc.queryForObject(

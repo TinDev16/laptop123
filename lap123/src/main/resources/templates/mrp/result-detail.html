@@ -1027,14 +1027,17 @@
 </script>
 
 <script>
-    (() => {
+    document.addEventListener('DOMContentLoaded', function () {
         const modal = document.getElementById('rejectModal');
-        const dialog = modal.querySelector('.reject-modal-dialog');
         const form = document.getElementById('rejectResultForm');
+
+        if (!modal || !form) {
+            console.error('Không tìm thấy popup hoặc form từ chối.');
+            return;
+        }
 
         const title = document.getElementById('rejectModalTitle');
         const description = document.getElementById('rejectModalDescription');
-
         const typeSelect = document.getElementById('rejectType');
         const defectField = form.querySelector('.defect-quantity-field');
         const defectInput = document.getElementById('rejectDefectQuantity');
@@ -1044,6 +1047,7 @@
         const cancelButton = document.getElementById('rejectModalCancel');
 
         let previousFocus = null;
+        let maxQuantity = 0;
 
         function updateDefectField() {
             const isDefect = typeSelect.value === 'TU_CHOI_LOI';
@@ -1052,18 +1056,37 @@
             defectInput.disabled = !isDefect;
             defectInput.required = isDefect;
 
-            if (!isDefect) {
+            if (isDefect) {
+                defectInput.max = maxQuantity;
+            } else {
                 defectInput.value = '';
             }
         }
 
         function openModal(button) {
+            const resultId = button.dataset.resultId;
+            const productName = button.dataset.productName || 'Sản phẩm';
+            maxQuantity = Number(button.dataset.quantity || 0);
+            const groupKey = button.dataset.groupKey;
+
+            if (!resultId) {
+                alert('Không tìm thấy mã kết quả sản xuất.');
+                return;
+            }
+
             previousFocus = button;
 
-            const resultId = button.dataset.resultId;
-            const productName = button.dataset.productName || 'sản phẩm';
-            const quantity = Number(button.dataset.quantity || 0);
-            const groupKey = button.dataset.groupKey;
+            // Tạo URL dựa trên context path hiện tại.
+            const currentPath = window.location.pathname;
+            const contextPath = currentPath.startsWith('/san-xuat/')
+                ? ''
+                : currentPath.split('/').slice(0, 2).join('/');
+
+            const actionUrl =
+                contextPath +
+                '/san-xuat/ket-qua/' +
+                encodeURIComponent(resultId) +
+                '/reject';
 
             const params = new URLSearchParams();
 
@@ -1071,22 +1094,16 @@
                 params.set('groupKey', groupKey);
             }
 
-            const query = params.toString();
-
-            form.action =
-                '/san-xuat/ket-qua/' +
-                encodeURIComponent(resultId) +
-                '/reject' +
-                (query ? '?' + query : '');
+            form.action = actionUrl +
+                (params.toString() ? '?' + params.toString() : '');
 
             title.textContent = 'Từ chối kết quả sản xuất';
             description.textContent =
-                productName + ' · Số lượng ghi nhận: ' + quantity;
+                productName + ' · Số lượng ghi nhận: ' + maxQuantity;
 
-            defectInput.max = quantity;
+            typeSelect.value = 'TU_CHOI_SAI_YEU_CAU';
             defectInput.value = '';
             reasonInput.value = '';
-            typeSelect.value = 'TU_CHOI_SAI_YEU_CAU';
 
             updateDefectField();
 
@@ -1094,9 +1111,7 @@
             modal.setAttribute('aria-hidden', 'false');
             document.body.classList.add('reject-modal-open');
 
-            requestAnimationFrame(() => {
-                typeSelect.focus();
-            });
+            typeSelect.focus();
         }
 
         function closeModal() {
@@ -1109,8 +1124,14 @@
             }
         }
 
-        document.querySelectorAll('.open-reject-modal').forEach(button => {
-            button.addEventListener('click', () => openModal(button));
+        // Bắt sự kiện nút Từ chối.
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.open-reject-modal');
+
+            if (button) {
+                event.preventDefault();
+                openModal(button);
+            }
         });
 
         typeSelect.addEventListener('change', updateDefectField);
@@ -1118,49 +1139,41 @@
         closeButton.addEventListener('click', closeModal);
         cancelButton.addEventListener('click', closeModal);
 
-        // Bấm vùng nền tối bên ngoài hộp thoại để đóng.
-        modal.addEventListener('click', event => {
+        modal.addEventListener('click', function (event) {
             if (event.target === modal) {
                 closeModal();
             }
         });
 
-        // Nhấn Escape để đóng popup.
-        document.addEventListener('keydown', event => {
+        document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape' && !modal.hidden) {
                 closeModal();
             }
         });
 
-        // Chặn số lượng lỗi vượt quá số lượng đã ghi nhận.
-        form.addEventListener('submit', event => {
+        form.addEventListener('submit', function (event) {
+            if (!reasonInput.value.trim()) {
+                event.preventDefault();
+                alert('Vui lòng nhập lý do từ chối.');
+                reasonInput.focus();
+                return;
+            }
+
             if (typeSelect.value === 'TU_CHOI_LOI') {
                 const defect = Number(defectInput.value);
-                const quantity = Number(defectInput.max);
 
                 if (
                     !Number.isInteger(defect) ||
                     defect < 1 ||
-                    defect > quantity
+                    defect > maxQuantity
                 ) {
                     event.preventDefault();
-                    defectInput.setCustomValidity(
-                        'Số lượng lỗi phải từ 1 đến ' + quantity + '.'
-                    );
-                    defectInput.reportValidity();
-                    defectInput.setCustomValidity('');
+                    alert('Số lượng lỗi phải từ 1 đến ' + maxQuantity + '.');
                     defectInput.focus();
-                    return;
                 }
             }
-
-            if (!reasonInput.value.trim()) {
-                event.preventDefault();
-                reasonInput.value = '';
-                reasonInput.focus();
-            }
         });
-    })();
+    });
 </script>
 </body>
 </html>

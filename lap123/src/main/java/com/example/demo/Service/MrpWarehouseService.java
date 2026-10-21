@@ -556,7 +556,8 @@ public class MrpWarehouseService {
                 """,
                 (rs, row) -> new ProductionResult(
                         rs.getLong(1),
-                        rs.getInt(2)
+                        rs.getInt(2),
+                        null
                 ),
                 resultId
         );
@@ -1628,7 +1629,8 @@ public class MrpWarehouseService {
 
     private record ProductionResult(
             long orderId,
-            int quantity
+            int quantity,
+            Long recordId
     ) {}
 
 
@@ -1683,14 +1685,21 @@ public class MrpWarehouseService {
         // 2. Lấy thông tin kết quả
         ProductionResult result = jdbc.queryForObject(
                 """
-                SELECT maycsx, soluonghoanthanh
+                SELECT maycsx, soluonghoanthanh, id_ghi_nhan
                 FROM ketqua_sanxuat
                 WHERE makqsx = ?
                 """,
-                (rs, row) -> new ProductionResult(
-                        rs.getLong("maycsx"),
-                        rs.getInt("soluonghoanthanh")
-                ),
+                (rs, row) -> {
+                    Object rawId = rs.getObject("id_ghi_nhan");
+
+                    return new ProductionResult(
+                            rs.getLong("maycsx"),
+                            rs.getInt("soluonghoanthanh"),
+                            rawId == null
+                                    ? null
+                                    : ((Number) rawId).longValue()
+                    );
+                },
                 resultId
         );
 
@@ -1786,16 +1795,148 @@ public class MrpWarehouseService {
         // =================================================
 
         if (rejectWrongRequest) {
-            consumeRecordedProduction(
-                    result.orderId(),
-                    result.quantity()
+            if (result.recordId() == null) {
+                throw new IllegalStateException(
+                        "Kết quả không liên kết với bản ghi ghi nhận sản xuất."
+                );
+            }
+
+            long recordId = result.recordId();
+
+            Map<String, Object> record = jdbc.queryForMap(
+                    """
+                    SELECT id, maycsx, masp, mabom, soluong
+                    FROM ghi_nhan_san_xuat
+                    WHERE id = ?
+                      AND maycsx = ?
+                    FOR UPDATE
+                    """,
+                    recordId,
+                    result.orderId()
+            );
+
+            int recordedQuantity =
+                    ((Number) record.get("soluong")).intValue();
+
+            if (recordedQuantity != result.quantity()) {
+                throw new IllegalStateException(
+                        "Số lượng kết quả không khớp bản ghi ghi nhận gốc."
+                );
+            }
+
+            long productId =
+                    ((Number) record.get("masp")).longValue();
+
+            long bomId =
+                    ((Number) record.get("mabom")).longValue();
+
+            List<Map<String, Object>> fgHistory = jdbc.queryForList(
+                    """
+                    SELECT ma_hang, soluong
+                    FROM lich_su_kho_san_xuat
+                    WHERE loai_kho = 'THANH_PHAM_SAN_XUAT'
+                      AND loai_hang = 'THANH_PHAM'
+                      AND loai_giao_dich = 'NHAP_THANH_PHAM_SAN_XUAT'
+                      AND bang_tham_chieu = 'ghi_nhan_san_xuat'
+                      AND ma_tham_chieu = ?
+                    FOR UPDATE
+                    """,
+                    recordId
+            );
+
+            BigDecimal originalFinishedGoods = BigDecimal.ZERO;
+
+            for (Map<String, Object> row : fgHistory) {
+                long historyProductId =
+                        ((Number) row.get("ma_hang")).longValue();
+
+                if (historyProductId != productId) {
+                    throw new IllegalStateException(
+                            "Lịch sử thành phẩm không khớp sản phẩm của bản ghi."
+                    );
+                }
+
+                originalFinishedGoods = originalFinishedGoods.add(
+                        decimal(row.get("soluong"))
+                );
+            }
+
+            BigDecimal expectedQuantity =
+                    BigDecimal.valueOf(recordedQuantity);
+
+            if (originalFinishedGoods.compareTo(expectedQuantity) != 0) {
+                throw new IllegalStateException(
+                        "Lịch sử nhập thành phẩm thiếu hoặc sai số lượng; "
+                                + "không thể hoàn tác an toàn."
+                );
+            }
+
+            BigDecimal stockBefore = lockStock(
+                    "kho_thanhpham_san_xuat",
+                    "masp",
+                    productId,
+                    "mabom",
+                    bomId
+            );
+
+            if (stockBefore.compareTo(expectedQuantity) < 0) {
+                throw new IllegalStateException(
+                        "Tồn kho thành phẩm sản xuất không đủ để hoàn tác. "
+                                + "Tồn hiện tại: "
+                                + stockBefore.toPlainString()
+                                + ", cần hoàn tác: "
+                                + expectedQuantity.toPlainString()
+                );
+            }
+
+            BigDecimal stockAfter =
+                    stockBefore.subtract(expectedQuantity);
+
+            jdbc.update(
+                    """
+                    UPDATE kho_thanhpham_san_xuat
+                    SET soluongton = ?
+                    WHERE masp = ?
+                      AND mabom = ?
+                    """,
+                    stockAfter,
+                    productId,
+                    bomId
+            );
+
+            productionHistory(
+                    "THANH_PHAM_SAN_XUAT",
+                    "THANH_PHAM",
+                    productId,
+                    "XUAT_THANH_PHAM_SAN_XUAT",
+                    expectedQuantity,
+                    stockBefore,
+                    stockAfter,
+                    actor,
+                    "ketqua_sanxuat",
+                    resultId
+            );
+
+            reverseProductionMaterials(
+                    resultId,
+                    recordId,
+                    actor
+            );
+
+            jdbc.update(
+                    """
+                    DELETE FROM ghi_nhan_san_xuat
+                    WHERE id = ?
+                      AND maycsx = ?
+                    """,
+                    recordId,
+                    result.orderId()
             );
 
             jdbc.update(
                     """
                     UPDATE ketqua_sanxuat
-                    SET
-                        trangthai = 'TU_CHOI_SAI_YEU_CAU',
+                    SET trangthai = 'TU_CHOI_SAI_YEU_CAU',
                         soluongloi = 0,
                         lydotuchoi = ?,
                         nguoiduyet = ?,
@@ -2015,5 +2156,87 @@ public class MrpWarehouseService {
                 actor,
                 resultId
         );
+    }
+
+    private BigDecimal decimal(Object value) {
+        return value == null
+                ? BigDecimal.ZERO
+                : new BigDecimal(value.toString());
+    }
+
+    private void reverseProductionMaterials(
+            long resultId,
+            long recordId,
+            Integer actor) {
+
+        List<Line> lines = jdbc.query(
+                """
+                SELECT ma_hang, SUM(soluong)
+                FROM lich_su_kho_san_xuat
+                WHERE loai_kho = 'NVL_SAN_XUAT'
+                  AND loai_hang = 'NVL'
+                  AND loai_giao_dich = 'XUAT_NVL_SAN_XUAT'
+                  AND bang_tham_chieu = 'ghi_nhan_san_xuat'
+                  AND ma_tham_chieu = ?
+                GROUP BY ma_hang
+                ORDER BY ma_hang
+                """,
+                (rs, row) -> new Line(
+                        rs.getLong(1),
+                        0L,
+                        rs.getBigDecimal(2),
+                        BigDecimal.ZERO
+                ),
+                recordId
+        );
+
+        if (lines.isEmpty()) {
+            throw new IllegalStateException(
+                    "Không tìm thấy lịch sử xuất NVL của bản ghi "
+                            + recordId + ". Không thể hoàn kho an toàn."
+            );
+        }
+
+        for (Line line : lines) {
+            requirePositive(line.quantity());
+
+            BigDecimal before = lockStock(
+                    "kho_nvl_san_xuat",
+                    "manvl",
+                    line.itemId()
+            );
+
+            BigDecimal after = before.add(line.quantity());
+
+            int updated = jdbc.update(
+                    """
+                    UPDATE kho_nvl_san_xuat
+                    SET soluongton = ?
+                    WHERE manvl = ?
+                    """,
+                    after,
+                    line.itemId()
+            );
+
+            if (updated != 1) {
+                throw new IllegalStateException(
+                        "Không cập nhật được tồn kho NVL mã "
+                                + line.itemId()
+                );
+            }
+
+            productionHistory(
+                    "NVL_SAN_XUAT",
+                    "NVL",
+                    line.itemId(),
+                    "HOAN_NVL_SAN_XUAT",
+                    line.quantity(),
+                    before,
+                    after,
+                    actor,
+                    "ketqua_sanxuat",
+                    resultId
+            );
+        }
     }
 }

@@ -23,6 +23,13 @@
         <span>Kho thành phẩm nơi sản xuất</span>
       </a>
 
+      <a th:href="@{/kho-san-xuat/loi}"
+         class="menu-item"
+         th:classappend="${activeTab == 'kho-loi-san-xuat' ? 'active' : ''}">
+        <i class="fas fa-box-open"></i>
+        <span>Kho lỗi sản xuất</span>
+      </a>
+
       <a th:href="@{/kho-san-xuat/lich-su}"
          class="menu-item"
          th:classappend="${activeTab == 'lich-su-kho-san-xuat' ? 'active' : ''}"

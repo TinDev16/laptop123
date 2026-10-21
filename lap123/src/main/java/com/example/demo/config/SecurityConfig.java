@@ -188,9 +188,12 @@ public class SecurityConfig {
                          * =========================================================
                          */
                         .requestMatchers(
+                                HttpMethod.GET,
                                 "/kho-san-xuat/nvl",
                                 "/kho-san-xuat/thanh-pham",
-                                "/kho-san-xuat/thanh-pham/bom"
+                                "/kho-san-xuat/thanh-pham/bom",
+                                "/kho-san-xuat/loi",
+                                "/kho-san-xuat/loi/bom"
                         ).hasAnyRole(
                                 "QUAN_LY_KHO",
                                 "NHAN_VIEN"

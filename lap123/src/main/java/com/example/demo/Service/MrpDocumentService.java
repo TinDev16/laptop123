@@ -1729,8 +1729,7 @@ public class MrpDocumentService {
         """;
 
         List<Map<String, Object>> rows = manager
-                ? jdbc.queryForList(
-                sql + " ORDER BY k.makqsx DESC")
+                ? jdbc.queryForList(sql + " ORDER BY k.makqsx DESC")
                 : jdbc.queryForList(
                 sql + """
                         JOIN taikhoan t
@@ -1757,13 +1756,17 @@ public class MrpDocumentService {
 
                 group.put("ma_nhom_ghi_nhan", key);
                 group.put("ngayghi", row.get("ngayhoanthanh"));
+                group.put("madot", row.get("madot"));
                 group.put("madot_code", row.get("madot_code"));
                 group.put("tendot", row.get("tendot"));
+
                 group.put("soluongtong", 0);
                 group.put("soketqua", 0);
 
-                // Trạng thái tổng hợp của cả nhóm
-                group.put("trangthai", row.get("trangthai"));
+                // Mặc định nhóm đã xử lý.
+                // Chỉ cần có một kết quả CHO_XAC_NHAN
+                // thì chuyển toàn bộ nhóm sang Chờ duyệt.
+                group.put("trangthai", "DA_DUYET");
 
                 group.put(
                         "items",
@@ -1779,7 +1782,7 @@ public class MrpDocumentService {
 
             items.add(row);
 
-            // Cộng tổng số lượng
+            // Cộng tổng số lượng ghi nhận trong nhóm.
             int quantity = row.get("soluonghoanthanh") == null
                     ? 0
                     : ((Number) row.get("soluonghoanthanh")).intValue();
@@ -1790,42 +1793,17 @@ public class MrpDocumentService {
                             + quantity
             );
 
-            // Đếm số kết quả trong nhóm
+            // Đếm số kết quả trong nhóm.
             group.put(
                     "soketqua",
                     ((Number) group.get("soketqua")).intValue() + 1
             );
 
-            /*
-             * Trạng thái nhóm:
-             * - Nếu có kết quả chờ xác nhận: CHO_XAC_NHAN
-             * - Nếu không còn chờ xác nhận nhưng có kết quả chưa nhập kho:
-             *   giữ trạng thái chưa hoàn tất tương ứng
-             * - Nếu toàn bộ đã nhập kho: DA_NHAP_KHO
-             * - Nếu toàn bộ đã hủy: HUY
-             *
-             * Ưu tiên trạng thái chưa hoàn tất để tránh nhóm bị hiển thị
-             * "Đã duyệt" khi vẫn còn kết quả cần xử lý.
-             */
-            String currentStatus = String.valueOf(
-                    group.get("trangthai")
-            );
-
-            String rowStatus = String.valueOf(
-                    row.get("trangthai")
-            );
+            // Chỉ trạng thái CHO_XAC_NHAN mới khiến nhóm Chờ duyệt.
+            String rowStatus = String.valueOf(row.get("trangthai"));
 
             if ("CHO_XAC_NHAN".equals(rowStatus)) {
                 group.put("trangthai", "CHO_XAC_NHAN");
-            } else if ("CHO_XAC_NHAN".equals(currentStatus)) {
-                // Giữ trạng thái đang chờ xác nhận
-            } else if ("DA_NHAP_KHO".equals(rowStatus)
-                    && !"HUY".equals(currentStatus)) {
-                group.put("trangthai", "DA_NHAP_KHO");
-            } else if ("HUY".equals(rowStatus)
-                    && ("HUY".equals(currentStatus)
-                    || group.get("soketqua").equals(1))) {
-                group.put("trangthai", "HUY");
             }
         }
 

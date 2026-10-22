@@ -296,6 +296,8 @@ public class MrpWorkflowController {
                     new java.util.ArrayList<>();
 
             boolean hasPending = false;
+            boolean chapNhanToanBo = true;
+            boolean hasRejected = false;
 
             for (Object rawItem : items) {
 
@@ -355,6 +357,15 @@ public class MrpWorkflowController {
                 if ("CHO_XAC_NHAN".equals(status)) {
                     hasPending = true;
                 }
+
+                if ("TU_CHOI_LOI".equals(status)
+                        || "TU_CHOI_SAI_YEU_CAU".equals(status)) {
+                    hasRejected = true;
+                }
+
+                if (!"DA_NHAP_KHO".equals(status)) {
+                    chapNhanToanBo = false;
+                }
             }
 
             // Không còn kết quả sau khi lọc.
@@ -373,14 +384,17 @@ public class MrpWorkflowController {
             );
 
             if (hasPending) {
-                // Chỉ cần còn một kết quả chờ xác nhận,
-                // cả nhóm vẫn thuộc Chờ duyệt.
                 resultGroup.put("trangthai", "CHO_XAC_NHAN");
                 pendingGroups.add(resultGroup);
             } else {
-                // Tất cả kết quả đã được xử lý:
-                // nhập kho, từ chối hoặc hủy.
                 resultGroup.put("trangthai", "DA_DUYET");
+
+                // Tất cả kết quả đều đã nhập kho thành công?
+                resultGroup.put("chapNhanToanBo", chapNhanToanBo);
+
+                // Có ít nhất một kết quả bị từ chối?
+                resultGroup.put("hasRejected", hasRejected);
+
                 approvedGroups.add(resultGroup);
             }
         }

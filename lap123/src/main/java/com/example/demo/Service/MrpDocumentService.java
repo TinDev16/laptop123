@@ -1802,7 +1802,10 @@ public class MrpDocumentService {
                 // Mặc định nhóm đã xử lý.
                 // Chỉ cần có một kết quả CHO_XAC_NHAN
                 // thì chuyển toàn bộ nhóm sang Chờ duyệt.
+                // Trạng thái tổng hợp của nhóm kết quả.
                 group.put("trangthai", "DA_DUYET");
+                group.put("hasRejected", false);
+                group.put("chapNhanToanBo", true);
 
                 group.put(
                         "items",
@@ -1838,8 +1841,20 @@ public class MrpDocumentService {
             // Chỉ trạng thái CHO_XAC_NHAN mới khiến nhóm Chờ duyệt.
             String rowStatus = String.valueOf(row.get("trangthai"));
 
+// Ưu tiên Chờ duyệt nếu còn ít nhất một kết quả chưa xử lý.
             if ("CHO_XAC_NHAN".equals(rowStatus)) {
                 group.put("trangthai", "CHO_XAC_NHAN");
+            }
+
+// Ghi nhận nếu có bất kỳ kết quả nào bị từ chối.
+            if ("TU_CHOI_LOI".equals(rowStatus)
+                    || "TU_CHOI_SAI_YEU_CAU".equals(rowStatus)) {
+                group.put("hasRejected", true);
+            }
+
+// Chỉ chấp nhận toàn bộ khi mọi kết quả đều đã nhập kho.
+            if (!"DA_NHAP_KHO".equals(rowStatus)) {
+                group.put("chapNhanToanBo", false);
             }
         }
 

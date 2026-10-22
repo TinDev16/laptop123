@@ -784,6 +784,27 @@
             text-decoration: none;
         }
 
+        /* Chờ duyệt — vàng */
+        .production-page .result-status-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        /* Đã duyệt – Chấp nhận toàn bộ — xanh lá */
+        .production-page .result-status-approved {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        /* Đã duyệt – Có vấn đề — đỏ */
+        .production-page .result-status-rejected {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+
 
     </style>
 
@@ -1066,21 +1087,19 @@
 
                                         <!-- TRẠNG THÁI -->
                                         <td>
-                        <span class="result-status"
-                              th:classappend="${group['trangthai'] == 'DA_NHAP_KHO'}
-                                  ? ' result-status-approved'
-                                  : ' result-status-pending'"
-                              th:text="${group['trangthai'] == 'DA_NHAP_KHO'
-                                  ? 'Đã duyệt'
-                                  : (group['trangthai'] == 'CHO_XAC_NHAN'
-                                      ? 'Chờ duyệt'
-                                      : (group['trangthai'] == 'HUY'
-                                          ? 'Đã hủy'
-                                          : (group['trangthai'] != null
-                                              ? group['trangthai']
-                                              : 'Chưa xác định')))}">
-                            Chờ duyệt
-                        </span>
+    <span class="result-status"
+          th:classappend="${group['trangthai'] == 'CHO_XAC_NHAN'
+              ? ' result-status-pending'
+              : (group['hasRejected'] == true
+                  ? ' result-status-rejected'
+                  : ' result-status-approved')}"
+          th:text="${group['trangthai'] == 'CHO_XAC_NHAN'
+              ? 'Chờ duyệt'
+              : (group['hasRejected'] == true
+                  ? 'Đã duyệt – Có vấn đề'
+                  : 'Đã duyệt – Chấp nhận toàn bộ')}">
+        Chờ duyệt
+    </span>
                                         </td>
 
                                         <!-- THAO TÁC -->

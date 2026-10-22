@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.LinkedHashMap;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -67,11 +69,12 @@ public class WarehouseProductionHistoryService {
             MIN(h.loai_kho) AS loai_kho,
             MIN(h.loai_hang) AS loai_hang,
             h.loai_giao_dich,
-            MIN(h.thoi_gian) AS thoi_gian,
-            h.bang_tham_chieu,
-            h.ma_tham_chieu,
-            COUNT(*) AS so_dong,
-            COALESCE(SUM(h.soluong), 0) AS tong_so_luong,
+                MIN(h.thoi_gian) AS thoi_gian,
+                MIN(h.bang_tham_chieu) AS bang_tham_chieu,
+                MIN(h.ma_tham_chieu) AS ma_tham_chieu,
+                MAX(k_batch.ma_dot_ghi_nhan) AS ma_dot_ghi_nhan,
+                COUNT(DISTINCT h.ma_hang) AS so_loai_hang,
+                COALESCE(SUM(h.soluong), 0) AS tong_so_luong,
 
             GROUP_CONCAT(
                 DISTINCT COALESCE(n.tennvl, s.tensp)
@@ -118,6 +121,11 @@ public class WarehouseProductionHistoryService {
         LEFT JOIN ghi_nhan_san_xuat gn
             ON h.bang_tham_chieu = 'ghi_nhan_san_xuat'
             AND gn.id = h.ma_tham_chieu
+            
+                LEFT JOIN ketqua_sanxuat k_batch
+                    ON h.bang_tham_chieu = 'ghi_nhan_san_xuat'
+                    AND k_batch.id_ghi_nhan = h.ma_tham_chieu
+            
 
         LEFT JOIN ketqua_sanxuat k
             ON h.bang_tham_chieu = 'ketqua_sanxuat'
@@ -184,16 +192,26 @@ public class WarehouseProductionHistoryService {
         }
 
         sql.append("""
-        GROUP BY
+GROUP BY
+    CASE
+        WHEN h.bang_tham_chieu = 'ghi_nhan_san_xuat'
+         AND h.loai_giao_dich = 'XUAT_NVL_SAN_XUAT'
+         AND k_batch.ma_dot_ghi_nhan IS NOT NULL
+        THEN CONCAT('BATCH:', k_batch.ma_dot_ghi_nhan)
+        ELSE CONCAT(
+            'DOC:',
             h.bang_tham_chieu,
-            h.ma_tham_chieu,
-            h.loai_giao_dich
+            ':',
+            h.ma_tham_chieu
+        )
+    END,
+    h.loai_giao_dich
 
-        ORDER BY
-            MIN(h.thoi_gian) DESC,
-            MIN(h.id) DESC
+ORDER BY
+    MIN(h.thoi_gian) DESC,
+    MIN(h.id) DESC
 
-        LIMIT 500
+LIMIT 500
         """);
 
         return jdbc.queryForList(sql.toString(), args.toArray());
@@ -212,6 +230,14 @@ public class WarehouseProductionHistoryService {
     public List<Map<String, Object>> detail(
             String sourceTable,
             long documentId) {
+
+        return detail(sourceTable, documentId, null);
+    }
+
+    public List<Map<String, Object>> detail(
+            String sourceTable,
+            long documentId,
+            String batchRecordId) {
 
         if (sourceTable == null || sourceTable.isBlank()) {
             throw new IllegalArgumentException(
@@ -400,27 +426,120 @@ public class WarehouseProductionHistoryService {
     LEFT JOIN nhanvien approver
         ON approver.manv = px.nguoiduyet
 
-WHERE h.bang_tham_chieu = ?
-  AND h.ma_tham_chieu = ?
-  AND (
-      h.loai_kho = 'LOI_SAN_XUAT'
-      OR NOT EXISTS (
-          SELECT 1
-          FROM lich_su_kho_loi_san_xuat l
-          WHERE l.makqsx = h.ma_tham_chieu
-            AND h.bang_tham_chieu = 'ketqua_sanxuat'
-      )
-  )
+WHERE (
+    (
+        ? IS NOT NULL
+        AND h.bang_tham_chieu = 'ghi_nhan_san_xuat'
+        AND h.loai_giao_dich = 'XUAT_NVL_SAN_XUAT'
+        AND EXISTS (
+            SELECT 1
+            FROM ketqua_sanxuat kb
+            WHERE kb.id_ghi_nhan = h.ma_tham_chieu
+              AND kb.ma_dot_ghi_nhan = ?
+        )
+    )
+    OR (
+        ? IS NULL
+        AND h.bang_tham_chieu = ?
+        AND h.ma_tham_chieu = ?
+    )
+)
+AND (
+    h.loai_kho = 'LOI_SAN_XUAT'
+    OR NOT EXISTS (
+        SELECT 1
+        FROM lich_su_kho_loi_san_xuat l
+        WHERE l.makqsx = h.ma_tham_chieu
+          AND h.bang_tham_chieu = 'ketqua_sanxuat'
+    )
+)
 
 ORDER BY h.id ASC
     """;
 
 
-        return jdbc.queryForList(
+        List<Map<String, Object>> rows = jdbc.queryForList(
                 sql,
+                batchRecordId,
+                batchRecordId,
+                batchRecordId,
                 sourceTable,
                 documentId
         );
+
+// Chỉ gộp các dòng xuất nguyên vật liệu sản xuất
+        if (!"ghi_nhan_san_xuat".equals(sourceTable)
+                && batchRecordId == null) {
+            return rows;
+        }
+
+        Map<String, Map<String, Object>> grouped = new LinkedHashMap<>();
+
+        for (Map<String, Object> row : rows) {
+            String loaiGiaoDich = String.valueOf(
+                    row.get("loai_giao_dich")
+            );
+
+            if (!"XUAT_NVL_SAN_XUAT".equals(loaiGiaoDich)) {
+                String key = "KEEP_" + row.get("malichsu");
+                grouped.put(key, new LinkedHashMap<>(row));
+                continue;
+            }
+
+            String key = String.join("|",
+                    String.valueOf(row.get("loai_kho")),
+                    String.valueOf(row.get("loai_hang")),
+                    String.valueOf(row.get("ma_hang")),
+                    String.valueOf(row.get("mabom")),
+                    String.valueOf(row.get("loai_giao_dich")),
+                    String.valueOf(row.get("donvitinh"))
+            );
+
+            Map<String, Object> existing = grouped.get(key);
+
+            if (existing == null) {
+                grouped.put(key, new LinkedHashMap<>(row));
+            } else {
+                BigDecimal oldQty = new BigDecimal(
+                        String.valueOf(existing.get("soluong"))
+                );
+
+                BigDecimal newQty = new BigDecimal(
+                        String.valueOf(row.get("soluong"))
+                );
+
+                existing.put("soluong", oldQty.add(newQty));
+
+                // Các dòng đã được sắp xếp theo malichsu tăng dần:
+                // giữ tồn trước của dòng đầu, cập nhật tồn sau theo dòng cuối.
+                existing.put("ton_sau", row.get("ton_sau"));
+                existing.put("thoi_gian", row.get("thoi_gian"));
+
+                // Nếu ghi chú khác nhau thì không làm mất ghi chú.
+                String oldNote = String.valueOf(
+                        existing.get("ghichu") == null
+                                ? ""
+                                : existing.get("ghichu")
+                );
+                String newNote = String.valueOf(
+                        row.get("ghichu") == null
+                                ? ""
+                                : row.get("ghichu")
+                );
+
+                if (!newNote.isBlank()
+                        && !oldNote.contains(newNote)) {
+                    existing.put(
+                            "ghichu",
+                            oldNote.isBlank()
+                                    ? newNote
+                                    : oldNote + "; " + newNote
+                    );
+                }
+            }
+        }
+
+        return new ArrayList<>(grouped.values());
     }
 
 

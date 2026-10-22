@@ -287,7 +287,7 @@
 
 
                             <th>
-                                Tổng số lượng
+                                Số lượng / loại hàng
                             </th>
 
                             <th>
@@ -412,9 +412,16 @@
 
                             <!-- TỔNG SỐ LƯỢNG -->
 
-                            <td data-number
-                                th:text="${row.tong_so_luong}">
-                                0
+                            <td data-number>
+    <span th:if="${row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}"
+          th:text="${row.so_loai_hang + ' loại NVL'}">
+        2 loại NVL
+    </span>
+
+                                <span th:unless="${row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}"
+                                      th:text="${row.tong_so_luong}">
+        0
+    </span>
                             </td>
 
 
@@ -442,58 +449,93 @@
 
 
                             <!-- CHỨNG TỪ -->
-
                             <td>
 
-                                <span th:if="${row.bang_tham_chieu != null and row.ma_tham_chieu != null}"
+                                <!-- Giao dịch xuất NVL được gộp theo đợt -->
+                                <span th:if="${row.ma_dot_ghi_nhan != null
+                  and row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}"
                                       class="production-document-code"
-                                      th:text="${'#' + row.ma_tham_chieu}">-</span>
+                                      th:text="${row.madot_code != null
+                    ? row.madot_code
+                    : 'Đợt ghi nhận sản xuất'}">
+        Đợt ghi nhận sản xuất
+    </span>
 
-                                <span th:if="${row.bang_tham_chieu != null and row.ma_tham_chieu != null}"
+                                <span th:if="${row.ma_dot_ghi_nhan != null
+                  and row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}"
+                                      class="production-document-type"
+                                      th:text="${row.tendot != null
+                    ? row.tendot
+                    : 'Gộp NVL của cả đợt'}">
+        Gộp NVL của cả đợt
+    </span>
+
+                                <!-- Các chứng từ không thuộc nhóm gộp -->
+                                <span th:if="${row.ma_dot_ghi_nhan == null
+                  or row.loai_giao_dich != 'XUAT_NVL_SAN_XUAT'}"
+                                      class="production-document-code"
+                                      th:text="${row.bang_tham_chieu != null
+                    and row.ma_tham_chieu != null
+                    ? '#' + row.ma_tham_chieu
+                    : '-'}">
+        -
+    </span>
+
+                                <span th:if="${row.ma_dot_ghi_nhan == null
+                  or row.loai_giao_dich != 'XUAT_NVL_SAN_XUAT'}"
                                       class="production-document-type"
                                       th:switch="${row.bang_tham_chieu}">
-                                    <span th:case="'phieuxuat_nvl'">Nhận NVL từ kho tổng</span>
-                                    <span th:case="'ghi_nhan_san_xuat'">Ghi nhận sản xuất</span>
-                                    <span th:case="'ketqua_sanxuat'">Bàn giao thành phẩm</span>
-                                    <span th:case="*" th:text="${row.bang_tham_chieu}">Chứng từ</span>
-                                </span>
 
-                                <span
-                                        th:if="${row.bang_tham_chieu == null
-                                           or row.ma_tham_chieu == null}"
-                                >
-                                    -
-                                </span>
+        <span th:case="'phieuxuat_nvl'">Nhận NVL từ kho tổng</span>
+        <span th:case="'ghi_nhan_san_xuat'">Ghi nhận sản xuất</span>
+        <span th:case="'ketqua_sanxuat'">Bàn giao thành phẩm</span>
+        <span th:case="*" th:text="${row.bang_tham_chieu ?: 'Chứng từ'}">
+            Chứng từ
+        </span>
+
+    </span>
 
                             </td>
 
 
                             <!-- CHI TIẾT -->
-
                             <td>
 
-                                <a
-                                        th:if="${row.bang_tham_chieu != null
-                                           and row.ma_tham_chieu != null}"
-                                        th:href="@{/kho-san-xuat/lich-su/chi-tiet(
-                                            sourceTable=${row.bang_tham_chieu},
-                                            documentId=${row.ma_tham_chieu}
-                                        )}"
-                                        class="btn"
-                                >
+                                <!-- Xem toàn bộ NVL của đợt ghi nhận -->
+                                <a th:if="${row.ma_dot_ghi_nhan != null
+               and row.loai_giao_dich == 'XUAT_NVL_SAN_XUAT'}"
+                                   th:href="@{/kho-san-xuat/lich-su/chi-tiet(
+           sourceTable='ghi_nhan_san_xuat',
+           documentId=${row.ma_tham_chieu},
+           batchRecordId=${row.ma_dot_ghi_nhan}
+       )}"
+                                   class="btn">
 
                                     <i class="fas fa-eye"></i>
+                                    Chi tiết cả đợt
 
+                                </a>
+
+                                <!-- Các giao dịch còn lại giữ cách xem chi tiết cũ -->
+                                <a th:if="${(row.ma_dot_ghi_nhan == null
+                or row.loai_giao_dich != 'XUAT_NVL_SAN_XUAT')
+                and row.bang_tham_chieu != null
+                and row.ma_tham_chieu != null}"
+                                   th:href="@{/kho-san-xuat/lich-su/chi-tiet(
+           sourceTable=${row.bang_tham_chieu},
+           documentId=${row.ma_tham_chieu}
+       )}"
+                                   class="btn">
+
+                                    <i class="fas fa-eye"></i>
                                     Chi tiết
 
                                 </a>
 
-                                <span
-                                        th:if="${row.bang_tham_chieu == null
-                                           or row.ma_tham_chieu == null}"
-                                >
-                                    -
-                                </span>
+                                <span th:if="${row.bang_tham_chieu == null
+                  or row.ma_tham_chieu == null}">
+        -
+    </span>
 
                             </td>
 

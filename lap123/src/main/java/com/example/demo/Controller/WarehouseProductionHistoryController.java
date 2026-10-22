@@ -105,12 +105,15 @@ public class WarehouseProductionHistoryController {
 
             @RequestParam long documentId,
 
+            @RequestParam(required = false) String batchRecordId,
+
             Model model) {
 
         List<Map<String, Object>> rows =
                 service.detail(
                         sourceTable,
-                        documentId
+                        documentId,
+                        batchRecordId
                 );
 
         if (rows.isEmpty()) {
@@ -122,28 +125,24 @@ public class WarehouseProductionHistoryController {
         Map<String, Object> documentInfo = rows.get(0);
 
         model.addAttribute("rows", rows);
+        model.addAttribute("documentInfo", documentInfo);
+        model.addAttribute("sourceTable", sourceTable);
+        model.addAttribute("documentId", documentId);
+        model.addAttribute("batchRecordId", batchRecordId);
 
-        model.addAttribute(
-                "documentInfo",
-                documentInfo
-        );
-
-        model.addAttribute(
-                "sourceTable",
-                sourceTable
-        );
-
-        model.addAttribute(
-                "documentId",
-                documentId
-        );
         model.addAttribute(
                 "documentTypeLabel",
-                switch (sourceTable) {
-                    case "phieuxuat_nvl" -> "Nhận nguyên vật liệu từ kho tổng";
-                    case "ghi_nhan_san_xuat" -> "Ghi nhận sản xuất";
-                    case "ketqua_sanxuat" -> "Bàn giao thành phẩm về kho tổng";
-                    default -> "Chứng từ kho sản xuất";
+                batchRecordId != null && !batchRecordId.isBlank()
+                        ? "Nguyên vật liệu sử dụng trong đợt ghi nhận sản xuất"
+                        : switch (sourceTable) {
+                    case "phieuxuat_nvl" ->
+                            "Nhận nguyên vật liệu từ kho tổng";
+                    case "ghi_nhan_san_xuat" ->
+                            "Ghi nhận sản xuất";
+                    case "ketqua_sanxuat" ->
+                            "Bàn giao thành phẩm về kho tổng";
+                    default ->
+                            "Chứng từ kho sản xuất";
                 }
         );
 

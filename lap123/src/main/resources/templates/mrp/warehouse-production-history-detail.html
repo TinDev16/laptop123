@@ -119,9 +119,17 @@
 
                 <span th:text="${documentTypeLabel}">Chi tiết chứng từ</span>
 
-                <span class="production-document-id" th:text="${'#' + documentId}">
-                    -
-                </span>
+                <span class="production-document-id"
+                      th:if="${batchRecordId == null or batchRecordId.isBlank()}"
+                      th:text="${'#' + documentId}">
+        -
+    </span>
+
+                <span class="production-document-id"
+                      th:if="${batchRecordId != null and !batchRecordId.isBlank()}"
+                      th:text="${'Mã đợt: ' + batchRecordId}">
+        -
+    </span>
 
             </h1>
 
@@ -149,16 +157,16 @@
 
                     <!-- Mã chứng từ -->
 
-                    <p>
+                    <!-- Mã đợt khi xem nhiều bản ghi -->
+                    <p th:if="${batchRecordId != null and !batchRecordId.isBlank()}">
+                        <strong>Mã đợt ghi nhận:</strong>
+                        <span th:text="${batchRecordId}">-</span>
+                    </p>
 
-                        <strong>
-                            Mã chứng từ:
-                        </strong>
-
-                        <span th:text="${documentId}">
-                            -
-                        </span>
-
+                    <!-- Mã chứng từ khi xem riêng -->
+                    <p th:if="${batchRecordId == null or batchRecordId.isBlank()}">
+                        <strong>Mã chứng từ:</strong>
+                        <span th:text="${documentId}">-</span>
                     </p>
 
 

@@ -19,15 +19,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import com.example.demo.excel.core.ExcelImportResult;
+import com.example.demo.excel.dto.BomExcelDto;
+import com.example.demo.excel.service.BomExcelService;
 
 @Controller
 @RequestMapping("/bom")
 public class BomController {
 
     private final BomService service;
+    private final BomExcelService bomExcelService;
 
-    public BomController(BomService service) {
+    public BomController(BomService service, BomExcelService bomExcelService) {
         this.service = service;
+        this.bomExcelService = bomExcelService;
     }
 
     // =========================
@@ -207,5 +217,90 @@ public class BomController {
         }
 
         return "redirect:/bom/" + id;
+    }
+
+    // =========================
+    // EXCEL: TẢI FILE MẪU ĐỊNH MỨC KỸ THUẬT BOM
+    // =========================
+    @GetMapping("/excel/template")
+    public ResponseEntity<byte[]> downloadBomTemplate() {
+        try {
+            byte[] content = bomExcelService.generateTemplate();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Mau_Nhap_Dinh_Muc_BOM.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: XUẤT CÔNG THỨC ĐỊNH MỨC BOM
+    // =========================
+    @GetMapping("/excel/export")
+    public ResponseEntity<byte[]> exportBomExcel() {
+        try {
+            byte[] content = bomExcelService.exportBom();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Danh_Sach_Dinh_Muc_BOM.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: KIỂM TRA & XEM TRƯỚC ĐỊNH MỨC BOM
+    // =========================
+    @PostMapping("/excel/preview")
+    @ResponseBody
+    public ResponseEntity<ExcelImportResult<BomExcelDto>> previewBomExcel(
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) {
+        try {
+            var result = bomExcelService.validateAndPreview(file.getInputStream(), file.getSize());
+            if (!result.hasErrors() && !result.getValidRows().isEmpty()) {
+                session.setAttribute("PENDING_BOM_EXCEL_IMPORT", result.getValidRows());
+            } else {
+                session.removeAttribute("PENDING_BOM_EXCEL_IMPORT");
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            ExcelImportResult<BomExcelDto> errorResult = new ExcelImportResult<>();
+            errorResult.addError(0, "Tệp tải lên", "", e.getMessage());
+            return ResponseEntity.ok(errorResult);
+        }
+    }
+
+    // =========================
+    // EXCEL: XÁC NHẬN NHẬP DỮ LIỆU ĐỊNH MỨC BOM
+    // =========================
+    @PostMapping("/excel/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmBomExcel(HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<BomExcelDto> pending = (List<BomExcelDto>) session.getAttribute("PENDING_BOM_EXCEL_IMPORT");
+        if (pending == null || pending.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Không có dữ liệu hợp lệ đang chờ lưu. Vui lòng tải lại tệp."
+            ));
+        }
+        try {
+            int count = bomExcelService.confirmImport(pending);
+            session.removeAttribute("PENDING_BOM_EXCEL_IMPORT");
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", count,
+                    "message", "Đã nạp thành công " + count + " định mức linh kiện vào công thức BOM."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Lỗi lưu dữ liệu BOM: " + e.getMessage()
+            ));
+        }
     }
 }

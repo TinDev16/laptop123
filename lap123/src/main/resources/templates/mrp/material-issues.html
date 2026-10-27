@@ -166,13 +166,23 @@
                     </p>
                 </div>
 
-                <a
-                        th:unless="${manager}"
-                        th:href="@{/kho/xuat-nvl/create}"
-                        class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Lập đề nghị xuất NVL
-                </a>
+                <div style="display: flex; gap: 0.75rem;">
+                    <a th:href="@{/kho/xuat-nvl/excel/export}"
+                       class="btn btn-secondary"
+                       style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                       title="Xuất danh sách phiếu xuất NVL ra file Excel">
+                        <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                        Xuất Excel
+                    </a>
+
+                    <a
+                            th:unless="${manager}"
+                            th:href="@{/kho/xuat-nvl/create}"
+                            class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Lập đề nghị xuất NVL
+                    </a>
+                </div>
             </div>
 
             <!-- SUCCESS MESSAGE -->

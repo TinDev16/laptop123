@@ -160,6 +160,12 @@
         const preview = document.getElementById('imagePreview');
         preview.innerHTML = '';
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+            if (file.size > 25 * 1024 * 1024) {
+                alert('Dung lượng tệp quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng chọn ảnh có kích thước dưới 25MB.');
+                input.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = document.createElement('img');
@@ -167,7 +173,7 @@
                 img.alt = "Xem trước hình ảnh";
                 preview.appendChild(img);
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         }
     }
 </script>

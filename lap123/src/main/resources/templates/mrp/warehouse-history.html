@@ -129,6 +129,14 @@
                     Lọc
                 </button>
 
+                <a th:href="@{/kho/lich-su/excel/export(from=${from}, to=${to}, kind=${kind}, type=${type})}"
+                   class="btn btn-secondary"
+                   style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; font-weight: 500; color: #334155;"
+                   title="Xuất lịch sử biến động kho tổng ra Excel">
+                    <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                    Xuất Excel
+                </a>
+
             </form>
 
 
@@ -187,10 +195,6 @@
 
                             <th>
                                 Người xử lý kho
-                            </th>
-
-                            <th>
-                                Người sản xuất
                             </th>
 
                             <th>
@@ -259,12 +263,6 @@
                             </td>
 
 
-                            <td class="warehouse-person"
-                                th:text="${r.nguoisanxuat ?: '-'}">
-                                -
-                            </td>
-
-
                             <td>
 
                                 <a th:href="@{/kho/lich-su/chi-tiet(
@@ -291,7 +289,7 @@
                         <tr class="empty-row"
                             th:if="${#lists.isEmpty(rows)}">
 
-                            <td colspan="9">
+                            <td colspan="8">
 
                                 Chưa có dữ liệu để hiển thị.
 

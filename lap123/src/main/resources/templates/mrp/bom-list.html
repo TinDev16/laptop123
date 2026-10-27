@@ -7,7 +7,41 @@
     <div th:replace="~{fragments/sidebar :: topbar('BOM / Định mức', 'MRP / BOM')}"></div>
     <main class="content-body">
       <h1>BOM</h1>
-      <p><a class="btn btn-primary" th:href="@{/bom/create}">Tạo BOM</a></p>
+      
+      <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-bottom:1.5rem;">
+          <a class="btn btn-primary" th:href="@{/bom/create}">
+              <i class="fas fa-plus"></i> Tạo BOM mới
+          </a>
+
+          <!-- 1. Tải mẫu Excel -->
+          <a th:href="@{/bom/excel/template}"
+             class="btn"
+             style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; text-decoration:none; padding:8px 14px; border-radius:6px; font-weight:500; font-size:0.9rem;"
+             title="Tải về tệp Excel mẫu chuẩn định mức BOM">
+              <i class="fas fa-file-download" style="color:#0284c7;"></i>
+              Tải mẫu Excel
+          </a>
+
+          <!-- 2. Nhập từ Excel -->
+          <button type="button"
+                  class="btn"
+                  style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; cursor:pointer; padding:8px 14px; border-radius:6px; font-weight:500; font-size:0.9rem;"
+                  onclick="openBomExcelImportModal()"
+                  title="Nạp công thức định mức BOM từ file Excel">
+              <i class="fas fa-file-import" style="color:#16a34a;"></i>
+              Nhập từ Excel
+          </button>
+
+          <!-- 3. Xuất Excel -->
+          <a th:href="@{/bom/excel/export}"
+             class="btn"
+             style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; text-decoration:none; padding:8px 14px; border-radius:6px; font-weight:500; font-size:0.9rem;"
+             title="Xuất danh sách định mức BOM chia nhiều bảng ra Excel">
+              <i class="fas fa-file-excel" style="color:#10b981;"></i>
+              Xuất Excel
+          </a>
+      </div>
+
       <div class="content-card"><div class="content-card-header"><h2 class="content-card-title">Định mức sản xuất</h2><span class="record-count" th:text="${#lists.size(boms) + ' bản ghi'}">0 bản ghi</span></div><div class="table-container"><table>
         <thead><tr><th>Mã</th><th>Sản phẩm</th><th>Phiên bản</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
         <tbody><tr th:each="bom : ${boms}">
@@ -18,4 +52,238 @@
       </table></div></div>
     </main>
   </div>
-</div></body></html>
+</div>
+<!-- =========================================================
+     MODAL NHẬP DỮ LIỆU ĐỊNH MỨC KỸ THUẬT BOM TỪ EXCEL
+     ========================================================= -->
+<div id="bomExcelImportModal" style="display:none; position:fixed; z-index:9999; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+    <div style="background:#fff; width:92%; max-width:980px; max-height:90vh; border-radius:14px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+        <!-- Header -->
+        <div style="padding:16px 24px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:8px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0; font-size:1.15rem; font-weight:700; color:#1e293b;">Nhập Định mức kỹ thuật (BOM) từ Excel</h3>
+                    <p style="margin:2px 0 0; font-size:0.8rem; color:#64748b;">Nạp công thức linh kiện cấu thành theo từng dòng máy tính và phiên bản</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeBomExcelImportModal()" style="border:none; background:transparent; font-size:22px; color:#94a3b8; cursor:pointer; line-height:1;">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:20px 24px; overflow-y:auto; flex:1;">
+            <!-- File upload area -->
+            <div style="border:2px dashed #cbd5e1; border-radius:10px; padding:24px; text-align:center; background:#f8fafc; margin-bottom:16px;">
+                <input type="file" id="bomExcelFileInput" accept=".xlsx" style="display:none;" onchange="handleBomExcelFileSelected(event)">
+                <label for="bomExcelFileInput" style="cursor:pointer; display:inline-flex; flex-direction:column; align-items:center; gap:8px;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:36px; color:#3b82f6;"></i>
+                    <span style="font-weight:600; color:#1e293b;">Bấm vào đây để chọn tệp .xlsx từ máy tính</span>
+                    <span style="font-size:0.82rem; color:#64748b;">Dung lượng tối đa 10MB. Vui lòng sử dụng tệp tải từ nút "Tải mẫu Excel"</span>
+                </label>
+                <div id="bomSelectedFileName" style="margin-top:10px; font-weight:600; color:#0284c7; font-size:0.9rem;"></div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="bomImportLoadingSpinner" style="display:none; text-align:center; padding:20px;">
+                <i class="fas fa-spinner fa-spin" style="font-size:28px; color:#3b82f6;"></i>
+                <p style="margin-top:8px; color:#64748b; font-size:0.9rem;">Đang đọc dữ liệu và kiểm tra ràng buộc...</p>
+            </div>
+
+            <!-- Preview & Validation Results Area -->
+            <div id="bomImportResultsArea" style="display:none;">
+                <!-- Summary Badges -->
+                <div id="bomSummaryBadges" style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap;"></div>
+
+                <!-- Error Alert Box -->
+                <div id="bomErrorAlertBox" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px 16px; margin-bottom:14px;">
+                    <div style="font-weight:600; color:#991b1b; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                        <i class="fas fa-exclamation-triangle"></i> Phát hiện lỗi trong tệp Excel:
+                    </div>
+                    <div style="max-height:160px; overflow-y:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr style="background:#fee2e2; color:#991b1b; text-align:left;">
+                                    <th style="padding:6px 10px;">Dòng</th>
+                                    <th style="padding:6px 10px;">Cột</th>
+                                    <th style="padding:6px 10px;">Giá trị</th>
+                                    <th style="padding:6px 10px;">Chi tiết lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomErrorTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Valid Rows Preview Table -->
+                <div id="bomValidRowsBox" style="display:none;">
+                    <div style="font-weight:600; color:#15803d; margin-bottom:6px; font-size:0.9rem;">
+                        <i class="fas fa-check-circle"></i> Danh sách định mức hợp lệ sẵn sàng nạp:
+                    </div>
+                    <div style="max-height:240px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr style="background:#f1f5f9; color:#475569; position:sticky; top:0;">
+                                    <th style="padding:8px 10px;">Dòng</th>
+                                    <th style="padding:8px 10px;">Dòng máy Laptop</th>
+                                    <th style="padding:8px 10px;">Phiên bản</th>
+                                    <th style="padding:8px 10px;">Mã linh kiện</th>
+                                    <th style="padding:8px 10px;">Tên linh kiện</th>
+                                    <th style="padding:8px 10px; text-align:center;">Định mức</th>
+                                    <th style="padding:8px 10px;">ĐVT</th>
+                                    <th style="padding:8px 10px; text-align:center;">Hao hụt</th>
+                                    <th style="padding:8px 10px; text-align:right;">Đơn giá nhập</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomValidTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:14px 24px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px; background:#f8fafc; border-bottom-left-radius:14px; border-bottom-right-radius:14px;">
+            <button type="button" class="btn" style="background:#e2e8f0; color:#334155; padding:8px 16px; border-radius:6px; border:none; cursor:pointer;" onclick="closeBomExcelImportModal()">Hủy bỏ</button>
+            <button type="button" id="btnBomConfirmImport" class="btn" style="display:none; background:#16a34a; color:#fff; padding:8px 18px; border-radius:6px; border:none; cursor:pointer; font-weight:600;" onclick="confirmBomExcelImport()">
+                <i class="fas fa-save"></i> Xác nhận nạp vào công thức BOM
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openBomExcelImportModal() {
+    document.getElementById('bomExcelImportModal').style.display = 'flex';
+    resetBomImportModal();
+}
+
+function closeBomExcelImportModal() {
+    document.getElementById('bomExcelImportModal').style.display = 'none';
+}
+
+function resetBomImportModal() {
+    document.getElementById('bomExcelFileInput').value = '';
+    document.getElementById('bomSelectedFileName').innerText = '';
+    document.getElementById('bomImportLoadingSpinner').style.display = 'none';
+    document.getElementById('bomImportResultsArea').style.display = 'none';
+    document.getElementById('btnBomConfirmImport').style.display = 'none';
+    document.getElementById('bomErrorAlertBox').style.display = 'none';
+    document.getElementById('bomValidRowsBox').style.display = 'none';
+}
+
+function handleBomExcelFileSelected(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.xlsx')) {
+        alert('Vui lòng chỉ chọn tệp định dạng .xlsx');
+        event.target.value = '';
+        return;
+    }
+
+    document.getElementById('bomSelectedFileName').innerText = '📄 Tệp đã chọn: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    document.getElementById('bomImportLoadingSpinner').style.display = 'block';
+    document.getElementById('bomImportResultsArea').style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/bom/excel/preview', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('bomImportLoadingSpinner').style.display = 'none';
+        document.getElementById('bomImportResultsArea').style.display = 'block';
+        renderBomPreviewResults(data);
+    })
+    .catch(err => {
+        document.getElementById('bomImportLoadingSpinner').style.display = 'none';
+        alert('Lỗi gửi tệp kiểm tra: ' + err);
+    });
+}
+
+function renderBomPreviewResults(data) {
+    const badges = document.getElementById('bomSummaryBadges');
+    badges.innerHTML = 
+        '<span style="background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:6px; font-weight:600; font-size:0.85rem;">Tổng phát hiện: ' + (data.totalRows || 0) + ' dòng</span>' +
+        '<span style="background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:6px; font-weight:600; font-size:0.85rem;">Hợp lệ: ' + (data.validCount || 0) + ' dòng</span>' +
+        '<span style="background:#fee2e2; color:#b91c1c; padding:4px 10px; border-radius:6px; font-weight:600; font-size:0.85rem;">Lỗi: ' + (data.errorCount || 0) + ' lỗi</span>';
+
+    const errorBox = document.getElementById('bomErrorAlertBox');
+    const validBox = document.getElementById('bomValidRowsBox');
+    const btnConfirm = document.getElementById('btnBomConfirmImport');
+
+    if (data.errors && data.errors.length > 0) {
+        errorBox.style.display = 'block';
+        const tbody = document.getElementById('bomErrorTableBody');
+        tbody.innerHTML = data.errors.map(err => 
+            '<tr style="border-bottom:1px solid #fee2e2;">' +
+                '<td style="padding:6px 10px; font-weight:bold;">' + (err.rowNumber > 0 ? 'Dòng ' + err.rowNumber : 'Tệp') + '</td>' +
+                '<td style="padding:6px 10px;">' + (err.columnName || '-') + '</td>' +
+                '<td style="padding:6px 10px; color:#64748b;">' + (err.cellValue || '-') + '</td>' +
+                '<td style="padding:6px 10px; color:#b91c1c; font-weight:500;">' + err.errorMessage + '</td>' +
+            '</tr>'
+        ).join('');
+        btnConfirm.style.display = 'none';
+    } else {
+        errorBox.style.display = 'none';
+    }
+
+    if (data.validRows && data.validRows.length > 0) {
+        validBox.style.display = 'block';
+        const tbody = document.getElementById('bomValidTableBody');
+        tbody.innerHTML = data.validRows.map(row => 
+            '<tr style="border-bottom:1px solid #f1f5f9;">' +
+                '<td style="padding:6px 10px;">' + row.rowNumber + '</td>' +
+                '<td style="padding:6px 10px; font-weight:600; color:#0284c7;">' + row.productName + '</td>' +
+                '<td style="padding:6px 10px;"><span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:600;">' + row.version + '</span></td>' +
+                '<td style="padding:6px 10px; font-family:monospace; font-weight:600;">' + row.materialCode + '</td>' +
+                '<td style="padding:6px 10px;">' + row.materialName + '</td>' +
+                '<td style="padding:6px 10px; text-align:center; font-weight:700; color:#2563eb;">' + row.quantity + '</td>' +
+                '<td style="padding:6px 10px;">' + row.unit + '</td>' +
+                '<td style="padding:6px 10px; text-align:center;">' + row.wastePercentage + '%</td>' +
+                '<td style="padding:6px 10px; text-align:right;">' + Number(row.materialPrice || 0).toLocaleString() + ' ₫</td>' +
+            '</tr>'
+        ).join('');
+
+        if (!data.errors || data.errors.length === 0) {
+            btnConfirm.style.display = 'inline-flex';
+            btnConfirm.innerHTML = '<i class="fas fa-save" style="margin-right:6px;"></i> Xác nhận nạp ' + data.validCount + ' định mức linh kiện';
+        }
+    } else {
+        validBox.style.display = 'none';
+    }
+}
+
+function confirmBomExcelImport() {
+    const btn = document.getElementById('btnBomConfirmImport');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Đang lưu vào CSDL...';
+
+    fetch('/bom/excel/confirm', {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert('Lỗi: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save" style="margin-right:6px;"></i> Thử lại';
+        }
+    })
+    .catch(err => {
+        alert('Lỗi lưu: ' + err);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save" style="margin-right:6px;"></i> Thử lại';
+    });
+}
+</script>
+
+</body></html>

@@ -428,13 +428,23 @@
       <h1>Yêu cầu sản xuất</h1>
 
       <!-- TẠO YÊU CẦU -->
-      <p th:if="${manager}">
+            <!-- THAO TÁC YÊU CẦU SẢN XUẤT -->
+      <div th:if="${manager}" style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-bottom:1.5rem;">
         <a class="btn btn-primary"
            th:href="@{/san-xuat/yeu-cau/create}">
           <i class="fas fa-plus"></i>
           Tạo yêu cầu
         </a>
-      </p>
+
+        <!-- Xuất Excel -->
+        <a th:href="@{/san-xuat/yeu-cau/excel/export}"
+           class="btn"
+           style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; text-decoration:none; padding:8px 14px; border-radius:6px; font-weight:500; font-size:0.9rem;"
+           title="Xuất toàn bộ kế hoạch YCSX chia theo đợt ra Excel">
+            <i class="fas fa-file-excel" style="color:#10b981;"></i>
+            Xuất Excel
+        </a>
+      </div>
 
       <!-- THÔNG BÁO -->
       <div th:if="${success}"

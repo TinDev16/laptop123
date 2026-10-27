@@ -20,6 +20,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpSession;
+import com.example.demo.excel.core.ExcelImportResult;
+import com.example.demo.excel.dto.ProductionOrderExcelDto;
+import com.example.demo.excel.service.ProductionOrderExcelService;
 
 @Controller
 @RequestMapping("/san-xuat/yeu-cau")
@@ -27,13 +35,16 @@ public class ProductionOrderController {
 
     private final ProductionOrderService service;
     private final MrpDocumentService mrpDocumentService;
+    private final ProductionOrderExcelService orderExcelService;
 
     public ProductionOrderController(
             ProductionOrderService service,
-            MrpDocumentService mrpDocumentService
+            MrpDocumentService mrpDocumentService,
+            ProductionOrderExcelService orderExcelService
     ) {
         this.service = service;
         this.mrpDocumentService = mrpDocumentService;
+        this.orderExcelService = orderExcelService;
     }
 
     // =========================================================
@@ -665,5 +676,105 @@ public class ProductionOrderController {
         }
 
         return "redirect:/san-xuat/yeu-cau";
+    }
+
+    // =========================
+    // EXCEL: TẢI FILE MẪU KẾ HOẠCH SẢN XUẤT (YCSX)
+    // =========================
+    @GetMapping("/excel/template")
+    public ResponseEntity<byte[]> downloadOrderTemplate(Authentication auth) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException("Không có quyền tải mẫu kế hoạch sản xuất.");
+        }
+        try {
+            byte[] content = orderExcelService.generateTemplate();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Mau_Nhap_Ke_Hoach_YCSX.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: XUẤT KẾ HOẠCH & TIẾN ĐỘ YCSX
+    // =========================
+    @GetMapping("/excel/export")
+    public ResponseEntity<byte[]> exportOrderExcel(Authentication auth) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException("Không có quyền xuất kế hoạch sản xuất.");
+        }
+        try {
+            byte[] content = orderExcelService.exportOrders();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Ke_Hoach_Yeu_Cau_San_Xuat.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: KIỂM TRA & XEM TRƯỚC YCSX
+    // =========================
+    @PostMapping("/excel/preview")
+    @ResponseBody
+    public ResponseEntity<ExcelImportResult<ProductionOrderExcelDto>> previewOrderExcel(
+            @RequestParam("file") MultipartFile file,
+            Authentication auth,
+            HttpSession session) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException("Không có quyền nhập kế hoạch sản xuất.");
+        }
+        try {
+            var result = orderExcelService.validateAndPreview(file.getInputStream(), file.getSize());
+            if (!result.hasErrors() && !result.getValidRows().isEmpty()) {
+                session.setAttribute("PENDING_ORDER_EXCEL_IMPORT", result.getValidRows());
+            } else {
+                session.removeAttribute("PENDING_ORDER_EXCEL_IMPORT");
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            ExcelImportResult<ProductionOrderExcelDto> errorResult = new ExcelImportResult<>();
+            errorResult.addError(0, "Tệp tải lên", "", e.getMessage());
+            return ResponseEntity.ok(errorResult);
+        }
+    }
+
+    // =========================
+    // EXCEL: XÁC NHẬN NẠP HÀNG LOẠT YCSX
+    // =========================
+    @PostMapping("/excel/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmOrderExcel(
+            Authentication auth,
+            HttpSession session) {
+        if (!manager(auth)) {
+            throw new AccessDeniedException("Không có quyền lưu kế hoạch sản xuất.");
+        }
+        @SuppressWarnings("unchecked")
+        List<ProductionOrderExcelDto> pending = (List<ProductionOrderExcelDto>) session.getAttribute("PENDING_ORDER_EXCEL_IMPORT");
+        if (pending == null || pending.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Không có dữ liệu hợp lệ đang chờ lưu. Vui lòng tải lại tệp."
+            ));
+        }
+        try {
+            int count = orderExcelService.confirmImport(pending, auth.getName());
+            session.removeAttribute("PENDING_ORDER_EXCEL_IMPORT");
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", count,
+                    "message", "Đã nạp thành công " + count + " yêu cầu sản xuất vào hệ thống."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Lỗi lưu dữ liệu: " + e.getMessage()
+            ));
+        }
     }
 }

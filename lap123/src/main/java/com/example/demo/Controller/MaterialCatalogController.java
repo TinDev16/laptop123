@@ -1,10 +1,19 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Service.MaterialCatalogService;
+import com.example.demo.excel.core.ExcelImportResult;
+import com.example.demo.excel.dto.MaterialExcelDto;
+import com.example.demo.excel.service.MaterialExcelService;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,17 +21,27 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.ResponseBody;
+import com.example.demo.excel.dto.MaterialTypeExcelDto;
+import com.example.demo.excel.service.MaterialTypeExcelService;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/nguyen-vat-lieu")
 public class MaterialCatalogController {
 
     private final MaterialCatalogService service;
+    private final MaterialExcelService excelService;
+    private final MaterialTypeExcelService typeExcelService;
 
-    public MaterialCatalogController(MaterialCatalogService service) {
+    public MaterialCatalogController(
+            MaterialCatalogService service,
+            MaterialExcelService excelService,
+            MaterialTypeExcelService typeExcelService) {
         this.service = service;
+        this.excelService = excelService;
+        this.typeExcelService = typeExcelService;
     }
 
     // =========================
@@ -295,5 +314,176 @@ public class MaterialCatalogController {
     @ResponseBody
     public String previewMaterialCode(@RequestParam Integer typeId) {
         return service.generateMaterialCode(typeId);
+    }
+
+    // =========================
+    // EXCEL: TẢI FILE MẪU CHUẨN
+    // =========================
+    @GetMapping("/excel/template")
+    public ResponseEntity<byte[]> downloadTemplate() {
+        try {
+            byte[] content = excelService.generateTemplate();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Mau_Nhap_Nguyen_Vat_Lieu.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: XUẤT DANH MỤC NVL
+    // =========================
+    @GetMapping("/excel/export")
+    public ResponseEntity<byte[]> exportExcel(@RequestParam(defaultValue = "") String q) {
+        try {
+            var materials = service.list(q);
+            byte[] content = excelService.exportMaterials(materials);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Danh_Muc_Nguyen_Vat_Lieu.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: KIỂM TRA & XEM TRƯỚC
+    // =========================
+    @PostMapping("/excel/preview")
+    @ResponseBody
+    public ResponseEntity<ExcelImportResult<MaterialExcelDto>> previewExcel(
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) {
+        try {
+            var result = excelService.validateAndPreview(file.getInputStream(), file.getSize());
+            if (!result.hasErrors() && !result.getValidRows().isEmpty()) {
+                session.setAttribute("PENDING_MATERIAL_EXCEL_IMPORT", result.getValidRows());
+            } else {
+                session.removeAttribute("PENDING_MATERIAL_EXCEL_IMPORT");
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            ExcelImportResult<MaterialExcelDto> errorResult = new ExcelImportResult<>();
+            errorResult.addError(0, "Tệp tải lên", "", e.getMessage());
+            return ResponseEntity.ok(errorResult);
+        }
+    }
+
+    // =========================
+    // EXCEL: XÁC NHẬN NHẬP DỮ LIỆU
+    // =========================
+    @PostMapping("/excel/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmExcel(HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<MaterialExcelDto> pending = (List<MaterialExcelDto>) session.getAttribute("PENDING_MATERIAL_EXCEL_IMPORT");
+        if (pending == null || pending.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Không có dữ liệu hợp lệ đang chờ lưu. Vui lòng tải lại tệp."
+            ));
+        }
+        try {
+            int count = excelService.confirmImport(pending);
+            session.removeAttribute("PENDING_MATERIAL_EXCEL_IMPORT");
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", count,
+                    "message", "Đã nạp thành công " + count + " linh kiện vào hệ thống."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Lỗi lưu dữ liệu: " + e.getMessage()
+            ));
+        }
+    }
+
+    // =========================================================================
+    // EXCEL LOẠI NVL: TẢI FILE MẪU CHUẨN
+    // =========================================================================
+    @GetMapping("/loai/excel/template")
+    public ResponseEntity<byte[]> downloadTypeTemplate() {
+        try {
+            byte[] content = typeExcelService.generateTemplate();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Mau_Nhap_Loai_Nguyen_Vat_Lieu.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================================================================
+    // EXCEL LOẠI NVL: XUẤT DANH SÁCH LOẠI NVL
+    // =========================================================================
+    @GetMapping("/loai/excel/export")
+    public ResponseEntity<byte[]> exportTypeExcel() {
+        try {
+            byte[] content = typeExcelService.exportCurrentTypes();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Danh_Sach_Loai_Nguyen_Vat_Lieu.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================================================================
+    // EXCEL LOẠI NVL: KIỂM TRA & XEM TRƯỚC
+    // =========================================================================
+    @PostMapping("/loai/excel/preview")
+    @ResponseBody
+    public ResponseEntity<ExcelImportResult<MaterialTypeExcelDto>> previewTypeExcel(
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) {
+        try {
+            var result = typeExcelService.validateAndPreview(file.getInputStream(), file.getSize());
+            if (!result.hasErrors() && !result.getValidRows().isEmpty()) {
+                session.setAttribute("PENDING_MATERIAL_TYPE_EXCEL_IMPORT", result.getValidRows());
+            } else {
+                session.removeAttribute("PENDING_MATERIAL_TYPE_EXCEL_IMPORT");
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            ExcelImportResult<MaterialTypeExcelDto> errorResult = new ExcelImportResult<>();
+            errorResult.addError(0, "Tệp tải lên", "", e.getMessage());
+            return ResponseEntity.ok(errorResult);
+        }
+    }
+
+    // =========================================================================
+    // EXCEL LOẠI NVL: XÁC NHẬN NHẬP DỮ LIỆU
+    // =========================================================================
+    @PostMapping("/loai/excel/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmTypeExcel(HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<MaterialTypeExcelDto> pending = (List<MaterialTypeExcelDto>) session.getAttribute("PENDING_MATERIAL_TYPE_EXCEL_IMPORT");
+        if (pending == null || pending.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Không có dữ liệu hợp lệ đang chờ lưu. Vui lòng tải lại tệp."
+            ));
+        }
+        try {
+            int count = typeExcelService.confirmImport(pending);
+            session.removeAttribute("PENDING_MATERIAL_TYPE_EXCEL_IMPORT");
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", count,
+                    "message", "Đã nạp thành công " + count + " loại nguyên vật liệu vào hệ thống."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Lỗi lưu dữ liệu: " + e.getMessage()
+            ));
+        }
     }
 }

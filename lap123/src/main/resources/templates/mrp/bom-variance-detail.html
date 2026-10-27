@@ -303,9 +303,9 @@
                     <a th:href="@{/baocao(tab='bom')}" class="btn-report btn-back">
                         <i class="fas fa-arrow-left"></i> Quay lại báo cáo
                     </a>
-                    <button type="button" class="btn-report btn-report-excel" onclick="exportDetailExcel()">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
-                    </button>
+                    <a th:href="@{/baocao/doi-soat-bom/{id}/excel/export(id=${d.maycsx})}" class="btn-report btn-report-excel" style="text-decoration: none;" title="Xuất báo cáo đối soát định mức BOM ra Excel">
+                        <i class="fas fa-file-excel"></i> Xuất Excel (.xlsx)
+                    </a>
                     <button type="button" class="btn-report btn-report-print" onclick="window.print()">
                         <i class="fas fa-print"></i> In Phiếu Đối Soát
                     </button>

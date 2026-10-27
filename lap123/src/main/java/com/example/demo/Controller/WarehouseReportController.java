@@ -14,6 +14,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.demo.excel.service.TransactionalExportExcelService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 @Controller
 public class WarehouseReportController {
 
@@ -25,11 +30,74 @@ public class WarehouseReportController {
     );
 
     private final WarehouseReportService service;
+    private final TransactionalExportExcelService excelService;
 
     public WarehouseReportController(
-            WarehouseReportService service) {
+            WarehouseReportService service,
+            TransactionalExportExcelService excelService) {
 
         this.service = service;
+        this.excelService = excelService;
+    }
+
+    // =====================================================
+    // EXCEL: XUẤT LỊCH SỬ KHO TỔNG
+    // =====================================================
+    @GetMapping("/kho/lich-su/excel/export")
+    public ResponseEntity<byte[]> exportMainWarehouseHistory(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "") String kind,
+            @RequestParam(defaultValue = "") String type) {
+        try {
+            List<Map<String, Object>> rows = service.history(from, to, kind, type);
+            byte[] content = excelService.exportMainWarehouseHistory(rows, from, to, kind, type);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Lich_Su_Kho_Tong.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =====================================================
+    // EXCEL: XUẤT BÁO CÁO CÂN ĐỐI CUNG CẦU MRP
+    // =====================================================
+    @GetMapping({"/baocao/can-doi-nvl/excel/export", "/baocao/excel/mrp"})
+    public ResponseEntity<byte[]> exportMrpReport() {
+        try {
+            Map<String, Object> mrpData = service.getMrpShortageReport();
+            byte[] content = excelService.exportMrpBalanceReport(mrpData);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Bao_Cao_Can_Doi_NVL_MRP.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =====================================================
+    // EXCEL: XUẤT ĐỐI SOÁT HAO HỤT ĐỊNH MỨC BOM CHI TIẾT
+    // =====================================================
+    @GetMapping("/baocao/doi-soat-bom/{id}/excel/export")
+    public ResponseEntity<byte[]> exportBomVarianceDetailExcel(
+            @org.springframework.web.bind.annotation.PathVariable("id") Long maycsx) {
+        try {
+            Map<String, Object> detail = service.getBomVarianceDetail(maycsx);
+            if (detail == null) {
+                return ResponseEntity.notFound().build();
+            }
+            byte[] content = excelService.exportBomVarianceDetail(detail);
+            String code = detail.get("madot_code") != null ? detail.get("madot_code").toString() : String.valueOf(maycsx);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Doi_Soat_BOM_" + code + ".xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

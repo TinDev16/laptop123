@@ -13,6 +13,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.demo.excel.service.TransactionalExportExcelService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 @Controller
 public class WarehouseProductionHistoryController {
 
@@ -25,11 +30,35 @@ public class WarehouseProductionHistoryController {
     );
 
     private final WarehouseProductionHistoryService service;
+    private final TransactionalExportExcelService excelService;
 
     public WarehouseProductionHistoryController(
-            WarehouseProductionHistoryService service) {
+            WarehouseProductionHistoryService service,
+            TransactionalExportExcelService excelService) {
 
         this.service = service;
+        this.excelService = excelService;
+    }
+
+    // =====================================================
+    // XUẤT EXCEL: LỊCH SỬ KHO SẢN XUẤT
+    // =====================================================
+    @GetMapping("/kho-san-xuat/lich-su/excel/export")
+    public ResponseEntity<byte[]> exportExcel(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "") String kind,
+            @RequestParam(defaultValue = "") String type) {
+        try {
+            List<Map<String, Object>> rows = service.history(from, to, kind, type);
+            byte[] content = excelService.exportProductionWarehouseHistory(rows, from, to, kind, type);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Lich_Su_Kho_San_Xuat.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

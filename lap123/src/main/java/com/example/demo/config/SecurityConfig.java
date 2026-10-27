@@ -220,6 +220,19 @@ public class SecurityConfig {
                                 "NHAN_VIEN"
                         )
 
+                        /*
+                         * =========================================================
+                         * DANH MỤC NGUYÊN VẬT LIỆU (Xem, Thêm, Nhập/Xuất Excel)
+                         * =========================================================
+                         */
+                        .requestMatchers(
+                                "/nguyen-vat-lieu",
+                                "/nguyen-vat-lieu/**"
+                        ).hasAnyRole(
+                                "QUAN_LY_KHO",
+                                "ADMIN"
+                        )
+
 
                         /*
                          * =========================================================

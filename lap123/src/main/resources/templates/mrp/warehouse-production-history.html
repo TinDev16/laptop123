@@ -72,7 +72,7 @@
 
             <!-- HEADER -->
 
-            <div class="page-header">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
 
                 <div>
 
@@ -85,6 +85,16 @@
                         và kho thành phẩm sản xuất.
                     </p>
 
+                </div>
+
+                <div>
+                    <a th:href="@{/kho-san-xuat/lich-su/excel/export(from=${from}, to=${to}, kind=${kind}, type=${type})}"
+                       class="btn btn-secondary"
+                       style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                       title="Xuất danh sách lịch sử kho sản xuất ra file Excel">
+                        <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                        Xuất Excel
+                    </a>
                 </div>
 
             </div>

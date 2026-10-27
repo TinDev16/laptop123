@@ -176,8 +176,18 @@
         const preview = document.getElementById('imagePreview');
         preview.innerHTML = '';
         const currentImage = document.getElementById('currentImage');
-        if (currentImage && input.files && input.files[0]) currentImage.style.display = 'none';
+
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+            if (file.size > 25 * 1024 * 1024) {
+                alert('Dung lượng tệp quá lớn (' + (file.size / (1024 * 1024)).toFixed(1) + 'MB). Vui lòng chọn ảnh có kích thước dưới 25MB.');
+                input.value = '';
+                if (currentImage) currentImage.style.display = 'flex';
+                return;
+            }
+
+            if (currentImage) currentImage.style.display = 'none';
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = document.createElement('img');
@@ -187,7 +197,7 @@
                 img.style.height = "auto";
                 preview.appendChild(img);
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         }
     }
 </script>

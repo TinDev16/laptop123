@@ -30,10 +30,20 @@
                     </p>
                 </div>
 
-                <a class="btn btn-primary" th:href="@{/kho/nhap-nvl/create}">
-                    <i class="fas fa-plus"></i>
-                    Tạo phiếu nhập
-                </a>
+                <div style="display: flex; gap: 0.75rem;">
+                    <a th:href="@{/kho/nhap-nvl/excel/export}"
+                       class="btn btn-secondary"
+                       style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                       title="Xuất toàn bộ danh sách phiếu nhập ra tệp Excel">
+                        <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                        Xuất Excel
+                    </a>
+
+                    <a class="btn btn-primary" th:href="@{/kho/nhap-nvl/create}">
+                        <i class="fas fa-plus"></i>
+                        Tạo phiếu nhập
+                    </a>
+                </div>
             </div>
 
             <p th:if="${success}"

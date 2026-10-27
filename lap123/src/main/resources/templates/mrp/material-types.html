@@ -29,6 +29,43 @@
                 <span th:text="${error}"></span>
             </div>
 
+            <!-- CỤM NÚT THAO TÁC: THÊM MỚI + 3 NÚT EXCEL -->
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center;">
+                <button type="button" id="addTypeButton" class="btn btn-primary"
+                        aria-controls="addTypeForm" aria-expanded="false" onclick="showAddTypeForm()">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Thêm loại NVL
+                </button>
+
+                <!-- Tải file mẫu Excel -->
+                <a th:href="@{/nguyen-vat-lieu/loai/excel/template}"
+                   class="btn btn-secondary"
+                   style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                   title="Tải về file Excel mẫu chuẩn định dạng để nhập danh mục loại NVL">
+                    <i class="fas fa-file-download" style="color: #0284c7;"></i>
+                    Tải mẫu Excel
+                </a>
+
+                <!-- Mở Modal Nhập Excel -->
+                <button type="button"
+                        class="btn btn-secondary"
+                        style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"
+                        onclick="openTypeExcelModal()"
+                        title="Nạp danh sách loại NVL từ file Excel chuẩn">
+                    <i class="fas fa-file-import" style="color: #16a34a;"></i>
+                    Nhập từ Excel
+                </button>
+
+                <!-- Xuất Excel -->
+                <a th:href="@{/nguyen-vat-lieu/loai/excel/export}"
+                   class="btn btn-secondary"
+                   style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                   title="Xuất danh mục phân loại NVL ra file Excel">
+                    <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                    Xuất Excel
+                </a>
+            </div>
+
             <section class="content-card material-type-card">
                 <div class="content-card-header">
                     <div>
@@ -36,17 +73,6 @@
                         <p class="content-card-subtitle">Theo dõi và cập nhật các loại đang được sử dụng.</p>
                     </div>
                     <span class="record-count" th:text="${#lists.size(types) + ' loại'}">0 loại</span>
-                </div>
-                <div class="material-type-toolbar">
-                    <div class="material-type-toolbar-copy">
-                        <i class="fas fa-layer-group" aria-hidden="true"></i>
-                        <span>Tất cả loại nguyên vật liệu</span>
-                    </div>
-                    <button type="button" id="addTypeButton" class="btn btn-primary"
-                            aria-controls="addTypeForm" aria-expanded="false" onclick="showAddTypeForm()">
-                        <i class="fas fa-plus" aria-hidden="true"></i>
-                        Thêm loại nguyên vật liệu
-                    </button>
                 </div>
 
                 <section id="addTypeForm" class="material-type-add-panel" hidden>
@@ -109,6 +135,97 @@
         </main>
     </div>
 </div>
+
+<!-- ========================================== -->
+<!-- MODAL NHẬP DỮ LIỆU LOẠI NVL TỪ EXCEL       -->
+<!-- ========================================== -->
+<div id="typeExcelModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; width:90%; max-width:850px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); overflow:hidden;">
+        
+        <!-- Header -->
+        <div style="padding:16px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <h3 style="margin:0; font-size:1.15rem; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-file-excel" style="color:#16a34a;"></i>
+                Nhập danh mục loại nguyên vật liệu từ Excel
+            </h3>
+            <button type="button" onclick="closeTypeExcelModal()" style="border:none; background:transparent; font-size:1.4rem; cursor:pointer; color:#94a3b8;">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:20px 24px; overflow-y:auto; flex:1;">
+            <!-- Dropzone -->
+            <div id="excelDropArea" style="border:2px dashed #cbd5e1; border-radius:8px; padding:24px; text-align:center; background:#f8fafc; cursor:pointer;" onclick="document.getElementById('excelFileInput').click()">
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleTypeExcelFileSelected(event)">
+                <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem; color:#0284c7; margin-bottom:8px;"></i>
+                <div style="font-weight:600; color:#334155; margin-bottom:4px;">Nhấp để chọn tệp Excel hoặc kéo thả tệp vào đây</div>
+                <div style="font-size:0.85rem; color:#64748b;">Hỗ trợ định dạng .xlsx, dung lượng tối đa 10MB</div>
+                <div id="selectedFileName" style="margin-top:10px; font-weight:600; color:#0284c7;"></div>
+            </div>
+
+            <!-- Spinner -->
+            <div id="importLoadingSpinner" style="display:none; text-align:center; padding:30px;">
+                <i class="fas fa-circle-notch fa-spin" style="font-size:2rem; color:#0284c7;"></i>
+                <div style="margin-top:10px; color:#475569; font-weight:500;">Đang kiểm tra và xác thực dữ liệu loại NVL...</div>
+            </div>
+
+            <!-- Preview Results Area -->
+            <div id="importResultsArea" style="display:none; margin-top:20px;">
+                <div id="summaryBadges" style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;"></div>
+
+                <!-- Error Alert Box -->
+                <div id="errorAlertBox" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:14px; margin-bottom:16px;">
+                    <div style="font-weight:600; color:#991b1b; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Phát hiện lỗi dữ liệu. Vui lòng sửa lại tệp Excel theo danh sách dưới đây:
+                    </div>
+                    <div style="max-height:220px; overflow-y:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr style="background:#fee2e2; color:#991b1b; text-align:left;">
+                                    <th style="padding:6px 10px;">Vị trí</th>
+                                    <th style="padding:6px 10px;">Cột dữ liệu</th>
+                                    <th style="padding:6px 10px;">Giá trị nhập</th>
+                                    <th style="padding:6px 10px;">Chi tiết lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="errorTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Valid Rows Box -->
+                <div id="validRowsBox" style="display:none;">
+                    <div style="font-weight:600; color:#166534; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-check-circle"></i>
+                        Xem trước loại NVL hợp lệ (Sẵn sàng nạp vào hệ thống):
+                    </div>
+                    <div style="max-height:260px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead style="position:sticky; top:0; background:#f8fafc;">
+                                <tr style="border-bottom:1px solid #cbd5e1; text-align:left; color:#475569;">
+                                    <th style="padding:6px 10px;">Dòng</th>
+                                    <th style="padding:6px 10px;">Tên loại nguyên vật liệu</th>
+                                    <th style="padding:6px 10px;">Trạng thái</th>
+                                    <th style="padding:6px 10px;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="validTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:14px 24px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px; background:#f8fafc;">
+            <button type="button" class="btn btn-secondary" onclick="closeTypeExcelModal()">Đóng</button>
+            <button type="button" id="btnConfirmImport" class="btn btn-primary" style="display:none; background:#16a34a; border-color:#16a34a;" onclick="confirmTypeExcelImport()">
+                <i class="fas fa-save"></i> Xác nhận nạp vào CSDL
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     function showAddTypeForm() {
         const panel = document.getElementById('addTypeForm');
@@ -126,6 +243,151 @@
         button.setAttribute('aria-expanded', 'false');
         document.getElementById('name').value = '';
         button.focus();
+    }
+
+    // ==========================================
+    // EXCEL IMPORT / PREVIEW SCRIPT
+    // ==========================================
+    function openTypeExcelModal() {
+        document.getElementById('typeExcelModal').style.display = 'flex';
+        resetTypeModal();
+    }
+
+    function closeTypeExcelModal() {
+        document.getElementById('typeExcelModal').style.display = 'none';
+    }
+
+    function resetTypeModal() {
+        document.getElementById('excelFileInput').value = '';
+        document.getElementById('selectedFileName').innerText = '';
+        document.getElementById('importLoadingSpinner').style.display = 'none';
+        document.getElementById('importResultsArea').style.display = 'none';
+        document.getElementById('btnConfirmImport').style.display = 'none';
+        document.getElementById('errorAlertBox').style.display = 'none';
+        document.getElementById('validRowsBox').style.display = 'none';
+    }
+
+    function handleTypeExcelFileSelected(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        document.getElementById('selectedFileName').innerHTML = '<i class="fas fa-file-excel"></i> ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+        previewTypeExcelFile(file);
+    }
+
+    function previewTypeExcelFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        document.getElementById('importLoadingSpinner').style.display = 'block';
+        document.getElementById('importResultsArea').style.display = 'none';
+        document.getElementById('btnConfirmImport').style.display = 'none';
+
+        fetch('/nguyen-vat-lieu/loai/excel/preview', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('importLoadingSpinner').style.display = 'none';
+            document.getElementById('importResultsArea').style.display = 'block';
+            renderTypePreviewResults(data);
+        })
+        .catch(err => {
+            document.getElementById('importLoadingSpinner').style.display = 'none';
+            alert('Lỗi kiểm tra tệp: ' + err);
+        });
+    }
+
+    function renderTypePreviewResults(data) {
+        const badges = document.getElementById('summaryBadges');
+        badges.innerHTML = `
+            <span style="background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:6px; font-weight:600; font-size:0.85rem;">
+                Tổng phát hiện: ${data.totalRows || 0} dòng
+            </span>
+            <span style="background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:6px; font-weight:600; font-size:0.85rem;">
+                Hợp lệ: ${data.validCount || 0} dòng
+            </span>
+            <span style="background:#fee2e2; color:#b91c1c; padding:4px 10px; border-radius:6px; font-weight:600; font-size:0.85rem;">
+                Lỗi: ${data.errorCount || 0} lỗi
+            </span>
+        `;
+
+        const errorBox = document.getElementById('errorAlertBox');
+        const validBox = document.getElementById('validRowsBox');
+        const btnConfirm = document.getElementById('btnConfirmImport');
+
+        // Render errors
+        if (data.errors && data.errors.length > 0) {
+            errorBox.style.display = 'block';
+            const tbody = document.getElementById('errorTableBody');
+            tbody.innerHTML = data.errors.map(err => `
+                <tr style="border-bottom:1px solid #fee2e2;">
+                    <td style="padding:6px 10px; font-weight:bold;">${err.rowNumber > 0 ? 'Dòng ' + err.rowNumber : 'Tệp'}</td>
+                    <td style="padding:6px 10px;">${err.columnName || '-'}</td>
+                    <td style="padding:6px 10px; color:#64748b;">${err.cellValue || '-'}</td>
+                    <td style="padding:6px 10px; color:#b91c1c; font-weight:500;">${err.errorMessage}</td>
+                </tr>
+            `).join('');
+            btnConfirm.style.display = 'none';
+        } else {
+            errorBox.style.display = 'none';
+        }
+
+        // Render valid rows
+        if (data.validRows && data.validRows.length > 0) {
+            validBox.style.display = 'block';
+            const tbody = document.getElementById('validTableBody');
+            tbody.innerHTML = data.validRows.map(row => `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:6px 10px;">${row.rowNumber}</td>
+                    <td style="padding:6px 10px; font-weight:600; color:#0284c7;">${row.name}</td>
+                    <td style="padding:6px 10px;">
+                        <span style="background:${row.status === 'HOAT_DONG' ? '#dcfce7' : '#fee2e2'}; color:${row.status === 'HOAT_DONG' ? '#166534' : '#991b1b'}; padding:2px 8px; border-radius:4px; font-weight:600; font-size:0.8rem;">
+                            ${row.status === 'HOAT_DONG' ? 'Hoạt động' : 'Ngừng sử dụng'}
+                        </span>
+                    </td>
+                    <td style="padding:6px 10px;">
+                        <span style="font-size:0.78rem; font-weight:600; color:${row.action === 'THEM_MOI' ? '#16a34a' : '#d97706'}">
+                            ${row.action}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (!data.errors || data.errors.length === 0) {
+                btnConfirm.style.display = 'inline-flex';
+                btnConfirm.innerHTML = '<i class="fas fa-save"></i> Xác nhận nạp ' + data.validCount + ' loại NVL';
+            }
+        } else {
+            validBox.style.display = 'none';
+        }
+    }
+
+    function confirmTypeExcelImport() {
+        const btn = document.getElementById('btnConfirmImport');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu vào CSDL...';
+
+        fetch('/nguyen-vat-lieu/loai/excel/confirm', {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Lỗi: ' + data.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Thử lại';
+            }
+        })
+        .catch(err => {
+            alert('Lỗi lưu: ' + err);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Thử lại';
+        });
     }
 </script>
 </body>

@@ -16,14 +16,21 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Map;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.demo.excel.service.TransactionalExportExcelService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 @Controller
 public class MrpWorkflowController {
     private final MrpDocumentService documents;
     private final MrpWarehouseService warehouse;
+    private final TransactionalExportExcelService excelService;
 
-    public MrpWorkflowController(MrpDocumentService documents, MrpWarehouseService warehouse) {
+    public MrpWorkflowController(MrpDocumentService documents, MrpWarehouseService warehouse, TransactionalExportExcelService excelService) {
         this.documents = documents;
         this.warehouse = warehouse;
+        this.excelService = excelService;
     }
 
     private boolean manager(Authentication authentication) {
@@ -38,6 +45,23 @@ public class MrpWorkflowController {
     public String receipts(Model model) {
         model.addAttribute("receipts", documents.receipts());
         return "mrp/receipts";
+    }
+
+    // =====================================================
+    // EXCEL: XUẤT DANH SÁCH PHIẾU NHẬP NVL
+    // =====================================================
+    @GetMapping("/kho/nhap-nvl/excel/export")
+    public ResponseEntity<byte[]> exportReceiptsExcel() {
+        try {
+            var receipts = documents.receipts();
+            byte[] content = excelService.exportMaterialReceipts(receipts);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Danh_Sach_Phieu_Nhap_NVL.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/kho/nhap-nvl/create")
@@ -127,6 +151,23 @@ public class MrpWorkflowController {
         model.addAttribute("manager", manager(auth));
         model.addAttribute("issues", documents.materialIssues(auth.getName(), manager(auth)));
         return "mrp/material-issues";
+    }
+
+    // =====================================================
+    // EXCEL: XUẤT DANH SÁCH PHIẾU XUẤT NVL
+    // =====================================================
+    @GetMapping("/kho/xuat-nvl/excel/export")
+    public ResponseEntity<byte[]> exportMaterialIssuesExcel(Authentication auth) {
+        try {
+            var issues = documents.materialIssues(auth != null ? auth.getName() : "", auth != null && manager(auth));
+            byte[] content = excelService.exportMaterialIssues(issues);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Danh_Sach_Phieu_Xuat_NVL.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/kho/xuat-nvl/create")

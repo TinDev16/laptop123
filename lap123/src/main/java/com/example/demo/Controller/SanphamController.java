@@ -13,10 +13,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.Service.BomService;
 
+import com.example.demo.excel.core.ExcelImportResult;
+import com.example.demo.excel.dto.ProductExcelDto;
+import com.example.demo.excel.service.ProductExcelService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class SanphamController {
@@ -29,6 +39,9 @@ public class SanphamController {
 
     @Autowired
     private ThuonghieuService thuonghieuservice;
+
+    @Autowired
+    private ProductExcelService productExcelService;
 
     @Value("${app.upload-dir:uploads}")
     private String uploadDir;
@@ -130,6 +143,91 @@ public class SanphamController {
             return fileName;
         } catch (IOException exception) {
             throw new IllegalStateException("Không thể lưu hình ảnh sản phẩm.", exception);
+        }
+    }
+
+    // =========================
+    // EXCEL: TẢI FILE MẪU SẢN PHẨM LAPTOP
+    // =========================
+    @GetMapping("/sanpham/excel/template")
+    public ResponseEntity<byte[]> downloadProductTemplate() {
+        try {
+            byte[] content = productExcelService.generateTemplate();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Mau_Nhap_San_Pham_Laptop.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: XUẤT DANH MỤC SẢN PHẨM LAPTOP
+    // =========================
+    @GetMapping("/sanpham/excel/export")
+    public ResponseEntity<byte[]> exportProductExcel(@RequestParam(value = "q", defaultValue = "") String q) {
+        try {
+            byte[] content = productExcelService.exportProducts(q);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Danh_Muc_San_Pham_Laptop.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =========================
+    // EXCEL: KIỂM TRA & XEM TRƯỚC SẢN PHẨM
+    // =========================
+    @PostMapping("/sanpham/excel/preview")
+    @ResponseBody
+    public ResponseEntity<ExcelImportResult<ProductExcelDto>> previewProductExcel(
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) {
+        try {
+            var result = productExcelService.validateAndPreview(file.getInputStream(), file.getSize());
+            if (!result.hasErrors() && !result.getValidRows().isEmpty()) {
+                session.setAttribute("PENDING_PRODUCT_EXCEL_IMPORT", result.getValidRows());
+            } else {
+                session.removeAttribute("PENDING_PRODUCT_EXCEL_IMPORT");
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            ExcelImportResult<ProductExcelDto> errorResult = new ExcelImportResult<>();
+            errorResult.addError(0, "Tệp tải lên", "", e.getMessage());
+            return ResponseEntity.ok(errorResult);
+        }
+    }
+
+    // =========================
+    // EXCEL: XÁC NHẬN NHẬP DỮ LIỆU SẢN PHẨM
+    // =========================
+    @PostMapping("/sanpham/excel/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmProductExcel(HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<ProductExcelDto> pending = (List<ProductExcelDto>) session.getAttribute("PENDING_PRODUCT_EXCEL_IMPORT");
+        if (pending == null || pending.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Không có dữ liệu hợp lệ đang chờ lưu. Vui lòng tải lại tệp."
+            ));
+        }
+        try {
+            int count = productExcelService.confirmImport(pending);
+            session.removeAttribute("PENDING_PRODUCT_EXCEL_IMPORT");
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", count,
+                    "message", "Đã nạp thành công " + count + " dòng sản phẩm Laptop vào hệ thống."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Lỗi lưu dữ liệu: " + e.getMessage()
+            ));
         }
     }
 }

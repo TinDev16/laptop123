@@ -933,48 +933,44 @@ public class WarehouseReportService {
     public Map<String, Object> getMrpShortageReport() {
         String sql = """
             SELECT
-                req.manvl,
-                req.manvl_code,
-                req.tennvl,
-                req.donvitinh,
-                req.dongianhap,
-                req.lead_time_ngay,
-                req.ton_toithieu,
-                req.soyeucau,
-                req.tongnhucau,
+                n.manvl,
+                n.manvl_code,
+                n.tennvl,
+                n.donvitinh,
+                n.dongianhap,
+                n.lead_time_ngay,
+                n.ton_toithieu,
+                COALESCE(req.soyeucau, 0) AS soyeucau,
+                COALESCE(req.tongnhucau, 0) AS tongnhucau,
                 COALESCE(k_tong.soluongton, 0) AS ton_kho_tong,
                 COALESCE(k_sx.soluongton, 0) AS ton_kho_sx,
                 (COALESCE(k_tong.soluongton, 0) + COALESCE(k_sx.soluongton, 0)) AS tong_kha_dung,
                 GREATEST(
-                    req.tongnhucau - (COALESCE(k_tong.soluongton, 0) + COALESCE(k_sx.soluongton, 0)),
+                    COALESCE(req.tongnhucau, 0) - (COALESCE(k_tong.soluongton, 0) + COALESCE(k_sx.soluongton, 0)),
                     0
                 ) AS soluongthieu
-            FROM (
+            FROM nguyenvatlieu n
+            LEFT JOIN (
                 SELECT
-                    n.manvl,
-                    n.manvl_code,
-                    n.tennvl,
-                    n.donvitinh,
-                    n.dongianhap,
-                    n.lead_time_ngay,
-                    n.ton_toithieu,
+                    c.manvl,
                     COUNT(DISTINCT y.maycsx) AS soyeucau,
                     SUM(
                         CEIL(
-                            GREATEST(y.soluongyeucau - y.soluonghoanthanh, 0)
+                            GREATEST(COALESCE(y.soluongyeucau, 0) - COALESCE(y.soluonghoanthanh, 0), 0)
                             * c.soluong_dinhmuc
                             * (1 + c.tyle_haohut / 100)
                         )
                     ) AS tongnhucau
                 FROM yeucausanxuat y
                 JOIN bom_chitiet c ON c.mabom = y.mabom
-                JOIN nguyenvatlieu n ON n.manvl = c.manvl
-                WHERE y.trangthai IN ('DA_GIAO', 'DANG_SAN_XUAT')
-                GROUP BY n.manvl, n.manvl_code, n.tennvl, n.donvitinh, n.dongianhap, n.lead_time_ngay, n.ton_toithieu
-            ) req
-            LEFT JOIN nguyenvatlieu k_tong ON k_tong.manvl = req.manvl
-            LEFT JOIN kho_nvl_san_xuat k_sx ON k_sx.manvl = req.manvl
-            ORDER BY soluongthieu DESC, req.manvl ASC
+                WHERE (y.trangthai IS NULL OR y.trangthai NOT IN ('HOAN_THANH', 'HUY'))
+                  AND COALESCE(y.soluonghoanthanh, 0) < COALESCE(y.soluongyeucau, 0)
+                GROUP BY c.manvl
+            ) req ON req.manvl = n.manvl
+            LEFT JOIN nguyenvatlieu k_tong ON k_tong.manvl = n.manvl
+            LEFT JOIN kho_nvl_san_xuat k_sx ON k_sx.manvl = n.manvl
+            WHERE n.trangthai = 1 OR n.trangthai IS NULL
+            ORDER BY soluongthieu DESC, tongnhucau DESC, n.manvl ASC
             """;
 
         List<Map<String, Object>> rows = jdbc.queryForList(sql);

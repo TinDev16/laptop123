@@ -727,11 +727,38 @@ public class BomExcelService {
      */
     @Transactional
     public int confirmImport(List<BomExcelDto> dtos) {
+        return confirmImport(dtos, null);
+    }
+
+    @Transactional
+    public int confirmImport(List<BomExcelDto> dtos, String usernameOrEmail) {
         if (dtos == null || dtos.isEmpty()) {
             return 0;
         }
 
-        // Gom nhóm theo (productId, version)
+        // 1. Xác định ID người tạo hợp lệ từ Security session hoặc Fallback nhân viên đầu tiên
+        Integer creatorId = null;
+        if (usernameOrEmail != null && !usernameOrEmail.isBlank()) {
+            try {
+                List<Integer> ids = jdbc.queryForList(
+                        "SELECT manv FROM taikhoan WHERE username = ? OR email = ?",
+                        Integer.class, usernameOrEmail, usernameOrEmail
+                );
+                if (!ids.isEmpty()) creatorId = ids.get(0);
+            } catch (Exception ignored) {}
+        }
+        if (creatorId == null) {
+            try {
+                List<Integer> ids = jdbc.queryForList("SELECT manv FROM nhanvien ORDER BY manv ASC LIMIT 1", Integer.class);
+                if (!ids.isEmpty()) creatorId = ids.get(0);
+            } catch (Exception ignored) {}
+        }
+        if (creatorId == null) {
+            creatorId = 1;
+        }
+        final int finalCreatorId = creatorId;
+
+        // 2. Gom nhóm theo (productId, version)
         Map<String, List<BomExcelDto>> bomGroups = new LinkedHashMap<>();
         for (BomExcelDto dto : dtos) {
             String key = dto.getProductId() + "#" + dto.getVersion().toLowerCase().trim();
@@ -757,19 +784,20 @@ public class BomExcelService {
                 mabom = ((Number) existingBoms.get(0).get("mabom")).longValue();
                 // Xóa chi tiết cũ để nạp chi tiết mới chuẩn xác
                 jdbc.update("DELETE FROM bom_chitiet WHERE mabom = ?", mabom);
-                // Đảm bảo trạng thái BOM là hiệu lực
-                jdbc.update("UPDATE bom SET trangthai = 'HIEU_LUC' WHERE mabom = ?", mabom);
+                // Đảm bảo trạng thái BOM là hiệu lực và cập nhật người tạo
+                jdbc.update("UPDATE bom SET trangthai = 'HIEU_LUC', nguoitao = ? WHERE mabom = ?", finalCreatorId, mabom);
             } else {
-                // Tạo mới BOM header
+                // Tạo mới BOM header (kèm nguoitao)
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 jdbc.update(connection -> {
                     PreparedStatement ps = connection.prepareStatement(
-                            "INSERT INTO bom (masp, phienban, trangthai, ghichu) VALUES (?, ?, 'HIEU_LUC', ?)",
+                            "INSERT INTO bom (masp, phienban, nguoitao, trangthai, ghichu) VALUES (?, ?, ?, 'HIEU_LUC', ?)",
                             Statement.RETURN_GENERATED_KEYS
                     );
                     ps.setInt(1, productId);
                     ps.setString(2, version);
-                    ps.setString(3, "Nạp từ file Excel định mức kỹ thuật");
+                    ps.setInt(3, finalCreatorId);
+                    ps.setString(4, "Nạp từ file Excel định mức kỹ thuật");
                     return ps;
                 }, keyHolder);
 

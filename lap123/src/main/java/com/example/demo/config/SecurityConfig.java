@@ -259,6 +259,7 @@ public class SecurityConfig {
                                 "/baocao",
                                 "/baocao/**",
                                 "/nhanvien",
+                                "/nhanvien/**",
                                 "/sanpham/**",
                                 "/ncc/**",
                                 "/khachhang/**",

@@ -206,6 +206,32 @@ public class WarehouseReportController {
     // BÁO CÁO TOÀN DIỆN MRP & KHO
     // =====================================================
 
+    private LocalDate[] resolveDateRange(Integer month, Integer quarter, Integer year) {
+        LocalDate today = LocalDate.now();
+        int selectedYear = year == null ? today.getYear() : year;
+        LocalDate from;
+        LocalDate to;
+
+        if (month != null) {
+            if (month < 1 || month > 12) {
+                throw new IllegalArgumentException("Tháng không hợp lệ.");
+            }
+            from = LocalDate.of(selectedYear, month, 1);
+            to = from.plusMonths(1).minusDays(1);
+        } else if (quarter != null) {
+            if (quarter < 1 || quarter > 4) {
+                throw new IllegalArgumentException("Quý không hợp lệ.");
+            }
+            from = LocalDate.of(selectedYear, (quarter - 1) * 3 + 1, 1);
+            to = from.plusMonths(3).minusDays(1);
+        } else {
+            // Khi không chọn tháng hoặc quý cụ thể, mặc định lấy cả năm để tổng hợp toàn diện
+            from = LocalDate.of(selectedYear, 1, 1);
+            to = LocalDate.of(selectedYear, 12, 31);
+        }
+        return new LocalDate[]{from, to};
+    }
+
     @GetMapping("/baocao")
     public String report(
             @RequestParam(defaultValue = "xnt")
@@ -228,42 +254,9 @@ public class WarehouseReportController {
 
             Model model) {
 
-        LocalDate today = LocalDate.now();
-
-        int selectedYear =
-                year == null
-                        ? today.getYear()
-                        : year;
-
-        LocalDate from;
-        LocalDate to;
-
-        // Ưu tiên Tháng
-        if (month != null) {
-            if (month < 1 || month > 12) {
-                throw new IllegalArgumentException("Tháng không hợp lệ.");
-            }
-            from = LocalDate.of(selectedYear, month, 1);
-            to = from.plusMonths(1).minusDays(1);
-        }
-        // Xét Quý
-        else if (quarter != null) {
-            if (quarter < 1 || quarter > 4) {
-                throw new IllegalArgumentException("Quý không hợp lệ.");
-            }
-            from = LocalDate.of(selectedYear, (quarter - 1) * 3 + 1, 1);
-            to = from.plusMonths(3).minusDays(1);
-        }
-        // Xét Năm
-        else if (year != null) {
-            from = LocalDate.of(year, 1, 1);
-            to = LocalDate.of(year, 12, 31);
-        }
-        // Mặc định tháng hiện tại
-        else {
-            from = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
-            to = from.plusMonths(1).minusDays(1);
-        }
+        LocalDate[] range = resolveDateRange(month, quarter, year);
+        LocalDate from = range[0];
+        LocalDate to = range[1];
 
         // Validate loại giao dịch nếu có lọc chứng từ
         if (!type.isBlank() && !REPORT_TRANSACTION_TYPES.contains(type)) {
@@ -341,6 +334,53 @@ public class WarehouseReportController {
     }
 
     // =====================================================
+    // EXCEL: XUẤT BÁO CÁO TỔNG HỢP THEO TAB (.xlsx)
+    // =====================================================
+    @GetMapping("/baocao/export-excel")
+    public ResponseEntity<byte[]> exportExcel(
+            @RequestParam(defaultValue = "xnt") String tab,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(defaultValue = "ALL") String kind) {
+        try {
+            LocalDate[] range = resolveDateRange(month, quarter, year);
+            LocalDate from = range[0];
+            LocalDate to = range[1];
+
+            byte[] content;
+            String filename;
+
+            if ("sanxuat".equalsIgnoreCase(tab)) {
+                Map<String, Object> perf = service.getProductionPerformance(from, to);
+                content = excelService.exportProductionPerformanceReport(perf, from, to);
+                filename = "Bao_Cao_Hieu_Suat_San_Xuat_" + from + "_" + to + ".xlsx";
+            } else if ("mrp".equalsIgnoreCase(tab)) {
+                Map<String, Object> mrpData = service.getMrpShortageReport();
+                content = excelService.exportMrpBalanceReport(mrpData);
+                filename = "Bao_Cao_Can_Doi_NVL_MRP.xlsx";
+            } else if ("bom".equalsIgnoreCase(tab)) {
+                List<Map<String, Object>> bomVariances = service.getBomVarianceReport(from, to);
+                content = excelService.exportBomVarianceReport(bomVariances, from, to);
+                filename = "Bao_Cao_Doi_Soat_BOM_" + from + "_" + to + ".xlsx";
+            } else {
+                // Default: Tab XNT
+                List<Map<String, Object>> details = service.getInventoryDetails(from, to, kind);
+                Map<String, Object> summary = service.getInventorySummary(details);
+                content = excelService.exportInventoryReport(details, summary, from, to, kind);
+                filename = "Bao_Cao_Xuat_Nhap_Ton_" + from + "_" + to + ".xlsx";
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(content);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =====================================================
     // XUẤT BÁO CÁO CSV (UTF-8 BOM CHO EXCEL)
     // =====================================================
     @GetMapping("/baocao/export-csv")
@@ -352,22 +392,9 @@ public class WarehouseReportController {
             @RequestParam(defaultValue = "ALL") String kind,
             jakarta.servlet.http.HttpServletResponse response
     ) throws java.io.IOException {
-        LocalDate today = LocalDate.now();
-        int selectedYear = year == null ? today.getYear() : year;
-        LocalDate from, to;
-        if (month != null) {
-            from = LocalDate.of(selectedYear, month, 1);
-            to = from.plusMonths(1).minusDays(1);
-        } else if (quarter != null) {
-            from = LocalDate.of(selectedYear, (quarter - 1) * 3 + 1, 1);
-            to = from.plusMonths(3).minusDays(1);
-        } else if (year != null) {
-            from = LocalDate.of(year, 1, 1);
-            to = LocalDate.of(year, 12, 31);
-        } else {
-            from = LocalDate.of(today.getYear(), today.getMonthValue(), 1);
-            to = from.plusMonths(1).minusDays(1);
-        }
+        LocalDate[] range = resolveDateRange(month, quarter, year);
+        LocalDate from = range[0];
+        LocalDate to = range[1];
 
         response.setContentType("text/csv; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");

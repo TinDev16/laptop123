@@ -630,7 +630,7 @@
                             Sản xuất</p>
                     </div>
                     <div class="report-header-actions">
-                        <a th:href="@{/baocao/can-doi-nvl/excel/export}" class="btn-report btn-report-excel" style="text-decoration: none;" title="Xuất báo cáo cân đối vật tư MRP ra Excel">
+                        <a th:href="@{/baocao/export-excel(tab=${tab}, month=${month}, quarter=${quarter}, year=${year}, kind=${selectedKind})}" class="btn-report btn-report-excel" style="text-decoration: none;" title="Xuất báo cáo Excel (.xlsx)">
                             <i class="fas fa-file-excel"></i> Xuất Excel (.xlsx)
                         </a>
                         <a th:href="@{/baocao/export-csv(tab=${tab}, month=${month}, quarter=${quarter}, year=${year}, kind=${selectedKind})}"

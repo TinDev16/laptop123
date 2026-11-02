@@ -495,19 +495,20 @@ public class TransactionalExportExcelService {
             sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 11));
 
             // Summary Table
-            Map<String, Object> summary = mrpData != null ? (Map<String, Object>) mrpData.get("summary") : null;
-            if (summary != null) {
-                Row rKpiH = sheet.createRow(4);
-                rKpiH.createCell(0).setCellValue("Chỉ số tổng hợp");
-                rKpiH.createCell(1).setCellValue("Giá trị");
-                rKpiH.getCell(0).setCellStyle(headerStyle);
-                rKpiH.getCell(1).setCellStyle(headerStyle);
+            Row rKpiH = sheet.createRow(4);
+            rKpiH.createCell(0).setCellValue("Chỉ số tổng hợp");
+            rKpiH.createCell(1).setCellValue("Giá trị");
+            rKpiH.getCell(0).setCellStyle(headerStyle);
+            rKpiH.getCell(1).setCellStyle(headerStyle);
 
-                createKpiRow(sheet, 5, "Số chủng loại linh kiện thiếu hụt:", toDouble(summary.get("total_shortage_types")), dataStyle, numberStyle);
-                createKpiRow(sheet, 6, "Tổng số lượng vật tư cần mua bổ sung:", toDouble(summary.get("total_shortage_qty")), dataStyle, numberStyle);
-                createKpiRow(sheet, 7, "Tổng chi phí mua sắm dự kiến (VNĐ):", toDouble(summary.get("total_estimated_cost")), dataStyle, currencyStyle);
-                createKpiRow(sheet, 8, "Số lệnh sản xuất đang chờ vật tư:", toDouble(summary.get("blocked_orders_count")), dataStyle, numberStyle);
-            }
+            List<Map<String, Object>> itemsList = mrpData != null ? (List<Map<String, Object>>) mrpData.get("items") : null;
+            double soLoaiThieu = toDouble(mrpData != null ? mrpData.get("so_loai_thieu") : 0);
+            double tongChiPhi = toDouble(mrpData != null ? mrpData.get("tong_chi_phi_mua") : 0);
+            int totalMaterials = itemsList != null ? itemsList.size() : 0;
+
+            createKpiRow(sheet, 5, "Tổng số chủng loại linh kiện:", totalMaterials, dataStyle, numberStyle);
+            createKpiRow(sheet, 6, "Số chủng loại linh kiện thiếu hụt:", soLoaiThieu, dataStyle, numberStyle);
+            createKpiRow(sheet, 7, "Tổng chi phí mua sắm dự kiến (VNĐ):", tongChiPhi, dataStyle, currencyStyle);
 
             // Detail Table
             int tableStartRow = 10;
@@ -790,6 +791,468 @@ public class TransactionalExportExcelService {
             }
 
             ExcelCoreUtils.autoSizeColumns(sheet, 9);
+            return toByteArray(workbook);
+        }
+    }
+
+    // =========================================================================
+    // 7. XUẤT BÁO CÁO XUẤT - NHẬP - TỒN & GIÁ TRỊ VỐN KHO (XNT)
+    // =========================================================================
+    public byte[] exportInventoryReport(List<Map<String, Object>> details, Map<String, Object> summary, LocalDate from, LocalDate to, String kind) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("XUAT_NHAP_TON");
+
+            CellStyle titleStyle = createTitleStyle(workbook, IndexedColors.DARK_BLUE.getIndex());
+            CellStyle metaStyle = createMetaStyle(workbook);
+            CellStyle sectionHeaderStyle = createSectionHeaderStyle(workbook);
+            CellStyle headerStyle = ExcelCoreUtils.createHeaderStyle(workbook);
+            CellStyle dataStyle = ExcelCoreUtils.createDataStyle(workbook);
+            CellStyle centerDataStyle = workbook.createCellStyle();
+            centerDataStyle.cloneStyleFrom(dataStyle);
+            centerDataStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle numberStyle = ExcelCoreUtils.createNumberStyle(workbook, "#,##0");
+            CellStyle currencyStyle = ExcelCoreUtils.createNumberStyle(workbook, "#,##0 ₫");
+            CellStyle subtotalStyle = createSubtotalStyle(workbook);
+
+            // Title Banner
+            Row r0 = sheet.createRow(0);
+            r0.setHeightInPoints(32);
+            Cell cTitle = r0.createCell(0);
+            cTitle.setCellValue("BÁO CÁO XUẤT - NHẬP - TỒN & GIÁ TRỊ VỐN KHO (XNT)");
+            cTitle.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 11));
+
+            // Metadata info
+            Row r1 = sheet.createRow(1);
+            String periodStr = "Kỳ báo cáo: Từ " + (from != null ? from.format(DATE_FMT) : "---") + " đến " + (to != null ? to.format(DATE_FMT) : "---");
+            String kindLabel = "ALL".equalsIgnoreCase(kind) ? "Tất cả (NVL & Laptop)" : ("NVL".equalsIgnoreCase(kind) ? "Chỉ Nguyên Vật Liệu" : "Chỉ Thành Phẩm Laptop");
+            r1.createCell(0).setCellValue(periodStr + " | Phân loại: " + kindLabel);
+            r1.getCell(0).setCellStyle(metaStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 11));
+
+            Row r2 = sheet.createRow(2);
+            r2.createCell(0).setCellValue("Thời điểm xuất báo cáo: " + LocalDateTime.now().format(DATE_TIME_FMT));
+            r2.getCell(0).setCellStyle(metaStyle);
+            sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 11));
+
+            // KPI Summary Box
+            if (summary != null) {
+                Row rKpiH = sheet.createRow(4);
+                rKpiH.createCell(0).setCellValue("TỔNG HỢP GIÁ TRỊ VỐN & BIẾN ĐỘNG KHO TRONG KỲ");
+                rKpiH.getCell(0).setCellStyle(sectionHeaderStyle);
+                sheet.addMergedRegion(new CellRangeAddress(4, 4, 0, 11));
+
+                createKeyValueRow(sheet, 5,
+                        "Tổng giá trị tồn kho cuối kỳ:", String.format("%,.0f ₫", toDouble(summary.get("tong_gia_tri_kho"))),
+                        "Số SKU chạm ngưỡng cảnh báo:", safeStr(summary.get("so_canh_bao_nvl")) + " mã",
+                        dataStyle);
+
+                createKeyValueRow(sheet, 6,
+                        "Tồn kho Nguyên Vật Liệu:", String.format("%,.0f (Giá trị: %,.0f ₫)", toDouble(summary.get("tong_nvl_cuoi")), toDouble(summary.get("tong_gt_nvl"))),
+                        "Tổng nhập trong kỳ (NVL + Laptop):", String.format("+%,.0f", toDouble(summary.get("tong_nvl_nhap")) + toDouble(summary.get("tong_tp_nhap"))),
+                        dataStyle);
+
+                createKeyValueRow(sheet, 7,
+                        "Tồn kho Thành Phẩm Laptop:", String.format("%,.0f (Giá trị bán: %,.0f ₫)", toDouble(summary.get("tong_tp_cuoi")), toDouble(summary.get("tong_gt_tp"))),
+                        "Tổng xuất trong kỳ (NVL + Laptop):", String.format("-%,.0f", toDouble(summary.get("tong_nvl_xuat")) + toDouble(summary.get("tong_tp_xuat"))),
+                        dataStyle);
+            }
+
+            // Headers
+            String[] headers = {
+                    "STT", "Mã SKU", "Tên hàng hóa", "Loại", "ĐVT",
+                    "Tồn đầu kỳ", "Nhập trong kỳ", "Xuất trong kỳ", "Tồn cuối kỳ",
+                    "Đơn giá vốn", "Thành tiền tồn", "Tình trạng"
+            };
+            int tableStartRow = (summary != null) ? 9 : 4;
+            Row rH = sheet.createRow(tableStartRow);
+            rH.setHeightInPoints(26);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = rH.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = tableStartRow + 1;
+            int stt = 1;
+            double sumTonDau = 0;
+            double sumNhap = 0;
+            double sumXuat = 0;
+            double sumTonCuoi = 0;
+            double sumGiaTriTon = 0;
+
+            if (details != null && !details.isEmpty()) {
+                for (Map<String, Object> d : details) {
+                    Row r = sheet.createRow(rowIdx++);
+                    r.setHeightInPoints(22);
+
+                    r.createCell(0).setCellValue(stt++);
+                    r.getCell(0).setCellStyle(centerDataStyle);
+
+                    r.createCell(1).setCellValue(safeStr(d.get("ma_code")));
+                    r.getCell(1).setCellStyle(dataStyle);
+
+                    r.createCell(2).setCellValue(safeStr(d.get("ten_hang")));
+                    r.getCell(2).setCellStyle(dataStyle);
+
+                    String loaiHang = "NVL".equalsIgnoreCase(safeStr(d.get("loai_hang"))) ? "Linh kiện" : "Laptop";
+                    r.createCell(3).setCellValue(loaiHang);
+                    r.getCell(3).setCellStyle(centerDataStyle);
+
+                    r.createCell(4).setCellValue(safeStr(d.get("donvitinh")));
+                    r.getCell(4).setCellStyle(centerDataStyle);
+
+                    double tonDau = toDouble(d.get("ton_dau_ky"));
+                    sumTonDau += tonDau;
+                    Cell cTonDau = r.createCell(5);
+                    cTonDau.setCellValue(tonDau);
+                    cTonDau.setCellStyle(numberStyle);
+
+                    double nhap = toDouble(d.get("nhap_trong_ky"));
+                    sumNhap += nhap;
+                    Cell cNhap = r.createCell(6);
+                    cNhap.setCellValue(nhap);
+                    cNhap.setCellStyle(numberStyle);
+
+                    double xuat = toDouble(d.get("xuat_trong_ky"));
+                    sumXuat += xuat;
+                    Cell cXuat = r.createCell(7);
+                    cXuat.setCellValue(xuat);
+                    cXuat.setCellStyle(numberStyle);
+
+                    double tonCuoi = toDouble(d.get("ton_cuoi_ky"));
+                    sumTonCuoi += tonCuoi;
+                    Cell cTonCuoi = r.createCell(8);
+                    cTonCuoi.setCellValue(tonCuoi);
+                    cTonCuoi.setCellStyle(numberStyle);
+
+                    double donGia = toDouble(d.get("don_gia"));
+                    Cell cDonGia = r.createCell(9);
+                    cDonGia.setCellValue(donGia);
+                    cDonGia.setCellStyle(currencyStyle);
+
+                    double giaTriTon = toDouble(d.get("gia_tri_ton"));
+                    sumGiaTriTon += giaTriTon;
+                    Cell cGiaTri = r.createCell(10);
+                    cGiaTri.setCellValue(giaTriTon);
+                    cGiaTri.setCellStyle(currencyStyle);
+
+                    String canhBao = safeStr(d.get("canh_bao"));
+                    String tinhTrang = switch (canhBao) {
+                        case "CANH_BAO_HET" -> "Hết hàng";
+                        case "CANH_BAO_THAP" -> "Sắp hết";
+                        default -> "Khả dụng";
+                    };
+                    r.createCell(11).setCellValue(tinhTrang);
+                    r.getCell(11).setCellStyle(centerDataStyle);
+                }
+
+                // Subtotal row
+                Row rSub = sheet.createRow(rowIdx);
+                rSub.setHeightInPoints(24);
+                Cell cSub = rSub.createCell(0);
+                cSub.setCellValue("TỔNG CỘNG (" + (stt - 1) + " mặt hàng):");
+                cSub.setCellStyle(subtotalStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 4));
+
+                createSubtotalNumberCell(rSub, 5, sumTonDau, workbook);
+                createSubtotalNumberCell(rSub, 6, sumNhap, workbook);
+                createSubtotalNumberCell(rSub, 7, sumXuat, workbook);
+                createSubtotalNumberCell(rSub, 8, sumTonCuoi, workbook);
+
+                Cell cSubDonGia = rSub.createCell(9);
+                cSubDonGia.setCellStyle(subtotalStyle);
+
+                Cell cSubGt = rSub.createCell(10);
+                cSubGt.setCellValue(sumGiaTriTon);
+                cSubGt.setCellStyle(createSubtotalNumberStyle(workbook, "#,##0 ₫"));
+
+                Cell cSubTt = rSub.createCell(11);
+                cSubTt.setCellStyle(subtotalStyle);
+            } else {
+                Row rEmpty = sheet.createRow(rowIdx);
+                rEmpty.createCell(0).setCellValue("Không có dữ liệu tồn kho trong kỳ đã chọn.");
+                rEmpty.getCell(0).setCellStyle(dataStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 11));
+            }
+
+            ExcelCoreUtils.autoSizeColumns(sheet, headers.length);
+            return toByteArray(workbook);
+        }
+    }
+
+    // =========================================================================
+    // 8. XUẤT BÁO CÁO HIỆU SUẤT & CHẤT LƯỢNG SẢN XUẤT
+    // =========================================================================
+    @SuppressWarnings("unchecked")
+    public byte[] exportProductionPerformanceReport(Map<String, Object> perf, LocalDate from, LocalDate to) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("HIEU_SUAT_SAN_XUAT");
+
+            CellStyle titleStyle = createTitleStyle(workbook, IndexedColors.DARK_BLUE.getIndex());
+            CellStyle metaStyle = createMetaStyle(workbook);
+            CellStyle sectionHeaderStyle = createSectionHeaderStyle(workbook);
+            CellStyle headerStyle = ExcelCoreUtils.createHeaderStyle(workbook);
+            CellStyle dataStyle = ExcelCoreUtils.createDataStyle(workbook);
+            CellStyle centerDataStyle = workbook.createCellStyle();
+            centerDataStyle.cloneStyleFrom(dataStyle);
+            centerDataStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle numberStyle = ExcelCoreUtils.createNumberStyle(workbook, "#,##0");
+            CellStyle percentStyle = ExcelCoreUtils.createNumberStyle(workbook, "0.0%");
+            CellStyle subtotalStyle = createSubtotalStyle(workbook);
+
+            // Title Banner
+            Row r0 = sheet.createRow(0);
+            r0.setHeightInPoints(32);
+            Cell cTitle = r0.createCell(0);
+            cTitle.setCellValue("BÁO CÁO HIỆU SUẤT & CHẤT LƯỢNG SẢN XUẤT (OTIF)");
+            cTitle.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 11));
+
+            // Metadata info
+            Row r1 = sheet.createRow(1);
+            String periodStr = "Kỳ báo cáo: Từ " + (from != null ? from.format(DATE_FMT) : "---") + " đến " + (to != null ? to.format(DATE_FMT) : "---");
+            r1.createCell(0).setCellValue(periodStr);
+            r1.getCell(0).setCellStyle(metaStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 11));
+
+            Row r2 = sheet.createRow(2);
+            r2.createCell(0).setCellValue("Thời điểm xuất báo cáo: " + LocalDateTime.now().format(DATE_TIME_FMT));
+            r2.getCell(0).setCellStyle(metaStyle);
+            sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 11));
+
+            if (perf != null) {
+                Row rKpiH = sheet.createRow(4);
+                rKpiH.createCell(0).setCellValue("CHỈ SỐ KPI CHẤT LƯỢNG & TIẾN ĐỘ SẢN XUẤT");
+                rKpiH.getCell(0).setCellStyle(sectionHeaderStyle);
+                sheet.addMergedRegion(new CellRangeAddress(4, 4, 0, 11));
+
+                createKeyValueRow(sheet, 5,
+                        "Tỷ lệ đúng hạn (OTIF):", safeStr(perf.get("ty_le_otif")) + "% (" + safeStr(perf.get("dung_han")) + " đúng hạn / " + safeStr(perf.get("tre_han")) + " trễ)",
+                        "Tổng số lệnh sản xuất:", safeStr(perf.get("tong_lenh")) + " lệnh",
+                        dataStyle);
+
+                createKeyValueRow(sheet, 6,
+                        "Tổng sản lượng máy hoàn thành:", String.format("%,.0f máy", toDouble(perf.get("tong_san_luong"))),
+                        "Tổng số lượng máy/linh kiện lỗi:", String.format("%,.0f máy (Tỷ lệ lỗi: %s%%)", toDouble(perf.get("tong_loi")), safeStr(perf.get("ty_le_loi_chung"))),
+                        dataStyle);
+            }
+
+            // Headers
+            String[] headers = {
+                    "STT", "Mã lệnh", "Đợt sản xuất", "Sản phẩm", "Kỹ thuật viên",
+                    "Số lượng yêu cầu", "Số lượng hoàn thành", "Số lượng lỗi",
+                    "Tỷ lệ lỗi (%)", "Hạn hoàn thành", "Đánh giá tiến độ", "Trạng thái"
+            };
+            int tableStartRow = (perf != null) ? 8 : 4;
+            Row rH = sheet.createRow(tableStartRow);
+            rH.setHeightInPoints(26);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = rH.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = tableStartRow + 1;
+            int stt = 1;
+            double sumYeuCau = 0;
+            double sumHoanThanh = 0;
+            double sumLoi = 0;
+
+            List<Map<String, Object>> orders = perf != null ? (List<Map<String, Object>>) perf.get("orders") : null;
+            if (orders != null && !orders.isEmpty()) {
+                for (Map<String, Object> o : orders) {
+                    Row r = sheet.createRow(rowIdx++);
+                    r.setHeightInPoints(22);
+
+                    r.createCell(0).setCellValue(stt++);
+                    r.getCell(0).setCellStyle(centerDataStyle);
+
+                    r.createCell(1).setCellValue(safeStr(o.get("madot_code")));
+                    r.getCell(1).setCellStyle(centerDataStyle);
+
+                    r.createCell(2).setCellValue(safeStr(o.get("tendot")));
+                    r.getCell(2).setCellStyle(dataStyle);
+
+                    r.createCell(3).setCellValue(safeStr(o.get("tensp")));
+                    r.getCell(3).setCellStyle(dataStyle);
+
+                    r.createCell(4).setCellValue(safeStr(o.get("hoten_phutrach")));
+                    r.getCell(4).setCellStyle(dataStyle);
+
+                    double yc = toDouble(o.get("soluongyeucau"));
+                    sumYeuCau += yc;
+                    Cell cYc = r.createCell(5);
+                    cYc.setCellValue(yc);
+                    cYc.setCellStyle(numberStyle);
+
+                    double ht = toDouble(o.get("soluonghoanthanh"));
+                    sumHoanThanh += ht;
+                    Cell cHt = r.createCell(6);
+                    cHt.setCellValue(ht);
+                    cHt.setCellStyle(numberStyle);
+
+                    double loi = toDouble(o.get("soluongloi"));
+                    sumLoi += loi;
+                    Cell cLoi = r.createCell(7);
+                    cLoi.setCellValue(loi);
+                    cLoi.setCellStyle(numberStyle);
+
+                    double tyLeLoi = toDouble(o.get("ty_le_loi"));
+                    Cell cTyLe = r.createCell(8);
+                    cTyLe.setCellValue(tyLeLoi / 100.0);
+                    cTyLe.setCellStyle(percentStyle);
+
+                    Object hht = o.get("hanhoanthanh");
+                    r.createCell(9).setCellValue(hht != null ? hht.toString() : "---");
+                    r.getCell(9).setCellStyle(centerDataStyle);
+
+                    r.createCell(10).setCellValue(safeStr(o.get("danh_gia_tien_do")));
+                    r.getCell(10).setCellStyle(centerDataStyle);
+
+                    r.createCell(11).setCellValue(safeStr(o.get("trangthai")));
+                    r.getCell(11).setCellStyle(centerDataStyle);
+                }
+
+                // Subtotal row
+                Row rSub = sheet.createRow(rowIdx);
+                rSub.setHeightInPoints(24);
+                Cell cSub = rSub.createCell(0);
+                cSub.setCellValue("TỔNG CỘNG (" + (stt - 1) + " lệnh):");
+                cSub.setCellStyle(subtotalStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 4));
+
+                createSubtotalNumberCell(rSub, 5, sumYeuCau, workbook);
+                createSubtotalNumberCell(rSub, 6, sumHoanThanh, workbook);
+                createSubtotalNumberCell(rSub, 7, sumLoi, workbook);
+
+                for (int c = 8; c <= 11; c++) {
+                    rSub.createCell(c).setCellStyle(subtotalStyle);
+                }
+            } else {
+                Row rEmpty = sheet.createRow(rowIdx);
+                rEmpty.createCell(0).setCellValue("Không có lệnh sản xuất nào trong kỳ đã chọn.");
+                rEmpty.getCell(0).setCellStyle(dataStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 11));
+            }
+
+            ExcelCoreUtils.autoSizeColumns(sheet, headers.length);
+            return toByteArray(workbook);
+        }
+    }
+
+    // =========================================================================
+    // 9. XUẤT BÁO CÁO ĐỐI SOÁT ĐỊNH MỨC BOM & HAO HỤT
+    // =========================================================================
+    @SuppressWarnings("unchecked")
+    public byte[] exportBomVarianceReport(List<Map<String, Object>> orders, LocalDate from, LocalDate to) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("DOI_SOAT_BOM");
+
+            CellStyle titleStyle = createTitleStyle(workbook, IndexedColors.DARK_BLUE.getIndex());
+            CellStyle metaStyle = createMetaStyle(workbook);
+            CellStyle headerStyle = ExcelCoreUtils.createHeaderStyle(workbook);
+            CellStyle dataStyle = ExcelCoreUtils.createDataStyle(workbook);
+            CellStyle centerDataStyle = workbook.createCellStyle();
+            centerDataStyle.cloneStyleFrom(dataStyle);
+            centerDataStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle numberStyle = ExcelCoreUtils.createNumberStyle(workbook, "#,##0");
+
+            // Title Banner
+            Row r0 = sheet.createRow(0);
+            r0.setHeightInPoints(32);
+            Cell cTitle = r0.createCell(0);
+            cTitle.setCellValue("BÁO CÁO ĐỐI SOÁT ĐỊNH MỨC BOM & HAO HỤT THỰC TẾ");
+            cTitle.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 11));
+
+            // Metadata info
+            Row r1 = sheet.createRow(1);
+            String periodStr = "Kỳ báo cáo: Từ " + (from != null ? from.format(DATE_FMT) : "---") + " đến " + (to != null ? to.format(DATE_FMT) : "---");
+            r1.createCell(0).setCellValue(periodStr);
+            r1.getCell(0).setCellStyle(metaStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 11));
+
+            Row r2 = sheet.createRow(2);
+            r2.createCell(0).setCellValue("Thời điểm xuất báo cáo: " + LocalDateTime.now().format(DATE_TIME_FMT));
+            r2.getCell(0).setCellStyle(metaStyle);
+            sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 11));
+
+            String[] headers = {
+                    "STT", "Lệnh SX", "Sản phẩm", "Phiên bản BOM", "Tiến độ", "Trạng thái",
+                    "Linh kiện", "ĐVT", "Định mức cho phép", "Thực xuất", "Chênh lệch", "Đánh giá"
+            };
+            Row rH = sheet.createRow(4);
+            rH.setHeightInPoints(26);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = rH.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 5;
+            int stt = 1;
+
+            if (orders != null && !orders.isEmpty()) {
+                for (Map<String, Object> order : orders) {
+                    List<Map<String, Object>> mats = (List<Map<String, Object>>) order.get("materials");
+                    if (mats != null && !mats.isEmpty()) {
+                        for (Map<String, Object> b : mats) {
+                            Row r = sheet.createRow(rowIdx++);
+                            r.setHeightInPoints(22);
+
+                            r.createCell(0).setCellValue(stt++);
+                            r.getCell(0).setCellStyle(centerDataStyle);
+
+                            r.createCell(1).setCellValue(safeStr(order.get("madot_code")));
+                            r.getCell(1).setCellStyle(centerDataStyle);
+
+                            r.createCell(2).setCellValue(safeStr(order.get("tensp")));
+                            r.getCell(2).setCellStyle(dataStyle);
+
+                            r.createCell(3).setCellValue(safeStr(order.get("phienban_bom")));
+                            r.getCell(3).setCellStyle(centerDataStyle);
+
+                            r.createCell(4).setCellValue(safeStr(order.get("tiendo_text")));
+                            r.getCell(4).setCellStyle(centerDataStyle);
+
+                            r.createCell(5).setCellValue(safeStr(order.get("trangthai")));
+                            r.getCell(5).setCellStyle(centerDataStyle);
+
+                            r.createCell(6).setCellValue(safeStr(b.get("tennvl")));
+                            r.getCell(6).setCellStyle(dataStyle);
+
+                            r.createCell(7).setCellValue(safeStr(b.get("donvitinh")));
+                            r.getCell(7).setCellStyle(centerDataStyle);
+
+                            Cell cDm = r.createCell(8);
+                            cDm.setCellValue(toDouble(b.get("dinhmuc_cho_phep")));
+                            cDm.setCellStyle(numberStyle);
+
+                            Cell cTx = r.createCell(9);
+                            cTx.setCellValue(toDouble(b.get("thuc_xuat")));
+                            cTx.setCellStyle(numberStyle);
+
+                            Cell cCl = r.createCell(10);
+                            cCl.setCellValue(toDouble(b.get("chenh_lech")));
+                            cCl.setCellStyle(numberStyle);
+
+                            r.createCell(11).setCellValue(safeStr(b.get("danh_gia")));
+                            r.getCell(11).setCellStyle(centerDataStyle);
+                        }
+                    }
+                }
+            } else {
+                Row rEmpty = sheet.createRow(rowIdx);
+                rEmpty.createCell(0).setCellValue("Không có dữ liệu đối soát BOM nào trong kỳ đã chọn.");
+                rEmpty.getCell(0).setCellStyle(dataStyle);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 11));
+            }
+
+            ExcelCoreUtils.autoSizeColumns(sheet, headers.length);
             return toByteArray(workbook);
         }
     }

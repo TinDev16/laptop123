@@ -279,7 +279,7 @@ public class BomController {
     // =========================
     @PostMapping("/excel/confirm")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> confirmBomExcel(HttpSession session) {
+    public ResponseEntity<Map<String, Object>> confirmBomExcel(HttpSession session, java.security.Principal principal) {
         @SuppressWarnings("unchecked")
         List<BomExcelDto> pending = (List<BomExcelDto>) session.getAttribute("PENDING_BOM_EXCEL_IMPORT");
         if (pending == null || pending.isEmpty()) {
@@ -289,7 +289,8 @@ public class BomController {
             ));
         }
         try {
-            int count = bomExcelService.confirmImport(pending);
+            String username = principal != null ? principal.getName() : null;
+            int count = bomExcelService.confirmImport(pending, username);
             session.removeAttribute("PENDING_BOM_EXCEL_IMPORT");
             return ResponseEntity.ok(Map.of(
                     "success", true,

@@ -202,7 +202,22 @@ public class KhoSanXuatController {
                             WHERE k.masp = s.masp
                         ),
                         0
-                    ) AS tong_san_pham
+                    ) AS tong_san_pham,
+
+                    COALESCE(
+                        (
+                            SELECT GROUP_CONCAT(DISTINCT l.lydo ORDER BY l.thoi_gian DESC SEPARATOR '; ')
+                            FROM lich_su_kho_loi_san_xuat l
+                            WHERE l.masp = s.masp AND l.lydo IS NOT NULL AND TRIM(l.lydo) != ''
+                        ),
+                        (
+                            SELECT GROUP_CONCAT(DISTINCT kq.ghichu ORDER BY kq.ngayhoanthanh DESC SEPARATOR '; ')
+                            FROM ketqua_sanxuat kq
+                            JOIN yeucausanxuat y ON y.maycsx = kq.maycsx
+                            WHERE y.masp = s.masp AND kq.soluongloi > 0 AND kq.ghichu IS NOT NULL AND TRIM(kq.ghichu) != ''
+                        ),
+                        'Lỗi kiểm tra chất lượng (QC)'
+                    ) AS ly_do_loi
         
                 FROM sanpham s
         

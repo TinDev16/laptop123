@@ -663,7 +663,7 @@
 
                                 <th>Phiên bản BOM</th>
 
-                                <th>Số lượng lỗi theo BOM</th>
+                                <th>Lý do ghi nhận lỗi</th>
 
                                 <th>Trạng thái SP</th>
 
@@ -774,16 +774,14 @@
                                         </td>
 
 
-                                        <!-- TỒN -->
+                                        <!-- LÝ DO GHI NHẬN LỖI -->
 
-                                        <td>
+                                        <td style="max-width: 280px;">
 
-                                            <span class="stock-cell">
-
-                                                <span>
-                                                    Xem theo BOM
-                                                </span>
-
+                                            <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; font-size: 0.88rem; color: #b91c1c; font-weight: 500;"
+                                                  th:text="${p.ly_do_loi != null and !#strings.isEmpty(p.ly_do_loi) ? p.ly_do_loi : 'Lỗi kiểm tra chất lượng (QC)'}"
+                                                  th:title="${p.ly_do_loi}">
+                                                Lỗi kiểm tra chất lượng (QC)
                                             </span>
 
                                         </td>
@@ -950,7 +948,7 @@
 
                                 <th>Phiên bản BOM</th>
 
-                                <th>Số lượng lỗi theo BOM</th>
+                                <th>Lý do ghi nhận lỗi</th>
 
                                 <th>Trạng thái SP</th>
 
@@ -1060,12 +1058,14 @@
                                         </td>
 
 
-                                        <!-- TỒN -->
+                                        <!-- LÝ DO GHI NHẬN LỖI -->
 
-                                        <td>
-    <span class="stock-cell">
-        Xem theo BOM
-    </span>
+                                        <td style="max-width: 280px;">
+                                            <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; font-size: 0.88rem; color: #b91c1c; font-weight: 500;"
+                                                  th:text="${p.ly_do_loi != null and !#strings.isEmpty(p.ly_do_loi) ? p.ly_do_loi : 'Lỗi kiểm tra chất lượng (QC)'}"
+                                                  th:title="${p.ly_do_loi}">
+                                                Lỗi kiểm tra chất lượng (QC)
+                                            </span>
                                         </td>
 
 

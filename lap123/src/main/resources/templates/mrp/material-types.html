@@ -13,10 +13,47 @@
     <div class="main-wrapper">
         <div th:replace="~{fragments/sidebar :: topbar('Loại nguyên vật liệu', 'Kho / NVL / Loại NVL')}"></div>
         <main class="content-body material-type-page">
-            <div class="page-header">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                 <div>
                     <h1>Loại nguyên vật liệu</h1>
                     <p class="page-description">Quản lý nhóm phân loại dùng trong danh mục nguyên vật liệu.</p>
+                </div>
+
+                <!-- CỤM 4 NÚT THAO TÁC HIỆN Ở BÊN PHẢI -->
+                <div class="page-actions" style="margin-left: auto; display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+                    <button type="button" id="addTypeButton" class="btn btn-primary"
+                            aria-controls="addTypeForm" aria-expanded="false" onclick="showAddTypeForm()">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        Thêm loại NVL
+                    </button>
+
+                    <!-- Tải file mẫu Excel -->
+                    <a th:href="@{/nguyen-vat-lieu/loai/excel/template}"
+                       class="btn btn-secondary"
+                       style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                       title="Tải về file Excel mẫu chuẩn định dạng để nhập danh mục loại NVL">
+                        <i class="fas fa-file-download" style="color: #0284c7;"></i>
+                        Tải mẫu Excel
+                    </a>
+
+                    <!-- Mở Modal Nhập Excel -->
+                    <button type="button"
+                            class="btn btn-secondary"
+                            style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"
+                            onclick="openTypeExcelModal()"
+                            title="Nạp danh sách loại NVL từ file Excel chuẩn">
+                        <i class="fas fa-file-import" style="color: #16a34a;"></i>
+                        Nhập từ Excel
+                    </button>
+
+                    <!-- Xuất Excel -->
+                    <a th:href="@{/nguyen-vat-lieu/loai/excel/export}"
+                       class="btn btn-secondary"
+                       style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
+                       title="Xuất danh mục phân loại NVL ra file Excel">
+                        <i class="fas fa-file-excel" style="color: #10b981;"></i>
+                        Xuất Excel
+                    </a>
                 </div>
             </div>
 
@@ -27,43 +64,6 @@
             <div class="alert alert-error" th:if="${error}">
                 <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
                 <span th:text="${error}"></span>
-            </div>
-
-            <!-- CỤM NÚT THAO TÁC: THÊM MỚI + 3 NÚT EXCEL -->
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center;">
-                <button type="button" id="addTypeButton" class="btn btn-primary"
-                        aria-controls="addTypeForm" aria-expanded="false" onclick="showAddTypeForm()">
-                    <i class="fas fa-plus" aria-hidden="true"></i>
-                    Thêm loại NVL
-                </button>
-
-                <!-- Tải file mẫu Excel -->
-                <a th:href="@{/nguyen-vat-lieu/loai/excel/template}"
-                   class="btn btn-secondary"
-                   style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
-                   title="Tải về file Excel mẫu chuẩn định dạng để nhập danh mục loại NVL">
-                    <i class="fas fa-file-download" style="color: #0284c7;"></i>
-                    Tải mẫu Excel
-                </a>
-
-                <!-- Mở Modal Nhập Excel -->
-                <button type="button"
-                        class="btn btn-secondary"
-                        style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"
-                        onclick="openTypeExcelModal()"
-                        title="Nạp danh sách loại NVL từ file Excel chuẩn">
-                    <i class="fas fa-file-import" style="color: #16a34a;"></i>
-                    Nhập từ Excel
-                </button>
-
-                <!-- Xuất Excel -->
-                <a th:href="@{/nguyen-vat-lieu/loai/excel/export}"
-                   class="btn btn-secondary"
-                   style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;"
-                   title="Xuất danh mục phân loại NVL ra file Excel">
-                    <i class="fas fa-file-excel" style="color: #10b981;"></i>
-                    Xuất Excel
-                </a>
             </div>
 
             <section class="content-card material-type-card">

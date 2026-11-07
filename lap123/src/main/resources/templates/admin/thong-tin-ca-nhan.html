@@ -441,11 +441,16 @@
 
                             <div class="field">
                                 <label for="employeeGender">Giới tính</label>
-                                <input type="text"
-                                       id="employeeGender"
-                                       th:field="*{GIOITINH}"
-                                       data-editable
-                                       disabled>
+                                <select id="employeeGender"
+                                        th:field="*{GIOITINH}"
+                                        data-editable
+                                        disabled>
+
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+
+                                </select>
                             </div>
 
                             <div class="field">

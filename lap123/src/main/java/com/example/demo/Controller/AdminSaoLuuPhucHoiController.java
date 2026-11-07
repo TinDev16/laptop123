@@ -39,16 +39,20 @@ public class AdminSaoLuuPhucHoiController {
     @GetMapping("/admin/sao-luu-phuc-hoi")
     public String hienThiTrangSaoLuu(Model model) {
 
-        // 1. Lấy toàn bộ lịch sử sao lưu từ database
-        // Không xóa hoặc lọc lịch sử này
-        model.addAttribute(
-                "lichSuSaoLuu",
+// 1. Lấy lịch sử sao lưu và chỉ giữ những bản có file thực tế
+        List<Map<String, Object>> lichSuSaoLuu =
                 jdbcTemplate.queryForList("""
-                    SELECT *
-                    FROM lich_su_sao_luu
-                    ORDER BY thoi_gian_sao_luu DESC
-                    """)
-        );
+            SELECT *
+            FROM lich_su_sao_luu
+            ORDER BY thoi_gian_sao_luu DESC
+            """)
+                        .stream()
+                        .filter(item -> backupService.kiemTraFileSaoLuu(
+                                (String) item.get("duong_dan")
+                        ))
+                        .toList();
+
+        model.addAttribute("lichSuSaoLuu", lichSuSaoLuu);
 
 
         // 2. Lấy danh sách bản sao lưu thành công

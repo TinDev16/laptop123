@@ -193,7 +193,10 @@ public class SecurityConfig {
                                 "/kho-san-xuat/thanh-pham",
                                 "/kho-san-xuat/thanh-pham/bom",
                                 "/kho-san-xuat/loi",
-                                "/kho-san-xuat/loi/bom"
+                                "/kho-san-xuat/loi/bom",
+                                "/kho-san-xuat/nvl/**",
+                                "/kho-san-xuat/thanh-pham/**",
+                                "/kho-san-xuat/loi/**"
                         ).hasAnyRole(
                                 "QUAN_LY_KHO",
                                 "NHAN_VIEN"

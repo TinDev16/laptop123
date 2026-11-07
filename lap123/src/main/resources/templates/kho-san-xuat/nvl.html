@@ -197,22 +197,26 @@
 
 
             <!-- TIÊU ĐỀ -->
-
-            <h1>
-
-                <i class="fas fa-warehouse"></i>
-
-                Kho NVL nơi sản xuất
-
-            </h1>
-
-
-            <p>
-
-                Theo dõi số lượng nguyên vật liệu
-                tại kho nơi sản xuất.
-
-            </p>
+            <div class="page-header">
+                <div>
+                    <h1 style="margin-bottom: 6px;">
+                        <i class="fas fa-warehouse"></i>
+                        Kho NVL nơi sản xuất
+                    </h1>
+                    <p style="margin: 0; color: #6b7280;">
+                        Theo dõi số lượng nguyên vật liệu tại kho nơi sản xuất.
+                    </p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <a th:href="@{/kho-san-xuat/nvl/excel/export}"
+                       class="btn"
+                       style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; text-decoration:none; padding:8px 14px; border-radius:6px; font-weight:500; font-size:0.9rem;"
+                       title="Xuất danh sách nguyên vật liệu kho sản xuất ra Excel">
+                        <i class="fas fa-file-excel" style="color:#10b981;"></i>
+                        Xuất Excel
+                    </a>
+                </div>
+            </div>
 
 
             <!-- CONTENT CARD -->

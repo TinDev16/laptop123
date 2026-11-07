@@ -590,10 +590,17 @@
                 </div>
 
 
-                <div class="warehouse-icon">
-
-                    <i class="fas fa-box"></i>
-
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <a th:href="@{/kho-san-xuat/thanh-pham/excel/export}"
+                       class="btn"
+                       style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px; text-decoration:none; padding:8px 14px; border-radius:6px; font-weight:500; font-size:0.9rem;"
+                       title="Xuất danh sách thành phẩm kho sản xuất ra Excel">
+                        <i class="fas fa-file-excel" style="color:#10b981;"></i>
+                        Xuất Excel
+                    </a>
+                    <div class="warehouse-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
                 </div>
 
             </div>

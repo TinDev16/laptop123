@@ -804,6 +804,15 @@ public class BomExcelService {
                 mabom = Objects.requireNonNull(keyHolder.getKey()).longValue();
             }
 
+            // Đồng bộ khởi tạo tồn kho nơi sản xuất cho phiên bản BOM mới
+            try {
+                jdbc.update(
+                        "INSERT IGNORE INTO kho_thanhpham_san_xuat (masp, mabom, soluongton) VALUES (?, ?, 0)",
+                        productId,
+                        mabom
+                );
+            } catch (Exception ignored) {}
+
             // 2. Chèn các dòng chi tiết vào bom_chitiet
             for (BomExcelDto item : groupItems) {
                 jdbc.update(

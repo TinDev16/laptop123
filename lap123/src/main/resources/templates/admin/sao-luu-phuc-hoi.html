@@ -888,8 +888,6 @@
 
         <div class="restore-list" id="restoreList">
 
-        <div class="restore-list">
-
             <label class="restore-option"
                    th:each="item : ${danhSachCoThePhucHoi}">
 
@@ -1067,6 +1065,10 @@
 </div>
 
 <script>
+    // ==============================
+    // POPUP SAO LƯU
+    // ==============================
+
     function openBackupModal() {
         const modal = document.getElementById("backupModal");
         const input = document.getElementById("backupName");
@@ -1080,22 +1082,11 @@
             .classList.remove("show");
     }
 
-    // Nhấn bên ngoài popup để đóng
-    document.getElementById("backupModal")
-        .addEventListener("click", function(event) {
-            if (event.target === this) {
-                closeBackupModal();
-            }
-        });
 
-    // Nhấn ESC để đóng popup
-    document.addEventListener("keydown", function(event) {
-        if (event.key === "Escape") {
-            closeBackupModal();
-        }
-    });
+    // ==============================
+    // XEM FILE SAO LƯU
+    // ==============================
 
-    // Nhấn vào hàng để mở bản sao lưu
     function openBackupFile(row) {
         const url = row.getAttribute("data-url");
 
@@ -1104,16 +1095,19 @@
         }
     }
 
-    // Mở popup chọn bản sao lưu
-    // Mở popup chọn bản sao lưu
-    function openRestoreModal() {
 
+    // ==============================
+    // POPUP CHỌN BẢN SAO LƯU
+    // ==============================
+
+    function openRestoreModal() {
+        const modal = document.getElementById("restoreModal");
         const searchInput = document.getElementById("backupSearch");
 
-        // Xóa nội dung tìm kiếm khi mở popup
+        // Reset tìm kiếm
         searchInput.value = "";
 
-        // Hiển thị lại toàn bộ bản sao lưu
+        // Hiện lại tất cả bản sao lưu
         document.querySelectorAll(".restore-option").forEach(option => {
             option.style.display = "flex";
         });
@@ -1122,13 +1116,44 @@
         document.getElementById("restoreNoResult").style.display = "none";
 
         // Mở popup
-        document.getElementById("restoreModal")
-            .classList.add("show");
+        modal.classList.add("show");
     }
 
-    // Tìm kiếm bản sao lưu theo tên
+
+    function closeRestoreModal() {
+        document.getElementById("restoreModal")
+            .classList.remove("show");
+    }
+
+
+    // ==============================
+    // CHỌN BẢN SAO LƯU
+    // ==============================
+
+    document.querySelectorAll(".restore-radio").forEach(radio => {
+
+        radio.addEventListener("change", function () {
+
+            document.querySelectorAll(".restore-option").forEach(option => {
+                option.classList.remove("selected");
+            });
+
+            this.closest(".restore-option")
+                .classList.add("selected");
+
+            document.getElementById("btnContinueRestore")
+                .disabled = false;
+        });
+
+    });
+
+
+    // ==============================
+    // TÌM KIẾM BẢN SAO LƯU
+    // ==============================
+
     document.getElementById("backupSearch")
-        .addEventListener("input", function() {
+        .addEventListener("input", function () {
 
             const keyword = this.value.trim().toLowerCase();
 
@@ -1140,9 +1165,7 @@
 
                 const backupName = option
                     .querySelector(".restore-option-name")
-                    .textContent
-                    .trim()
-                    .toLowerCase();
+                    .textContent.trim().toLowerCase();
 
                 const matched = backupName.includes(keyword);
 
@@ -1152,95 +1175,67 @@
                     visibleCount++;
                 }
 
-                // Nếu bản đang chọn bị ẩn thì bỏ chọn
+                // Bỏ chọn nếu bản sao lưu đang chọn bị ẩn
                 const radio = option.querySelector(".restore-radio");
 
                 if (!matched && radio.checked) {
                     radio.checked = false;
                     option.classList.remove("selected");
                 }
+
             });
 
-            // Cập nhật nút Tiếp tục
-            document.getElementById("btnContinueRestore").disabled =
-                !document.querySelector(
-                    'input[name="selectedBackup"]:checked'
-                );
+            // Cập nhật nút tiếp tục
+            const selected = document.querySelector(
+                'input[name="selectedBackup"]:checked'
+            );
 
-            // Hiển thị thông báo nếu không tìm thấy
+            document.getElementById("btnContinueRestore")
+                .disabled = !selected;
+
+            // Hiện thông báo không tìm thấy
             document.getElementById("restoreNoResult").style.display =
                 visibleCount === 0 ? "block" : "none";
         });
 
-    // Đóng popup chọn bản sao lưu
-    function closeRestoreModal() {
 
-        document.getElementById("restoreModal")
-            .classList.remove("show");
-    }
+    // ==============================
+    // CHUYỂN SANG POPUP XÁC NHẬN
+    // ==============================
 
-    // Hiển thị xác nhận phục hồi
-    // Theo dõi bản sao lưu được chọn
-    document.querySelectorAll(".restore-radio")
-        .forEach(radio => {
-
-            radio.addEventListener("change", function() {
-
-                document.querySelectorAll(".restore-option")
-                    .forEach(option => {
-                        option.classList.remove("selected");
-                    });
-
-                this.closest(".restore-option")
-                    .classList.add("selected");
-
-                document.getElementById("btnContinueRestore")
-                    .disabled = false;
-            });
-        });
-
-
-    // Mở popup phục hồi
-    function openRestoreModal() {
-
-        document.getElementById("restoreModal")
-            .classList.add("show");
-    }
-
-
-    // Đóng popup phục hồi
-    function closeRestoreModal() {
-
-        document.getElementById("restoreModal")
-            .classList.remove("show");
-    }
-
-
-    // Xác nhận bản sao lưu được chọn
     function showRestoreConfirmation() {
 
         const selected = document.querySelector(
             'input[name="selectedBackup"]:checked'
         );
 
+        // Chưa chọn bản sao lưu thì không thực hiện
         if (!selected) {
             return;
         }
 
+        // Gán ID bản sao lưu vào form
         document.getElementById("restoreBackupId").value =
             selected.value;
 
+        // Hiển thị tên bản sao lưu trong popup xác nhận
         document.getElementById("restoreBackupName").textContent =
             selected.dataset.name;
 
+        // Đóng popup chọn
         document.getElementById("restoreModal")
             .classList.remove("show");
 
+        // Mở popup xác nhận NGAY LẬP TỨC
         document.getElementById("confirmRestoreModal")
             .classList.add("show");
     }
 
-    // Quay lại popup chọn bản sao lưu
+
+    // ==============================
+    // QUAY LẠI POPUP CHỌN
+    // ==============================
+
     function backToRestoreModal() {
 
         document.getElementById("confirmRestoreModal")
@@ -1250,30 +1245,61 @@
             .classList.add("show");
     }
 
-    // Đóng popup xác nhận nếu nhấn bên ngoài
-    document.getElementById("restoreModal")
-        .addEventListener("click", function(event) {
 
-            if (event.target === this) {
-                closeRestoreModal();
-            }
-        });
+    // ==============================
+    // XÁC NHẬN PHỤC HỒI
+    // ==============================
 
-    document.getElementById("confirmRestoreModal")
-        .addEventListener("click", function(event) {
-
-            if (event.target === this) {
-                this.classList.remove("show");
-            }
-        });
-
-    // Kiểm tra trước khi gửi yêu cầu phục hồi
     function confirmRestoreSubmit() {
 
         return confirm(
             "Bạn xác nhận thực hiện phục hồi database lap123?"
         );
     }
+
+
+    // ==============================
+    // ĐÓNG POPUP KHI NHẤN BÊN NGOÀI
+    // ==============================
+
+    document.getElementById("backupModal")
+        .addEventListener("click", function (event) {
+            if (event.target === this) {
+                closeBackupModal();
+            }
+        });
+
+    document.getElementById("restoreModal")
+        .addEventListener("click", function (event) {
+            if (event.target === this) {
+                closeRestoreModal();
+            }
+        });
+
+    document.getElementById("confirmRestoreModal")
+        .addEventListener("click", function (event) {
+            if (event.target === this) {
+                this.classList.remove("show");
+            }
+        });
+
+
+    // ==============================
+    // PHÍM ESC
+    // ==============================
+
+    document.addEventListener("keydown", function (event) {
+
+        if (event.key === "Escape") {
+            closeBackupModal();
+            closeRestoreModal();
+
+            document.getElementById("confirmRestoreModal")
+                .classList.remove("show");
+        }
+
+    });
+
 </script>
 
 </body>

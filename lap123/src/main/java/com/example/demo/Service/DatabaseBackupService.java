@@ -428,4 +428,68 @@ public class DatabaseBackupService {
             Files.deleteIfExists(logFile);
         }
     }
+
+    // ======================================================
+// KIỂM TRA BẢN SAO LƯU CÓ FILE THỰC TẾ HAY KHÔNG
+// ======================================================
+
+    public boolean kiemTraFileSaoLuu(String duongDan) {
+
+        try {
+
+            // 1. Kiểm tra đường dẫn
+            if (duongDan == null || duongDan.trim().isEmpty()) {
+                return false;
+            }
+
+            // 2. Xác định thư mục Desktop/saoluu
+            Path backupDirectory = Path.of(
+                    System.getProperty("user.home"),
+                    "Desktop",
+                    "saoluu"
+            );
+
+            // Thư mục không tồn tại hoặc không phải thư mục
+            if (!Files.isDirectory(backupDirectory)) {
+                return false;
+            }
+
+            // Lấy đường dẫn thực tế của thư mục
+            Path realDirectory = backupDirectory.toRealPath();
+
+            // 3. Kiểm tra file có tồn tại
+            Path backupFile = Path.of(duongDan).toRealPath();
+
+            // 4. Kiểm tra file có nằm trong thư mục sao lưu
+            if (!backupFile.startsWith(realDirectory)) {
+                return false;
+            }
+
+            // 5. Kiểm tra file hợp lệ
+            if (!Files.isRegularFile(backupFile)) {
+                return false;
+            }
+
+            // 6. Kiểm tra định dạng SQL
+            if (!backupFile.getFileName()
+                    .toString()
+                    .toLowerCase()
+                    .endsWith(".sql")) {
+
+                return false;
+            }
+
+            // 7. Kiểm tra dung lượng file
+            if (Files.size(backupFile) <= 0) {
+                return false;
+            }
+
+            return true;
+
+        } catch (Exception e) {
+
+            // Không tìm thấy file hoặc xảy ra lỗi đường dẫn
+            return false;
+        }
+    }
 }

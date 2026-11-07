@@ -35,27 +35,52 @@ public class AdminSaoLuuPhucHoiController {
     }
 
     // Hiển thị trang sao lưu
+// Hiển thị trang sao lưu
     @GetMapping("/admin/sao-luu-phuc-hoi")
     public String hienThiTrangSaoLuu(Model model) {
 
-        model.addAttribute("lichSuSaoLuu",
+        // 1. Lấy toàn bộ lịch sử sao lưu từ database
+        // Không xóa hoặc lọc lịch sử này
+        model.addAttribute(
+                "lichSuSaoLuu",
                 jdbcTemplate.queryForList("""
-                        SELECT *
-                        FROM lich_su_sao_luu
-                        ORDER BY thoi_gian_sao_luu DESC
-                        """));
+                    SELECT *
+                    FROM lich_su_sao_luu
+                    ORDER BY thoi_gian_sao_luu DESC
+                    """)
+        );
 
-        model.addAttribute("danhSachCoThePhucHoi",
+
+        // 2. Lấy danh sách bản sao lưu thành công
+        List<Map<String, Object>> danhSachBanSaoLuu =
                 jdbcTemplate.queryForList("""
-                SELECT
-                    id,
-                    ten_ban_sao_luu,
-                    thoi_gian_sao_luu,
-                    dung_luong
-                FROM lich_su_sao_luu
-                WHERE trang_thai = 'THANH_CONG'
-                ORDER BY thoi_gian_sao_luu DESC
-                """));
+                    SELECT
+                        id,
+                        ten_ban_sao_luu,
+                        duong_dan,
+                        thoi_gian_sao_luu,
+                        dung_luong
+                    FROM lich_su_sao_luu
+                    WHERE trang_thai = 'THANH_CONG'
+                    ORDER BY thoi_gian_sao_luu DESC
+                    """);
+
+
+        // 3. Kiểm tra thư mục và file thực tế
+        // Chỉ giữ lại những bản sao lưu có file hợp lệ
+        List<Map<String, Object>> danhSachCoThePhucHoi =
+                danhSachBanSaoLuu.stream()
+                        .filter(item -> backupService.kiemTraFileSaoLuu(
+                                (String) item.get("duong_dan")
+                        ))
+                        .toList();
+
+
+        // 4. Truyền danh sách hợp lệ sang giao diện
+        model.addAttribute(
+                "danhSachCoThePhucHoi",
+                danhSachCoThePhucHoi
+        );
 
         return "admin/sao-luu-phuc-hoi";
     }
@@ -163,4 +188,5 @@ public class AdminSaoLuuPhucHoiController {
 
         return "redirect:/admin/sao-luu-phuc-hoi";
     }
+
 }

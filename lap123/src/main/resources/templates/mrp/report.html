@@ -663,11 +663,11 @@
 
                         <label style="font-weight: 600; font-size: 0.88rem; color: #475569;">Kỳ thống kê:</label>
                         <input type="number" name="month" min="1" max="12" placeholder="Tháng (1-12)"
-                            th:value="${month}" class="filter-input" style="width: 120px;">
+                            th:value="${month}" class="filter-input" style="width: 120px;" data-number-format="plain">
                         <input type="number" name="quarter" min="1" max="4" placeholder="Quý (1-4)"
-                            th:value="${quarter}" class="filter-input" style="width: 100px;">
+                            th:value="${quarter}" class="filter-input" style="width: 100px;" data-number-format="plain">
                         <input type="number" name="year" min="2000" max="2100" placeholder="Năm (vd: 2026)"
-                            th:value="${year}" class="filter-input" style="width: 130px;">
+                            th:value="${year != null ? year.toString() : ''}" class="filter-input" style="width: 130px;" data-number-format="plain">
 
                         <!-- Bộ lọc loại hàng riêng cho tab XNT -->
                         <select name="kind" class="filter-input" th:if="${tab == 'xnt'}" style="font-weight: 600;">
@@ -1068,7 +1068,6 @@
                                         </th>
                                         <th class="text-right">Đơn giá nhập</th>
                                         <th class="text-right" style="font-weight: 700;">Dự toán mua bù</th>
-                                        <th class="text-center">Lead time</th>
                                         <th class="text-center">Tình trạng cung ứng</th>
                                         <th class="text-center">Thao tác</th>
                                     </tr>
@@ -1102,7 +1101,6 @@
                                         <td class="text-right" style="font-weight: 700;"
                                             th:text="${#numbers.formatDecimal(item.chi_phi_mua_du_kien, 0, 'POINT', 0, 'COMMA') + ' đ'}">
                                         </td>
-                                        <td class="text-center" th:text="${item.lead_time_ngay + ' ngày'}"></td>
                                         <td class="text-center">
                                             <span th:if="${item.trang_thai_cung_ung == 'THIEU_HANG'}"
                                                 class="badge-status badge-red"><i class="fas fa-circle-exclamation"></i>
@@ -1123,7 +1121,7 @@
                                         </td>
                                     </tr>
                                     <tr th:if="${#lists.isEmpty(mrpData.items)}">
-                                        <td colspan="13" class="text-center"
+                                        <td colspan="12" class="text-center"
                                             style="padding: 2.5rem; color: #16a34a; font-weight: 600;">
                                             <i class="fas fa-check-circle"
                                                 style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>

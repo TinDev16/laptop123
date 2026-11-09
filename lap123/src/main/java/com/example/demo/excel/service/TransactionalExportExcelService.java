@@ -517,7 +517,7 @@ public class TransactionalExportExcelService {
             String[] headers = {
                     "STT", "Mã NVL", "Tên nguyên vật liệu", "ĐVT", "Tổng nhu cầu SX",
                     "Tồn kho tổng", "Tồn kho xưởng SX", "Tổng khả dụng", "Số lượng thiếu",
-                    "Đơn giá vốn", "Chi phí mua dự kiến", "Thời gian giao hàng (ngày)", "Trạng thái cung ứng"
+                    "Đơn giá vốn", "Chi phí mua dự kiến", "Trạng thái cung ứng"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell c = rH.createCell(i);
@@ -580,12 +580,8 @@ public class TransactionalExportExcelService {
                     cCost.setCellValue(cost);
                     cCost.setCellStyle(currencyStyle);
 
-                    Cell cLt = r.createCell(11);
-                    cLt.setCellValue(toDouble(item.get("lead_time_ngay")));
-                    cLt.setCellStyle(numberStyle);
-
-                    r.createCell(12).setCellValue(safeStr(item.get("trang_thai_cung_ung")));
-                    r.getCell(12).setCellStyle(dataStyle);
+                    r.createCell(11).setCellValue(safeStr(item.get("trang_thai_cung_ung")));
+                    r.getCell(11).setCellStyle(dataStyle);
                 }
             }
 
@@ -608,7 +604,6 @@ public class TransactionalExportExcelService {
             cSubCost.setCellStyle(createSubtotalNumberStyle(workbook, "#,##0 ₫"));
 
             rSub.createCell(11).setCellStyle(subtotalStyle);
-            rSub.createCell(12).setCellStyle(subtotalStyle);
 
             ExcelCoreUtils.autoSizeColumns(sheet, headers.length);
             return toByteArray(workbook);

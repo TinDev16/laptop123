@@ -425,12 +425,12 @@ public class WarehouseReportController {
                 );
             }
         } else if ("mrp".equalsIgnoreCase(tab)) {
-            writer.println("Mã NVL,Tên NVL,ĐVT,Tổng nhu cầu sản xuất,Tồn kho tổng,Tồn xưởng,Tổng khả dụng,Số lượng thiếu,Đơn giá vốn,Chi phí dự kiến (VNĐ),Lead time (ngày),Trạng thái cung ứng");
+            writer.println("Mã NVL,Tên NVL,ĐVT,Tổng nhu cầu sản xuất,Tồn kho tổng,Tồn xưởng,Tổng khả dụng,Số lượng thiếu,Đơn giá vốn,Chi phí dự kiến (VNĐ),Trạng thái cung ứng");
             var mrp = service.getMrpShortageReport();
             @SuppressWarnings("unchecked")
             var items = (List<Map<String, Object>>) mrp.get("items");
             for (var i : items) {
-                writer.printf("\"%s\",\"%s\",\"%s\",%s,%s,%s,%s,%s,%s,%s,%s,\"%s\"%n",
+                writer.printf("\"%s\",\"%s\",\"%s\",%s,%s,%s,%s,%s,%s,%s,\"%s\"%n",
                         i.get("manvl_code"),
                         i.get("tennvl"),
                         i.get("donvitinh"),
@@ -441,7 +441,6 @@ public class WarehouseReportController {
                         i.get("soluongthieu"),
                         i.get("dongianhap"),
                         i.get("chi_phi_mua_du_kien"),
-                        i.get("lead_time_ngay"),
                         i.get("trang_thai_cung_ung")
                 );
             }
